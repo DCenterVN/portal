@@ -1,0 +1,8 @@
+{
+  "name": "DCenter Portal",
+  "short_name": "DCenter",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f7f4eb",
+  "theme_color": "#0f4f4a"
+}

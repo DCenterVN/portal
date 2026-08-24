@@ -1,0 +1,24 @@
+image:
+  repository: ghcr.io/DCenterVN/portal
+  tag: ""
+  pullPolicy: IfNotPresent
+
+replicaCount: 2
+
+service:
+  port: 3000
+
+env:
+  PORTAL_AUTH_MODE: production
+  PORTAL_GITHUB_ORG: DCenterVN
+  PORTAL_GITHUB_TEAM: platform-operators
+
+existingSecretName: portal-secrets
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi

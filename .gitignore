@@ -1,0 +1,11 @@
+.next/
+node_modules/
+coverage/
+dist/
+*.log
+tsconfig.tsbuildinfo
+.env*.local
+.codegraph/
+*.db
+*.db-wal
+*.db-shm

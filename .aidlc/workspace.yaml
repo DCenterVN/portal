@@ -1,0 +1,16 @@
+workspace:
+  id: portal
+  name: DCenter Portal
+  repo: DCenterVN/portal
+  parent: RESORT-IAM-V1
+
+phases:
+  required:
+    - issue
+    - prd
+    - tech_design
+    - test_plan
+    - approval
+    - implementation
+    - test_report
+    - handoff
