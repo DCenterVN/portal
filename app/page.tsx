@@ -1,6 +1,5 @@
-import {ResortConsole} from "@/features/console/resort-console";
-import {getInitialConsoleData} from "@/lib/mock-data";
+import { redirect } from "next/navigation";
 
 export default function Home() {
-  return <ResortConsole initialData={getInitialConsoleData()} />;
+  redirect("/branches");
 }
