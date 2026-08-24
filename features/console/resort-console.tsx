@@ -10,6 +10,9 @@ import {
   UsersRound
 } from "lucide-react";
 import {useMemo, useState} from "react";
+import useSWR from "swr";
+import useSWRMutation from "swr/mutation";
+import {fetcher, mutationFetcher} from "@/lib/fetcher";
 import type {ConsoleData, OperationResult} from "@/lib/types";
 
 type Tab = "dashboard" | "users" | "resorts" | "rbac" | "locations" | "lab";
@@ -32,33 +35,38 @@ const operationOptions = [
 ];
 
 export function ResortConsole({initialData}: {initialData: ConsoleData}) {
+  const {data: consoleData = initialData} = useSWR<ConsoleData>("/api/console", fetcher, {
+    fallbackData: initialData,
+    revalidateOnFocus: false,
+    errorRetryCount: 3
+  });
+
   const [activeTab, setActiveTab] = useState<Tab>("dashboard");
   const [operationId, setOperationId] = useState(operationOptions[0]?.id ?? "");
   const [reason, setReason] = useState("Local smoke test");
   const [result, setResult] = useState<OperationResult | null>(null);
-  const [isRunning, setIsRunning] = useState(false);
   const [query, setQuery] = useState("");
+
+  const {trigger, isMutating} = useSWRMutation(
+    `/api/operations/${operationId}`,
+    mutationFetcher<OperationResult, {reason: string; environment: string}>
+  );
 
   const filteredUsers = useMemo(() => {
     const keyword = query.trim().toLowerCase();
-    if (!keyword) return initialData.users;
-    return initialData.users.filter((user) =>
+    const users = consoleData?.users ?? initialData.users;
+    if (!keyword) return users;
+    return users.filter((user) =>
       [user.displayName, user.email, user.status].some((value) =>
         value.toLowerCase().includes(keyword)
       )
     );
-  }, [initialData.users, query]);
+  }, [consoleData, initialData.users, query]);
 
   async function runOperation() {
-    setIsRunning(true);
     setResult(null);
     try {
-      const response = await fetch(`/api/operations/${operationId}`, {
-        method: "POST",
-        headers: {"content-type": "application/json"},
-        body: JSON.stringify({reason, environment: "dev"})
-      });
-      const payload = (await response.json()) as OperationResult;
+      const payload = await trigger({reason, environment: "dev"});
       setResult(payload);
     } catch (error) {
       setResult({
@@ -69,8 +77,6 @@ export function ResortConsole({initialData}: {initialData: ConsoleData}) {
         durationMs: 0,
         data: {message: error instanceof Error ? error.message : "Unknown error"}
       });
-    } finally {
-      setIsRunning(false);
     }
   }
 
@@ -127,13 +133,13 @@ export function ResortConsole({initialData}: {initialData: ConsoleData}) {
           </div>
         </div>
 
-        {activeTab === "dashboard" && <Dashboard data={initialData} />}
+        {activeTab === "dashboard" && <Dashboard data={consoleData} />}
         {activeTab === "users" && (
           <UsersPanel query={query} setQuery={setQuery} users={filteredUsers} />
         )}
-        {activeTab === "resorts" && <ResortsPanel data={initialData} />}
-        {activeTab === "rbac" && <RbacPanel data={initialData} />}
-        {activeTab === "locations" && <LocationsPanel data={initialData} />}
+        {activeTab === "resorts" && <ResortsPanel data={consoleData} />}
+        {activeTab === "rbac" && <RbacPanel data={consoleData} />}
+        {activeTab === "locations" && <LocationsPanel data={consoleData} />}
         {activeTab === "lab" && (
           <ApiLab
             operationId={operationId}
@@ -141,7 +147,7 @@ export function ResortConsole({initialData}: {initialData: ConsoleData}) {
             reason={reason}
             setReason={setReason}
             result={result}
-            isRunning={isRunning}
+            isRunning={isMutating}
             runOperation={runOperation}
           />
         )}
