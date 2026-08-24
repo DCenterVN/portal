@@ -45,3 +45,4 @@ Production API Lab rules:
 - Keep BFF registry explicit and boring.
 - Prefer concrete modules over generic frontend service abstractions.
 - OpenAPI snapshots are contract inputs; generated types must be reproducible.
+- Package management: strictly use `pnpm` (pinned in `.mise.toml` and `packageManager`). Never run `npm` or `yarn`.

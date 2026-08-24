@@ -13,9 +13,12 @@ The portal is a standalone repository. It is not part of a production monorepo.
 
 ## Local development
 
+Node and pnpm versions are pinned via `.mise.toml`. Strictly use `pnpm` (`packageManager` enforced via Corepack). Do NOT run `npm` or `yarn`.
+
 ```bash
-npm install
-npm run dev
+mise install
+pnpm install
+pnpm run dev
 ```
 
 Open `http://localhost:3000`.
@@ -49,7 +52,8 @@ operations that return credentials are blocked in production.
 ## Verification
 
 ```bash
-npm run typecheck
-npm run lint
-npm run build
+pnpm run typecheck
+pnpm run lint
+pnpm run build
+pnpm test
 ```
