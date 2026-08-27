@@ -20,6 +20,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { BranchInfo, DEFAULT_FALLBACK_BRANCH } from "@/components/navbar";
 
+import { PageShell, PageHeader } from "@/components/ui/page";
+
 interface BranchesViewProps {
   initialBranches: BranchInfo[];
 }
@@ -43,46 +45,34 @@ export function BranchesView({ initialBranches }: BranchesViewProps) {
   };
 
   return (
-    <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
-      {/* Page Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-6 border-b border-[var(--border)]">
-        <div>
-          <div className="flex items-center gap-2.5">
-            <div className="flex size-9 items-center justify-center rounded-xl bg-sky-500/10 text-[var(--primary)]">
-              <Building2 className="size-5" />
+    <PageShell>
+      <PageHeader
+        icon={<Building2 />}
+        title="Danh sách Chi nhánh Vận hành"
+        badge={
+          <Badge variant="secondary" dot={false} className="text-xs font-bold px-2.5 py-0.5 rounded-full">
+            {safeBranches.length} Chi nhánh
+          </Badge>
+        }
+        description="Chọn chi nhánh cấp đông để chuyển đổi ngữ cảnh làm việc, quản lý kho hàng và nhân sự"
+        actions={
+          <>
+            <div className="relative w-64 sm:w-80">
+              <Search className="absolute left-3 top-2.5 size-3.5 text-[var(--muted-foreground)]" />
+              <Input
+                placeholder="Tìm mã hoặc tên chi nhánh..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-8 text-xs h-9 rounded-xl bg-[var(--card)] text-[var(--foreground)] border-[var(--border)]"
+              />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-extrabold tracking-tight text-[var(--foreground)]">
-                  Danh sách Chi nhánh Vận hành
-                </h1>
-                <Badge variant="secondary" dot={false} className="text-xs font-bold px-2.5 py-0.5 rounded-full">
-                  {safeBranches.length} Chi nhánh
-                </Badge>
-              </div>
-              <p className="text-xs text-[var(--muted-foreground)] mt-0.5 font-medium">
-                Chọn chi nhánh cấp đông để chuyển đổi ngữ cảnh làm việc, quản lý kho hàng và nhân sự
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <div className="relative w-64 sm:w-80">
-            <Search className="absolute left-3 top-2.5 size-3.5 text-[var(--muted-foreground)]" />
-            <Input
-              placeholder="Tìm mã hoặc tên chi nhánh..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-8 text-xs h-9 rounded-xl bg-[var(--card)] text-[var(--foreground)] border-[var(--border)]"
-            />
-          </div>
-          <Button size="sm" className="gap-1.5 text-xs h-9 font-bold rounded-xl bg-gradient-to-r from-[#0284C7] to-emerald-600 hover:opacity-95 text-white shadow-md shadow-sky-500/15">
-            <Plus className="size-3.5" />
-            <span>Thêm Chi Nhánh</span>
-          </Button>
-        </div>
-      </div>
+            <Button size="sm" className="gap-1.5 text-xs h-9 font-bold rounded-xl bg-gradient-to-r from-[#0284C7] to-emerald-600 hover:opacity-95 text-white shadow-md shadow-sky-500/15">
+              <Plus className="size-3.5" />
+              <span>Thêm Chi Nhánh</span>
+            </Button>
+          </>
+        }
+      />
 
       {/* Branches Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-6">
@@ -179,6 +169,6 @@ export function BranchesView({ initialBranches }: BranchesViewProps) {
           );
         })}
       </div>
-    </main>
+    </PageShell>
   );
 }

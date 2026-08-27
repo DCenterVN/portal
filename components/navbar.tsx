@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import type { Route } from "next";
 import { usePathname } from "next/navigation";
 import {
   Building2,
@@ -18,6 +19,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/components/theme-provider";
+import { cn } from "@/lib/utils";
 
 export interface BranchInfo {
   id: string;
@@ -83,8 +85,9 @@ export function Navbar() {
   const [selectedBranch, setSelectedBranch] = useState<BranchInfo>(initialBranch);
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
-  // Hide top navigation on login route for clean standalone focus
-  if (pathname === "/login") {
+  // Hide top navigation on auth routes for clean standalone focus
+  const authRoutes = ["/login", "/register", "/forgot-password", "/reset-password", "/activate"];
+  if (authRoutes.includes(pathname)) {
     return null;
   }
 
@@ -134,9 +137,10 @@ export function Navbar() {
 
           {/* Branch Switcher Dropdown */}
           <div className="relative">
-            <button
+            <Button
+              variant="outline"
               onClick={() => setDropdownOpen(!dropdownOpen)}
-              className="flex items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--secondary)] px-3 py-1.5 text-xs font-medium text-[var(--foreground)] hover:bg-[var(--accent)] hover:text-[var(--accent-foreground)] transition-colors shadow-xs"
+              className="flex h-auto items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--secondary)] px-3 py-1.5 text-xs font-medium text-[var(--foreground)] hover:bg-[var(--accent)] hover:text-[var(--accent-foreground)] transition-colors shadow-xs"
             >
               <Store className="size-3.5 text-[var(--primary)]" />
               <div className="flex flex-col text-left">
@@ -146,7 +150,7 @@ export function Navbar() {
                 </span>
               </div>
               <ChevronsUpDown className="size-3 text-[var(--muted-foreground)] ml-1" />
-            </button>
+            </Button>
 
             {dropdownOpen && (
               <div className="absolute left-0 top-full mt-1.5 w-76 rounded-2xl border border-[var(--border)] bg-[var(--popover)] p-2 shadow-2xl z-50 animate-in fade-in-50 zoom-in-95">
@@ -156,17 +160,19 @@ export function Navbar() {
                 </div>
                 <div className="space-y-1 mt-1">
                   {(SAMPLE_BRANCHES.length > 0 ? SAMPLE_BRANCHES : [DEFAULT_FALLBACK_BRANCH]).map((b) => (
-                    <button
+                    <Button
                       key={b.id}
+                      variant="ghost"
                       onClick={() => {
                         setSelectedBranch(b);
                         setDropdownOpen(false);
                       }}
-                      className={`flex w-full items-start justify-between rounded-xl p-2.5 text-left text-xs transition-colors ${
+                      className={cn(
+                        "flex h-auto w-full items-start justify-between rounded-xl p-2.5 text-left text-xs transition-colors",
                         selectedBranch.id === b.id
                           ? "bg-[var(--accent)] text-[var(--accent-foreground)] border border-[var(--primary)]/20"
                           : "hover:bg-[var(--secondary)] text-[var(--foreground)]"
-                      }`}
+                      )}
                     >
                       <div className="flex flex-col">
                         <div className="flex items-center gap-1.5">
@@ -182,7 +188,7 @@ export function Navbar() {
                       {selectedBranch.id === b.id && (
                         <Check className="size-4 text-[var(--primary)] shrink-0 mt-0.5" />
                       )}
-                    </button>
+                    </Button>
                   ))}
                 </div>
               </div>
@@ -225,14 +231,16 @@ export function Navbar() {
           </Button>
 
           <div className="flex items-center gap-2 pl-2 border-l border-[var(--border)]">
-            <div className="size-8 rounded-xl bg-gradient-to-tr from-[#0284C7] to-emerald-500 text-white flex items-center justify-center font-bold text-xs shadow-sm">
-              QL
-            </div>
-            <div className="hidden lg:flex flex-col text-left leading-none">
-              <span className="text-xs font-bold text-[var(--foreground)]">Nguyễn Văn Quản</span>
-              <span className="text-[10px] text-[var(--muted-foreground)] mt-0.5 font-medium">Giám đốc chi nhánh</span>
-            </div>
-            <Link href="/login" className="text-[var(--muted-foreground)] hover:text-[var(--destructive)] ml-1 p-1" title="Đăng xuất">
+            <Link href={"/me" as Route} className="flex items-center gap-2 group hover:opacity-90 transition-opacity">
+              <div className="size-8 rounded-xl bg-gradient-to-tr from-[#0284C7] to-emerald-500 text-white flex items-center justify-center font-bold text-xs shadow-sm group-hover:ring-2 ring-[var(--primary)]/30">
+                QL
+              </div>
+              <div className="hidden lg:flex flex-col text-left leading-none">
+                <span className="text-xs font-bold text-[var(--foreground)] group-hover:text-[var(--primary)] transition-colors">Nguyễn Văn Quản</span>
+                <span className="text-[10px] text-[var(--muted-foreground)] mt-0.5 font-medium">Hồ sơ & Phân quyền</span>
+              </div>
+            </Link>
+            <Link href="/login" className="text-[var(--muted-foreground)] hover:text-rose-500 ml-1 p-1 transition-colors" title="Đăng xuất">
               <LogOut className="size-3.5" />
             </Link>
           </div>

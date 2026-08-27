@@ -1,373 +1,532 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
-  KeyRound,
-  Users,
-  Check,
   ShieldCheck,
+  Search,
+  ChevronDown,
+  ChevronRight,
+  RotateCcw,
+  Save,
+  Check,
+  Info
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { PageShell, PageHeader } from "@/components/ui/page";
 
-export interface RoleDef {
+export type ActionType = "V" | "A" | "U" | "D" | "E";
+
+export interface RoleColumn {
   id: string;
   code: string;
   name: string;
-  description: string;
+  shortName: string;
   isSystem: boolean;
-  memberCount: number;
-  permissions: string[];
 }
 
-export interface PermissionDef {
-  actionKey: string;
-  module: string;
-  category: "Quản trị Chi nhánh" | "Kho Lạnh & Tồn kho" | "Đơn hàng & POS" | "Báo cáo & Tài chính";
+export interface PermissionFeature {
+  id: string;
+  name: string;
   description: string;
-  riskLevel: "LOW" | "MEDIUM" | "HIGH";
+  // Map of roleId -> set of allowed actions ('V', 'A', 'U', 'D', 'E')
+  defaultPermissions: Record<string, ActionType[]>;
 }
 
-export const ROLES: RoleDef[] = [
+export interface PermissionGroup {
+  id: string;
+  name: string;
+  features: PermissionFeature[];
+}
+
+export const ROLES_COLUMNS: RoleColumn[] = [
+  { id: "vt01", code: "VT-01", name: "Giám đốc chi nhánh", shortName: "GĐ Chi nhánh", isSystem: true },
+  { id: "vt02", code: "VT-02", name: "Quản lý kho cấp đông", shortName: "QL Kho Lạnh", isSystem: true },
+  { id: "vt23", code: "VT-23", name: "Chuyên viên QC", shortName: "QC Lab", isSystem: true },
+  { id: "vt10", code: "VT-10", name: "Nhân viên kiểm nhận", shortName: "NV Tiếp nhận", isSystem: true },
+  { id: "vt14", code: "VT-14", name: "Bếp trưởng sơ chế", shortName: "Bếp trưởng", isSystem: true },
+  { id: "vt08", code: "VT-08", name: "Tài xế chuỗi lạnh", shortName: "Tài xế -18°C", isSystem: true },
+];
+
+export const PERMISSION_GROUPS: PermissionGroup[] = [
   {
-    id: "role-vt01",
-    code: "VT-01",
-    name: "Giám đốc chi nhánh",
-    description: "Full quyền quản trị vận hành, nhân sự, tài chính và cấu hình trong phạm vi chi nhánh.",
-    isSystem: true,
-    memberCount: 1,
-    permissions: [
-      "org:branch:update",
-      "org:membership:create",
-      "org:membership:list",
-      "org:membership:manage",
-      "org:membership:update",
-      "org:role:create",
-      "org:role:manage",
-      "order:order:create",
-      "order:order:read",
-      "order:price:update",
-      "inventory:stock:in",
-      "inventory:stock:out",
-      "report:revenue:read",
+    id: "inventory_coldchain",
+    name: "Kho Lạnh & Chuỗi Cung Ứng (-18°C)",
+    features: [
+      {
+        id: "feat_goods_receipt",
+        name: "Kiểm nhận hàng hóa đầu vào (Goods Receipt)",
+        description: "Đối soát số lượng thực nhận, đo nhiệt độ thùng xe và lập biên bản sai lệch",
+        defaultPermissions: {
+          vt01: ["V", "A", "U", "D", "E"],
+          vt02: ["V", "A", "U", "E"],
+          vt23: ["V", "A", "U"],
+          vt10: ["V", "A", "U"],
+          vt14: ["V"],
+          vt08: ["V"],
+        },
+      },
+      {
+        id: "feat_stock_mgmt",
+        name: "Quản lý tồn kho & vị trí tủ đông",
+        description: "Phân bổ khay kệ, chuyển vị trí kho lạnh và kiểm kê số lượng thực tế",
+        defaultPermissions: {
+          vt01: ["V", "A", "U", "D", "E"],
+          vt02: ["V", "A", "U", "D", "E"],
+          vt23: ["V"],
+          vt10: ["V", "U"],
+          vt14: ["V"],
+          vt08: [],
+        },
+      },
+      {
+        id: "feat_cold_chain_iot",
+        name: "Giám sát cảm biến IoT nhiệt độ chuỗi lạnh",
+        description: "Theo dõi biểu đồ nhiệt độ liên tục -18°C và tiếp nhận cảnh báo vượt ngưỡng",
+        defaultPermissions: {
+          vt01: ["V", "U", "E"],
+          vt02: ["V", "U", "E"],
+          vt23: ["V", "E"],
+          vt10: ["V"],
+          vt14: ["V"],
+          vt08: ["V"],
+        },
+      },
     ],
   },
   {
-    id: "role-vt02",
-    code: "VT-02",
-    name: "Nhân viên bán hàng",
-    description: "Xem và tạo đơn hàng bán lẻ tại quầy, kiểm tra tồn kho sẵn sàng. Không sửa giá và không xem doanh thu tổng.",
-    isSystem: true,
-    memberCount: 2,
-    permissions: [
-      "org:membership:list",
-      "order:order:create",
-      "order:order:read",
-      "inventory:stock:out",
+    id: "qc_inspection",
+    name: "Kiểm Định Chất Lượng (QC Lab & Lô Hàng)",
+    features: [
+      {
+        id: "feat_qc_4_criteria",
+        name: "Nhập kết quả kiểm nghiệm 4 tiêu chí",
+        description: "Ghi nhận cảm quan, nhiệt độ tâm, hạn dùng và lấy mẫu lưu Lab",
+        defaultPermissions: {
+          vt01: ["V", "A", "U", "E"],
+          vt02: ["V"],
+          vt23: ["V", "A", "U", "E"],
+          vt10: ["V"],
+          vt14: ["V"],
+          vt08: [],
+        },
+      },
+      {
+        id: "feat_qc_decision",
+        name: "Quyết định phê duyệt / cách ly lô hàng",
+        description: "Cấp phép APPROVED nhập kho thương mại hoặc QUARANTINED chuyển vùng cách ly",
+        defaultPermissions: {
+          vt01: ["V", "A", "U", "D", "E"],
+          vt02: ["V"],
+          vt23: ["V", "A", "U", "E"],
+          vt10: [],
+          vt14: [],
+          vt08: [],
+        },
+      },
     ],
   },
   {
-    id: "role-vt03",
-    code: "VT-03",
-    name: "Nhân viên kho",
-    description: "Thực hiện nhập kho thực phẩm cấp đông, kiểm đếm xuất kho, quản lý vị trí tủ đông. Không xem dữ liệu doanh thu.",
-    isSystem: true,
-    memberCount: 2,
-    permissions: [
-      "org:membership:list",
-      "inventory:stock:in",
-      "inventory:stock:out",
-      "order:order:read",
+    id: "supplier_mgmt",
+    name: "Nhà Cung Cấp & Đối Tác VietGAP",
+    features: [
+      {
+        id: "feat_supplier_directory",
+        name: "Hồ sơ đối tác & chứng chỉ vùng trồng",
+        description: "Danh bạ nhà cung cấp, chứng chỉ VietGAP/GlobalGAP và điều kiện vận chuyển",
+        defaultPermissions: {
+          vt01: ["V", "A", "U", "D", "E"],
+          vt02: ["V", "A", "U"],
+          vt23: ["V", "U"],
+          vt10: ["V"],
+          vt14: ["V"],
+          vt08: [],
+        },
+      },
+      {
+        id: "feat_supplier_suspend",
+        name: "Đánh giá định kỳ & đình chỉ nhà cung cấp",
+        description: "Chấm điểm tuân thủ chuỗi lạnh và ban hành quyết định tạm ngừng hợp tác",
+        defaultPermissions: {
+          vt01: ["V", "A", "U", "D", "E"],
+          vt02: ["V", "U"],
+          vt23: ["V", "A", "U", "E"],
+          vt10: [],
+          vt14: [],
+          vt08: [],
+        },
+      },
+    ],
+  },
+  {
+    id: "orders_dispatch",
+    name: "Đơn Hàng Bán Lẻ & Điều Phối Giao Hàng",
+    features: [
+      {
+        id: "feat_sales_orders",
+        name: "Quản lý đơn hàng & xuất bán lẻ",
+        description: "Tiếp nhận đơn hàng online/offline, đóng gói khay lạnh và xuất hóa đơn",
+        defaultPermissions: {
+          vt01: ["V", "A", "U", "D", "E"],
+          vt02: ["V", "A", "U", "E"],
+          vt23: ["V"],
+          vt10: ["V", "U"],
+          vt14: ["V", "U"],
+          vt08: ["V", "U"],
+        },
+      },
+      {
+        id: "feat_dispatch_delivery",
+        name: "Điều xe tải đông lạnh & hành trình giao hàng",
+        description: "Phân bổ tuyến giao, bàn giao thùng giữ nhiệt và ký biên bản giao nhận",
+        defaultPermissions: {
+          vt01: ["V", "A", "U", "E"],
+          vt02: ["V", "A", "U", "E"],
+          vt23: ["V"],
+          vt10: ["V", "U"],
+          vt14: [],
+          vt08: ["V", "U", "E"],
+        },
+      },
+    ],
+  },
+  {
+    id: "org_admin",
+    name: "Tổ Chức, Nhân Sự & Quản Trị Hệ Thống",
+    features: [
+      {
+        id: "feat_membership_staff",
+        name: "Quản lý nhân sự & mời thành viên chi nhánh",
+        description: "Mời nhân viên mới, phân bổ vị trí công tác và thu hồi tài khoản",
+        defaultPermissions: {
+          vt01: ["V", "A", "U", "D", "E"],
+          vt02: ["V"],
+          vt23: ["V"],
+          vt10: [],
+          vt14: [],
+          vt08: [],
+        },
+      },
+      {
+        id: "feat_rbac_matrix",
+        name: "Ma trận phân quyền & thiết lập vai trò",
+        description: "Cấu hình quyền hạn chi tiết cho từng nhóm vai trò trong phạm vi chi nhánh",
+        defaultPermissions: {
+          vt01: ["V", "A", "U", "D", "E"],
+          vt02: [],
+          vt23: [],
+          vt10: [],
+          vt14: [],
+          vt08: [],
+        },
+      },
     ],
   },
 ];
 
-export const PERMISSION_CATALOG: PermissionDef[] = [
-  {
-    actionKey: "org:branch:update",
-    module: "Tổ chức & Chi nhánh",
-    category: "Quản trị Chi nhánh",
-    description: "Chỉnh sửa thông tin, giờ mở cửa và cấu hình chi nhánh",
-    riskLevel: "HIGH",
-  },
-  {
-    actionKey: "org:membership:create",
-    module: "Nhân sự & Thành viên",
-    category: "Quản trị Chi nhánh",
-    description: "Mời nhân viên mới tham gia vào chi nhánh",
-    riskLevel: "MEDIUM",
-  },
-  {
-    actionKey: "org:membership:manage",
-    module: "Nhân sự & Thành viên",
-    category: "Quản trị Chi nhánh",
-    description: "Gán và thu hồi các vai trò của nhân viên trong chi nhánh",
-    riskLevel: "HIGH",
-  },
-  {
-    actionKey: "org:membership:list",
-    module: "Nhân sự & Thành viên",
-    category: "Quản trị Chi nhánh",
-    description: "Xem danh sách nhân sự và thành viên chi nhánh",
-    riskLevel: "LOW",
-  },
-  {
-    actionKey: "org:role:manage",
-    module: "Phân quyền & Vai trò",
-    category: "Quản trị Chi nhánh",
-    description: "Điều chỉnh danh mục quyền hạn gắn với vai trò",
-    riskLevel: "HIGH",
-  },
-  {
-    actionKey: "inventory:stock:in",
-    module: "Kho Lạnh Cấp Đông",
-    category: "Kho Lạnh & Tồn kho",
-    description: "Tạo phiếu nhập kho hàng đông lạnh từ xe trung chuyển",
-    riskLevel: "MEDIUM",
-  },
-  {
-    actionKey: "inventory:stock:out",
-    module: "Kho Lạnh Cấp Đông",
-    category: "Kho Lạnh & Tồn kho",
-    description: "Xuất kho bán hàng hoặc điều chuyển nội bộ giữa các tủ đông",
-    riskLevel: "MEDIUM",
-  },
-  {
-    actionKey: "order:order:create",
-    module: "Đơn hàng Bán lẻ",
-    category: "Đơn hàng & POS",
-    description: "Tạo mới đơn hàng thực phẩm cấp đông tại quầy chi nhánh",
-    riskLevel: "LOW",
-  },
-  {
-    actionKey: "order:order:read",
-    module: "Đơn hàng Bán lẻ",
-    category: "Đơn hàng & POS",
-    description: "Tra cứu lịch sử đơn hàng và phiếu xuất hàng hóa",
-    riskLevel: "LOW",
-  },
-  {
-    actionKey: "order:price:update",
-    module: "Đơn hàng Bán lẻ",
-    category: "Đơn hàng & POS",
-    description: "Thay đổi đơn giá bán lẻ, áp dụng chiết khấu đặc biệt",
-    riskLevel: "HIGH",
-  },
-  {
-    actionKey: "report:revenue:read",
-    module: "Báo cáo Tài chính",
-    category: "Báo cáo & Tài chính",
-    description: "Xem báo cáo doanh số, lợi nhuận ca và tổng kết ngày",
-    riskLevel: "HIGH",
-  },
-];
+const ACTION_LABELS: Record<ActionType, { name: string; title: string }> = {
+  V: { name: "V", title: "View (Xem)" },
+  A: { name: "A", title: "Add (Thêm)" },
+  U: { name: "U", title: "Update (Sửa)" },
+  D: { name: "D", title: "Delete (Xóa)" },
+  E: { name: "E", title: "Export / Execute (Duyệt/Xuất)" },
+};
 
-interface RolesViewProps {
-  initialRoles?: RoleDef[];
-  initialPermissions?: PermissionDef[];
-}
+export function RolesView() {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
+  const [savedSuccess, setSavedSuccess] = useState(false);
 
-export function RolesView({ initialRoles, initialPermissions }: RolesViewProps) {
-  const safeRoles = initialRoles && initialRoles.length > 0 ? initialRoles : ROLES;
-  const safePermissions = initialPermissions && initialPermissions.length > 0 ? initialPermissions : PERMISSION_CATALOG;
+  // State: Record<featureId_roleId_action, boolean>
+  const [permissionState, setPermissionState] = useState<Record<string, boolean>>(() => {
+    const initial: Record<string, boolean> = {};
+    PERMISSION_GROUPS.forEach((group) => {
+      group.features.forEach((feature) => {
+        ROLES_COLUMNS.forEach((role) => {
+          const allowed = feature.defaultPermissions[role.id] || [];
+          (["V", "A", "U", "D", "E"] as ActionType[]).forEach((act) => {
+            const key = `${feature.id}_${role.id}_${act}`;
+            initial[key] = allowed.includes(act);
+          });
+        });
+      });
+    });
+    return initial;
+  });
 
-  const [selectedRole, setSelectedRole] = useState<RoleDef>(safeRoles[0]);
-  const [filterCategory, setFilterCategory] = useState<string>("all");
+  const toggleGroup = (groupId: string) => {
+    setCollapsedGroups((prev) => ({ ...prev, [groupId]: !prev[groupId] }));
+  };
 
-  const categories = Array.from(new Set(safePermissions.map((p) => p.category)));
+  const expandAll = () => setCollapsedGroups({});
+  const collapseAll = () => {
+    const all: Record<string, boolean> = {};
+    PERMISSION_GROUPS.forEach((g) => {
+      all[g.id] = true;
+    });
+    setCollapsedGroups(all);
+  };
 
-  const filteredPermissions = safePermissions.filter(
-    (p) => filterCategory === "all" || p.category === filterCategory
-  );
+  const handleToggle = (featureId: string, roleId: string, action: ActionType) => {
+    const key = `${featureId}_${roleId}_${action}`;
+    setPermissionState((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
+    setSavedSuccess(false);
+  };
+
+  const handleSave = () => {
+    setSavedSuccess(true);
+    setTimeout(() => setSavedSuccess(false), 3000);
+  };
+
+  const filteredGroups = useMemo(() => {
+    if (!searchTerm.trim()) return PERMISSION_GROUPS;
+    const term = searchTerm.toLowerCase();
+    return PERMISSION_GROUPS.map((g) => ({
+      ...g,
+      features: g.features.filter(
+        (f) => f.name.toLowerCase().includes(term) || f.description.toLowerCase().includes(term)
+      ),
+    })).filter((g) => g.features.length > 0);
+  }, [searchTerm]);
+
+  const totalFeatures = PERMISSION_GROUPS.reduce((acc, g) => acc + g.features.length, 0);
 
   return (
-    <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
-      {/* Page Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-6 border-b border-[var(--border)]">
-        <div>
-          <div className="flex items-center gap-2.5">
-            <div className="flex size-9 items-center justify-center rounded-xl bg-sky-500/10 text-[var(--primary)]">
-              <ShieldCheck className="size-5" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-extrabold tracking-tight text-[var(--foreground)]">
-                  Vai trò & Ma trận Phân quyền
-                </h1>
-                <Badge variant="secondary" dot={false} className="text-xs font-bold px-2.5 py-0.5 rounded-full">
-                  Branch RBAC Catalog
-                </Badge>
-              </div>
-              <p className="text-xs text-[var(--muted-foreground)] mt-0.5 font-medium">
-                Danh mục vai trò cố định và bảng quyền hạn tương ứng được áp dụng tự động cho nhân sự chi nhánh
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-[var(--muted-foreground)] font-semibold">
-            Phạm vi: <strong className="text-[var(--foreground)]">CN-HCM-01 (Quận 7)</strong>
-          </span>
-        </div>
-      </div>
-
-      {/* Roles Selection Cards with Semantic Token Theming */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-6 pb-6">
-        {safeRoles.map((role) => {
-          const isSelected = selectedRole.id === role.id;
-          return (
-            <Card
-              key={role.id}
-              onClick={() => setSelectedRole(role)}
-              className={`cursor-pointer transition-all rounded-2xl border bg-[var(--card)] text-[var(--card-foreground)] overflow-hidden ${
-                isSelected
-                  ? "border-[var(--primary)] shadow-lg ring-2 ring-sky-500/20 bg-[var(--accent)]"
-                  : "border-[var(--border)] hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-md"
-              }`}
-            >
-              <CardHeader className="p-4.5 pb-2">
-                <div className="flex items-center justify-between">
-                  <span className="font-mono text-xs font-extrabold px-2.5 py-0.5 rounded-lg bg-sky-500/10 text-[var(--primary)] border border-sky-500/20">
-                    {role.code}
-                  </span>
-                  <span className="text-[11px] text-[var(--muted-foreground)] font-semibold flex items-center gap-1.5 bg-[var(--secondary)] px-2 py-0.5 rounded-full">
-                    <Users className="size-3 text-[var(--primary)]" /> {role.memberCount} nhân sự
-                  </span>
-                </div>
-                <CardTitle className="text-base font-bold text-[var(--foreground)] mt-2.5">
-                  {role.name}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-4.5 pt-0">
-                <p className="text-xs text-[var(--muted-foreground)] leading-relaxed font-medium">
-                  {role.description}
-                </p>
-                <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-[var(--border)] text-[11px]">
-                  <span className="text-[var(--muted-foreground)] font-medium">Quyền kích hoạt:</span>
-                  <span className="font-bold text-[var(--primary)] bg-sky-500/10 px-2 py-0.5 rounded-md">
-                    {role.permissions.length} / {safePermissions.length} quyền
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
-
-      {/* Permission Matrix Detail Table */}
-      <div className="space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-[var(--card)] text-[var(--card-foreground)] p-4 rounded-2xl border border-[var(--border)] shadow-xs">
-          <div className="flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-xl bg-sky-500/10 text-[var(--primary)] border border-sky-500/20 shadow-2xs">
-              <KeyRound className="size-5" />
-            </div>
-            <div>
-              <h3 className="text-sm font-extrabold text-[var(--foreground)] flex items-center gap-2">
-                Chi tiết Quyền hạn cho vai trò: <span className="text-[var(--primary)] font-mono">{selectedRole.code} — {selectedRole.name}</span>
-              </h3>
-              <p className="text-xs text-[var(--muted-foreground)] mt-0.5 font-medium">
-                Ma trận kiểm soát truy cập và chức năng vận hành trong chuỗi cung ứng lạnh
-              </p>
-            </div>
-          </div>
-
+    <PageShell>
+      <PageHeader
+        icon={<ShieldCheck />}
+        title="Ma Trận Phân Quyền Chi Nhánh"
+        badge={
+          <Badge variant="secondary" dot={false} className="text-xs font-bold px-2.5 py-0.5 rounded-full">
+            RBAC Matrix Table
+          </Badge>
+        }
+        description="Bảng phân quyền chi tiết theo từng chức năng và hành động (V: Xem, A: Thêm, U: Sửa, D: Xóa, E: Duyệt/Xuất)"
+        actions={
           <div className="flex items-center gap-2">
-            <span className="text-xs text-[var(--muted-foreground)] font-semibold">Phân nhóm:</span>
-            <select
-              value={filterCategory}
-              onChange={(e) => setFilterCategory(e.target.value)}
-              className="h-8.5 rounded-xl border border-[var(--input)] bg-[var(--card)] px-3 text-xs text-[var(--foreground)] font-medium focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
-            >
-              <option value="all">Tất cả Phân nhóm</option>
-              {categories.map((c) => (
-                <option key={c} value={c}>{c}</option>
-              ))}
-            </select>
+            {savedSuccess && (
+              <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                <Check className="size-3.5" /> Đã lưu ma trận!
+              </span>
+            )}
+            <Button size="sm" onClick={handleSave} className="gap-1.5 text-xs font-bold shadow-sm">
+              <Save className="size-3.5" />
+              <span>Lưu ma trận quyền</span>
+            </Button>
           </div>
+        }
+      />
+
+      {/* Filter & Action Toolbar */}
+      <div className="pt-6 pb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+        <div className="relative w-full md:w-80">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-[var(--muted-foreground)]" />
+          <Input
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Tìm chức năng, phân hệ..."
+            className="pl-9 h-9 text-xs rounded-xl bg-[var(--card)]"
+          />
         </div>
 
-        <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] text-[var(--card-foreground)] overflow-hidden shadow-xs">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-16 text-center">Trạng thái</TableHead>
-                <TableHead>Mã Quyền (Action Key)</TableHead>
-                <TableHead>Phân nhóm / Module</TableHead>
-                <TableHead>Mô tả Hành động</TableHead>
-                <TableHead className="text-right">Mức độ rủi ro</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredPermissions.map((perm) => {
-                const isGranted = selectedRole.permissions.includes(perm.actionKey);
-                return (
-                  <TableRow
-                    key={perm.actionKey}
-                    className={`transition-colors ${
-                      isGranted
-                        ? "bg-sky-500/[0.04]"
-                        : "opacity-60 bg-[var(--muted)]/30"
-                    }`}
+        <div className="flex items-center gap-4 text-xs text-[var(--muted-foreground)]">
+          <span className="font-semibold">
+            {PERMISSION_GROUPS.length} nhóm quyền · {totalFeatures} chức năng
+          </span>
+          <div className="h-3.5 w-px bg-[var(--border)] hidden sm:block" />
+          <div className="flex items-center gap-1">
+            <Button
+              onClick={expandAll}
+              type="button"
+              variant="link"
+              className="h-auto p-0 text-xs text-[var(--primary)] font-medium"
+            >
+              Mở rộng
+            </Button>
+            <span>·</span>
+            <Button
+              onClick={collapseAll}
+              type="button"
+              variant="link"
+              className="h-auto p-0 text-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)] font-medium"
+            >
+              Thu gọn
+            </Button>
+            <span>·</span>
+            <Button
+              onClick={() => setSearchTerm("")}
+              type="button"
+              variant="link"
+              className="h-auto p-0 text-xs inline-flex items-center gap-1 text-[var(--muted-foreground)] hover:text-[var(--foreground)] font-medium"
+            >
+              <RotateCcw className="size-3" /> Tải lại
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Permission Matrix Grid Card */}
+      <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse min-w-[1100px]">
+            {/* Table Header */}
+            <thead>
+              {/* Row 1: Role Group Headers */}
+              <tr className="border-b border-[var(--border)] bg-[var(--secondary)]/50 text-[var(--foreground)] text-xs font-bold">
+                <th rowSpan={2} className="p-3.5 pl-5 w-80 min-w-[280px] align-bottom border-r border-[var(--border)]">
+                  Chức năng / Phân hệ
+                </th>
+                {ROLES_COLUMNS.map((role) => (
+                  <th
+                    key={role.id}
+                    colSpan={5}
+                    className="p-2.5 text-center border-r border-[var(--border)] last:border-r-0"
                   >
-                    <TableCell className="text-center">
-                      {isGranted ? (
-                        <div className="inline-flex size-7 items-center justify-center rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shadow-2xs">
-                          <Check className="size-4 stroke-[2.5]" />
-                        </div>
-                      ) : (
-                        <div className="inline-flex size-7 items-center justify-center rounded-xl bg-[var(--secondary)] text-[var(--muted-foreground)]">
-                          <span className="text-xs font-bold">—</span>
-                        </div>
-                      )}
-                    </TableCell>
-
-                    <TableCell>
-                      <span className="font-mono text-xs font-bold text-[var(--foreground)]">
-                        {perm.actionKey}
+                    <div className="flex items-center justify-center gap-1.5">
+                      <span className="font-mono text-[10px] font-extrabold px-1.5 py-0.2 rounded bg-sky-500/10 text-[var(--primary)]">
+                        {role.code}
                       </span>
-                    </TableCell>
+                      <span className="text-xs font-bold text-[var(--foreground)]">{role.name}</span>
+                    </div>
+                  </th>
+                ))}
+              </tr>
 
-                    <TableCell>
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[var(--tag-bg)] text-[var(--tag-text)] border border-[var(--tag-border)]">
-                        {perm.category}
-                      </span>
-                    </TableCell>
-
-                    <TableCell>
-                      <span className="text-xs text-[var(--foreground)] font-medium">
-                        {perm.description}
-                      </span>
-                    </TableCell>
-
-                    <TableCell className="text-right">
-                      <span
-                        className={`inline-block px-2.5 py-0.5 text-[10px] font-extrabold rounded-full ${
-                          perm.riskLevel === "HIGH"
-                            ? "bg-rose-500/15 text-rose-700 dark:text-rose-300 border border-rose-500/20"
-                            : perm.riskLevel === "MEDIUM"
-                            ? "bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/20"
-                            : "bg-slate-100 dark:bg-slate-800 text-[var(--muted-foreground)] border border-[var(--border)]"
-                        }`}
+              {/* Row 2: V A U D E Sub-columns */}
+              <tr className="border-b border-[var(--border)] bg-[var(--secondary)]/30 text-[10px] font-mono font-bold text-[var(--muted-foreground)] text-center">
+                {ROLES_COLUMNS.map((role) => (
+                  <React.Fragment key={`${role.id}-actions`}>
+                    {(["V", "A", "U", "D", "E"] as ActionType[]).map((act) => (
+                      <th
+                        key={`${role.id}-${act}`}
+                        className="py-1.5 px-1 w-8"
+                        title={ACTION_LABELS[act].title}
                       >
-                        {perm.riskLevel}
-                      </span>
-                    </TableCell>
-                  </TableRow>
+                        {act}
+                      </th>
+                    ))}
+                  </React.Fragment>
+                ))}
+              </tr>
+            </thead>
+
+            {/* Table Body with Collapsible Groups */}
+            <tbody className="divide-y divide-[var(--border)] text-xs">
+              {filteredGroups.map((group) => {
+                const isCollapsed = !!collapsedGroups[group.id];
+                return (
+                  <React.Fragment key={group.id}>
+                    {/* Group Header Row */}
+                    <tr className="bg-[var(--secondary)]/40 hover:bg-[var(--secondary)]/60 transition-colors font-bold text-[var(--foreground)]">
+                      <td colSpan={1 + ROLES_COLUMNS.length * 5} className="p-2.5 pl-4">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          onClick={() => toggleGroup(group.id)}
+                          className="h-auto p-0 flex items-center gap-2 text-xs font-bold text-[var(--primary)] hover:bg-transparent hover:opacity-80"
+                        >
+                          {isCollapsed ? (
+                            <ChevronRight className="size-4" />
+                          ) : (
+                            <ChevronDown className="size-4" />
+                          )}
+                          <span>{group.name}</span>
+                          <span className="text-[10px] font-normal text-[var(--muted-foreground)] ml-1">
+                            ({group.features.length} chức năng)
+                          </span>
+                        </Button>
+                      </td>
+                    </tr>
+
+                    {/* Feature Rows */}
+                    {!isCollapsed &&
+                      group.features.map((feature) => (
+                        <tr
+                          key={feature.id}
+                          className="hover:bg-sky-500/[0.02] transition-colors border-b border-[var(--border)]/60"
+                        >
+                          {/* Feature Name & Description */}
+                          <td className="p-3 pl-8 border-r border-[var(--border)]">
+                            <div className="font-semibold text-[var(--foreground)] text-xs">
+                              {feature.name}
+                            </div>
+                            <div className="text-[11px] text-[var(--muted-foreground)] line-clamp-1 mt-0.5 font-normal">
+                              {feature.description}
+                            </div>
+                          </td>
+
+                          {/* Role Checkboxes */}
+                          {ROLES_COLUMNS.map((role) => (
+                            <React.Fragment key={`${feature.id}-${role.id}`}>
+                              {(["V", "A", "U", "D", "E"] as ActionType[]).map((act) => {
+                                const key = `${feature.id}_${role.id}_${act}`;
+                                const isChecked = !!permissionState[key];
+                                return (
+                                  <td
+                                    key={key}
+                                    className="p-1 text-center align-middle hover:bg-sky-500/10 transition-colors"
+                                  >
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="icon"
+                                      onClick={() => handleToggle(feature.id, role.id, act)}
+                                      className="size-5 p-0 rounded flex items-center justify-center mx-auto transition-transform active:scale-95"
+                                      title={`${role.name}: ${ACTION_LABELS[act].title} - ${feature.name}`}
+                                    >
+                                      {isChecked ? (
+                                        <div className="size-4 rounded bg-[#0284C7] text-white flex items-center justify-center shadow-xs">
+                                          <Check className="size-3 stroke-[3]" />
+                                        </div>
+                                      ) : (
+                                        <div className="size-4 rounded border border-[var(--border)] hover:border-slate-400 dark:hover:border-slate-500 bg-[var(--card)]" />
+                                      )}
+                                    </Button>
+                                  </td>
+                                );
+                              })}
+                            </React.Fragment>
+                          ))}
+                        </tr>
+                      ))}
+                  </React.Fragment>
                 );
               })}
-            </TableBody>
-          </Table>
+            </tbody>
+          </table>
+        </div>
+
+        {/* Matrix Legend Footer */}
+        <div className="p-4 border-t border-[var(--border)] bg-[var(--secondary)]/20 flex flex-wrap items-center justify-between gap-4 text-xs text-[var(--muted-foreground)]">
+          <div className="flex flex-wrap items-center gap-4">
+            <span className="font-bold text-[var(--foreground)]">Quy ước ký hiệu:</span>
+            <span className="flex items-center gap-1.5 font-mono">
+              <strong className="text-[var(--primary)] font-bold">V</strong>: Xem (View)
+            </span>
+            <span className="flex items-center gap-1.5 font-mono">
+              <strong className="text-[var(--primary)] font-bold">A</strong>: Thêm (Add)
+            </span>
+            <span className="flex items-center gap-1.5 font-mono">
+              <strong className="text-[var(--primary)] font-bold">U</strong>: Sửa (Update)
+            </span>
+            <span className="flex items-center gap-1.5 font-mono">
+              <strong className="text-[var(--primary)] font-bold">D</strong>: Xóa (Delete)
+            </span>
+            <span className="flex items-center gap-1.5 font-mono">
+              <strong className="text-[var(--primary)] font-bold">E</strong>: Duyệt / Xuất dữ liệu (Export)
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2 text-[11px]">
+            <Info className="size-3.5 text-[var(--primary)]" />
+            <span>Phân quyền có hiệu lực tức thời cho phiên đăng nhập tiếp theo</span>
+          </div>
         </div>
       </div>
-    </main>
+    </PageShell>
   );
 }

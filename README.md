@@ -17,6 +17,8 @@ Node and pnpm versions are pinned via `.mise.toml`. Strictly use `pnpm` (`packag
 
 ```bash
 mise install
+# If working on an NTFS/fuseblk mount, configure pnpm store-dir on Linux disk to avoid EACCES:
+pnpm config set store-dir ~/.pnpm-store
 pnpm install
 pnpm run dev
 ```

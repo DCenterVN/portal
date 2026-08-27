@@ -10,8 +10,60 @@ export class FetchError extends Error {
   }
 }
 
-export async function fetcher<T = unknown>(url: string, init?: RequestInit): Promise<T> {
+const EXEMPT_AUTH_ENDPOINTS = [
+  "/api/auth/refresh",
+  "/api/auth/login",
+  "/api/auth/logout",
+  "/api/auth/register",
+  "/api/auth/forgot",
+  "/api/auth/reset",
+  "/api/auth/activate",
+];
+
+function isExemptUrl(url: string | URL | Request): boolean {
+  const urlString = typeof url === "string" ? url : url instanceof URL ? url.pathname : url.url;
+  return EXEMPT_AUTH_ENDPOINTS.some((endpoint) => urlString.includes(endpoint));
+}
+
+let refreshPromise: Promise<boolean> | null = null;
+
+async function doRefresh(): Promise<boolean> {
+  if (!refreshPromise) {
+    refreshPromise = fetch("/api/auth/refresh", { method: "POST" })
+      .then((res) => res.ok)
+      .catch(() => false)
+      .finally(() => {
+        refreshPromise = null;
+      });
+  }
+  return refreshPromise;
+}
+
+export async function apiFetch(
+  url: string | URL | Request,
+  init?: RequestInit,
+  isRetry = false
+): Promise<Response> {
   const res = await fetch(url, init);
+
+  if (res.status === 401 && !isRetry && !isExemptUrl(url)) {
+    const refreshed = await doRefresh();
+    if (refreshed) {
+      return apiFetch(url, init, true);
+    }
+    if (typeof window !== "undefined") {
+      const currentPath = window.location.pathname;
+      if (!currentPath.startsWith("/login")) {
+        window.location.href = `/login?redirect=${encodeURIComponent(currentPath)}`;
+      }
+    }
+  }
+
+  return res;
+}
+
+export async function fetcher<T = unknown>(url: string, init?: RequestInit): Promise<T> {
+  const res = await apiFetch(url, init);
 
   if (!res.ok) {
     let errorInfo: Record<string, unknown> | null = null;

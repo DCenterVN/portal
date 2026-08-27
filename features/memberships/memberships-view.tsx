@@ -24,6 +24,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { PageShell, PageHeader } from "@/components/ui/page";
 
 export interface Employee {
   id: string;
@@ -172,31 +173,17 @@ export function MembershipsView({ initialEmployees }: MembershipsViewProps) {
   };
 
   return (
-    <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
-      {/* Page Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-6 border-b border-[var(--border)]">
-        <div>
-          <div className="flex items-center gap-2.5">
-            <div className="flex size-9 items-center justify-center rounded-xl bg-sky-500/10 text-[var(--primary)]">
-              <Users className="size-5" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-extrabold tracking-tight text-[var(--foreground)]">
-                  Quản lý Thành viên Chi nhánh
-                </h1>
-                <Badge variant="secondary" dot={false} className="text-xs font-bold px-2.5 py-0.5 rounded-full">
-                  CN-HCM-01 · Quận 7
-                </Badge>
-              </div>
-              <p className="text-xs text-[var(--muted-foreground)] mt-0.5 font-medium">
-                Phân quyền nhân sự (Membership), kiểm soát trạng thái hoạt động và vai trò theo chi nhánh
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2.5">
+    <PageShell>
+      <PageHeader
+        icon={<Users />}
+        title="Quản lý Thành viên Chi nhánh"
+        badge={
+          <Badge variant="secondary" dot={false} className="text-xs font-bold px-2.5 py-0.5 rounded-full">
+            CN-HCM-01 · Quận 7
+          </Badge>
+        }
+        description="Phân quyền nhân sự (Membership), kiểm soát trạng thái hoạt động và vai trò theo chi nhánh"
+        actions={
           <Button
             onClick={() => setShowInviteModal(true)}
             className="gap-1.5 text-xs h-9 font-bold rounded-xl bg-gradient-to-r from-[#0284C7] to-emerald-600 hover:opacity-95 text-white shadow-md shadow-sky-500/15"
@@ -204,8 +191,8 @@ export function MembershipsView({ initialEmployees }: MembershipsViewProps) {
             <UserPlus className="size-3.5" />
             <span>Thêm / Mời Thành Viên</span>
           </Button>
-        </div>
-      </div>
+        }
+      />
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-6 pb-6">
@@ -472,6 +459,6 @@ export function MembershipsView({ initialEmployees }: MembershipsViewProps) {
           </Card>
         </div>
       )}
-    </main>
+    </PageShell>
   );
 }

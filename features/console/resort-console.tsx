@@ -14,6 +14,8 @@ import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
 import {fetcher, mutationFetcher} from "@/lib/fetcher";
 import type {ConsoleData, OperationResult} from "@/lib/types";
+import {Button} from "@/components/ui/button";
+import {PageShell} from "@/components/ui/page";
 
 type Tab = "dashboard" | "users" | "resorts" | "rbac" | "locations" | "lab";
 
@@ -94,15 +96,17 @@ export function ResortConsole({initialData}: {initialData: ConsoleData}) {
           {tabs.map((tab) => {
             const Icon = tab.icon;
             return (
-              <button
+              <Button
                 key={tab.id}
                 type="button"
+                variant="ghost"
+                className="w-full justify-start gap-2 h-auto"
                 aria-current={activeTab === tab.id ? "page" : undefined}
                 onClick={() => setActiveTab(tab.id)}
               >
                 <Icon size={18} aria-hidden="true" />
                 {tab.label}
-              </button>
+              </Button>
             );
           })}
         </nav>
@@ -113,7 +117,7 @@ export function ResortConsole({initialData}: {initialData: ConsoleData}) {
         </div>
       </aside>
 
-      <main className="main">
+      <PageShell>
         <div className="topbar">
           <div>
             <p className="eyebrow">Platform operator</p>
@@ -151,21 +155,23 @@ export function ResortConsole({initialData}: {initialData: ConsoleData}) {
             runOperation={runOperation}
           />
         )}
-      </main>
+      </PageShell>
 
       <nav className="mobile-tabs" aria-label="Mobile portal sections">
         {tabs.slice(0, 5).map((tab) => {
           const Icon = tab.icon;
           return (
-            <button
+            <Button
               key={tab.id}
               type="button"
+              variant="ghost"
+              size="icon"
               aria-current={activeTab === tab.id ? "page" : undefined}
               onClick={() => setActiveTab(tab.id)}
               title={tab.label}
             >
               <Icon size={18} aria-hidden="true" />
-            </button>
+            </Button>
           );
         })}
       </nav>
@@ -296,7 +302,7 @@ function ResortsPanel({data}: {data: ConsoleData}) {
     <section className="card section">
       <div className="section-head">
         <h3 className="section-title">Resorts</h3>
-        <button className="button primary" type="button">Onboard resort</button>
+        <Button type="button">Onboard resort</Button>
       </div>
       <div className="table-wrap">
         <table>
@@ -332,7 +338,7 @@ function RbacPanel({data}: {data: ConsoleData}) {
       <div className="card section">
         <div className="section-head">
           <h3 className="section-title">Roles</h3>
-          <button className="button" type="button">Create role</button>
+          <Button variant="outline" type="button">Create role</Button>
         </div>
         <div className="grid">
           {data.roles.map((role) => (
@@ -433,11 +439,11 @@ function ApiLab({
         />
       </label>
       <div className="toolbar">
-        <button className="button primary" type="button" onClick={runOperation} disabled={isRunning}>
+        <Button type="button" onClick={runOperation} disabled={isRunning}>
           <FlaskConical size={17} aria-hidden="true" />
           {isRunning ? "Dang goi..." : "Run operation"}
-        </button>
-        <button className="button warn" type="button" onClick={() => setReason("")}>Clear reason</button>
+        </Button>
+        <Button variant="destructive" type="button" onClick={() => setReason("")}>Clear reason</Button>
       </div>
       <pre className="result">
         {result ? JSON.stringify(result, null, 2) : "Chua co ket qua. Chon operation va bam Run."}
