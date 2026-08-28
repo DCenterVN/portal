@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
 
     const nextRes = NextResponse.json({ message: "logged_out" });
     nextRes.cookies.delete("access_token");
-    nextRes.cookies.delete("refresh_token");
+    nextRes.cookies.delete("__Host-refresh_token");
     nextRes.cookies.delete("CSRF-Token");
     return nextRes;
   } catch (err: unknown) {

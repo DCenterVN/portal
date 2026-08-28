@@ -1,10 +1,10 @@
 # DCenter Portal
 
-Operator console for the DCenterVN resort platform.
+Operator console for the DCenterVN cold-chain logistics and branch IAM platform.
 
-V1 focuses on the Resort IAM control plane:
+V1 focuses on the Branch IAM control plane:
 
-- users, resort onboarding and membership/RBAC visibility;
+- users, branch onboarding and membership/RBAC visibility;
 - Vietnam location lookup;
 - guarded API Lab through a server-side BFF;
 - audit metadata for operator actions.

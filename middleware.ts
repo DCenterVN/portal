@@ -20,7 +20,7 @@ export function middleware(request: NextRequest) {
 
   const isPublic = PUBLIC_PATHS.some((path) => pathname.startsWith(path));
   const hasAccessToken = request.cookies.has("access_token");
-  const hasRefreshToken = request.cookies.has("refresh_token");
+  const hasRefreshToken = request.cookies.has("__Host-refresh_token");
 
   if (!isPublic && !hasAccessToken && !hasRefreshToken) {
     const loginUrl = new URL("/login", request.url);

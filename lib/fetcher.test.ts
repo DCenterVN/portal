@@ -142,7 +142,7 @@ describe("fetcher and apiFetch", () => {
   });
 
   it("should throw FetchError on 400 Bad Request", async () => {
-    const errorPayload = { message: "Invalid resort ID", code: "VALIDATION_FAILED" };
+    const errorPayload = { message: "Invalid branch ID", code: "VALIDATION_FAILED" };
     global.fetch = vi.fn().mockResolvedValue({
       ok: false,
       status: 400,
@@ -150,7 +150,7 @@ describe("fetcher and apiFetch", () => {
       json: async () => errorPayload,
     } as unknown as Response);
 
-    await expect(fetcher("/api/resorts/invalid")).rejects.toThrow(FetchError);
+    await expect(fetcher("/api/branches/invalid")).rejects.toThrow(FetchError);
   });
 
   it("should handle error response when body is not json", async () => {

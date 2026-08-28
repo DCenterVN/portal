@@ -1,6 +1,6 @@
 export type ConsoleData = {
   stats: {
-    activeResorts: number;
+    activeBranches: number;
     users: number;
     pendingInvites: number;
     apiChecks: number;
@@ -19,7 +19,7 @@ export type ConsoleData = {
     securityVersion: number;
     lastLogin: string;
   }>;
-  resorts: Array<{
+  branches: Array<{
     id: string;
     code: string;
     name: string;
