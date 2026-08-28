@@ -1,10 +1,10 @@
 # DCenter Portal
 
-Operator console for the DCenterVN resort platform.
+Operator console for the DCenterVN cold-chain logistics and branch IAM platform.
 
-V1 focuses on the Resort IAM control plane:
+V1 focuses on the Branch IAM control plane:
 
-- users, resort onboarding and membership/RBAC visibility;
+- users, branch onboarding and membership/RBAC visibility;
 - Vietnam location lookup;
 - guarded API Lab through a server-side BFF;
 - audit metadata for operator actions.
@@ -13,9 +13,14 @@ The portal is a standalone repository. It is not part of a production monorepo.
 
 ## Local development
 
+Node and pnpm versions are pinned via `.mise.toml`. Strictly use `pnpm` (`packageManager` enforced via Corepack). Do NOT run `npm` or `yarn`.
+
 ```bash
-npm install
-npm run dev
+mise install
+# If working on an NTFS/fuseblk mount, configure pnpm store-dir on Linux disk to avoid EACCES:
+pnpm config set store-dir ~/.pnpm-store
+pnpm install
+pnpm run dev
 ```
 
 Open `http://localhost:3000`.
@@ -49,7 +54,8 @@ operations that return credentials are blocked in production.
 ## Verification
 
 ```bash
-npm run typecheck
-npm run lint
-npm run build
+pnpm run typecheck
+pnpm run lint
+pnpm run build
+pnpm test
 ```

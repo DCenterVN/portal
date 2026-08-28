@@ -1,8 +1,8 @@
 # AI Context — portal
 
-`portal` is the standalone operator UI for the DCenterVN resort platform.
+`portal` is the standalone operator UI for the DCenterVN cold-chain logistics platform.
 
-It is a control plane for platform operators, not a customer-facing resort app.
+It is a control plane for platform operators, not a customer-facing retail app.
 
 ## Ownership
 
@@ -17,7 +17,7 @@ Portal owns:
 Portal does not own:
 
 - auth credentials, sessions, JWT signing or user security policy;
-- org resort membership and final authorization decisions;
+- org branch membership and final authorization decisions;
 - notification delivery;
 - integration reference data;
 - gateway routes for internal APIs.
@@ -45,3 +45,4 @@ Production API Lab rules:
 - Keep BFF registry explicit and boring.
 - Prefer concrete modules over generic frontend service abstractions.
 - OpenAPI snapshots are contract inputs; generated types must be reproducible.
+- Package management: strictly use `pnpm` (pinned in `.mise.toml` and `packageManager`). Never run `npm` or `yarn`.

@@ -3,7 +3,7 @@ import type {ConsoleData} from "@/lib/types";
 export function getInitialConsoleData(): ConsoleData {
   return {
     stats: {
-      activeResorts: 3,
+      activeBranches: 3,
       users: 1284,
       pendingInvites: 17,
       apiChecks: 42
@@ -21,7 +21,7 @@ export function getInitialConsoleData(): ConsoleData {
         email: "minhanh@example.com",
         status: "ACTIVE",
         securityVersion: 4,
-        lastLogin: "10 phut truoc"
+        lastLogin: "10 phút trước"
       },
       {
         id: "0198fd55-3f46-7a01-9e52-f4c0de000002",
@@ -29,7 +29,7 @@ export function getInitialConsoleData(): ConsoleData {
         email: "baolong@example.com",
         status: "PENDING",
         securityVersion: 1,
-        lastLogin: "Chua login"
+        lastLogin: "Chưa login"
       },
       {
         id: "0198fd55-3f46-7a01-9e52-f4c0de000003",
@@ -37,59 +37,59 @@ export function getInitialConsoleData(): ConsoleData {
         email: "havy@example.com",
         status: "ACTIVE",
         securityVersion: 7,
-        lastLogin: "Hom qua"
+        lastLogin: "Hôm qua"
       }
     ],
-    resorts: [
+    branches: [
       {
         id: "0198fd55-3f46-7a01-9e52-f4c0de100001",
-        code: "LOTUS-MAIN",
-        name: "Lotus Bay Resort",
+        code: "COLD-MAIN",
+        name: "Kho Tổng Tân Tạo",
         type: "MAIN",
         status: "ACTIVE",
         members: 412
       },
       {
         id: "0198fd55-3f46-7a01-9e52-f4c0de100002",
-        code: "LOTUS-SPA",
-        name: "Lotus Spa Branch",
+        code: "COLD-Q7",
+        name: "Chi nhánh Kho Lạnh Quận 7",
         type: "BRANCH",
         status: "ACTIVE",
         members: 86
       },
       {
         id: "0198fd55-3f46-7a01-9e52-f4c0de100003",
-        code: "CORAL-MAIN",
-        name: "Coral Cliff Retreat",
+        code: "COLD-THUDUC",
+        name: "Chi nhánh Phân Phối Thủ Đức",
         type: "MAIN",
         status: "PENDING",
         members: 12
       }
     ],
     roles: [
-      {code: "OWNER", name: "Owner", permissions: ["resort.manage", "rbac.manage"]},
-      {code: "RECEPTION", name: "Reception", permissions: ["membership.read", "booking.read"]},
-      {code: "SPA_MANAGER", name: "Spa Manager", permissions: ["membership.read", "service.manage"]}
+      {code: "OWNER", name: "Chủ sở hữu", permissions: ["branch.manage", "rbac.manage"]},
+      {code: "OPERATOR", name: "Điều hành kho", permissions: ["inventory.manage", "branch.read"]},
+      {code: "STAFF", name: "Nhân viên kho", permissions: ["inventory.read", "order.manage"]}
     ],
     provinces: [
-      {code: "01", name: "Ha Noi", type: "Thanh pho", communes: 126},
-      {code: "79", name: "TP. Ho Chi Minh", type: "Thanh pho", communes: 168},
-      {code: "48", name: "Da Nang", type: "Thanh pho", communes: 94}
+      {code: "01", name: "Hà Nội", type: "Thành phố", communes: 126},
+      {code: "79", name: "TP. Hồ Chí Minh", type: "Thành phố", communes: 168},
+      {code: "48", name: "Đà Nẵng", type: "Thành phố", communes: 94}
     ],
     audit: [
       {
         id: "0198fd55-3f46-7a01-9e52-f4c0de200001",
         actor: "dawnmorality",
-        operation: "org.operator.resorts.list",
+        operation: "org.operator.branches.list",
         outcome: "ALLOW",
-        at: "2 phut truoc"
+        at: "2 phút trước"
       },
       {
         id: "0198fd55-3f46-7a01-9e52-f4c0de200002",
         actor: "dawnmorality",
         operation: "auth.operator.users.list",
         outcome: "ALLOW",
-        at: "9 phut truoc"
+        at: "9 phút trước"
       }
     ]
   };
