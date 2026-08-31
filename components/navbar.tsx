@@ -85,29 +85,69 @@ export function Navbar() {
   const [selectedBranch, setSelectedBranch] = useState<BranchInfo>(initialBranch);
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
-  // Hide top navigation on auth routes for clean standalone focus
-  const authRoutes = ["/login", "/register", "/forgot-password", "/reset-password", "/activate"];
+  if (pathname === "/") {
+    return (
+      <header className="sticky top-0 z-50 border-b border-[var(--border)] bg-[var(--background)]/95 backdrop-blur">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
+          <Link href="/" className="flex items-center gap-2 font-serif text-lg font-bold text-[var(--foreground)]">
+            <span className="flex size-9 items-center justify-center rounded-md bg-[var(--primary)] text-[var(--primary-foreground)]">
+              <Sparkles className="size-4" aria-hidden="true" />
+            </span>
+            Việt Sạch
+          </Link>
+          <nav className="hidden items-center gap-7 text-sm font-medium lg:flex" aria-label="Điều hướng chính">
+            <Link href="/products" className="hover:text-[var(--primary)]">Sản phẩm</Link>
+            <a href="#truy-xuat" className="hover:text-[var(--primary)]">Truy xuất nguồn gốc</a>
+            <a href="#paths-title" className="hover:text-[var(--primary)]">Dành cho ai</a>
+          </nav>
+          <div className="flex items-center gap-2">
+            <button type="button" onClick={toggleTheme} className="inline-flex size-10 items-center justify-center rounded-md border border-[var(--border)]" aria-label={theme === "dark" ? "Chuyển sang giao diện sáng" : "Chuyển sang giao diện tối"}>
+              {theme === "dark" ? <Sun className="size-4" /> : <Moon className="size-4" />}
+            </button>
+            <Link href="/login" className="hidden px-3 py-2 text-sm font-semibold sm:inline-flex">Đăng nhập</Link>
+            <Link href="/products" className="inline-flex min-h-10 items-center rounded-md bg-[var(--primary)] px-4 text-sm font-semibold text-[var(--primary-foreground)]">Khám phá</Link>
+          </div>
+        </div>
+      </header>
+    );
+  }
+
+  // Hide top navigation on standalone auth/switch routes for clean focus
+  const authRoutes = [
+    "/login",
+    "/register",
+    "/forgot-password",
+    "/reset-password",
+    "/activate",
+    "/switch-branch",
+    "/switch-org",
+  ];
   if (authRoutes.includes(pathname)) {
     return null;
   }
 
   const navItems: Array<{
     label: string;
-    href: "/branches" | "/memberships" | "/roles";
+    href: "/branches" | "/products" | "/cart" | "/memberships" | "/roles";
     icon: typeof Building2;
   }> = [
     {
-      label: "Danh sách Chi nhánh",
+      label: "Chi nhánh",
       href: "/branches",
       icon: Building2,
     },
     {
-      label: "Quản lý Thành viên",
+      label: "Sản phẩm",
+      href: "/products",
+      icon: Store,
+    },
+    {
+      label: "Thành viên",
       href: "/memberships",
       icon: Users,
     },
     {
-      label: "Vai trò & Phân quyền",
+      label: "Phân quyền",
       href: "/roles",
       icon: ShieldCheck,
     },
@@ -118,18 +158,18 @@ export function Navbar() {
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6">
         {/* Left: Brand + Branch Switcher */}
         <div className="flex items-center gap-4">
-          <Link href="/branches" className="flex items-center gap-2.5 font-bold text-sm text-[var(--foreground)] tracking-tight group">
-            <div className="flex size-8 items-center justify-center rounded-xl bg-gradient-to-br from-[#0284C7] to-[#0F766E] text-white shadow-md shadow-sky-500/20 group-hover:scale-105 transition-transform">
+          <Link href="/" className="flex items-center gap-2.5 font-bold text-sm text-[var(--foreground)] tracking-tight group">
+            <div className="flex size-8 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-600 via-emerald-500 to-teal-700 text-white shadow-md shadow-emerald-500/25 group-hover:scale-105 transition-transform border border-emerald-400/30">
               <Snowflake className="size-4" />
             </div>
             <div className="flex flex-col leading-tight">
               <div className="flex items-center gap-1.5">
-                <span className="font-bold text-[var(--primary)] text-xs tracking-wider uppercase">ColdChain HQ</span>
+                <span className="font-bold text-emerald-600 dark:text-emerald-400 text-xs tracking-wider uppercase font-serif">Việt Sạch</span>
                 <span className="text-[10px] font-semibold px-1.5 py-0.2 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                  v1.0
+                  Chuỗi Lạnh -18°C
                 </span>
               </div>
-              <span className="text-[11px] text-[var(--muted-foreground)] font-medium">Cổng Vận Hành Chi Nhánh</span>
+              <span className="text-[11px] text-[var(--muted-foreground)] font-medium">Cổng Vận Hành Doanh Nghiệp</span>
             </div>
           </Link>
 
@@ -204,7 +244,7 @@ export function Navbar() {
             return (
               <Link
                 key={item.href}
-                href={item.href}
+                href={item.href as Route}
                 className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${
                   isActive
                     ? "bg-[var(--card)] text-[var(--primary)] shadow-sm font-bold"
