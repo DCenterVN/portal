@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 import { POST as createOrder } from "./orders/route";
 import { POST as activateProduct } from "./products/[id]/activate/route";
+import { POST as cancelOrder } from "./orders/[id]/cancel/route";
 
 const originalFetch = global.fetch;
 afterEach(() => { global.fetch = originalFetch; vi.restoreAllMocks(); });
@@ -39,5 +40,13 @@ describe("Sales BFF fail-closed forwarding", () => {
     const response = await activateProduct(request("/api/sales/products/product-id/activate"), { params: Promise.resolve({ id: "product-id" }) });
     expect(response.status).toBe(200);
     expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining("/sales/products/product-id/activate"), expect.not.objectContaining({ body: expect.anything() }));
+  });
+  it("forwards the idempotency key on order cancellation", async () => {
+    global.fetch = vi.fn().mockResolvedValue(new Response(JSON.stringify({ id: "order-id", status: "CANCELLED" }), { status: 200, headers: { "content-type": "application/json" } }));
+    const req = request("/api/sales/orders/order-id/cancel", JSON.stringify({ reason: "customer_request" }));
+    req.headers.set("Idempotency-Key", "cancel-key");
+    const response = await cancelOrder(req, { params: Promise.resolve({ id: "order-id" }) });
+    expect(response.status).toBe(200);
+    expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining("/sales/orders/order-id/cancel"), expect.objectContaining({ headers: expect.objectContaining({ "Idempotency-Key": "cancel-key" }) }));
   });
 });

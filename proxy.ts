@@ -6,9 +6,13 @@ const PUBLIC_PREFIXES = [
   "/api/auth", "/healthz", "/readyz", "/_next", "/favicon.ico",
 ];
 
+function matchesPathPrefix(pathname: string, prefix: string): boolean {
+  return pathname === prefix || pathname.startsWith(`${prefix}/`);
+}
+
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const isPublic = pathname === "/" || PUBLIC_PREFIXES.some((path) => pathname.startsWith(path));
+  const isPublic = pathname === "/" || PUBLIC_PREFIXES.some((path) => matchesPathPrefix(pathname, path));
   const hasAccessToken = request.cookies.has("access_token");
   const hasRefreshToken = request.cookies.has("__Host-refresh_token") || request.cookies.has("refresh_token");
 

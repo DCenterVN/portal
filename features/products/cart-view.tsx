@@ -30,7 +30,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/toast";
-import { Cart, CartItem, clearCart, createOrder, formatVND, getOrCreateCartId, loadCartItems } from "@/lib/api/sales";
+import { Cart, CartItem, clearCart, createOrder, formatVND, getCart, getOrCreateCartId, loadCartItems, recordCartResponse } from "@/lib/api/sales";
 import { PageShell, PageHeader } from "@/components/ui/page";
 
 interface CartViewProps {
@@ -46,8 +46,19 @@ export function CartView({ initialCart }: CartViewProps) {
   const [createdOrderCode, setCreatedOrderCode] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!cartId) setCartId(getOrCreateCartId());
-    if (!initialCart) setItems(loadCartItems());
+    if (initialCart) return;
+    const activeCartId = cartId || getOrCreateCartId();
+    if (!cartId) setCartId(activeCartId);
+    setItems(loadCartItems());
+    void getCart(activeCartId)
+      .then((response) => {
+        recordCartResponse(response);
+        setItems(loadCartItems());
+      })
+      .catch(() => {
+        // A cart is created lazily by the first add-item command. Until then,
+        // the last Sales-confirmed cache is the only displayable read model.
+      });
   }, [cartId, initialCart]);
 
   // Derived: single source of truth for total

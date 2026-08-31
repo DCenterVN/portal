@@ -47,13 +47,38 @@ export async function activateProduct(id: string): Promise<Product> {
   return normalizeProduct(await res.json());
 }
 export async function addToCart(cartId: string, item: { product_id: string; quantity: number }): Promise<SalesCartResponse> {
-  const res = await apiFetch(`/api/sales/carts/${encodeURIComponent(cartId)}/items`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sku_ref: item.product_id, quantity: item.quantity }) });
+  const res = await apiFetch(`/api/sales/carts/${encodeURIComponent(cartId)}/items`, { method: "POST", headers: { "Content-Type": "application/json", "Idempotency-Key": crypto.randomUUID() }, body: JSON.stringify({ sku_ref: item.product_id, quantity: item.quantity }) });
   if (!res.ok) throw new Error(await errorMessage(res, "Không thể thêm vào giỏ hàng"));
+  return res.json();
+}
+export async function getCart(cartId: string): Promise<SalesCartResponse> {
+  const res = await apiFetch(`/api/sales/carts/${encodeURIComponent(cartId)}`);
+  if (!res.ok) throw new Error(await errorMessage(res, "Không thể tải giỏ hàng"));
   return res.json();
 }
 export async function createOrder(cartRef: string): Promise<Order> {
   const res = await apiFetch("/api/sales/orders", { method: "POST", headers: { "Content-Type": "application/json", "Idempotency-Key": crypto.randomUUID() }, body: JSON.stringify({ cart_ref: cartRef }) });
   if (!res.ok) throw new Error(await errorMessage(res, "Không thể tạo đơn hàng"));
+  return res.json();
+}
+export async function getOrders(pageSize = 50): Promise<Order[]> {
+  const res = await apiFetch(`/api/sales/orders?page_size=${pageSize}`);
+  if (!res.ok) throw new Error(await errorMessage(res, "Không thể tải đơn hàng"));
+  const payload = await res.json();
+  return Array.isArray(payload?.items) ? payload.items : [];
+}
+export async function getOrder(id: string): Promise<Order> {
+  const res = await apiFetch(`/api/sales/orders/${encodeURIComponent(id)}`);
+  if (!res.ok) throw new Error(await errorMessage(res, "Không thể tải đơn hàng"));
+  return res.json();
+}
+export async function cancelOrder(id: string, reason: string): Promise<Order> {
+  const res = await apiFetch(`/api/sales/orders/${encodeURIComponent(id)}/cancel`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "Idempotency-Key": crypto.randomUUID() },
+    body: JSON.stringify({ reason }),
+  });
+  if (!res.ok) throw new Error(await errorMessage(res, "Không thể huỷ đơn hàng"));
   return res.json();
 }
 export function getOrCreateCartId(): string {

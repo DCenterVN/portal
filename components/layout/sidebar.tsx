@@ -17,6 +17,7 @@ import {
   Sparkles,
   Package,
   ShoppingCart,
+  ClipboardList,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -43,9 +44,14 @@ export const MAIN_NAV_ITEMS: NavItem[] = [
     isOperations: true,
   },
   {
-    label: "Giỏ hàng & Đơn hàng",
+    label: "Giỏ hàng",
     href: "/cart",
     icon: ShoppingCart,
+  },
+  {
+    label: "Đơn hàng",
+    href: "/orders",
+    icon: ClipboardList,
   },
   {
     label: "Kiểm nhận Hàng hoá",
