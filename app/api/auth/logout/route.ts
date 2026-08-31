@@ -14,7 +14,6 @@ export async function POST(req: NextRequest) {
         "Cookie": cookies,
         "Authorization": `Bearer ${accessToken}`,
         "X-CSRF-Token": csrfToken,
-        "X-Forwarded-For": req.headers.get("x-forwarded-for") || "127.0.0.1",
         "User-Agent": req.headers.get("user-agent") || "portal-bff",
       },
     });
@@ -22,6 +21,7 @@ export async function POST(req: NextRequest) {
     const nextRes = NextResponse.json({ message: "logged_out" });
     nextRes.cookies.delete("access_token");
     nextRes.cookies.delete("__Host-refresh_token");
+    nextRes.cookies.delete("refresh_token");
     nextRes.cookies.delete("CSRF-Token");
     return nextRes;
   } catch (err: unknown) {

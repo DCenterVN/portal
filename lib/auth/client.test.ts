@@ -55,7 +55,6 @@ describe("portal/lib/auth/client", () => {
   describe("API Client Functions", () => {
     it("login should post to /api/auth/login and return response", async () => {
       const mockLoginRes = {
-        access_token: "jwt-token-123",
         expires_in: 900,
         user: { id: "u-1", email: "user@example.com", phone: "090", display_name: "U1", status: "ACTIVE" },
       };
@@ -172,11 +171,12 @@ describe("portal/lib/auth/client", () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
         status: 200,
-        json: async () => ({ access_token: "new-org-token" }),
+        json: async () => ({ expires_in: 900 }),
       } as unknown as Response);
 
       const res = await switchOrg("org-123", "branch-456");
-      expect(res.access_token).toBe("new-org-token");
+      expect(res.access_token).toBeUndefined();
+      expect(res.expires_in).toBe(900);
     });
   });
 });

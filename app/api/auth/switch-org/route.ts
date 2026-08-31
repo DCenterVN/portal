@@ -20,13 +20,16 @@ export async function POST(req: NextRequest) {
     });
 
     const data = await res.json();
-    const nextRes = NextResponse.json(data, { status: res.status });
+    const { access_token: rotatedAccessToken, ...safeData } = data;
+    const nextRes = NextResponse.json(safeData, { status: res.status });
 
-    if (res.ok && data.access_token) {
-      nextRes.cookies.set("access_token", data.access_token, {
+    if (res.ok && rotatedAccessToken) {
+      nextRes.cookies.set("access_token", rotatedAccessToken, {
         path: "/",
         maxAge: 900,
         sameSite: "strict",
+        httpOnly: true,
+        secure: true,
       });
     }
 

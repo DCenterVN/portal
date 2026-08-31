@@ -7,7 +7,11 @@ export type Operator = {
 const requiredTeam = process.env.PORTAL_GITHUB_TEAM ?? "platform-operators";
 
 export async function requireOperator(): Promise<Operator> {
-  const mode = process.env.PORTAL_AUTH_MODE ?? "dev";
+  const mode = process.env.PORTAL_AUTH_MODE
+    ?? (process.env.NODE_ENV === "production" ? "prod" : "dev");
+  if (mode === "dev" && process.env.NODE_ENV === "production") {
+    throw new Error("PORTAL_AUTH_MODE=dev is not allowed when NODE_ENV=production");
+  }
   if (mode === "dev") {
     return {
       id: "dev-operator",

@@ -9,7 +9,6 @@ export interface UserProjection {
 }
 
 export interface LoginResponse {
-  access_token: string;
   expires_in: number;
   user: UserProjection;
 }
@@ -111,7 +110,7 @@ export async function getProfile(): Promise<UserProfile> {
   return res.json();
 }
 
-export async function switchOrg(orgId: string, branchId?: string): Promise<{ access_token: string }> {
+export async function switchOrg(orgId: string, branchId?: string): Promise<Record<string, unknown>> {
   const res = await apiFetch("/api/auth/switch-org", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -124,6 +123,8 @@ export async function switchOrg(orgId: string, branchId?: string): Promise<{ acc
   }
   return data;
 }
+
+export const switchBranch = switchOrg;
 
 export function sanitizeRedirectUrl(redirect: string | null | undefined, fallback = "/"): string {
   if (!redirect) return fallback;

@@ -10,6 +10,15 @@ import { POST as forgotHandler } from "./forgot/route";
 import { POST as resetHandler } from "./reset/route";
 import { GET as meHandler } from "./me/route";
 import { POST as switchOrgHandler } from "./switch-org/route";
+import { GET as contextHandler } from "./context/route";
+
+function expectSecureAccessTokenCookie(res: Response, value: string) {
+  const cookie = res.headers.getSetCookie().find((item) => item.startsWith(`access_token=${value}`));
+  expect(cookie).toBeDefined();
+  expect(cookie).toMatch(/HttpOnly/i);
+  expect(cookie).toMatch(/Secure/i);
+  expect(cookie).toMatch(/SameSite=Strict/i);
+}
 
 describe("Portal BFF Auth Handlers (9 handlers)", () => {
   const originalFetch = global.fetch;
@@ -48,8 +57,9 @@ describe("Portal BFF Auth Handlers (9 handlers)", () => {
     expect(res.status).toBe(200);
 
     const data = await res.json();
-    expect(data.access_token).toBe("jwt-token");
+    expect(data.access_token).toBeUndefined();
     expect(res.cookies.get("access_token")?.value).toBe("jwt-token");
+    expectSecureAccessTokenCookie(res, "jwt-token");
   });
 
   it("2. POST /api/auth/logout calls upstream and clears all auth cookies", async () => {
@@ -91,7 +101,9 @@ describe("Portal BFF Auth Handlers (9 handlers)", () => {
 
     const res = await refreshHandler(req);
     expect(res.status).toBe(200);
+    expect((await res.json()).access_token).toBeUndefined();
     expect(res.cookies.get("access_token")?.value).toBe("new-jwt-token");
+    expectSecureAccessTokenCookie(res, "new-jwt-token");
   });
 
   it("4. POST /api/auth/register forwards registration payload", async () => {
@@ -211,6 +223,20 @@ describe("Portal BFF Auth Handlers (9 handlers)", () => {
 
     const res200 = await switchOrgHandler(reqWithToken);
     expect(res200.status).toBe(200);
+    expect((await res200.json()).access_token).toBeUndefined();
     expect(res200.cookies.get("access_token")?.value).toBe("new-org-token");
+    expectSecureAccessTokenCookie(res200, "new-org-token");
+  });
+});
+
+describe("Portal auth context fails closed", () => {
+  it("does not translate an Org failure into empty permissions", async () => {
+    global.fetch = vi.fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify({ id: "user-id" }), { status: 200, headers: { "content-type": "application/json" } }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ error: "internal" }), { status: 503, headers: { "content-type": "application/json" } }));
+    const request = new NextRequest("http://localhost:3000/api/auth/context", { headers: { cookie: "access_token=jwt" } });
+    const response = await contextHandler(request);
+    expect(response.status).toBe(503);
+    expect(await response.json()).toMatchObject({ error: "org_context_unavailable" });
   });
 });

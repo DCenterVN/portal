@@ -12,24 +12,28 @@ export async function POST(req: NextRequest) {
       headers: {
         "Cookie": cookies,
         "X-CSRF-Token": csrfToken,
-        "X-Forwarded-For": req.headers.get("x-forwarded-for") || "127.0.0.1",
         "User-Agent": req.headers.get("user-agent") || "portal-bff",
       },
     });
 
     const data = await res.json();
-    const nextRes = NextResponse.json(data, { status: res.status });
+    const { access_token: accessToken, expires_in: expiresIn, ...safeData } = data;
+    const nextRes = NextResponse.json(safeData, { status: res.status });
 
-    const setCookieHeaders = res.headers.getSetCookie();
+    const setCookieHeaders = res.headers.getSetCookie?.() || [];
     setCookieHeaders.forEach((cookie) => {
-      nextRes.headers.append("Set-Cookie", cookie);
+      if (cookie.startsWith("refresh_token=") || cookie.startsWith("__Host-refresh_token=") || cookie.startsWith("CSRF-Token=")) {
+        nextRes.headers.append("Set-Cookie", cookie);
+      }
     });
 
-    if (res.ok && data.access_token) {
-      nextRes.cookies.set("access_token", data.access_token, {
+    if (res.ok && accessToken) {
+      nextRes.cookies.set("access_token", accessToken, {
         path: "/",
-        maxAge: 900,
+        maxAge: Number(expiresIn) || 900,
         sameSite: "strict",
+        httpOnly: true,
+        secure: true,
       });
     }
 

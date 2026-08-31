@@ -1,5 +1,4 @@
-import { BranchConsole } from "@/features/console/branch-console";
-import { getInitialConsoleData } from "@/lib/mock-data";
+import { LiveConsole } from "@/features/console/live-console";
 
 export const metadata = {
   title: "Console Vận hành — DCenter Portal",
@@ -7,6 +6,5 @@ export const metadata = {
 };
 
 export default function ConsolePage() {
-  const initialData = getInitialConsoleData();
-  return <BranchConsole initialData={initialData} />;
+  return <LiveConsole />;
 }
