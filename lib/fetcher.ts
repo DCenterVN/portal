@@ -27,9 +27,17 @@ function isExemptUrl(url: string | URL | Request): boolean {
 
 let refreshPromise: Promise<boolean> | null = null;
 
+function resolveFetchInput(url: string | URL | Request): string | URL | Request {
+  if (typeof window === "undefined" && typeof url === "string" && url.startsWith("/")) {
+    const origin = process.env.PORTAL_INTERNAL_URL || `http://127.0.0.1:${process.env.PORT || "3000"}`;
+    return new URL(url, origin);
+  }
+  return url;
+}
+
 async function doRefresh(): Promise<boolean> {
   if (!refreshPromise) {
-    refreshPromise = fetch("/api/auth/refresh", { method: "POST" })
+    refreshPromise = fetch(resolveFetchInput("/api/auth/refresh"), { method: "POST" })
       .then((res) => res.ok)
       .catch(() => false)
       .finally(() => {
@@ -44,7 +52,7 @@ export async function apiFetch(
   init?: RequestInit,
   isRetry = false
 ): Promise<Response> {
-  const res = await fetch(url, init);
+  const res = await fetch(resolveFetchInput(url), init);
 
   if (res.status === 401 && !isRetry && !isExemptUrl(url)) {
     const refreshed = await doRefresh();

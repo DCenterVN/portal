@@ -67,7 +67,7 @@ describe("portal/lib/auth/client", () => {
 
       const res = await login("user@example.com", "Password123!");
       expect(res).toEqual(mockLoginRes);
-      expect(global.fetch).toHaveBeenCalledWith("/api/auth/login", {
+      expect(global.fetch).toHaveBeenCalledWith(new URL("/api/auth/login", "http://127.0.0.1:3000"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: "user@example.com", password: "Password123!" }),
@@ -92,7 +92,7 @@ describe("portal/lib/auth/client", () => {
       } as unknown as Response);
 
       await register("new@example.com", "090123", "New User", "Pass123!");
-      expect(global.fetch).toHaveBeenCalledWith("/api/auth/register", {
+      expect(global.fetch).toHaveBeenCalledWith(new URL("/api/auth/register", "http://127.0.0.1:3000"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: "new@example.com", phone: "090123", display_name: "New User", password: "Pass123!" }),
@@ -107,7 +107,7 @@ describe("portal/lib/auth/client", () => {
       } as unknown as Response);
 
       await activateAccount("act-token-123");
-      expect(global.fetch).toHaveBeenCalledWith("/api/auth/activate", {
+      expect(global.fetch).toHaveBeenCalledWith(new URL("/api/auth/activate", "http://127.0.0.1:3000"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token: "act-token-123" }),
@@ -143,7 +143,7 @@ describe("portal/lib/auth/client", () => {
       } as unknown as Response);
 
       await logout();
-      expect(global.fetch).toHaveBeenCalledWith("/api/auth/logout", { method: "POST" });
+      expect(global.fetch).toHaveBeenCalledWith(new URL("/api/auth/logout", "http://127.0.0.1:3000"), { method: "POST" });
     });
 
     it("getProfile should get /api/auth/me", async () => {

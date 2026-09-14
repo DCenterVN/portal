@@ -3,6 +3,7 @@ import { fetcher, mutationFetcher, apiFetch, FetchError } from "./fetcher";
 
 describe("fetcher and apiFetch", () => {
   const originalFetch = global.fetch;
+  const serverUrl = (path: string) => new URL(path, "http://127.0.0.1:3000");
 
   beforeEach(() => {
     vi.restoreAllMocks();
@@ -24,7 +25,7 @@ describe("fetcher and apiFetch", () => {
     const result = await fetcher<typeof mockData>("/api/branches/123");
     expect(result).toEqual(mockData);
     expect(mockFetch).toHaveBeenCalledTimes(1);
-    expect(mockFetch).toHaveBeenCalledWith("/api/branches/123", undefined);
+    expect(mockFetch).toHaveBeenCalledWith(serverUrl("/api/branches/123"), undefined);
   });
 
   it("Ca 2: 401 -> refresh OK -> retry thanh cong (3 lan goi fetch theo thu tu)", async () => {
@@ -55,9 +56,9 @@ describe("fetcher and apiFetch", () => {
     const result = await fetcher<typeof retryData>("/api/branches/456");
     expect(result).toEqual(retryData);
     expect(mockFetch).toHaveBeenCalledTimes(3);
-    expect(mockFetch).toHaveBeenNthCalledWith(1, "/api/branches/456", undefined);
-    expect(mockFetch).toHaveBeenNthCalledWith(2, "/api/auth/refresh", { method: "POST" });
-    expect(mockFetch).toHaveBeenNthCalledWith(3, "/api/branches/456", undefined);
+    expect(mockFetch).toHaveBeenNthCalledWith(1, serverUrl("/api/branches/456"), undefined);
+    expect(mockFetch).toHaveBeenNthCalledWith(2, serverUrl("/api/auth/refresh"), { method: "POST" });
+    expect(mockFetch).toHaveBeenNthCalledWith(3, serverUrl("/api/branches/456"), undefined);
   });
 
   it("Ca 3: 401 -> refresh cung hong -> khong retry vo han", async () => {
@@ -82,7 +83,7 @@ describe("fetcher and apiFetch", () => {
     await expect(fetcher("/api/branches/secret")).rejects.toThrow(FetchError);
     // Should call initial request (1) + refresh (2), and stop cleanly (<= 3 calls)
     expect(mockFetch.mock.calls.length).toBeLessThanOrEqual(3);
-    expect(mockFetch).toHaveBeenCalledWith("/api/auth/refresh", { method: "POST" });
+    expect(mockFetch).toHaveBeenCalledWith(serverUrl("/api/auth/refresh"), { method: "POST" });
   });
 
   it("Ca 4: Hai request 401 song song -> chi 1 lan refresh (single-flight)", async () => {
@@ -91,7 +92,7 @@ describe("fetcher and apiFetch", () => {
     const mockFetch = vi.fn().mockImplementation(async (url: string | URL | Request) => {
       const urlStr = typeof url === "string" ? url : String(url);
 
-      if (urlStr === "/api/auth/refresh") {
+      if (urlStr.endsWith("/api/auth/refresh")) {
         refreshCallCount++;
         // Simulate network latency for refresh
         await new Promise((resolve) => setTimeout(resolve, 30));
@@ -177,12 +178,13 @@ describe("fetcher and apiFetch", () => {
     const res = await apiFetch("/api/auth/login", { method: "POST" });
     expect(res.status).toBe(401);
     expect(mockFetch).toHaveBeenCalledTimes(1);
-    expect(mockFetch).not.toHaveBeenCalledWith("/api/auth/refresh", expect.anything());
+    expect(mockFetch).not.toHaveBeenCalledWith(serverUrl("/api/auth/refresh"), expect.anything());
   });
 });
 
 describe("mutationFetcher", () => {
   const originalFetch = global.fetch;
+  const serverUrl = (path: string) => new URL(path, "http://127.0.0.1:3000");
 
   beforeEach(() => {
     vi.restoreAllMocks();
@@ -204,7 +206,7 @@ describe("mutationFetcher", () => {
     const result = await mutationFetcher("/api/operations/test-op", { arg: bodyArg });
 
     expect(result).toEqual(mockResponse);
-    expect(global.fetch).toHaveBeenCalledWith("/api/operations/test-op", {
+    expect(global.fetch).toHaveBeenCalledWith(serverUrl("/api/operations/test-op"), {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify(bodyArg),
