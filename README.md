@@ -1,61 +1,32 @@
-# DCenter Portal
+# DCenterVN Frontend Monorepo
 
-Operator console for the DCenterVN cold-chain logistics and branch IAM platform.
-
-V1 focuses on the Branch IAM control plane:
-
-- users, branch onboarding and membership/RBAC visibility;
-- Vietnam location lookup;
-- guarded API Lab through a server-side BFF;
-- audit metadata for operator actions.
-
-The portal is a standalone repository. It is not part of a production monorepo.
-
-## Local development
-
-Node and pnpm versions are pinned via `.mise.toml`. Strictly use `pnpm` (`packageManager` enforced via Corepack). Do NOT run `npm` or `yarn`.
-
-```bash
-mise install
-# If working on an NTFS/fuseblk mount, configure pnpm store-dir on Linux disk to avoid EACCES:
-pnpm config set store-dir ~/.pnpm-store
-pnpm install
-pnpm run dev
-```
-
-Open `http://localhost:3000`.
-
-Local auth defaults to a dev operator:
-
-```text
-PORTAL_AUTH_MODE=dev
-PORTAL_DEV_OPERATOR=dawnmorality
-PORTAL_GITHUB_TEAM=platform-operators
-```
-
-Production must use GitHub Organization SSO and service JWT credentials from
-Secrets. Do not expose auth/org internal APIs through Kong.
+Frontend workspace for the Việt Sạch supply chain platform.
 
 ## Architecture
 
-Next.js App Router is used because API Lab and internal service credentials must
-stay server-side. The browser calls only portal BFF operations:
-
 ```text
-POST /api/operations/{operation_id}
-GET  /api/audit
-GET  /healthz
-GET  /readyz
+frontend/
+├── apps/
+│   ├── admin/          # Operations and platform management (:3001)
+│   └── web/            # Customer storefront and public access (:3000)
+└── packages/
+    ├── design-tokens/  # Brand color palette, typography and layout variables
+    ├── ui/             # Accessible UI primitives, layout shells, and auth views
+    ├── auth-core/      # Framework-neutral validation, types, and logic
+    ├── api-client/     # Typed HTTP client for Go backend endpoints
+    └── auth-react/     # React Context and auth hooks
 ```
 
-The BFF accepts only registered operation IDs, never arbitrary URLs. Sensitive
-operations that return credentials are blocked in production.
-
-## Verification
+## Commands
 
 ```bash
-pnpm run typecheck
-pnpm run lint
-pnpm run build
-pnpm test
+# Local development
+pnpm dev:web    # Customer portal on http://localhost:3000
+pnpm dev:admin  # Admin operations portal on http://localhost:3001
+
+# Monorepo verification
+pnpm build      # Build both applications
+pnpm test       # Run all 40 unit and component tests
+pnpm typecheck  # Run TypeScript verification
+pnpm lint       # Run ESLint across packages
 ```

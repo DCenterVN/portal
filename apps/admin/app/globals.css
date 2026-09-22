@@ -1,0 +1,28 @@
+@import "tailwindcss";
+@import "@dcentervn/design-tokens/tokens.css";
+@source "../../../packages/ui/src";
+
+@layer base {
+  body {
+    font-family: var(--font-sans);
+    background-color: var(--color-bg);
+    color: var(--color-ink);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-serif);
+  }
+}
+
+@layer utilities {
+  .z-header   { z-index: 30; }
+  .z-sidebar  { z-index: 40; }
+  .z-popover  { z-index: 50; }
+  .z-drawer   { z-index: 60; }
+  .z-modal    { z-index: 70; }
+  .z-block    { z-index: 80; }
+  .z-lock     { z-index: 90; }
+  .z-toast    { z-index: 100; }
+}

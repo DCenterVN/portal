@@ -1,0 +1,105 @@
+/*
+ * Việt Sạch Design System — Design Tokens
+ *
+ * Rules:
+ *   - Sentence case 100% — NO ALL CAPS
+ *   - Vietnamese formats: 1.250.000 ₫, 28/08/2026 · 14:30, 250,0 kg, -18,5 °C
+ *   - Forbidden word: "resort" → always use "chi nhánh / branch / hub"
+ */
+
+:root, [data-theme="light"] {
+  color-scheme: light;
+  --color-bg: #f8faf9;
+  --color-panel: #ffffff;
+  --color-panel-strong: #f0f4f1;
+  --color-ink: #141c18;
+  --color-muted: #59655e;
+  --color-line: #e3eae4;
+
+  /* 4-5 Semantic Core Tones (Chất liệu Nông sản Chuỗi lạnh) */
+  --color-fresh: #1e5e23;       /* Nông sản tươi sạch, chuẩn VietGAP, hữu cơ */
+  --color-cold: #0284c7;        /* Chuỗi lạnh, cảm biến nhiệt độ, bảo quản âm độ */
+  --color-alert: #d97706;       /* Cảnh báo dao động nhiệt, cần kiểm tra QC */
+  --color-danger: #dc2626;      /* Quá nhiệt, đứt gãy chuỗi lạnh, thiết bị lỗi */
+  --color-neutral: #59655e;     /* Thông số kỹ thuật, mã lô, ngày thu hoạch */
+
+  /* Semantic Aliases */
+  --color-teal: var(--color-fresh);
+  --color-teal-2: #144418;
+  --color-aqua: #e8f5ed;
+  --color-gold: var(--color-alert);
+  --color-terracotta: #c2410c;
+  --color-success: var(--color-fresh);
+  --color-forest: var(--color-fresh);
+  --color-leaf: #2e7d32;
+  --color-amber: var(--color-alert);
+  --color-clay: #c2410c;
+
+  --elevation-shadow: 0 12px 36px -4px rgba(20, 45, 28, 0.08), 0 4px 12px -2px rgba(20, 45, 28, 0.04);
+  --font-sans: "Be Vietnam Pro", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-serif: "Noto Serif", Georgia, Cambria, "Times New Roman", Times, serif;
+}
+
+[data-theme="dark"], .dark {
+  color-scheme: dark;
+  --color-bg: #121410;
+  --color-panel: #181b16;
+  --color-panel-strong: #222620;
+  --color-ink: #f1f3ee;
+  --color-muted: #9ba496;
+  --color-line: #2d3329;
+
+  /* 4-5 Semantic Core Tones Dark */
+  --color-fresh: #4ade80;       /* Xanh tươi sáng trên nền tối */
+  --color-cold: #38bdf8;        /* Xanh băng tuyết chuỗi lạnh */
+  --color-alert: #f59e0b;       /* Cảnh báo hổ phách */
+  --color-danger: #f87171;      /* Đỏ cảnh báo */
+  --color-neutral: #9ba496;     /* Thông số phụ */
+
+  /* Semantic Aliases Dark */
+  --color-teal: var(--color-fresh);
+  --color-teal-2: #22c55e;
+  --color-aqua: #172b22;
+  --color-gold: var(--color-alert);
+  --color-terracotta: #fb923c;
+  --color-success: var(--color-fresh);
+  --color-forest: var(--color-fresh);
+  --color-leaf: #86efac;
+  --color-amber: var(--color-alert);
+  --color-clay: #fb923c;
+
+  --elevation-shadow: 0 16px 40px -6px rgba(0, 0, 0, 0.45);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --color-bg: #121410;
+    --color-panel: #181b16;
+    --color-panel-strong: #222620;
+    --color-ink: #f1f3ee;
+    --color-muted: #9ba496;
+    --color-line: #2d3329;
+
+    /* 4-5 Semantic Core Tones Dark */
+    --color-fresh: #4ade80;
+    --color-cold: #38bdf8;
+    --color-alert: #f59e0b;
+    --color-danger: #f87171;
+    --color-neutral: #9ba496;
+
+    /* Semantic Aliases Dark */
+    --color-teal: var(--color-fresh);
+    --color-teal-2: #22c55e;
+    --color-aqua: #172b22;
+    --color-gold: var(--color-alert);
+    --color-terracotta: #fb923c;
+    --color-success: var(--color-fresh);
+    --color-forest: var(--color-fresh);
+    --color-leaf: #86efac;
+    --color-amber: var(--color-alert);
+    --color-clay: #fb923c;
+
+    --elevation-shadow: 0 16px 40px -6px rgba(0, 0, 0, 0.45);
+  }
+}
