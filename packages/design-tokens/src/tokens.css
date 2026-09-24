@@ -1,105 +1,152 @@
 /*
- * Việt Sạch Design System — Design Tokens
+ * Đất Việt Design System — Design Tokens (Revision 2.0)
+ *
+ * Philosophy:
+ *   - Rustic Vietnamese farming aesthetics
+ *   - Earthy colors: basalt red, rice green, highland sun
+ *   - NO AI purple/pink gradients
+ *   - NO pure black shadows (use earth-toned)
+ *   - Selective blur ONLY for modal/nav/badges on images
  *
  * Rules:
  *   - Sentence case 100% — NO ALL CAPS
- *   - Vietnamese formats: 1.250.000 ₫, 28/08/2026 · 14:30, 250,0 kg, -18,5 °C
- *   - Forbidden word: "resort" → always use "chi nhánh / branch / hub"
+ *   - Vietnamese formats: 35.000 ₫, 28/08/2026 · 14:30, 1,2 kg, -18,5 °C
+ *   - Forbidden: "resort", "center", "station"
+ *   - Tone: Warm, authentic — "Từ bàn tay nông dân Đà Lạt"
  */
 
 :root, [data-theme="light"] {
   color-scheme: light;
-  --color-bg: #f8faf9;
-  --color-panel: #ffffff;
-  --color-panel-strong: #f0f4f1;
-  --color-ink: #141c18;
-  --color-muted: #59655e;
-  --color-line: #e3eae4;
-
-  /* 4-5 Semantic Core Tones (Chất liệu Nông sản Chuỗi lạnh) */
-  --color-fresh: #1e5e23;       /* Nông sản tươi sạch, chuẩn VietGAP, hữu cơ */
-  --color-cold: #0284c7;        /* Chuỗi lạnh, cảm biến nhiệt độ, bảo quản âm độ */
-  --color-alert: #d97706;       /* Cảnh báo dao động nhiệt, cần kiểm tra QC */
-  --color-danger: #dc2626;      /* Quá nhiệt, đứt gãy chuỗi lạnh, thiết bị lỗi */
-  --color-neutral: #59655e;     /* Thông số kỹ thuật, mã lô, ngày thu hoạch */
-
-  /* Semantic Aliases */
-  --color-teal: var(--color-fresh);
-  --color-teal-2: #144418;
-  --color-aqua: #e8f5ed;
-  --color-gold: var(--color-alert);
-  --color-terracotta: #c2410c;
-  --color-success: var(--color-fresh);
-  --color-forest: var(--color-fresh);
-  --color-leaf: #2e7d32;
-  --color-amber: var(--color-alert);
-  --color-clay: #c2410c;
-
-  --elevation-shadow: 0 12px 36px -4px rgba(20, 45, 28, 0.08), 0 4px 12px -2px rgba(20, 45, 28, 0.04);
-  --font-sans: "Be Vietnam Pro", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-serif: "Noto Serif", Georgia, Cambria, "Times New Roman", Times, serif;
+  
+  /* Canvas & Surfaces — Sương mai cao nguyên */
+  --color-bg: #F5F3E8;              /* Trắng sương (warm white, not pure) */
+  --color-card: #FFFFFF;            /* Card nổi */
+  --color-panel: #FBF9F2;           /* Panel phụ (slightly warmer) */
+  --color-panel-strong: #F0EDE5;    /* Stronger panel */
+  
+  /* Typography — Than củi & Gỗ */
+  --color-ink: #2D2419;             /* Than củi (charcoal brown, not black) */
+  --color-text-primary: #2D2419;
+  --color-text-secondary: #6B5D4F;  /* Nâu gỗ mun */
+  --color-muted: #8B7F72;           /* Nâu nhạt */
+  
+  /* Borders & Dividers — Giấy kraft */
+  --color-line: #E0D5C7;            /* Viền giấy kraft */
+  --color-border: #E0D5C7;
+  --color-divider: #D4C4B0;
+  
+  /* Brand Colors — Vietnamese Terroir */
+  --color-earth: #A84534;           /* Đất đỏ bazan Lâm Đồng (primary CTA) */
+  --color-earth-hover: #8B3626;     /* Đất đỏ đậm (hover state) */
+  --color-rice: #7FB069;            /* Xanh lúa non Sapa (success/fresh) */
+  --color-sun: #F4B860;             /* Vàng nắng bình minh (warning/highlight) */
+  --color-pine: #5B8A72;            /* Xanh đá rừng thông (info/cold-chain) */
+  --color-danger: #C84B31;          /* Đỏ gạch nung (danger/alert) */
+  
+  /* Semantic Aliases (backward compatibility) */
+  --color-fresh: var(--color-rice);
+  --color-cold: var(--color-pine);
+  --color-alert: var(--color-sun);
+  --color-neutral: var(--color-muted);
+  --color-teal: var(--color-rice);
+  --color-teal-2: #6B9B5A;
+  --color-success: var(--color-rice);
+  --color-gold: var(--color-sun);
+  
+  /* Shadows — Earth-toned (NO pure black) */
+  --shadow-card: 0 8px 30px rgb(134, 110, 90, 0.12);
+  --shadow-hover: 0 12px 40px rgb(134, 110, 90, 0.16);
+  --shadow-modal: 0 20px 60px rgb(134, 110, 90, 0.20);
+  --elevation-shadow: var(--shadow-card);
+  
+  /* Typography */
+  --font-sans: "Be Vietnam Pro", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-serif: "Noto Serif", "Noto Serif Vietnamese", Georgia, serif;
+  --font-mono: "IBM Plex Mono", "Courier New", monospace;
 }
 
 [data-theme="dark"], .dark {
   color-scheme: dark;
-  --color-bg: #121410;
-  --color-panel: #181b16;
-  --color-panel-strong: #222620;
-  --color-ink: #f1f3ee;
-  --color-muted: #9ba496;
-  --color-line: #2d3329;
-
-  /* 4-5 Semantic Core Tones Dark */
-  --color-fresh: #4ade80;       /* Xanh tươi sáng trên nền tối */
-  --color-cold: #38bdf8;        /* Xanh băng tuyết chuỗi lạnh */
-  --color-alert: #f59e0b;       /* Cảnh báo hổ phách */
-  --color-danger: #f87171;      /* Đỏ cảnh báo */
-  --color-neutral: #9ba496;     /* Thông số phụ */
-
-  /* Semantic Aliases Dark */
-  --color-teal: var(--color-fresh);
-  --color-teal-2: #22c55e;
-  --color-aqua: #172b22;
-  --color-gold: var(--color-alert);
-  --color-terracotta: #fb923c;
-  --color-success: var(--color-fresh);
-  --color-forest: var(--color-fresh);
-  --color-leaf: #86efac;
-  --color-amber: var(--color-alert);
-  --color-clay: #fb923c;
-
-  --elevation-shadow: 0 16px 40px -6px rgba(0, 0, 0, 0.45);
+  
+  /* Canvas & Surfaces — Đêm nông trại */
+  --color-bg: #1A1512;              /* Đất đêm (brown-black, not pure black) */
+  --color-card: #2D2419;            /* Card (than củi) */
+  --color-panel: #3A2F23;           /* Panel phụ */
+  --color-panel-strong: #453A2E;    /* Stronger panel */
+  
+  /* Typography — Trắng sương đêm */
+  --color-ink: #F5F3E8;             /* Trắng sương (inverted) */
+  --color-text-primary: #F5F3E8;
+  --color-text-secondary: #C4B5A0;  /* Be nhạt */
+  --color-muted: #8B7F72;           /* Nâu xám */
+  
+  /* Borders & Dividers */
+  --color-line: #4A3F32;            /* Viền đất tối */
+  --color-border: #4A3F32;
+  --color-divider: #3A2F23;
+  
+  /* Brand Colors — Luminous in darkness */
+  --color-earth: #E87461;           /* Đất đỏ sáng (glowing ember) */
+  --color-earth-hover: #D9624F;     /* Hover state */
+  --color-rice: #9FD683;            /* Xanh lúa sáng */
+  --color-sun: #FFD17A;             /* Vàng ánh đèn dầu */
+  --color-pine: #7BB098;            /* Xanh rêu đêm */
+  --color-danger: #FF6F59;          /* Đỏ lửa bếp */
+  
+  /* Semantic Aliases */
+  --color-fresh: var(--color-rice);
+  --color-cold: var(--color-pine);
+  --color-alert: var(--color-sun);
+  --color-neutral: var(--color-muted);
+  --color-teal: var(--color-rice);
+  --color-teal-2: #8FD673;
+  --color-success: var(--color-rice);
+  --color-gold: var(--color-sun);
+  
+  /* Shadows — Firelight glow */
+  --shadow-card: 0 8px 30px rgb(232, 116, 97, 0.15);
+  --shadow-hover: 0 12px 40px rgb(232, 116, 97, 0.20);
+  --shadow-modal: 0 20px 60px rgb(232, 116, 97, 0.25);
+  --elevation-shadow: var(--shadow-card);
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     color-scheme: dark;
-    --color-bg: #121410;
-    --color-panel: #181b16;
-    --color-panel-strong: #222620;
-    --color-ink: #f1f3ee;
-    --color-muted: #9ba496;
-    --color-line: #2d3329;
-
-    /* 4-5 Semantic Core Tones Dark */
-    --color-fresh: #4ade80;
-    --color-cold: #38bdf8;
-    --color-alert: #f59e0b;
-    --color-danger: #f87171;
-    --color-neutral: #9ba496;
-
-    /* Semantic Aliases Dark */
-    --color-teal: var(--color-fresh);
-    --color-teal-2: #22c55e;
-    --color-aqua: #172b22;
-    --color-gold: var(--color-alert);
-    --color-terracotta: #fb923c;
-    --color-success: var(--color-fresh);
-    --color-forest: var(--color-fresh);
-    --color-leaf: #86efac;
-    --color-amber: var(--color-alert);
-    --color-clay: #fb923c;
-
-    --elevation-shadow: 0 16px 40px -6px rgba(0, 0, 0, 0.45);
+    
+    --color-bg: #1A1512;
+    --color-card: #2D2419;
+    --color-panel: #3A2F23;
+    --color-panel-strong: #453A2E;
+    
+    --color-ink: #F5F3E8;
+    --color-text-primary: #F5F3E8;
+    --color-text-secondary: #C4B5A0;
+    --color-muted: #8B7F72;
+    
+    --color-line: #4A3F32;
+    --color-border: #4A3F32;
+    --color-divider: #3A2F23;
+    
+    --color-earth: #E87461;
+    --color-earth-hover: #D9624F;
+    --color-rice: #9FD683;
+    --color-sun: #FFD17A;
+    --color-pine: #7BB098;
+    --color-danger: #FF6F59;
+    
+    --color-fresh: var(--color-rice);
+    --color-cold: var(--color-pine);
+    --color-alert: var(--color-sun);
+    --color-neutral: var(--color-muted);
+    --color-teal: var(--color-rice);
+    --color-teal-2: #8FD673;
+    --color-success: var(--color-rice);
+    --color-gold: var(--color-sun);
+    
+    --shadow-card: 0 8px 30px rgb(232, 116, 97, 0.15);
+    --shadow-hover: 0 12px 40px rgb(232, 116, 97, 0.20);
+    --shadow-modal: 0 20px 60px rgb(232, 116, 97, 0.25);
+    --elevation-shadow: var(--shadow-card);
   }
 }

@@ -56,14 +56,14 @@ export function Dialog({
     >
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
+        className="fixed inset-0 bg-black/60 backdrop-blur-md transition-opacity"
         onClick={onClose}
         aria-hidden="true"
       />
 
-      {/* Panel */}
+      {/* Panel with Stitch Frosted Glass & Atmospheric Blur */}
       <div
-        className={`relative z-10 w-full ${sizeClasses} rounded-xl border border-[var(--color-line)] bg-[var(--color-panel-strong)] p-6 shadow-2xl transition-all ${className}`}
+        className={`relative z-10 w-full ${sizeClasses} rounded-2xl border border-[var(--color-line)]/60 bg-[var(--color-panel)]/85 backdrop-blur-xl p-6 shadow-2xl transition-all motion-reduce:transition-none ${className}`}
         onClick={(e) => e.stopPropagation()}
       >
         {children}

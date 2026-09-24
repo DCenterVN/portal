@@ -24,33 +24,35 @@ export function EmailConfirmView({
 }: EmailConfirmViewProps = {}) {
   if (isSuccess) {
     return (
-      <div className="w-full space-y-6 text-center">
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600">
-          <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-          </svg>
-        </div>
-        <div className="space-y-2">
-          <h2 className="font-serif text-2xl font-bold text-[var(--color-ink)]">
-            Email đã được cập nhật thành công!
-          </h2>
-          <p className="text-sm text-[var(--color-muted)]">
-            Vì lý do an toàn bảo mật, toàn bộ phiên đăng nhập cũ đã bị thu hồi. Vui lòng đăng nhập lại bằng email mới.
-          </p>
-        </div>
-        <div className="pt-4">
-          <Link href="/login">
-            <Button variant="primary" className="w-full">
-              Đăng nhập lại ngay
-            </Button>
-          </Link>
+      <div className="w-full max-w-md rounded-3xl border border-[var(--color-line)]/70 bg-[var(--color-panel)]/85 backdrop-blur-xl p-8 shadow-2xl sm:p-10">
+        <div className="w-full space-y-6 text-center">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600">
+            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <div className="space-y-2">
+            <h2 className="font-serif text-2xl font-bold text-[var(--color-ink)]">
+              Email đã được cập nhật thành công!
+            </h2>
+            <p className="text-sm text-[var(--color-muted)]">
+              Vì lý do an toàn bảo mật, toàn bộ phiên đăng nhập cũ đã bị thu hồi. Vui lòng đăng nhập lại bằng email mới.
+            </p>
+          </div>
+          <div className="pt-4">
+            <Link href="/login">
+              <Button variant="primary" className="w-full">
+                Đăng nhập lại ngay
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="w-full max-w-md rounded-3xl border border-[var(--color-line)] bg-[var(--color-panel)] p-8 shadow-2xl sm:p-10">
+    <div className="w-full max-w-md rounded-3xl border border-[var(--color-line)]/70 bg-[var(--color-panel)]/85 backdrop-blur-xl p-8 shadow-2xl sm:p-10">
       <div className="space-y-2 text-center">
         <h1 className="font-serif text-3xl font-bold tracking-tight text-[var(--color-ink)]">
           Xác nhận đổi email

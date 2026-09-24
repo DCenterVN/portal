@@ -1,138 +1,420 @@
-# Việt Sạch — Brand DNA & Design System Specification
+# Đất Việt — Brand DNA & Design System Specification
 
-> **Phiên bản:** 1.0.0 — Bản chuẩn hóa thẩm mỹ & kiến trúc giao diện  
-> **Áp dụng cho:** Tất cả ứng dụng (`apps/web`, `apps/admin`, mobile) và các AI Agents (Antigravity, Codex, Kiro, Cursor).  
-> **Nguyên tắc cốt lõi:** Bắt buộc tuân thủ 100% — Chống phân mảnh giao diện ("mỗi đứa một kiểu").
+> **Phiên bản:** 2.0.0 — Rustic Vietnamese Farming Aesthetic  
+> **Áp dụng cho:** Tất cả ứng dụng (`apps/web`, `apps/admin`, mobile) và các AI Agents  
+> **Nguyên tắc cốt lõi:** Loại bỏ hoàn toàn "mùi AI" — không glass morphism vô hồn, không gradient tím hồng, không shadow đen thuần
 
 ---
 
 ## 1. Bản sắc Thương hiệu (Brand Essence)
 
-- **Tên thương hiệu:** **Việt Sạch** (Hệ sinh thái Nông sản Chuỗi lạnh & Logistics DCenterVN).
-- **Định vị:** Chuỗi cung ứng thực phẩm sạch hữu cơ, bảo quản kho lạnh sâu (-18,5 °C), kiểm định VietGAP nghiêm ngặt và minh bạch từ nông trại tới bàn ăn.
-- **Phong cách thị giác (Visual Direction):** **Premium Editorial & Organic Freshness**
-  - Vẻ đẹp sang trọng, tinh tế như một tạp chí ẩm thực cao cấp (sử dụng font có chân *Noto Serif* cho tiêu đề).
-  - Kết hợp với sự chính xác, mạch lạc của công nghệ chuỗi lạnh IoT (sử dụng font không chân *Be Vietnam Pro* cho dữ liệu và điều khiển).
-  - Không đi theo phong cách AI đại trà (nút vuông thô, màu bùn đất, bóng gắt); thay vào đó là bề mặt kính mờ (**Frosted glass blur**), đổ bóng màu nền tự nhiên (ambient tinted shadows), và viền mỏng thanh thoát.
+**Đất Việt** = Đất đỏ bazan + Bàn tay nông dân + Minh bạch từ nông trại tới bàn ăn
+
+### Visual Direction:
+- **Rustic & Earthy**: Giấy kraft, đất nung, gỗ thông, tre, non lá
+- **Story-First**: Chân dung nông dân, khoảnh khắc thu hoạch, tọa độ GPS, mã lô truy xuất
+- **Vietnamese Heritage Palette**: Đất đỏ bazan `#A84534`, lúa non `#7FB069`, nắng cao nguyên `#F4B860`
+- **Selective Blur**: CHỈ modal/nav — card sản phẩm KHÔNG dùng blur
+
+### Tham chiếu thiết kế:
+- **Floret Flower Farm** (rustic authenticity, farmer portraits)
+- **Holmes Brothers Farms** (story-first, focused imagery)
+- **Garden Sweet** (benefit-led, natural light photography)
 
 ---
 
-## 2. Quy tắc Ngôn từ & Định dạng (Terminology & Voice)
+## 2. Color Tokens
 
-| Danh mục | BẮT BUỘC (DO) | TUYỆT ĐỐI CẤM (DON'T) |
-|---|---|---|
-| **Thuật ngữ thực thể** | `Chi nhánh`, `Kho lạnh`, `Hub tổng kho`, `Trung tâm điều phối` | 🚫 CẤM dùng từ `Resort` (quy tắc bất biến của nền tảng). |
-| **Viết hoa chữ cái** | **100% Sentence case**: *Kiểm định chất lượng*, *Chuỗi lạnh ổn định* | 🚫 CẤM viết HOA TOÀN BỘ (ALL CAPS): `STITCH DESIGN SYSTEM`, `IOT ACTIVE`. |
-| **Tiền tệ Việt Nam** | `Intl.NumberFormat("vi-VN")`: `35.000 ₫`, `1.250.000 ₫` | 🚫 CẤM viết: `35000 vnd`, `35k`, `1,250,000VND`. |
-| **Nhiệt độ chuỗi lạnh** | Sử dụng dấu phẩy thập phân: `-18,5 °C`, `5,0 °C` | 🚫 CẤM viết: `-18.5C`, `5 deg`. |
-| **Khối lượng / Trọng lượng** | `1.250 kg`, `250,0 g`, `búp (300g)` | 🚫 CẤM viết: `1250kgs`, `kg.`. |
-| **Thời gian & Ngày tháng** | `28/08/2026 · 14:30` | 🚫 CẤM dùng format lẫn lộn MM/DD/YYYY. |
-
----
-
-## 3. Hệ màu Thương hiệu Chuẩn (Dual-Theme Color System)
-
-### 3.1. Giao diện Sáng — "Organic Morning Mist" (Light Mode)
-Mang cảm giác trong lành, tinh khiết của sương mai trên nông trại hữu cơ:
-
+### Light Theme — "Sương mai cao nguyên"
 ```css
 :root, [data-theme="light"] {
-  --color-bg: #f8faf9;            /* Nền tổng thể: Sương hữu cơ sáng nhẹ */
-  --color-panel: #ffffff;         /* Bề mặt thẻ: Trắng tinh khiết */
-  --color-panel-strong: #f0f4f1;  /* Bề mặt phụ/Khung tìm kiếm */
-  --color-ink: #141c18;           /* Chữ chính: Than chì xanh đậm, độ tương phản cao */
-  --color-muted: #59655e;         /* Chữ phụ/Ghi chú: Xám xanh nhã nhặn */
-  --color-line: #e3eae4;          /* Đường viền: Tinh tế, không gắt */
-  --color-teal: #1e5e23;          /* Xanh Forest thương hiệu: Nút chính, hành động */
-  --color-teal-2: #144418;        /* Xanh Forest đậm khi hover */
-  --color-cold: #0284c7;          /* Xanh băng chuỗi lạnh logistics (-18,5°C) */
-  --color-gold: #d97706;          /* Hổ phách ấm (gốm nung Bát Tràng) */
-  --color-success: #16a34a;       /* Xanh ngọc VietGAP đạt chuẩn */
-  --color-danger: #dc2626;        /* Đỏ cảnh báo rủi ro nhiệt độ */
+  /* Canvas */
+  --color-bg: #F5F3E8;
+  --color-card: #FFFFFF;
+  --color-panel: #FBF9F2;
+  
+  /* Text */
+  --color-text-primary: #2D2419;
+  --color-text-secondary: #6B5D4F;
+  --color-text-muted: #8B7F72;
+  
+  /* Brand */
+  --color-earth: #A84534;        /* Primary CTA */
+  --color-earth-hover: #8B3626;
+  --color-rice: #7FB069;         /* Success */
+  --color-sun: #F4B860;          /* Warning */
+  --color-pine: #5B8A72;         /* Info */
+  --color-danger: #C84B31;
+  
+  /* Neutral */
+  --color-border: #E0D5C7;
+  --color-divider: #D4C4B0;
+  
+  /* Shadows (earth-toned) */
+  --shadow-card: 0 8px 30px rgb(134, 110, 90, 0.12);
+  --shadow-hover: 0 12px 40px rgb(134, 110, 90, 0.16);
+  --shadow-modal: 0 20px 60px rgb(134, 110, 90, 0.20);
 }
 ```
 
-### 3.2. Giao diện Tối — "Premium Vietnamese Harvest" (Stitch Dark Mode)
-Chuẩn theo thiết kế Stitch: Không dùng màu đen thuần `#000000`, mà sử dụng màu **Than chì Olive sâu** (`#121410`):
-
+### Dark Theme — "Đêm nông trại"
 ```css
 [data-theme="dark"], .dark {
-  --color-bg: #121410;            /* Nền than chì olive sâu hữu cơ */
-  --color-panel: #181b16;         /* Thẻ cấp 1: Olive than chì sẫm */
-  --color-panel-strong: #222620;  /* Thẻ cấp 2/Hộp thoại nổi */
-  --color-ink: #f1f3ee;           /* Chữ chính: Trắng ngà tự nhiên */
-  --color-muted: #9ba496;         /* Chữ phụ: Xám lá nhạt */
-  --color-line: #2d3329;          /* Đường viền olive trầm */
-  --color-teal: #4ade80;          /* Xanh ngọc lục bảo phát sáng */
-  --color-teal-2: #22c55e;        /* Xanh ngọc khi hover */
-  --color-cold: #38bdf8;          /* Xanh băng tuyết phát sáng */
-  --color-gold: #f59e0b;          /* Hổ phách rực rỡ */
-  --color-success: #34d399;       /* Xanh ngọc VietGAP */
-  --color-danger: #f87171;        /* Đỏ san hô cảnh báo */
+  /* Canvas */
+  --color-bg: #1A1512;
+  --color-card: #2D2419;
+  --color-panel: #3A2F23;
+  
+  /* Text */
+  --color-text-primary: #F5F3E8;
+  --color-text-secondary: #C4B5A0;
+  --color-text-muted: #8B7F72;
+  
+  /* Brand (luminous) */
+  --color-earth: #E87461;
+  --color-earth-hover: #D9624F;
+  --color-rice: #9FD683;
+  --color-sun: #FFD17A;
+  --color-pine: #7BB098;
+  --color-danger: #FF6F59;
+  
+  /* Neutral */
+  --color-border: #4A3F32;
+  --color-divider: #3A2F23;
+  
+  /* Shadows (firelight glow) */
+  --shadow-card: 0 8px 30px rgb(232, 116, 97, 0.15);
+  --shadow-hover: 0 12px 40px rgb(232, 116, 97, 0.20);
+  --shadow-modal: 0 20px 60px rgb(232, 116, 97, 0.25);
 }
+```
+
+### Anti-Patterns (FORBIDDEN):
+```css
+/* ❌ NEVER USE THESE */
+--ai-purple: #A855F7;
+--ai-pink: #EC4899;
+--pure-black: #000000;
+--neon-green: #00FF00;
+
+/* ❌ FORBIDDEN GRADIENTS */
+background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+background: linear-gradient(135deg, #A855F7, #EC4899);
+
+/* ❌ FORBIDDEN SHADOWS */
+box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2); /* Pure black shadow */
 ```
 
 ---
 
-## 4. Ngôn ngữ Thị giác Kính Mờ & Chiều Sâu (Frosted Glass & Depth)
+## 3. Typography
 
-Mọi thành phần nổi (Modals, Toasts, Badges trên ảnh, Dropdowns, Thanh điều hướng) **BẮT BUỘC** áp dụng hiệu ứng kính mờ:
+### Font Stack:
+```css
+--font-serif: 'Noto Serif', 'Noto Serif Vietnamese', Georgia, serif;
+--font-mono: 'IBM Plex Mono', 'Courier New', monospace;
+--font-sans: 'Be Vietnam Pro', -apple-system, sans-serif;
+```
 
-1. **Thẻ nổi trên ảnh (Badges on Images):**
-   - Đặt ở các góc (`top-2.5 left-2.5` và `top-2.5 right-2.5`), **tuyệt đối không đè lên giữa ảnh**.
-   - Áp dụng lớp phủ gradient nhẹ trên ảnh (`from-black/40 via-transparent to-black/10`).
-   - Style chuẩn: `backdrop-blur-md bg-black/55 border border-white/25 text-white text-[11px] font-semibold rounded-full`.
-2. **Hộp thoại & Khung nổi (Dialogs & Drawers):**
-   - Lớp nền mờ hậu cảnh: `bg-black/60 backdrop-blur-sm`.
-   - Khung hộp thoại: `backdrop-blur-xl bg-[var(--color-panel-strong)] border border-[var(--color-line)] shadow-2xl rounded-2xl`.
-3. **Thẻ thông báo (Toasts):**
-   - `backdrop-blur-md bg-[var(--color-panel-strong)]/90 border-l-4 shadow-xl rounded-xl`.
-4. **Đổ bóng (Ambient Shadows):**
-   - Dùng bóng đổ mờ rộng, hòa trộn nhẹ với sắc xanh tự nhiên (`rgba(20, 45, 28, 0.08)`), không dùng bóng đen đục 100%.
-
----
-
-## 5. Quy chuẩn Font chữ & Thứ bậc (Typography DNA)
-
-| Vai trò | Font Family | Tỷ lệ & Trọng lượng | Ứng dụng |
+### Usage:
+| Element | Font | Size | Weight |
 |---|---|---|---|
-| **Tiêu đề lớn / Hero** | `Noto Serif` | `text-2xl` đến `text-4xl`, `font-bold`, `leading-tight` | Tên trang, tiêu đề chiến dịch, câu chuyện thương hiệu. |
-| **Tiêu đề thẻ / Sản phẩm** | `Noto Serif` | `text-base` hoặc `text-lg`, `font-bold`, `leading-snug` | Tên sản phẩm, tiêu đề modal, tên lô hàng QC. |
-| **Nội dung / Dữ liệu** | `Be Vietnam Pro` | `text-sm`, `font-normal`, `leading-relaxed` | Đoạn văn, mô tả kiểm định, nhật ký vận hành. |
-| **Nhãn điều khiển / Nút** | `Be Vietnam Pro` | `text-xs` hoặc `text-sm`, `font-semibold` | Nút bấm, menu điều hướng, nhãn form nhập. |
-| **Chỉ số / Giá cả** | `Noto Serif` | `text-lg` đến `text-2xl`, `font-bold` | Giá niêm yết (35.000 ₫), nhiệt độ (-18,5 °C). |
-
-> **Tại sao chọn Be Vietnam Pro & Noto Serif?**
-> Cả 2 font đều được tinh chỉnh hoàn hảo cho hệ thống dấu thanh tiếng Việt phức tạp (dấu hỏi, ngã, nặng xếp tầng), không bao giờ bị cắt chữ (clipping) hay nhảy dòng bất thường.
-
----
-
-## 6. Quy chuẩn Thành phần Lõi (Component Rules)
-
-### 6.1. Thẻ Sản phẩm (`ProductCard`)
-- **Tỉ lệ khung ảnh:** Chuẩn 4:3 hoặc 16:10, bo góc `rounded-xl`.
-- **Hiệu ứng hover:** Zoom ảnh mượt `duration-700 ease-out group-hover:scale-105`, nâng thẻ `hover:-translate-y-1.5 hover:shadow-xl`.
-- **Badges:** Tách biệt 2 góc trên, dạng Frosted Glass Pill với chấm chỉ thị màu ngọc / đèn LED xanh băng.
-- **Nút hành động:** Nút bo góc tròn `rounded-xl` màu xanh Forest (`bg-[var(--color-teal)]`), có icon `+` giỏ hàng và hiệu ứng xúc giác `active:scale-95`.
-
-### 6.2. Nút bấm (`Button`)
-- Chiều cao chạm tối thiểu trên di động: **44px** (`min-h-[44px]`).
-- 6 biến thể chuẩn: `primary`, `secondary`, `cold`, `danger`, `outline`, `ghost`.
-- Hiệu ứng click: `active:scale-[0.98]` mang lại phản hồi chân thực.
-
-### 6.3. Huy hiệu (`Badge`)
-- Kiểu dáng: Dạng con nhộng (`rounded-full`), cỡ chữ `text-xs font-semibold`.
-- Tùy chọn `pulse={true}`: Đèn LED nhịp thở cho các trạng thái trực tiếp (IoT Sensor, Nhiệt độ thực, Đang vận chuyển).
-- Biến thể `glass`: Dùng trên nền hình ảnh hoặc video.
+| Hero | Noto Serif | 36-48px | 700 |
+| Page Title | Noto Serif | 28-32px | 700 |
+| Product Name | Noto Serif | 18-20px | 600 |
+| Body | Be Vietnam Pro | 15-16px | 400 |
+| Data Label | IBM Plex Mono | 13-14px | 500 |
+| Price | Noto Serif | 20-24px | 700 |
+| Button | Be Vietnam Pro | 14-15px | 600 |
+| Badge | Be Vietnam Pro | 11-12px | 600 |
 
 ---
 
-## 7. Bảng Kiểm Tra Cho Lập Trình Viên & AI (Checklist)
+## 4. Component Patterns
 
-Trước khi commit code hoặc hoàn thành một màn hình mới, hãy tự kiểm tra:
-- [ ] Màn hình có hiển thị đẹp trên cả **Giao diện Sáng** và **Giao diện Tối (Stitch)** không?
-- [ ] Các thẻ nổi trên ảnh có dùng `backdrop-blur` và không che khuất món ăn không?
-- [ ] Có từ nào vi phạm từ cấm `resort` không?
-- [ ] Tất cả các tiêu đề, badge có tuân thủ **Sentence case** (không viết ALL CAPS) không?
-- [ ] Giá tiền có hiển thị đúng chuẩn `Intl` `35.000 ₫` không?
-- [ ] File code viết tay có đảm bảo $\le 300$ dòng vật lý không?
+### Product Card
+```tsx
+<div className="group rounded-xl bg-[var(--color-card)] border border-[var(--color-border)] shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-hover)] transition-all duration-300">
+  {/* Image: aspect-[4/3] with subtle gradient overlay */}
+  <div className="relative aspect-[4/3] overflow-hidden">
+    <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/10 z-10" />
+    <img 
+      src="..." 
+      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" 
+    />
+    
+    {/* Top-left: Certification badge with selective blur */}
+    <div className="absolute top-2.5 left-2.5 z-20 backdrop-blur-sm bg-black/75 border border-white/20 text-white text-xs font-semibold rounded-full px-2.5 py-1 flex items-center gap-1.5">
+      <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-rice)] animate-pulse" />
+      VietGAP
+    </div>
+    
+    {/* Top-right: Temperature */}
+    <div className="absolute top-2.5 right-2.5 z-20 backdrop-blur-sm bg-[var(--color-pine)]/80 border border-white/15 text-white text-xs font-semibold rounded-full px-2.5 py-1">
+      4–8 °C
+    </div>
+  </div>
+  
+  {/* Content: NO BLUR HERE */}
+  <div className="p-4 space-y-2">
+    <h3 className="font-serif text-lg font-semibold text-[var(--color-text-primary)]">
+      Cà rốt hữu cơ Đà Lạt
+    </h3>
+    <p className="text-sm text-[var(--color-text-secondary)]">
+      Từ nông dân Nguyễn Văn Tuấn, thu hoạch lúc 5h sáng
+    </p>
+    <div className="flex items-center gap-3 text-xs font-mono text-[var(--color-text-muted)]">
+      <span>Lô #ATK-2026-09-15</span>
+      <span>•</span>
+      <span>1,2 kg</span>
+    </div>
+    <div className="flex items-center justify-between pt-2">
+      <span className="font-serif text-2xl font-bold text-[var(--color-earth)]">
+        35.000 ₫
+      </span>
+      <button className="rounded-xl bg-[var(--color-earth)] hover:bg-[var(--color-earth-hover)] text-white px-4 py-2 text-sm font-semibold active:scale-95 transition-all">
+        + Giỏ
+      </button>
+    </div>
+  </div>
+</div>
+```
+
+**RULES:**
+- ✅ Card surface: NO BLUR (solid `bg-[var(--color-card)]`)
+- ✅ Shadow: Earth-toned `rgb(134, 110, 90, 0.12)` NOT pure black
+- ✅ Badge on image: `backdrop-blur-sm` ONLY
+- ✅ Image overlay: subtle gradient for badge contrast
+- ✅ Aspect ratio: 4:3 (not 16:9)
+- ❌ NO: `backdrop-blur-xl` on card surface
+- ❌ NO: `rounded-3xl` (overly round)
+- ❌ NO: flat shadow `rgba(0,0,0,0.1)`
+
+### Button Variants
+```tsx
+// Primary — Đất đỏ bazan
+<button className="rounded-xl bg-[var(--color-earth)] hover:bg-[var(--color-earth-hover)] text-white px-6 py-2.5 font-semibold shadow-[var(--shadow-card)] active:scale-[0.98] transition-all">
+  Mua ngay
+</button>
+
+// Secondary — Outline
+<button className="rounded-xl border-2 border-[var(--color-earth)] text-[var(--color-earth)] hover:bg-[var(--color-earth)] hover:text-white px-6 py-2.5 font-semibold active:scale-[0.98] transition-all">
+  Xem chi tiết
+</button>
+
+// Ghost
+<button className="rounded-xl text-[var(--color-earth)] hover:bg-[var(--color-earth)]/10 px-6 py-2.5 font-semibold active:scale-[0.98] transition-all">
+  Tìm hiểu thêm
+</button>
+```
+
+**RULES:**
+- ✅ Min height: 44px (touch target)
+- ✅ Border radius: `rounded-xl` (12px)
+- ❌ NO: `rounded-none` (too sharp)
+- ❌ NO: `rounded-full` for primary CTA (only for badges)
+
+### Modal (Selective Blur)
+```tsx
+<div className="fixed inset-0 z-50 flex items-center justify-center">
+  {/* Backdrop: THIS is where we use blur */}
+  <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+  
+  {/* Modal: NO blur on content area */}
+  <div className="relative z-10 w-full max-w-lg mx-4 bg-[var(--color-card)] rounded-2xl shadow-[var(--shadow-modal)] border border-[var(--color-border)]">
+    {/* Header */}
+    <div className="px-6 py-4 border-b border-[var(--color-border)]">
+      <h2 className="font-serif text-2xl font-bold text-[var(--color-text-primary)]">
+        Chi tiết sản phẩm
+      </h2>
+    </div>
+    
+    {/* Body */}
+    <div className="px-6 py-4">
+      {/* Content */}
+    </div>
+    
+    {/* Footer */}
+    <div className="px-6 py-4 border-t border-[var(--color-border)] flex justify-end gap-3">
+      <button className="rounded-xl border-2 border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-panel)] px-6 py-2.5 font-semibold">
+        Đóng
+      </button>
+      <button className="rounded-xl bg-[var(--color-earth)] hover:bg-[var(--color-earth-hover)] text-white px-6 py-2.5 font-semibold">
+        Xác nhận
+      </button>
+    </div>
+  </div>
+</div>
+```
+
+**RULES:**
+- ✅ Blur on backdrop: `backdrop-blur-sm` or `backdrop-blur-md`
+- ✅ NO blur on modal content area
+- ✅ Earth-toned shadow for depth
+
+---
+
+## 5. Blur Usage Matrix
+
+| Element | Blur | Reason |
+|---|---|---|
+| **Card surface** | ❌ NO | Solid surface with earth-toned shadow |
+| **Badge on image** | ✅ YES (`backdrop-blur-sm`) | Legibility over varied backgrounds |
+| **Modal backdrop** | ✅ YES (`backdrop-blur-sm`) | Focus on modal content |
+| **Navigation (sticky)** | ✅ YES (`backdrop-blur-md`) | Floats over content |
+| **Dropdown menu** | ✅ YES (`backdrop-blur-sm`) | Overlay element |
+| **Toast notification** | ✅ YES (`backdrop-blur-md`) | Temporary overlay |
+| **Button** | ❌ NO | Solid interactive element |
+| **Badge in content** | ❌ NO | Solid semantic indicator |
+
+---
+
+## 6. Photography Guidelines
+
+### DO (Nên làm):
+✅ Natural light (ánh sáng tự nhiên)
+✅ Farmer portraits (chân dung nông dân)
+✅ Field shots (cảnh đồng, vườn)
+✅ Harvest moments (thu hoạch 5h sáng)
+✅ Texture close-ups (đất đỏ, lá cây)
+✅ Vietnamese context (non lá, giỏ tre, xe máy)
+
+### DON'T (Không nên):
+❌ Studio white background
+❌ Stock photo models
+❌ Overly saturated colors
+❌ Floating products
+❌ AI-generated imagery
+❌ Generic farm photos from abroad
+
+---
+
+## 7. Voice & Terminology
+
+### BẮT BUỘC:
+- ✅ `Nông trại`, `Trạm thu mua`, `Kho bảo quản`
+- ✅ Sentence case: *Nông dân Nguyễn Văn A*
+- ✅ Currency: `35.000 ₫`
+- ✅ Temperature: `-18,5 °C`
+- ✅ Tone: Ấm áp, chân thực — *"Từ bàn tay nông dân Đà Lạt"*
+
+### CẤM:
+- ❌ `Resort`, `Center`, `Station`
+- ❌ ALL CAPS: `ORGANIC CERTIFIED`
+- ❌ Marketing fluff: *"Premium quality"*, *"AI-powered"*
+
+---
+
+## 8. Spacing Scale
+
+```
+1  = 4px    (tight)
+2  = 8px    (compact)
+3  = 12px   (base)
+4  = 16px   (comfortable)
+6  = 24px   (spacious)
+8  = 32px   (section)
+12 = 48px   (large)
+16 = 64px   (hero)
+```
+
+---
+
+## 9. Responsive Breakpoints
+
+```
+sm:  640px  (mobile landscape)
+md:  768px  (tablet)
+lg:  1024px (desktop)
+xl:  1280px (large desktop)
+2xl: 1536px (ultra-wide)
+```
+
+---
+
+## 10. Animation Timing
+
+```
+duration-150  (hover feedback)
+duration-300  (default)
+duration-700  (image zoom)
+```
+
+```
+ease-out      (natural deceleration)
+ease-in-out   (spring-like)
+```
+
+---
+
+## 11. Developer Checklist
+
+Trước khi commit:
+- [ ] Test cả Light và Dark mode?
+- [ ] Dùng CSS variables (`var(--color-earth)`) thay vì hardcode hex?
+- [ ] Card không dùng blur?
+- [ ] Shadow dùng earth-toned color?
+- [ ] Font: Noto Serif (headings), IBM Plex Mono (data), Be Vietnam Pro (body)?
+- [ ] Không có từ "Resort"?
+- [ ] Không có ALL CAPS?
+- [ ] Touch target ≥ 44px?
+- [ ] File ≤ 300 dòng?
+- [ ] Responsive trên 375px?
+
+---
+
+## 12. Agent Rules
+
+### MUST (BẮT BUỘC):
+✅ Import từ `@dcentervn/design-tokens` và `@dcentervn/ui`
+✅ Dùng CSS variables
+✅ Test Light + Dark mode
+✅ File ≤ 300 dòng
+
+### MUST NOT (CẤM):
+❌ Hardcode màu hex: `bg-[#A84534]` → dùng `bg-[var(--color-earth)]`
+❌ Tự chế component
+❌ Copy Shadcn/V0 mà không adapt
+❌ Dùng AI purple/pink gradient
+❌ Blur everywhere (glass morphism abuse)
+❌ Pure black shadow
+❌ Từ "Resort"
+❌ ALL CAPS
+
+---
+
+## 13. Examples
+
+### Hero Section
+```tsx
+<section className="relative min-h-screen flex items-center justify-center bg-[var(--color-bg)]">
+  <div className="absolute inset-0">
+    <img src="/dalat-farm.jpg" className="w-full h-full object-cover" />
+    <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-transparent" />
+  </div>
+  
+  <div className="relative z-10 max-w-4xl mx-auto px-4 text-center text-white">
+    <h1 className="font-serif text-5xl md:text-6xl font-bold leading-tight mb-6">
+      Từ đất đỏ bazan Đà Lạt <br/>
+      tới bàn ăn gia đình bạn
+    </h1>
+    <p className="text-xl md:text-2xl text-white/90 mb-8">
+      Nông sản hữu cơ minh bạch, truy xuất từng bước
+    </p>
+    <button className="rounded-xl bg-[var(--color-earth)] hover:bg-[var(--color-earth-hover)] text-white px-8 py-4 text-lg font-semibold shadow-2xl active:scale-95 transition-all">
+      Khám phá nông trại
+    </button>
+  </div>
+</section>
+```
+
+---
+
+**Kết luận:**
+DNA này loại bỏ hoàn toàn "mùi AI" bằng:
+1. **Từ chối glass morphism** (chỉ blur có chọn lọc)
+2. **Bảng màu đất Việt** (đất đỏ bazan, lúa non, nắng)
+3. **Shadow màu đất nung** (không đen thuần)
+4. **Font storytelling** (Noto Serif + IBM Plex Mono)
+5. **Ảnh nông dân thật** (không stock photo)
+6. **Tone rustic** (không "premium quality")

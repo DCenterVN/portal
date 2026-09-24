@@ -26,33 +26,35 @@ export function ForgotPasswordView({
 }: ForgotPasswordViewProps = {}) {
   if (isSuccess) {
     return (
-      <div className="w-full space-y-6 text-center">
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600">
-          <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-          </svg>
-        </div>
-        <div className="space-y-2">
-          <h2 className="font-serif text-2xl font-bold text-[var(--color-ink)]">
-            Đã gửi yêu cầu đặt lại mật khẩu!
-          </h2>
-          <p className="text-sm text-[var(--color-muted)]">
-            Nếu email <span className="font-semibold text-[var(--color-ink)]">{email}</span> tồn tại trong hệ thống, chúng tôi đã gửi hướng dẫn đặt lại mật khẩu. Vui lòng kiểm tra hòm thư.
-          </p>
-        </div>
-        <div className="pt-4">
-          <Link href="/login">
-            <Button variant="primary" className="w-full">
-              Quay lại Đăng nhập
-            </Button>
-          </Link>
+      <div className="w-full max-w-md rounded-3xl border border-[var(--color-line)]/70 bg-[var(--color-panel)]/85 backdrop-blur-xl p-8 shadow-2xl sm:p-10">
+        <div className="w-full space-y-6 text-center">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600">
+            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <div className="space-y-2">
+            <h2 className="font-serif text-2xl font-bold text-[var(--color-ink)]">
+              Đã gửi yêu cầu đặt lại mật khẩu!
+            </h2>
+            <p className="text-sm text-[var(--color-muted)]">
+              Nếu email <span className="font-semibold text-[var(--color-ink)]">{email}</span> tồn tại trong hệ thống, chúng tôi đã gửi hướng dẫn đặt lại mật khẩu. Vui lòng kiểm tra hòm thư.
+            </p>
+          </div>
+          <div className="pt-4">
+            <Link href="/login">
+              <Button variant="primary" className="w-full">
+                Quay lại Đăng nhập
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="w-full max-w-md rounded-3xl border border-[var(--color-line)] bg-[var(--color-panel)] p-8 shadow-2xl sm:p-10">
+    <div className="w-full max-w-md rounded-3xl border border-[var(--color-line)]/70 bg-[var(--color-panel)]/85 backdrop-blur-xl p-8 shadow-2xl sm:p-10">
       <div className="space-y-2 text-center">
         <div className="flex items-center justify-center gap-2">
           <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-500/15 text-amber-700 dark:text-amber-300">

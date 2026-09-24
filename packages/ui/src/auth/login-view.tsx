@@ -28,7 +28,7 @@ export function LoginView({
   const [rememberMe, setRememberMe] = useState(true);
 
   return (
-    <div className="w-full max-w-5xl overflow-hidden rounded-3xl border border-[var(--color-line)] bg-[var(--color-panel)] shadow-2xl">
+    <div className="w-full max-w-5xl overflow-hidden rounded-3xl border border-[var(--color-line)]/70 bg-[var(--color-panel)]/85 backdrop-blur-xl shadow-2xl">
       <div className="grid grid-cols-1 lg:grid-cols-12">
         {/* Left Column: Stitch Forest Green Editorial Brand Showcase */}
         <div className="relative flex flex-col justify-between overflow-hidden bg-gradient-to-br from-[#2D5A27] via-[#224A1E] to-[#153412] p-8 text-white lg:col-span-5 lg:p-10">
@@ -56,23 +56,23 @@ export function LoginView({
               </p>
             </div>
 
-            {/* 4 KPI Metrics Grid */}
-            <div className="grid grid-cols-2 gap-4 pt-2">
+            {/* Operational Pillars Grid */}
+            <div className="grid grid-cols-2 gap-3 pt-2">
               <div className="rounded-xl border border-white/10 bg-white/5 p-3.5 backdrop-blur-sm">
-                <div className="font-serif text-2xl font-bold text-white">300+</div>
-                <div className="text-xs text-emerald-100/80">Chi nhánh & Kho</div>
+                <div className="font-serif text-base font-bold text-white">Nông trại</div>
+                <div className="text-xs text-emerald-100/80">Canh tác chuẩn mực</div>
               </div>
               <div className="rounded-xl border border-white/10 bg-white/5 p-3.5 backdrop-blur-sm">
-                <div className="font-serif text-2xl font-bold text-white">2K+</div>
-                <div className="text-xs text-emerald-100/80">Nhân sự vận hành</div>
+                <div className="font-serif text-base font-bold text-white">Kiểm định</div>
+                <div className="text-xs text-emerald-100/80">Minh bạch truy xuất</div>
               </div>
               <div className="rounded-xl border border-white/10 bg-white/5 p-3.5 backdrop-blur-sm">
-                <div className="font-serif text-2xl font-bold text-white">50+</div>
-                <div className="text-xs text-emerald-100/80">NCC đạt chuẩn</div>
+                <div className="font-serif text-base font-bold text-white">Bảo quản</div>
+                <div className="text-xs text-emerald-100/80">Chuỗi cung ứng lạnh</div>
               </div>
               <div className="rounded-xl border border-white/10 bg-white/5 p-3.5 backdrop-blur-sm">
-                <div className="font-serif text-2xl font-bold text-white">100%</div>
-                <div className="text-xs text-emerald-100/80">Chuỗi lạnh -18°C</div>
+                <div className="font-serif text-base font-bold text-white">Đối tác</div>
+                <div className="text-xs text-emerald-100/80">Đồng hành bền vững</div>
               </div>
             </div>
 
@@ -112,7 +112,7 @@ export function LoginView({
         </div>
 
         {/* Right Column: Clean Editorial Login Form */}
-        <div className="flex flex-col justify-center bg-[var(--color-panel)] p-8 lg:col-span-7 lg:p-12">
+        <div className="flex flex-col justify-center bg-[var(--color-panel)]/85 backdrop-blur-xl p-8 lg:col-span-7 lg:p-12">
           <div className="mx-auto w-full max-w-md space-y-6">
             {/* Header */}
             <div className="space-y-2">

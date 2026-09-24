@@ -8,9 +8,12 @@ export interface AuthShellProps {
 export function AuthShell({ children, logo }: AuthShellProps) {
   return (
     <div className="relative min-h-dvh flex flex-col items-center justify-center bg-[var(--color-bg)] p-4 sm:p-6 lg:p-8 overflow-x-hidden">
-      {/* Ambient background decoration */}
-      <div className="absolute top-0 left-1/4 -translate-y-1/2 w-96 h-96 bg-[var(--color-teal)]/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-0 right-1/4 translate-y-1/2 w-96 h-96 bg-[var(--color-gold)]/10 rounded-full blur-3xl pointer-events-none" />
+      {/* Abstract Ambient Background Mesh from Stitch */}
+      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden opacity-60 dark:opacity-40">
+        <div className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] max-w-[650px] max-h-[650px] rounded-full bg-[var(--color-rice)]/20 dark:bg-[#2D5A27]/35 blur-[120px] mix-blend-screen" />
+        <div className="absolute bottom-[-15%] right-[-10%] w-[60vw] h-[60vw] max-w-[750px] max-h-[750px] rounded-full bg-[var(--color-sun)]/15 dark:bg-[#333531]/50 blur-[150px]" />
+        <div className="absolute top-[30%] right-[15%] w-[35vw] h-[40vw] max-w-[500px] max-h-[500px] rounded-full bg-[var(--color-earth)]/12 dark:bg-[#D97707]/20 blur-[100px] opacity-40" />
+      </div>
 
       {logo && <div className="relative z-10 mb-6 flex justify-center">{logo}</div>}
 

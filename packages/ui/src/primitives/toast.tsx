@@ -75,17 +75,17 @@ export function Toast({
   className = "",
 }: ToastProps) {
   const borderAccents = {
-    success: "border-emerald-500/30",
-    cold: "border-sky-500/30",
-    warning: "border-amber-500/30",
-    error: "border-rose-500/30",
-    info: "border-teal-500/30",
+    success: "border-l-4 border-l-emerald-500 border-emerald-500/25 shadow-[0_4px_20px_rgba(16,185,129,0.12)]",
+    cold: "border-l-4 border-l-sky-500 border-sky-500/25 shadow-[0_4px_20px_rgba(14,165,233,0.12)]",
+    warning: "border-l-4 border-l-amber-500 border-amber-500/25 shadow-[0_4px_20px_rgba(245,158,11,0.12)]",
+    error: "border-l-4 border-l-rose-500 border-rose-500/25 shadow-[0_4px_20px_rgba(244,63,94,0.15)]",
+    info: "border-l-4 border-l-teal-500 border-teal-500/25 shadow-[0_4px_20px_rgba(20,184,166,0.12)]",
   }[variant];
 
   return (
     <div
       role="alert"
-      className={`pointer-events-auto flex items-start gap-3.5 rounded-2xl border bg-[var(--color-panel)]/92 backdrop-blur-xl p-4 shadow-2xl transition-all duration-200 hover:-translate-y-0.5 ${borderAccents} ${className}`}
+      className={`pointer-events-auto flex items-start gap-3.5 rounded-2xl border bg-[var(--color-panel)]/88 backdrop-blur-xl p-4 shadow-2xl transition-all duration-200 motion-reduce:transition-none hover:-translate-y-0.5 motion-reduce:hover:transform-none ${borderAccents} ${className}`}
     >
       <ToastIcon variant={variant} />
 
