@@ -1,0 +1,47 @@
+{
+  "sensitive_paths": [
+    "(^|/)migrations/.*\\.sql$"
+  ],
+  "protected_paths": [
+    "^\\.aidlc/stage-policy\\.json$",
+    "^\\.aidlc/workspace\\.yaml$",
+    "^\\.claude/settings(\\.local)?\\.json$",
+    "^\\.claude/hooks/",
+    "^\\.aidlc/arch-baseline\\.txt$"
+  ],
+  "stages": {
+    "push": [
+      "verification"
+    ],
+    "pr": [
+      "approval",
+      "verification",
+      "review"
+    ]
+  },
+  "badcase_categories": [
+    "missing_field",
+    "wrong_type",
+    "boundary",
+    "authz",
+    "tenant",
+    "replay",
+    "expired_token"
+  ],
+  "pipeline": [
+    "discovery",
+    "technical",
+    "ux",
+    "design",
+    "build",
+    "integration",
+    "e2e",
+    "release"
+  ],
+  "max_files_unsliced": 5,
+  "max_files_per_slice": 5,
+  "standards_dirs": [
+    ".aidlc/standards",
+    "../platform-docs/standards"
+  ]
+}

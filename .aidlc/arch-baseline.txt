@@ -1,0 +1,7 @@
+# archcheck baseline: known debt, remove a line when fixed; growth is refused.
+FE-03 features/inventory/shelves-view.tsx
+FE-03 features/production/food-plans-view.tsx
+FE-03 features/production/orders-view.tsx
+FE-03 features/production/targets-view.tsx
+FE-03 features/sales/pricing-floor-view.tsx
+FE-05 components/navbar.tsx

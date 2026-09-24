@@ -1,0 +1,3 @@
+{"ts": "2026-09-24T07:36:46+00:00", "actor": "agent:claude-code(171709704+dawnmoriaty@users.noreply.github.com)", "worker": null, "event": "init", "task": null}
+{"ts": "2026-09-24T10:17:26+00:00", "actor": "agent:claude-code(171709704+dawnmoriaty@users.noreply.github.com)", "worker": null, "event": "new", "task": "ARCH-ALIGN-001", "mode": "hard"}
+{"ts": "2026-09-24T10:18:48+00:00", "actor": "agent:claude-code(171709704+dawnmoriaty@users.noreply.github.com)", "worker": null, "event": "new", "task": "ARCH-ALIGN-001", "mode": "hard"}

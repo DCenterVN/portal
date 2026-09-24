@@ -1,16 +1,33 @@
-workspace:
-  id: portal
-  name: DCenter Portal
-  repo: DCenterVN/portal
-  parent: RESORT-IAM-V1
-
-phases:
-  required:
-    - issue
-    - prd
-    - tech_design
-    - test_plan
-    - approval
-    - implementation
-    - test_report
-    - handoff
+# managed by sdlc.py ui - display only for the hueanmy AIDLC extension; receipts stay the source of truth.
+# Approve/Reject/Run in the extension do NOT write receipts: approve with `sdlc.py approve` (Dawn, `!` prefix).
+version: "1"
+name: "portal"
+agents:
+  - {id: sdlc-discovery, name: Discovery, skills: [sdlc-plan]}
+  - {id: sdlc-technical, name: Technical, skills: [sdlc-plan]}
+  - {id: sdlc-ux, name: Ux, skills: [sdlc-plan]}
+  - {id: sdlc-design, name: Design, skills: [sdlc-plan]}
+  - {id: sdlc-build, name: Build, skills: [sdlc-cook]}
+  - {id: sdlc-integration, name: Integration, skills: [sdlc-test]}
+  - {id: sdlc-e2e, name: E2E, skills: [sdlc-test]}
+  - {id: sdlc-release, name: Release, skills: [sdlc-ship]}
+skills:
+  - {id: sdlc-plan, path: /home/dawn/dawn-dotfiles/skills/sdlc/plan/SKILL.md}
+  - {id: sdlc-cook, path: /home/dawn/dawn-dotfiles/skills/sdlc/cook/SKILL.md}
+  - {id: sdlc-test, path: /home/dawn/dawn-dotfiles/skills/sdlc/test/SKILL.md}
+  - {id: sdlc-ship, path: /home/dawn/dawn-dotfiles/skills/sdlc/ship/SKILL.md}
+pipelines:
+  - id: sdlc
+    steps:
+      - {agent: sdlc-discovery, git: {branch: false, push: false, open_pr: false}}
+      - {agent: sdlc-technical, git: {branch: false, push: false, open_pr: false}}
+      - {agent: sdlc-ux, git: {branch: false, push: false, open_pr: false}}
+      - {agent: sdlc-design, git: {branch: false, push: false, open_pr: false}}
+      - {agent: sdlc-build, git: {branch: false, push: false, open_pr: false}}
+      - {agent: sdlc-integration, git: {branch: false, push: false, open_pr: false}}
+      - {agent: sdlc-e2e, git: {branch: false, push: false, open_pr: false}}
+      - {agent: sdlc-release, git: {branch: false, push: false, open_pr: false}}
+state:
+  entity: epic
+  root: .aidlc/runs
+  status_file: state.json

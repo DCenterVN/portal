@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "runId": "ARCH-ALIGN-001",
+  "pipelineId": "sdlc",
+  "context": {
+    "epic": "ARCH-ALIGN-001",
+    "worker": "unassigned",
+    "story": "US-ARCH-001",
+    "sprint": "01",
+    "slices": "0/6"
+  },
+  "startedAt": "2026-09-24T10:17:26+00:00",
+  "updatedAt": "2026-09-24T10:26:52+00:00",
+  "currentStepIdx": 3,
+  "status": "running",
+  "steps": [
+    {
+      "stepIdx": 0,
+      "agent": "sdlc-discovery",
+      "revision": 1,
+      "status": "approved",
+      "artifactsProduced": [
+        ".aidlc/runs/ARCH-ALIGN-001/plan.md"
+      ]
+    },
+    {
+      "stepIdx": 1,
+      "agent": "sdlc-technical",
+      "revision": 1,
+      "status": "approved",
+      "artifactsProduced": [
+        ".aidlc/runs/ARCH-ALIGN-001/plan.md"
+      ]
+    },
+    {
+      "stepIdx": 2,
+      "agent": "sdlc-ux",
+      "revision": 1,
+      "status": "approved",
+      "artifactsProduced": [
+        ".aidlc/runs/ARCH-ALIGN-001/plan.md"
+      ]
+    },
+    {
+      "stepIdx": 3,
+      "agent": "sdlc-design",
+      "revision": 1,
+      "status": "awaiting_review",
+      "artifactsProduced": [
+        ".aidlc/runs/ARCH-ALIGN-001/plan.md"
+      ]
+    },
+    {
+      "stepIdx": 4,
+      "agent": "sdlc-build",
+      "revision": 1,
+      "status": "pending",
+      "artifactsProduced": []
+    },
+    {
+      "stepIdx": 5,
+      "agent": "sdlc-integration",
+      "revision": 1,
+      "status": "pending",
+      "artifactsProduced": []
+    },
+    {
+      "stepIdx": 6,
+      "agent": "sdlc-e2e",
+      "revision": 1,
+      "status": "pending",
+      "artifactsProduced": []
+    },
+    {
+      "stepIdx": 7,
+      "agent": "sdlc-release",
+      "revision": 1,
+      "status": "pending",
+      "artifactsProduced": []
+    }
+  ]
+}
