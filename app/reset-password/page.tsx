@@ -27,9 +27,9 @@ function ResetPasswordForm() {
       setMessage("Mã xác thực (token) không tồn tại hoặc đã hết hạn.");
       return;
     }
-    if (newPassword.length < 8) {
+    if ([...newPassword].length < 12) {
       setStatus("error");
-      setMessage("Mật khẩu mới phải có tối thiểu 8 ký tự.");
+      setMessage("Mật khẩu mới phải có tối thiểu 12 ký tự.");
       return;
     }
     if (newPassword !== confirmPassword) {

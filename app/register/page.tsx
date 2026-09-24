@@ -25,9 +25,9 @@ export default function RegisterPage() {
       setErrorMessage("Vui lòng nhập ít nhất email hoặc số điện thoại.");
       return;
     }
-    if (password.length < 8) {
+    if ([...password].length < 12) {
       setStatus("error");
-      setErrorMessage("Mật khẩu phải có độ dài tối thiểu 8 ký tự.");
+      setErrorMessage("Mật khẩu phải có độ dài tối thiểu 12 ký tự.");
       return;
     }
 
@@ -106,6 +106,7 @@ export default function RegisterPage() {
                   type="text"
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
+                  maxLength={50}
                   disabled={status === "submitting"}
                   className="pl-10 h-10 text-xs rounded-xl"
                   placeholder="Nguyễn Văn A"
@@ -155,7 +156,7 @@ export default function RegisterPage() {
 
             <div className="space-y-1.5">
               <Label htmlFor="password" className="text-xs font-semibold text-[var(--foreground)]">
-                Mật khẩu (tối thiểu 8 ký tự)
+                Mật khẩu (tối thiểu 12 ký tự)
               </Label>
               <div className="relative">
                 <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-[var(--muted-foreground)]" />
