@@ -53,7 +53,7 @@ def since_run(col):
     return f"{col} >= to_timestamp({RUN})"
 
 
-strip = lambda s: sorted(l for l in s.splitlines() if "PORTAL-AUTH-UI-001/anti" not in l)
+strip = lambda s: sorted(l for l in s.splitlines() if "PORTAL-AUTH-UI-001/anti" not in l and "pace-samples.txt" not in l)  # pace-samples is written by this grader
 before, after = strip(read("git_status_before.txt")), strip(read("git_status_after.txt"))
 gate("G1 no file edited by tester", bool(read("preflight.txt")) and before == after, set(before) ^ set(after) or "clean")
 
