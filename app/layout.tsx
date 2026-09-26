@@ -1,14 +1,14 @@
 import type { Metadata, Viewport } from "next";
-import { Be_Vietnam_Pro, Noto_Serif } from "next/font/google";
+import { Be_Vietnam_Pro, Quicksand } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ToastProvider } from "@/components/ui/toast";
 import { Navbar } from "@/components/navbar";
 
-const notoSerif = Noto_Serif({
+const quicksand = Quicksand({
   subsets: ["vietnamese", "latin"],
-  weight: ["400", "600", "700", "800"],
-  variable: "--font-serif",
+  weight: ["600", "700"],
+  variable: "--font-display",
   display: "swap",
 });
 
@@ -134,7 +134,7 @@ export default function RootLayout({
     <html
       lang="vi"
       suppressHydrationWarning
-      className={`${notoSerif.variable} ${beVietnamPro.variable}`}
+      className={`${quicksand.variable} ${beVietnamPro.variable}`}
     >
       <head>
         <script

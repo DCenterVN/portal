@@ -1,0 +1,13 @@
+Việt Sạch
+Đăng nhập
+
+Một tài khoản cho khách mua hàng và nhân viên chi nhánh.
+
+Email
+Mật khẩu
+Quên mật khẩu?
+Đăng nhập
+
+Chưa có tài khoản? Đăng ký mua hàng
+
+Nhân viên dùng tài khoản do quản trị viên cấp qua email.

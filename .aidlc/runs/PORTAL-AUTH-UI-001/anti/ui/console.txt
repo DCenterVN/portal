@@ -1,0 +1,33 @@
+Total messages: 2 (Errors: 0, Warnings: 0)
+Returning 30 messages for level "debug"
+
+[INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://127.0.0.1:3000/_next/static/chunks/1rh1_next_dist_1ymtvam._.js:776
+[LOG] [HMR] connected @ http://127.0.0.1:3000/_next/static/chunks/1rh1_next_dist_1ymtvam._.js:776
+[INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://127.0.0.1:3000/_next/static/chunks/1rh1_next_dist_1ymtvam._.js:776
+[LOG] [HMR] connected @ http://127.0.0.1:3000/_next/static/chunks/1rh1_next_dist_1ymtvam._.js:776
+[ERROR] Failed to load resource: the server responded with a status of 400 (Bad Request) @ http://127.0.0.1:3000/api/auth/activate:0
+[ERROR] Failed to load resource: the server responded with a status of 400 (Bad Request) @ http://127.0.0.1:3000/api/auth/activate:0
+[INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://127.0.0.1:3000/_next/static/chunks/1rh1_next_dist_1ymtvam._.js:776
+[LOG] [HMR] connected @ http://127.0.0.1:3000/_next/static/chunks/1rh1_next_dist_1ymtvam._.js:776
+[INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://127.0.0.1:3000/_next/static/chunks/1rh1_next_dist_1ymtvam._.js:776
+[LOG] [HMR] connected @ http://127.0.0.1:3000/_next/static/chunks/1rh1_next_dist_1ymtvam._.js:776
+[ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://127.0.0.1:3000/api/auth/login:0
+[LOG] [Fast Refresh] rebuilding @ http://127.0.0.1:3000/_next/static/chunks/1rh1_next_dist_1ymtvam._.js:776
+[LOG] [Fast Refresh] done in 1878ms @ http://127.0.0.1:3000/_next/static/chunks/1rh1_next_dist_1ymtvam._.js:776
+[INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://127.0.0.1:3000/_next/static/chunks/1rh1_next_dist_1ymtvam._.js:776
+[LOG] [HMR] connected @ http://127.0.0.1:3000/_next/static/chunks/1rh1_next_dist_1ymtvam._.js:776
+[INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://127.0.0.1:3000/_next/static/chunks/1rh1_next_dist_1ymtvam._.js:776
+[LOG] [HMR] connected @ http://127.0.0.1:3000/_next/static/chunks/1rh1_next_dist_1ymtvam._.js:776
+[INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://127.0.0.1:3000/_next/static/chunks/1rh1_next_dist_1ymtvam._.js:776
+[LOG] [HMR] connected @ http://127.0.0.1:3000/_next/static/chunks/1rh1_next_dist_1ymtvam._.js:776
+[VERBOSE] [DOM] Password forms should have (optionally hidden) username fields for accessibility: (More info: https://goo.gl/9p2vKq) %o @ http://127.0.0.1:3000/reset-password?token=sai:0
+[INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://127.0.0.1:3000/_next/static/chunks/1rh1_next_dist_1ymtvam._.js:776
+[LOG] [HMR] connected @ http://127.0.0.1:3000/_next/static/chunks/1rh1_next_dist_1ymtvam._.js:776
+[ERROR] Failed to load resource: the server responded with a status of 400 (Bad Request) @ http://127.0.0.1:3000/api/auth/reset:0
+[VERBOSE] [DOM] Password forms should have (optionally hidden) username fields for accessibility: (More info: https://goo.gl/9p2vKq) %o @ http://127.0.0.1:3000/reset-password?token=460634b5bc94546028f2d68d7c03db7291b718fb39b53e71e4ebf44d0c9ef381:0
+[INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://127.0.0.1:3000/_next/static/chunks/1rh1_next_dist_1ymtvam._.js:776
+[LOG] [HMR] connected @ http://127.0.0.1:3000/_next/static/chunks/1rh1_next_dist_1ymtvam._.js:776
+[INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://127.0.0.1:3000/_next/static/chunks/1rh1_next_dist_1ymtvam._.js:776
+[LOG] [HMR] connected @ http://127.0.0.1:3000/_next/static/chunks/1rh1_next_dist_1ymtvam._.js:776
+[INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://127.0.0.1:3000/_next/static/chunks/1rh1_next_dist_1ymtvam._.js:776
+[LOG] [HMR] connected @ http://127.0.0.1:3000/_next/static/chunks/1rh1_next_dist_1ymtvam._.js:776

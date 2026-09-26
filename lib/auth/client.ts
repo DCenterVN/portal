@@ -69,6 +69,19 @@ export async function activateAccount(token: string): Promise<void> {
   }
 }
 
+export async function resendActivation(email: string): Promise<void> {
+  const res = await apiFetch("/api/auth/activate/resend", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.message || data.error || "Không gửi lại được liên kết kích hoạt");
+  }
+}
+
 export async function forgotPassword(email: string): Promise<string> {
   const res = await apiFetch("/api/auth/forgot", {
     method: "POST",

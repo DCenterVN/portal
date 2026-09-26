@@ -24,7 +24,7 @@ const config = [
     }
   },
   {
-    ignores: [".next/**", "node_modules/**", "coverage/**", "next-env.d.ts"]
+    ignores: [".aidlc/**", ".next/**", "node_modules/**", "coverage/**", "next-env.d.ts"]
   }
 ];
 

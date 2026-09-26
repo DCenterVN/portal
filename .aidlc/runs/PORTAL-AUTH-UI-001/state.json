@@ -1,0 +1,110 @@
+{
+  "id": "PORTAL-AUTH-UI-001",
+  "title": "PORTAL-AUTH-UI-001",
+  "description": "worker: unassigned · story: US-UI-001 · sprint: 01 · slices: 5/5",
+  "pipeline": "sdlc",
+  "agent": null,
+  "agents": [
+    "sdlc-discovery",
+    "sdlc-technical",
+    "sdlc-ux",
+    "sdlc-design",
+    "sdlc-build",
+    "sdlc-integration",
+    "sdlc-e2e",
+    "sdlc-release"
+  ],
+  "currentStep": 7,
+  "status": "done",
+  "createdAt": "2026-09-25T14:59:48+00:00",
+  "updatedAt": "2026-09-26T06:14:33+00:00",
+  "stepStates": [
+    {
+      "agent": "sdlc-discovery",
+      "status": "done",
+      "revision": 1,
+      "runStatus": "approved",
+      "startedAt": null,
+      "finishedAt": null,
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-AUTH-UI-001/plan.md"
+      ]
+    },
+    {
+      "agent": "sdlc-technical",
+      "status": "done",
+      "revision": 1,
+      "runStatus": "approved",
+      "startedAt": null,
+      "finishedAt": null,
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-AUTH-UI-001/plan.md"
+      ]
+    },
+    {
+      "agent": "sdlc-ux",
+      "status": "done",
+      "revision": 1,
+      "runStatus": "approved",
+      "startedAt": null,
+      "finishedAt": null,
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-AUTH-UI-001/plan.md"
+      ]
+    },
+    {
+      "agent": "sdlc-design",
+      "status": "done",
+      "revision": 1,
+      "runStatus": "approved",
+      "startedAt": null,
+      "finishedAt": null,
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-AUTH-UI-001/plan.md"
+      ]
+    },
+    {
+      "agent": "sdlc-build",
+      "status": "done",
+      "revision": 1,
+      "runStatus": "approved",
+      "startedAt": null,
+      "finishedAt": null,
+      "artifactsProduced": []
+    },
+    {
+      "agent": "sdlc-integration",
+      "status": "done",
+      "revision": 1,
+      "runStatus": "approved",
+      "startedAt": null,
+      "finishedAt": null,
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-AUTH-UI-001/artifacts/verification.json"
+      ]
+    },
+    {
+      "agent": "sdlc-e2e",
+      "status": "done",
+      "revision": 1,
+      "runStatus": "approved",
+      "startedAt": null,
+      "finishedAt": null,
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-AUTH-UI-001/artifacts/verification.json"
+      ]
+    },
+    {
+      "agent": "sdlc-release",
+      "status": "done",
+      "revision": 1,
+      "runStatus": "approved",
+      "startedAt": null,
+      "finishedAt": null,
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-AUTH-UI-001/review.md",
+        ".aidlc/runs/PORTAL-AUTH-UI-001/artifacts/review-decision.json"
+      ]
+    }
+  ]
+}

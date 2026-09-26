@@ -1,0 +1,26 @@
+ M .aidlc/ACTIVE
+ M .aidlc/arch-baseline.txt
+ M .aidlc/planning/board.md
+ M .aidlc/runs/ARCH-ALIGN-001.json
+ M .aidlc/runs/ARCH-ALIGN-001/state.json
+ M .aidlc/trace.jsonl
+ M app/activate/page.tsx
+ M app/forgot-password/page.tsx
+ M app/globals.css
+ M app/layout.tsx
+ M app/login/page.tsx
+ M app/register/page.tsx
+ M app/reset-password/page.tsx
+ M app/tokens.generated.css
+ M components/ui/button.tsx
+ M eslint.config.mjs
+ M lib/auth/client.ts
+ M next-env.d.ts
+?? .aidlc/runs/PORTAL-AUTH-UI-001.json
+?? .aidlc/runs/PORTAL-AUTH-UI-001/
+?? .aidlc/runs/PORTAL-BRAND-001.json
+?? .aidlc/runs/PORTAL-BRAND-001/
+?? app/api/auth/activate/resend/
+?? components/layout/auth-shell.tsx
+?? components/patterns/
+?? features/auth/

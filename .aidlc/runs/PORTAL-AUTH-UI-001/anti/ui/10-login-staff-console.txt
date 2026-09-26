@@ -1,0 +1,34 @@
+VIỆT SẠCH
+Chuỗi Lạnh -18°C
+Cổng Vận Hành Doanh Nghiệp
+CN-HCM-01
+Chi nhánh Quận 7
+Chi nhánh
+Sản phẩm
+Thành viên
+Phân quyền
+QL
+Nguyễn Văn Quản
+Hồ sơ & Phân quyền
+Console vận hành
+
+Dữ liệu trực tiếp theo phạm vi tổ chức và quyền của phiên đăng nhập hiện tại
+
+Người dùng
+Anti Staff
+Phạm vi
+1chi nhánh được truy cập
+Quyền hiệu lực
+0action key từ Org
+Tổ chức và chi nhánh
+Curl E2E Main
+Curl E2E Main
+Chưa gán vai trò
+Quyền đã phân giải
+
+Không có action key trong phạm vi đang chọn.
+
+Giới hạn backend hiện tại
+Backend chưa có API service-health tổng hợp
+Backend chưa có API audit feed cho portal
+Order hiện chỉ hỗ trợ tạo trạng thái CREATED

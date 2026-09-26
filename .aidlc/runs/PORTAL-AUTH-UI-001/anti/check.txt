@@ -1,0 +1,22 @@
+PASS G1 no file edited by tester: clean
+PASS G2 unit tests: exit=0 passed=90 (min 86)
+PASS G2 archcheck 0 new: ['archcheck: 105 violations, 105 baselined, 0 new, 0 stale']
+PASS G3 customer registered, activated, logged in, reset (db): ACTIVE|t|t
+PASS G3 staff logged in (db): ACTIVE|t
+PASS G3 tokens came from outbox: outbox=3 used=2 foreign=0
+PASS G4 login routes by audience: {'customer': 'http://127.0.0.1:3000/', 'customer-redirect': 'http://127.0.0.1:3000/', 'staff': 'http://127.0.0.1:3000/console'}
+PASS G5 screenshots (FE-15): 15 shots, 13 distinct images
+PASS G5 each screen settled and shows its state: all settled
+PASS G5 taken by hand, not a batch script: span=755s (min 90) min_gap=26.7s (min 2)
+INFO pace, not gated until a human baseline exists: gaps 26.7..103.3s spread 3.87 (script sample: 6.6..8.3s, spread 1.26)
+PASS G5 no automation script: none
+INFO pace samples 2/5 (need 5 human runs to set the pace gate)
+PASS G5 action log: 17 lines
+PASS G6 lighthouse a11y >= 0.9 (FE-17): {'login': 1, 'register': 1, 'activate': 1, 'forgot-password': 1, 'reset-password': 1}
+INFO LCP seconds on next dev, not gated (FE-18 needs a production build): {'login': 3.0, 'register': 4.8, 'activate': 3.3, 'forgot-password': 4.7, 'reset-password': 5.0}
+PASS G7 0 responses >= 500 in auth/org (FE-19): 0
+PASS G7 browser console clean (FE-19): clean, expected 4xx=4
+PASS G8 report: report.md present
+DEBT U10 console header shows the logged-in staff: hardcoded 'Nguyễn Văn Quản' -> PORTAL-CONSOLE-SHELL-001
+
+VERDICT: PASS (known debt: U10 header)
