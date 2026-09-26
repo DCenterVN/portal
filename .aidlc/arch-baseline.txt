@@ -80,7 +80,6 @@ FE-10 features/roles/roles-view.tsx
 FE-11 components/layout/header.tsx
 FE-11 components/layout/sidebar.tsx
 FE-11 components/navbar.tsx
-FE-11 components/ui/button.tsx
 FE-11 components/ui/dialog.tsx
 FE-11 components/ui/toast.tsx
 FE-11 features/memberships/memberships-view.tsx
