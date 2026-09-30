@@ -1,0 +1,11 @@
+# REST-client variables: portal=http://127.0.0.1:3000; cookie supplied locally.
+# Requires platform staff fixture. Expected: 200, source-defined success envelope with actions;
+# no credentials in committed files. Endpoint is implemented after approval.
+GET {{portal}}/api/platform/me
+Cookie: {{cookie}}
+Accept: application/json
+
+### Company list, permitted fixture; expected 200 + items/page/limit in success data.
+GET {{portal}}/api/platform/companies?page=1&limit=20
+Cookie: {{cookie}}
+Accept: application/json

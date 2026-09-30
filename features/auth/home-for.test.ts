@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { homeFor, staffBranchCount } from "./home-for";
+import { homeFor, platformHome, staffBranchCount } from "./home-for";
 
 describe("homeFor", () => {
   it("sends a customer home or to a safe customer redirect", () => {
@@ -36,5 +36,18 @@ describe("staffBranchCount", () => {
       { branch_id: "b1", member_type: "EMPLOYEE" },
       { branch_id: "b2", member_type: "EMPLOYEE" },
     ])).toBe(2);
+  });
+});
+
+
+describe("platformHome", () => {
+  it("routes explicit platform actions to platform workspace and respects safe redirects", () => {
+    expect(platformHome(200, { code: 200, status: "success", message: "OK", data: { user_id: "01960000-0000-7000-8000-000000000001", role: "PLATFORM_SUPPORT", actions: ["platform:org:read"] } }, null)).toBe("/platform/companies");
+    expect(platformHome(200, { code: 200, status: "success", message: "OK", data: { user_id: "01960000-0000-7000-8000-000000000001", role: "PLATFORM_SUPPORT", actions: [] } }, "/cart")).toBe("/cart");
+  });
+  it("fails closed on non-404 lookup failures and malformed payloads", () => {
+    expect(platformHome(503, null, null)).toBe("/");
+    expect(platformHome(200, { status: "success" }, null)).toBe("/");
+    expect(platformHome(404, null, null)).toBeNull();
   });
 });

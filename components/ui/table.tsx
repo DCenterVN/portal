@@ -1,5 +1,6 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { Button } from "./button";
 
 const Table = React.forwardRef<
   HTMLTableElement,
@@ -108,7 +109,23 @@ const TableCaption = React.forwardRef<
 ));
 TableCaption.displayName = "TableCaption";
 
+// ponytail: backend pages have no total, so "next" is enabled while a page comes back full.
+function TablePager({ page, hasNext, onPage, busy }: { page: number; hasNext: boolean; onPage: (page: number) => void; busy?: boolean }) {
+  return (
+    <nav aria-label="Phân trang" className="flex items-center justify-between gap-3 pt-3 text-sm">
+      <Button variant="outline" size="touch" disabled={busy || page <= 1} onClick={() => onPage(page - 1)}>
+        Trang trước
+      </Button>
+      <span className="text-[var(--muted-foreground)]" aria-live="polite">Trang {page}</span>
+      <Button variant="outline" size="touch" disabled={busy || !hasNext} onClick={() => onPage(page + 1)}>
+        Trang sau
+      </Button>
+    </nav>
+  );
+}
+
 export {
+  TablePager,
   Table,
   TableHeader,
   TableBody,

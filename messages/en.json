@@ -1,6 +1,1 @@
-{
-  "app": {
-    "name": "DCenter Portal",
-    "subtitle": "Branch IAM console"
-  }
-}
+{"app":{"name":"DCenter Portal","subtitle":"Branch IAM console"},"platform":{"title":"Platform","companies":"Companies","support":"Support access","staff":"Platform staff","audit":"Audit log","myCompany":"My company","companySupport":"Support requests","loading":"Verifying access…","denied":"This account cannot access this content.","blocked":"Access could not be verified. Access is blocked; try again later.","retry":"Retry"}}

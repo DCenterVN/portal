@@ -4,6 +4,7 @@ import * as React from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "./button";
 
 // ---------- Global scroll lock ref counter ----------
 // Prevents race condition when multiple modals are open simultaneously.
@@ -129,6 +130,28 @@ const LAYER_CONFIG: Record<DialogLayer, { container: string; surface: string; ba
   },
 };
 
+const FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+
+// Open dialogs in opening order; only the top one (highest layer, then latest opened) handles Tab and Escape.
+type OpenSurface<T = HTMLElement> = { surface: T; rank: number };
+const openSurfaces: OpenSurface[] = [];
+const LAYER_RANK: Record<string, number> = { standard: 0, critical: 1, session: 2 };
+
+export function isTopLayer<T>(stack: readonly OpenSurface<T>[], surface: T): boolean {
+  const top = stack.reduce<OpenSurface<T> | null>((best, item) => (!best || item.rank >= best.rank ? item : best), null);
+  return top?.surface === surface;
+}
+
+// Tab from the last focusable wraps to the first (Shift+Tab the reverse); null = let the browser move focus.
+export function wrapFocus<T>(items: T[], active: unknown, backwards: boolean): T | null {
+  if (items.length === 0) return null;
+  const first = items[0];
+  const last = items[items.length - 1];
+  const inside = items.includes(active as T);
+  if (backwards) return !inside || active === first ? last : null;
+  return !inside || active === last ? first : null;
+}
+
 export interface DialogContentProps extends React.HTMLAttributes<HTMLDivElement> {
   children?: React.ReactNode;
   showClose?: boolean;
@@ -147,23 +170,49 @@ export function DialogContent({
   const { open, setOpen } = useDialog();
   const [mounted, setMounted] = React.useState(false);
   const config = LAYER_CONFIG[layer];
+  const surfaceRef = React.useRef<HTMLDivElement>(null);
+  const [opener, setOpener] = React.useState<HTMLElement | null>(null);
+  const dismiss = React.useRef({ setOpen, preventDismiss: config.preventDismiss });
+  const openerRef = React.useRef<HTMLElement | null>(null);
 
   React.useEffect(() => {
     setMounted(true);
   }, []);
 
   React.useEffect(() => {
-    if (!open) return;
+    dismiss.current = { setOpen, preventDismiss: config.preventDismiss };
+    openerRef.current = opener;
+  });
+
+  // Runs before children mount, so a child's autoFocus has not moved focus away from the opener yet.
+  if (open && !opener && typeof document !== "undefined" && document.activeElement instanceof HTMLElement) {
+    setOpener(document.activeElement);
+  }
+
+  // Only open/close transitions: re-running per render would steal focus from inputs on every keystroke.
+  React.useEffect(() => {
+    const surface = surfaceRef.current;
+    if (!open || !mounted || !surface) return;
+    const entry = { surface, rank: LAYER_RANK[layer] ?? 0 };
+    openSurfaces.push(entry);
+    if (isTopLayer(openSurfaces, surface) && !surface.contains(document.activeElement)) surface.focus();
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        if (config.preventDismiss) {
-          e.preventDefault();
-          e.stopPropagation();
-          return;
-        }
-        setOpen(false);
+      if (!isTopLayer(openSurfaces, surface)) return;
+      if (e.key === "Tab") {
+        const items = Array.from(surface.querySelectorAll<HTMLElement>(FOCUSABLE));
+        const target = wrapFocus(items, document.activeElement, e.shiftKey);
+        if (target || items.length === 0) e.preventDefault();
+        target?.focus();
+        return;
       }
+      if (e.key !== "Escape") return;
+      if (dismiss.current.preventDismiss) {
+        e.preventDefault();
+        e.stopPropagation();
+        return;
+      }
+      dismiss.current.setOpen(false);
     };
 
     document.addEventListener("keydown", handleKeyDown);
@@ -172,8 +221,13 @@ export function DialogContent({
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
       unlockScroll();
+      openSurfaces.splice(openSurfaces.indexOf(entry), 1);
+      // Close or unmount: give focus back to the opener, unless another dialog still owns the keyboard.
+      const back = openerRef.current;
+      if (openSurfaces.length === 0 && back?.isConnected) back.focus();
+      setOpener(null);
     };
-  }, [open, setOpen, config.preventDismiss]);
+  }, [open, mounted, layer]);
 
   if (!open || !mounted) return null;
 
@@ -194,8 +248,6 @@ export function DialogContent({
   const content = (
     <div
       className={cn("fixed inset-0 flex items-center justify-center p-4 sm:p-6 overflow-y-auto", config.container)}
-      role="dialog"
-      aria-modal="true"
     >
       {/* Backdrop */}
       <div
@@ -209,8 +261,12 @@ export function DialogContent({
 
       {/* Modal Surface */}
       <div
+        ref={surfaceRef}
+        role="dialog"
+        aria-modal="true"
+        tabIndex={-1}
         className={cn(
-          "relative w-full rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 text-[var(--card-foreground)] shadow-2xl transition-all animate-in fade-in-0 zoom-in-95 duration-200 will-change-transform",
+          "relative w-full rounded-2xl outline-none border border-[var(--border)] bg-[var(--card)] p-6 text-[var(--card-foreground)] shadow-2xl transition-all animate-in fade-in-0 zoom-in-95 duration-200 will-change-transform",
           config.surface,
           sizeClasses[size],
           className
@@ -223,7 +279,7 @@ export function DialogContent({
           <button
             type="button"
             onClick={() => setOpen(false)}
-            className="absolute right-4 top-4 rounded-xl p-1.5 text-[var(--muted-foreground)] hover:bg-[var(--secondary)] hover:text-[var(--foreground)] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
+            className="absolute right-2 top-2 inline-flex size-11 items-center justify-center rounded-xl text-[var(--muted-foreground)] hover:bg-[var(--secondary)] hover:text-[var(--foreground)] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
             aria-label="Đóng hộp thoại"
           >
             <X className="size-4" />
@@ -318,5 +374,40 @@ export function DialogClose({
     >
       {children}
     </button>
+  );
+}
+
+export interface ConfirmDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  title: string;
+  description?: string;
+  confirmLabel: string;
+  danger?: boolean;
+  busy?: boolean;
+  confirmDisabled?: boolean;
+  onConfirm: () => void;
+  children?: React.ReactNode;
+}
+
+export function ConfirmDialog({ open, onOpenChange, title, description, confirmLabel, danger, busy, confirmDisabled, onConfirm, children }: ConfirmDialogProps) {
+  return (
+    <Dialog open={open} onOpenChange={(value) => !busy && onOpenChange(value)}>
+      <DialogContent size="sm" aria-labelledby="confirm-dialog-title">
+        <DialogHeader>
+          <DialogTitle id="confirm-dialog-title">{title}</DialogTitle>
+          {description && <DialogDescription>{description}</DialogDescription>}
+        </DialogHeader>
+        {children}
+        <DialogFooter>
+          <Button variant="outline" size="touch" disabled={busy} onClick={() => onOpenChange(false)}>
+            Huỷ
+          </Button>
+          <Button variant={danger ? "destructive" : "default"} size="touch" disabled={busy || confirmDisabled} onClick={onConfirm} autoFocus>
+            {busy ? "Đang xử lý…" : confirmLabel}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
