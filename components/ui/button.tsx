@@ -8,21 +8,23 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-[linear-gradient(180deg,color-mix(in_srgb,var(--primary)_94%,#fff),var(--primary))] text-[var(--primary-foreground)] shadow-[var(--elevation-shadow-card)] hover:bg-[var(--color-primary-hover)] hover:[background-image:none]",
+          "bg-[linear-gradient(180deg,color-mix(in_srgb,var(--primary)_94%,var(--surface)),var(--primary))] text-[var(--primary-foreground)] shadow-[var(--elevation-shadow-card)] hover:bg-[var(--color-primary-hover)] hover:[background-image:none]",
         accent:
           "bg-[var(--accent)] text-[var(--accent-foreground)] shadow-[var(--elevation-shadow-card)] hover:bg-[var(--color-accent-hover)]",
         destructive: "bg-[var(--destructive)] text-[var(--destructive-foreground)] hover:opacity-90",
         outline:
           "border border-[var(--border)] bg-[var(--card)] text-[var(--foreground)] hover:border-[var(--input)]",
-        secondary: "bg-[var(--secondary)] text-[var(--secondary-foreground)] hover:bg-[var(--border)]",
+        secondary:
+          "border border-[var(--border)] bg-transparent text-[var(--primary)]",
         ghost: "text-[var(--foreground)] hover:bg-[var(--secondary)]",
         link: "text-[var(--primary)] underline-offset-4 hover:underline p-0 h-auto font-medium",
       },
       size: {
-        default: "h-9 px-4 py-2",
-        sm: "h-8 rounded-lg px-3 text-xs",
-        lg: "h-11 rounded-2xl px-6 text-sm tracking-wide font-bold",
-        icon: "h-9 w-9 rounded-[var(--radius-md)]",
+        default: "min-h-11 px-5",
+        sm: "min-h-9 px-3 text-sm",
+        lg: "min-h-11 px-5",
+        icon: "size-11 p-0",
+        touch: "min-h-11 px-5",
       },
     },
     defaultVariants: {

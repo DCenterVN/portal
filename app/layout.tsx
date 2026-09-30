@@ -3,7 +3,6 @@ import { Be_Vietnam_Pro, Quicksand } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ToastProvider } from "@/components/ui/toast";
-import { Navbar } from "@/components/navbar";
 
 const quicksand = Quicksand({
   subsets: ["vietnamese", "latin"],
@@ -73,10 +72,10 @@ export const metadata: Metadata = {
     images: ["/og-image.png"],
   },
   robots: {
-    index: true,
+    index: false,
     follow: true,
     googleBot: {
-      index: true,
+      index: false,
       follow: true,
       "max-video-preview": -1,
       "max-image-preview": "large",
@@ -94,39 +93,6 @@ export const viewport: Viewport = {
   ],
 };
 
-const jsonLdOrg = {
-  "@context": "https://schema.org",
-  "@type": "Organization",
-  name: "Việt Sạch",
-  url: SITE_URL,
-  logo: `${SITE_URL}/logo.png`,
-  description:
-    "Chuỗi cung ứng thực phẩm sạch, nông sản VietGAP và chuỗi lạnh -18°C an toàn thực phẩm hàng đầu Việt Nam.",
-  address: {
-    "@type": "PostalAddress",
-    addressLocality: "Thành phố Hồ Chí Minh",
-    addressCountry: "VN",
-  },
-  contactPoint: {
-    "@type": "ContactPoint",
-    telephone: "+84-1900-8888",
-    contactType: "customer service",
-    availableLanguage: ["Vietnamese"],
-  },
-};
-
-const jsonLdWebSite = {
-  "@context": "https://schema.org",
-  "@type": "WebSite",
-  name: "Việt Sạch",
-  url: SITE_URL,
-  potentialAction: {
-    "@type": "SearchAction",
-    target: `${SITE_URL}/products?q={search_term_string}`,
-    "query-input": "required name=search_term_string",
-  },
-};
-
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
@@ -136,23 +102,10 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${quicksand.variable} ${beVietnamPro.variable}`}
     >
-      <head>
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdOrg) }}
-        />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdWebSite) }}
-        />
-      </head>
       <body className="min-h-screen bg-[var(--background)] text-[var(--foreground)] antialiased transition-colors duration-200">
         <ThemeProvider>
           <ToastProvider>
-            <div className="relative flex min-h-screen flex-col">
-              <Navbar />
-              <div className="flex-1">{children}</div>
-            </div>
+            {children}
           </ToastProvider>
         </ThemeProvider>
       </body>

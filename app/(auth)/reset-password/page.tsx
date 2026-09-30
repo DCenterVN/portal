@@ -1,16 +1,17 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import { AuthShell } from "@/components/layout/auth-shell";
+import { AuthHeading } from "@/components/patterns/auth-heading";
 import { ResetForm } from "@/features/auth/reset-form";
 
 export const metadata: Metadata = { title: "Đặt mật khẩu mới" };
 
 export default function Page() {
   return (
-    <AuthShell title="Đặt mật khẩu mới" description="Dùng cho cả khách hàng và nhân viên vừa được cấp tài khoản.">
+    <>
+      <AuthHeading title="Đặt mật khẩu mới" subtitle="Dùng cho cả khách hàng và nhân viên vừa được cấp tài khoản." />
       <Suspense>
         <ResetForm />
       </Suspense>
-    </AuthShell>
+    </>
   );
 }

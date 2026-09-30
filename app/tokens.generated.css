@@ -19,6 +19,7 @@
   --color-line: #DCE5D8;
   --color-input-border: #7D907F;
   --color-focus: #1B5E20;
+  --color-chrome: #14291A;
   --elevation-shadow-card: inset 0 1px #ffffffd9, 0 1px 2px rgb(20 41 26 / .08), 0 8px 16px -8px rgb(20 41 26 / .14);
   --elevation-shadow-pop: 0 2px 4px rgb(20 41 26 / .10), 0 16px 32px -12px rgb(20 41 26 / .28);
   --radius-sm: 8px;
@@ -49,6 +50,7 @@
   --color-line: #2A3D2D;
   --color-input-border: #6F8672;
   --color-focus: #5FBF6A;
+  --color-chrome: #0A120C;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -72,5 +74,6 @@
     --color-line: #2A3D2D;
     --color-input-border: #6F8672;
     --color-focus: #5FBF6A;
+    --color-chrome: #0A120C;
   }
 }

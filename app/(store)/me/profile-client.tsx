@@ -20,7 +20,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
-export default function ProfilePage() {
+export default function ProfileClient() {
   const router = useRouter();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -76,8 +76,8 @@ export default function ProfilePage() {
     const isAuthExpired = errorStatus === 401 || error.toLowerCase().includes("hết hạn") || error.toLowerCase().includes("unauthorized");
     return (
       <PageShell>
-        <Card className="max-w-md mx-auto mt-12 text-center p-6 border-rose-500/20">
-          <AlertCircle className="size-10 text-rose-500 mx-auto mb-3" />
+        <Card className="max-w-md mx-auto mt-12 text-center p-6 border-[color-mix(in_srgb,var(--color-danger)_20%,transparent)]">
+          <AlertCircle className="size-10 text-[var(--color-danger)] mx-auto mb-3" />
           <h2 className="text-lg font-bold text-[var(--foreground)]">
             {isAuthExpired ? "Phiên làm việc hết hạn" : "Không thể tải hồ sơ"}
           </h2>
@@ -110,7 +110,7 @@ export default function ProfilePage() {
         }
         description="Quản lý thông tin định danh, quyền hạn phân bổ và các thiết lập bảo mật"
         actions={
-          <Button variant="outline" size="sm" onClick={handleLogout} className="gap-1.5 text-xs text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 border-rose-500/20">
+          <Button variant="outline" size="sm" onClick={handleLogout} className="gap-1.5 text-xs text-[var(--color-danger)] hover:bg-[color-mix(in_srgb,var(--color-danger)_10%,transparent)] border-[color-mix(in_srgb,var(--color-danger)_20%,transparent)]">
             <LogOut className="size-3.5" />
             <span>Đăng xuất</span>
           </Button>
@@ -121,12 +121,12 @@ export default function ProfilePage() {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 pt-6 pb-6">
         <Card className="lg:col-span-1 p-5 rounded-2xl border-[var(--border)] bg-[var(--card)] text-[var(--card-foreground)] flex flex-col justify-between">
           <div className="text-center pb-4 border-b border-[var(--border)]">
-            <div className="size-20 rounded-2xl bg-gradient-to-tr from-[#0284C7] to-emerald-500 text-white flex items-center justify-center font-extrabold text-2xl shadow-lg mx-auto mb-3">
+            <div className="size-20 rounded-2xl bg-gradient-to-tr from-[var(--color-info)] to-[var(--color-primary)] text-[var(--color-primary-ink)] flex items-center justify-center font-extrabold text-2xl shadow-lg mx-auto mb-3">
               {profile.display_name?.slice(0, 2).toUpperCase() || "VS"}
             </div>
             <h2 className="text-lg font-bold text-[var(--foreground)]">{profile.display_name || "Nhân sự Việt Sạch"}</h2>
             <p className="text-xs text-[var(--muted-foreground)] mt-0.5">{profile.email || profile.phone}</p>
-            <Badge variant="secondary" className="mt-2.5 text-[11px] font-semibold bg-sky-500/10 text-sky-700 dark:text-sky-300 border border-sky-500/20">
+            <Badge variant="secondary" className="mt-2.5 text-xs font-semibold bg-[color-mix(in_srgb,var(--color-info)_10%,transparent)] text-[var(--color-info)] border border-[color-mix(in_srgb,var(--color-info)_20%,transparent)]">
               Mã NV: {profile.id.slice(0, 8)}
             </Badge>
           </div>
@@ -225,7 +225,7 @@ export default function ProfilePage() {
                         )}
                         <div className="flex flex-wrap gap-1.5 mt-2">
                           {m.roles.map((r) => (
-                            <Badge key={r} variant="secondary" className="text-[10px] font-bold">
+                            <Badge key={r} variant="secondary" className="text-xs font-bold">
                               {r}
                             </Badge>
                           ))}
@@ -254,12 +254,12 @@ export default function ProfilePage() {
               <CardContent className="p-0 pt-5 space-y-4">
                 <div className="flex items-center justify-between p-4 rounded-xl border border-[var(--border)] bg-[var(--secondary)]/20">
                   <div className="flex items-center gap-3">
-                    <div className="size-9 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                    <div className="size-9 rounded-xl bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)] text-[var(--color-primary)] flex items-center justify-center">
                       <KeyRound className="size-4" />
                     </div>
                     <div>
                       <h4 className="text-xs font-bold text-[var(--foreground)]">Mật khẩu tài khoản</h4>
-                      <p className="text-[11px] text-[var(--muted-foreground)]">Được cập nhật định kỳ để bảo vệ dữ liệu chuỗi lạnh</p>
+                      <p className="text-xs text-[var(--muted-foreground)]">Được cập nhật định kỳ để bảo vệ dữ liệu chuỗi lạnh</p>
                     </div>
                   </div>
                   <Button size="sm" variant="outline" onClick={() => router.push("/forgot-password")} className="text-xs">
@@ -269,15 +269,15 @@ export default function ProfilePage() {
 
                 <div className="flex items-center justify-between p-4 rounded-xl border border-[var(--border)] bg-[var(--secondary)]/20">
                   <div className="flex items-center gap-3">
-                    <div className="size-9 rounded-xl bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center">
+                    <div className="size-9 rounded-xl bg-[color-mix(in_srgb,var(--color-info)_10%,transparent)] text-[var(--color-info)] flex items-center justify-center">
                       <CheckCircle2 className="size-4" />
                     </div>
                     <div>
                       <h4 className="text-xs font-bold text-[var(--foreground)]">Xác thực phiên làm việc BFF</h4>
-                      <p className="text-[11px] text-[var(--muted-foreground)]">HttpOnly cookie an toàn chống XSS & CSRF</p>
+                      <p className="text-xs text-[var(--muted-foreground)]">HttpOnly cookie an toàn chống XSS & CSRF</p>
                     </div>
                   </div>
-                  <Badge variant="secondary" className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                  <Badge variant="secondary" className="text-xs font-bold text-[var(--color-primary)]">
                     Bảo vệ 100%
                   </Badge>
                 </div>

@@ -25,7 +25,7 @@ const rolePaths = [
 
 export default function HomePage() {
   return (
-    <main className="landing-page">
+    <div className="landing-page">
       <section className="landing-hero" aria-labelledby="hero-title">
         <div className="landing-shell landing-hero-grid">
           <div className="landing-hero-copy">
@@ -70,13 +70,6 @@ export default function HomePage() {
       </div></section>
 
       <section className="landing-final-cta"><div className="landing-shell landing-final-inner"><div><p className="landing-eyebrow">Bắt đầu từ bữa ăn kế tiếp</p><h2>Chọn điều lành,<br />hiểu rõ điều mình chọn.</h2></div><div className="landing-actions"><Link className="landing-button landing-button-light" href={"/products" as Route}>Xem sản phẩm <ArrowRight aria-hidden="true" /></Link><Link className="landing-button landing-button-outline-light" href={"/register" as Route}>Đăng ký ngay</Link></div></div></section>
-
-      <footer className="landing-footer"><div className="landing-shell landing-footer-grid">
-        <div className="landing-footer-brand"><span><Leaf aria-hidden="true" /> Việt Sạch</span><p>Nông sản tử tế. Chuỗi lạnh minh bạch.<br />Một nền tảng cho niềm tin dài lâu.</p></div>
-        <nav aria-label="Liên kết mua sắm"><strong>Khám phá</strong><Link href={"/products" as Route}>Sản phẩm</Link><a href="#truy-xuat">Truy xuất nguồn gốc</a><Link href={"/register" as Route}>Tạo tài khoản</Link></nav>
-        <nav aria-label="Liên kết hệ thống"><strong>Hệ thống</strong><Link href={"/login" as Route}>Đăng nhập</Link><Link href={"/branches" as Route}>Chi nhánh</Link><Link href={"/memberships" as Route}>Đội ngũ</Link></nav>
-        <div><strong>Cam kết</strong><p><Building2 aria-hidden="true" /> Vận hành tại Việt Nam</p><p><ShieldCheck aria-hidden="true" /> Bảo vệ dữ liệu người dùng</p></div>
-      </div><div className="landing-shell landing-copyright"><span>© 2026 Việt Sạch</span><span>Nuôi dưỡng niềm tin từ nguồn.</span></div></footer>
-    </main>
+    </div>
   );
 }

@@ -122,7 +122,7 @@ export function Navbar() {
     "/switch-branch",
     "/switch-org",
   ];
-  if (authRoutes.includes(pathname)) {
+  if (authRoutes.includes(pathname) || /^\/(platform|company)(\/|$)/.test(pathname)) {
     return null;
   }
 
