@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "runId": "PORTAL-SHELL-001",
+  "pipelineId": "sdlc",
+  "context": {
+    "epic": "PORTAL-SHELL-001",
+    "worker": "codex",
+    "story": "US-UI-002",
+    "sprint": "02",
+    "slices": "0/24"
+  },
+  "startedAt": "2026-09-28T23:57:22+00:00",
+  "updatedAt": "2026-09-30T03:44:26+00:00",
+  "currentStepIdx": 4,
+  "status": "running",
+  "steps": [
+    {
+      "stepIdx": 0,
+      "agent": "sdlc-discovery",
+      "revision": 1,
+      "status": "approved",
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-SHELL-001/plan.md"
+      ]
+    },
+    {
+      "stepIdx": 1,
+      "agent": "sdlc-technical",
+      "revision": 1,
+      "status": "approved",
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-SHELL-001/plan.md"
+      ]
+    },
+    {
+      "stepIdx": 2,
+      "agent": "sdlc-ux",
+      "revision": 1,
+      "status": "approved",
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-SHELL-001/plan.md"
+      ]
+    },
+    {
+      "stepIdx": 3,
+      "agent": "sdlc-design",
+      "revision": 1,
+      "status": "approved",
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-SHELL-001/plan.md"
+      ]
+    },
+    {
+      "stepIdx": 4,
+      "agent": "sdlc-build",
+      "revision": 1,
+      "status": "awaiting_work",
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-SHELL-001/handback.md"
+      ]
+    },
+    {
+      "stepIdx": 5,
+      "agent": "sdlc-integration",
+      "revision": 1,
+      "status": "pending",
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-SHELL-001/artifacts/verification.json"
+      ]
+    },
+    {
+      "stepIdx": 6,
+      "agent": "sdlc-e2e",
+      "revision": 1,
+      "status": "pending",
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-SHELL-001/artifacts/verification.json"
+      ]
+    },
+    {
+      "stepIdx": 7,
+      "agent": "sdlc-release",
+      "revision": 1,
+      "status": "pending",
+      "artifactsProduced": []
+    }
+  ]
+}
