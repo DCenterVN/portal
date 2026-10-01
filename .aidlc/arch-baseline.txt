@@ -16,11 +16,7 @@ FE-03 features/production/orders-view.tsx
 FE-03 features/production/targets-view.tsx
 FE-03 features/sales/pricing-floor-view.tsx
 FE-05 components/navbar.tsx
-FE-06 app/me/page.tsx
-FE-06 app/switch-branch/page.tsx
 FE-09 app/layout.tsx
-FE-09 app/me/page.tsx
-FE-09 app/switch-branch/page.tsx
 FE-09 components/auth/login-form.tsx
 FE-09 components/layout/app-shell.tsx
 FE-09 components/layout/header.tsx
@@ -34,7 +30,6 @@ FE-09 components/modals/session-timeout-modal.tsx
 FE-09 components/modals/supplier-suspension-modal.tsx
 FE-09 components/navbar.tsx
 FE-09 components/ui/badge.tsx
-FE-09 components/ui/button.tsx
 FE-09 components/ui/dialog.tsx
 FE-09 components/ui/page.tsx
 FE-09 components/ui/toast.tsx
@@ -56,8 +51,6 @@ FE-09 features/products/products-view.tsx
 FE-09 features/roles/roles-view.tsx
 FE-09 features/sales/pricing-floor-view.tsx
 FE-09 features/traceability/trace-view.tsx
-FE-10 app/me/page.tsx
-FE-10 app/switch-branch/page.tsx
 FE-10 components/auth/login-form.tsx
 FE-10 components/layout/app-shell.tsx
 FE-10 components/layout/header.tsx
