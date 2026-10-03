@@ -16,7 +16,8 @@
     "pr": [
       "approval",
       "verification",
-      "review"
+      "review",
+      "confidence"
     ]
   },
   "badcase_categories": [
@@ -43,5 +44,9 @@
   "standards_dirs": [
     ".aidlc/standards",
     "../platform-docs/standards"
-  ]
+  ],
+  "confidence": {
+    "bar": 0.95,
+    "sensitive_bar": 0.995
+  }
 }
