@@ -1,0 +1,30 @@
+$ python3 -B /mnt/win_d/feature/ticket/portal/.aidlc/runs/PORTAL-REBRAND-001/anti/anti_check.py --self-test
+PASS self-test positive fixture
+PASS self-test reject missing cell
+PASS self-test reject PASS without measurements
+PASS self-test reject contrast 4.3
+PASS self-test reject duplicate screenshot
+PASS self-test reject wrong-width PNG
+PASS self-test reject LH a11y 0.89
+PASS self-test reject LH script 210 kB
+PASS self-test reject build without route table
+PASS self-test reject authenticated final_url /login
+PASS self-test reject missing final_urls
+PASS self-test reject authenticated screenshot /login
+PASS self-test reject LH fetchTime outside window
+PASS self-test reject mobile LCP 2501
+PASS self-test BLOCKED distinct from PASS (exit 2)
+SELF-TEST: 15/15 PASS (synthetic fixtures only)
+
+exit=0
+$ bash -n /mnt/win_d/feature/ticket/portal/.aidlc/runs/PORTAL-REBRAND-001/anti/anti.sh
+
+exit=0
+drop-login-check: exit=1
+FAIL self-test reject authenticated final_url /login
+FAIL self-test reject authenticated screenshot /login
+SELF-TEST: 13/15 FAIL (synthetic fixtures only)
+drop-script-size-check: exit=1
+FAIL self-test reject LH script 210 kB
+SELF-TEST: 14/15 FAIL (synthetic fixtures only)
+Mutation killed/total: 2/2

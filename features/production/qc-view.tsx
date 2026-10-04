@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useId, useState } from "react";
 import { ShieldCheck, CheckCircle2, XCircle, AlertTriangle, Thermometer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -22,6 +22,7 @@ interface QCViewProps {
 }
 
 export function QCView({ completedOrders }: QCViewProps) {
+  const formId = useId();
   const { toast } = useToast();
   const [orders, setOrders] = useState<ProductionOrder[]>(completedOrders);
   const [selectedOrder, setSelectedOrder] = useState<ProductionOrder | null>(null);
@@ -85,10 +86,11 @@ export function QCView({ completedOrders }: QCViewProps) {
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
-                <label className="text-sm font-medium flex items-center gap-1">
+                <label htmlFor={`${formId}-temperature`} className="text-sm font-medium flex items-center gap-1">
                   <Thermometer className="h-4 w-4 text-[var(--color-info)]" /> Nhiệt độ tâm sau cấp đông (°C)
                 </label>
                 <input
+                  id={`${formId}-temperature`}
                   type="number"
                   step="0.1"
                   style={{ borderWidth: "1.5px" }}
@@ -124,8 +126,8 @@ export function QCView({ completedOrders }: QCViewProps) {
                 </div>
               </div>
               <div className="md:col-span-2">
-                <label className="text-sm font-medium">Ghi nhận kiểm tra cảm quan</label>
-                <textarea style={{ borderWidth: "1.5px" }} className="mt-1 min-h-24 w-full rounded-[var(--radius-md)] border bg-[var(--color-surface)] text-[var(--color-ink)] border-[var(--color-input-border)] p-3 focus:outline-none focus:ring-2 focus:ring-[var(--color-focus)]" required value={sensoryNotes} onChange={(event) => setSensoryNotes(event.target.value)} placeholder="Màu sắc, mùi, cấu trúc và nhận xét thực tế của mẫu kiểm tra" />
+                <label htmlFor={`${formId}-sensory`} className="text-sm font-medium">Ghi nhận kiểm tra cảm quan</label>
+                <textarea id={`${formId}-sensory`} style={{ borderWidth: "1.5px" }} className="mt-1 min-h-24 w-full rounded-[var(--radius-md)] border bg-[var(--color-surface)] text-[var(--color-ink)] border-[var(--color-input-border)] p-3 focus:outline-none focus:ring-2 focus:ring-[var(--color-focus)]" required value={sensoryNotes} onChange={(event) => setSensoryNotes(event.target.value)} placeholder="Màu sắc, mùi, cấu trúc và nhận xét thực tế của mẫu kiểm tra" />
               </div>
             </div>
             <div className="flex gap-2">

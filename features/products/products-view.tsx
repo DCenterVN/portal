@@ -9,6 +9,7 @@ import {
   Search,
   ShoppingCart,
   CheckCircle2,
+  Check,
   AlertCircle,
   ArrowUpRight,
   TriangleAlert,
@@ -189,25 +190,31 @@ export function ProductsView({ initialProducts, dataSource = "api" }: ProductsVi
           <Button
             type="button"
             size="sm"
-            variant={statusFilter === "ALL" ? "ghost" : "outline"}
+            variant={statusFilter === "ALL" ? "secondary" : "outline"}
+            aria-pressed={statusFilter === "ALL"}
             onClick={() => setStatusFilter("ALL")}
           >
+            {statusFilter === "ALL" && <Check aria-hidden="true" />}
             Tất cả ({products.length})
           </Button>
           <Button
             type="button"
             size="sm"
-            variant={statusFilter === "ACTIVE" ? "ghost" : "outline"}
+            variant={statusFilter === "ACTIVE" ? "secondary" : "outline"}
+            aria-pressed={statusFilter === "ACTIVE"}
             onClick={() => setStatusFilter("ACTIVE")}
           >
+            {statusFilter === "ACTIVE" && <Check aria-hidden="true" />}
             Đang mở bán ({activeCount})
           </Button>
           <Button
             type="button"
             size="sm"
-            variant={statusFilter === "DRAFT" ? "ghost" : "outline"}
+            variant={statusFilter === "DRAFT" ? "secondary" : "outline"}
+            aria-pressed={statusFilter === "DRAFT"}
             onClick={() => setStatusFilter("DRAFT")}
           >
+            {statusFilter === "DRAFT" && <Check aria-hidden="true" />}
             Bản nháp ({draftCount})
           </Button>
         </div>

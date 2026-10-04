@@ -1,0 +1,453 @@
+{
+  "schema": "portal-s9/1",
+  "cells": [
+    {
+      "case": "UI-1",
+      "theme": "light",
+      "viewport": 375,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T07:43:55.000000+00:00",
+      "reason": "runner stopped before browser: build failed with Turbopack error reading out-run1/brave-profile/SingletonSocket (os error 6: No such device or address); server and Brave unavailable"
+    },
+    {
+      "case": "UI-1",
+      "theme": "light",
+      "viewport": 768,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T07:43:55.000000+00:00",
+      "reason": "runner stopped before browser: build failed with Turbopack error reading out-run1/brave-profile/SingletonSocket (os error 6: No such device or address); server and Brave unavailable"
+    },
+    {
+      "case": "UI-1",
+      "theme": "light",
+      "viewport": 1024,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T07:43:55.000000+00:00",
+      "reason": "runner stopped before browser: build failed with Turbopack error reading out-run1/brave-profile/SingletonSocket (os error 6: No such device or address); server and Brave unavailable"
+    },
+    {
+      "case": "UI-1",
+      "theme": "light",
+      "viewport": 1440,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T07:43:55.000000+00:00",
+      "reason": "runner stopped before browser: build failed with Turbopack error reading out-run1/brave-profile/SingletonSocket (os error 6: No such device or address); server and Brave unavailable"
+    },
+    {
+      "case": "UI-1",
+      "theme": "dark",
+      "viewport": 375,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T07:43:55.000000+00:00",
+      "reason": "runner stopped before browser: build failed with Turbopack error reading out-run1/brave-profile/SingletonSocket (os error 6: No such device or address); server and Brave unavailable"
+    },
+    {
+      "case": "UI-1",
+      "theme": "dark",
+      "viewport": 768,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T07:43:55.000000+00:00",
+      "reason": "runner stopped before browser: build failed with Turbopack error reading out-run1/brave-profile/SingletonSocket (os error 6: No such device or address); server and Brave unavailable"
+    },
+    {
+      "case": "UI-1",
+      "theme": "dark",
+      "viewport": 1024,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T07:43:55.000000+00:00",
+      "reason": "runner stopped before browser: build failed with Turbopack error reading out-run1/brave-profile/SingletonSocket (os error 6: No such device or address); server and Brave unavailable"
+    },
+    {
+      "case": "UI-1",
+      "theme": "dark",
+      "viewport": 1440,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T07:43:55.000000+00:00",
+      "reason": "runner stopped before browser: build failed with Turbopack error reading out-run1/brave-profile/SingletonSocket (os error 6: No such device or address); server and Brave unavailable"
+    },
+    {
+      "case": "UI-2",
+      "theme": "light",
+      "viewport": 375,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T07:43:55.000000+00:00",
+      "reason": "runner stopped before browser: build failed with Turbopack error reading out-run1/brave-profile/SingletonSocket (os error 6: No such device or address); server and Brave unavailable"
+    },
+    {
+      "case": "UI-2",
+      "theme": "light",
+      "viewport": 768,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T07:43:55.000000+00:00",
+      "reason": "runner stopped before browser: build failed with Turbopack error reading out-run1/brave-profile/SingletonSocket (os error 6: No such device or address); server and Brave unavailable"
+    },
+    {
+      "case": "UI-2",
+      "theme": "light",
+      "viewport": 1024,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T07:43:55.000000+00:00",
+      "reason": "runner stopped before browser: build failed with Turbopack error reading out-run1/brave-profile/SingletonSocket (os error 6: No such device or address); server and Brave unavailable"
+    },
+    {
+      "case": "UI-2",
+      "theme": "light",
+      "viewport": 1440,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T07:43:55.000000+00:00",
+      "reason": "runner stopped before browser: build failed with Turbopack error reading out-run1/brave-profile/SingletonSocket (os error 6: No such device or address); server and Brave unavailable"
+    },
+    {
+      "case": "UI-2",
+      "theme": "dark",
+      "viewport": 375,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T07:43:55.000000+00:00",
+      "reason": "runner stopped before browser: build failed with Turbopack error reading out-run1/brave-profile/SingletonSocket (os error 6: No such device or address); server and Brave unavailable"
+    },
+    {
+      "case": "UI-2",
+      "theme": "dark",
+      "viewport": 768,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T07:43:55.000000+00:00",
+      "reason": "runner stopped before browser: build failed with Turbopack error reading out-run1/brave-profile/SingletonSocket (os error 6: No such device or address); server and Brave unavailable"
+    },
+    {
+      "case": "UI-2",
+      "theme": "dark",
+      "viewport": 1024,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T07:43:55.000000+00:00",
+      "reason": "runner stopped before browser: build failed with Turbopack error reading out-run1/brave-profile/SingletonSocket (os error 6: No such device or address); server and Brave unavailable"
+    },
+    {
+      "case": "UI-2",
+      "theme": "dark",
+      "viewport": 1440,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T07:43:55.000000+00:00",
+      "reason": "runner stopped before browser: build failed with Turbopack error reading out-run1/brave-profile/SingletonSocket (os error 6: No such device or address); server and Brave unavailable"
+    },
+    {
+      "case": "UI-3",
+      "theme": "light",
+      "viewport": 375,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T07:43:55.000000+00:00",
+      "reason": "runner stopped before browser: build failed with Turbopack error reading out-run1/brave-profile/SingletonSocket (os error 6: No such device or address); server and Brave unavailable"
+    },
+    {
+      "case": "UI-3",
+      "theme": "light",
+      "viewport": 768,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T07:43:55.000000+00:00",
+      "reason": "runner stopped before browser: build failed with Turbopack error reading out-run1/brave-profile/SingletonSocket (os error 6: No such device or address); server and Brave unavailable"
+    },
+    {
+      "case": "UI-3",
+      "theme": "light",
+      "viewport": 1024,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T07:43:55.000000+00:00",
+      "reason": "runner stopped before browser: build failed with Turbopack error reading out-run1/brave-profile/SingletonSocket (os error 6: No such device or address); server and Brave unavailable"
+    },
+    {
+      "case": "UI-3",
+      "theme": "light",
+      "viewport": 1440,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T07:43:55.000000+00:00",
+      "reason": "runner stopped before browser: build failed with Turbopack error reading out-run1/brave-profile/SingletonSocket (os error 6: No such device or address); server and Brave unavailable"
+    },
+    {
+      "case": "UI-3",
+      "theme": "dark",
+      "viewport": 375,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T07:43:55.000000+00:00",
+      "reason": "runner stopped before browser: build failed with Turbopack error reading out-run1/brave-profile/SingletonSocket (os error 6: No such device or address); server and Brave unavailable"
+    },
+    {
+      "case": "UI-3",
+      "theme": "dark",
+      "viewport": 768,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T07:43:55.000000+00:00",
+      "reason": "runner stopped before browser: build failed with Turbopack error reading out-run1/brave-profile/SingletonSocket (os error 6: No such device or address); server and Brave unavailable"
+    },
+    {
+      "case": "UI-3",
+      "theme": "dark",
+      "viewport": 1024,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T07:43:55.000000+00:00",
+      "reason": "runner stopped before browser: build failed with Turbopack error reading out-run1/brave-profile/SingletonSocket (os error 6: No such device or address); server and Brave unavailable"
+    },
+    {
+      "case": "UI-3",
+      "theme": "dark",
+      "viewport": 1440,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T07:43:55.000000+00:00",
+      "reason": "runner stopped before browser: build failed with Turbopack error reading out-run1/brave-profile/SingletonSocket (os error 6: No such device or address); server and Brave unavailable"
+    },
+    {
+      "case": "UI-4",
+      "theme": "light",
+      "viewport": 375,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T07:43:55.000000+00:00",
+      "reason": "runner stopped before browser: build failed with Turbopack error reading out-run1/brave-profile/SingletonSocket (os error 6: No such device or address); server and Brave unavailable"
+    },
+    {
+      "case": "UI-4",
+      "theme": "light",
+      "viewport": 768,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T07:43:55.000000+00:00",
+      "reason": "runner stopped before browser: build failed with Turbopack error reading out-run1/brave-profile/SingletonSocket (os error 6: No such device or address); server and Brave unavailable"
+    },
+    {
+      "case": "UI-4",
+      "theme": "light",
+      "viewport": 1024,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T07:43:55.000000+00:00",
+      "reason": "runner stopped before browser: build failed with Turbopack error reading out-run1/brave-profile/SingletonSocket (os error 6: No such device or address); server and Brave unavailable"
+    },
+    {
+      "case": "UI-4",
+      "theme": "light",
+      "viewport": 1440,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T07:43:55.000000+00:00",
+      "reason": "runner stopped before browser: build failed with Turbopack error reading out-run1/brave-profile/SingletonSocket (os error 6: No such device or address); server and Brave unavailable"
+    },
+    {
+      "case": "UI-4",
+      "theme": "dark",
+      "viewport": 375,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T07:43:55.000000+00:00",
+      "reason": "runner stopped before browser: build failed with Turbopack error reading out-run1/brave-profile/SingletonSocket (os error 6: No such device or address); server and Brave unavailable"
+    },
+    {
+      "case": "UI-4",
+      "theme": "dark",
+      "viewport": 768,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T07:43:55.000000+00:00",
+      "reason": "runner stopped before browser: build failed with Turbopack error reading out-run1/brave-profile/SingletonSocket (os error 6: No such device or address); server and Brave unavailable"
+    },
+    {
+      "case": "UI-4",
+      "theme": "dark",
+      "viewport": 1024,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T07:43:55.000000+00:00",
+      "reason": "runner stopped before browser: build failed with Turbopack error reading out-run1/brave-profile/SingletonSocket (os error 6: No such device or address); server and Brave unavailable"
+    },
+    {
+      "case": "UI-4",
+      "theme": "dark",
+      "viewport": 1440,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T07:43:55.000000+00:00",
+      "reason": "runner stopped before browser: build failed with Turbopack error reading out-run1/brave-profile/SingletonSocket (os error 6: No such device or address); server and Brave unavailable"
+    },
+    {
+      "case": "UI-5",
+      "theme": "light",
+      "viewport": 375,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T07:43:55.000000+00:00",
+      "reason": "runner stopped before browser: build failed with Turbopack error reading out-run1/brave-profile/SingletonSocket (os error 6: No such device or address); server and Brave unavailable"
+    },
+    {
+      "case": "UI-5",
+      "theme": "light",
+      "viewport": 768,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T07:43:55.000000+00:00",
+      "reason": "runner stopped before browser: build failed with Turbopack error reading out-run1/brave-profile/SingletonSocket (os error 6: No such device or address); server and Brave unavailable"
+    },
+    {
+      "case": "UI-5",
+      "theme": "light",
+      "viewport": 1024,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T07:43:55.000000+00:00",
+      "reason": "runner stopped before browser: build failed with Turbopack error reading out-run1/brave-profile/SingletonSocket (os error 6: No such device or address); server and Brave unavailable"
+    },
+    {
+      "case": "UI-5",
+      "theme": "light",
+      "viewport": 1440,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T07:43:55.000000+00:00",
+      "reason": "runner stopped before browser: build failed with Turbopack error reading out-run1/brave-profile/SingletonSocket (os error 6: No such device or address); server and Brave unavailable"
+    },
+    {
+      "case": "UI-5",
+      "theme": "dark",
+      "viewport": 375,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T07:43:55.000000+00:00",
+      "reason": "runner stopped before browser: build failed with Turbopack error reading out-run1/brave-profile/SingletonSocket (os error 6: No such device or address); server and Brave unavailable"
+    },
+    {
+      "case": "UI-5",
+      "theme": "dark",
+      "viewport": 768,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T07:43:55.000000+00:00",
+      "reason": "runner stopped before browser: build failed with Turbopack error reading out-run1/brave-profile/SingletonSocket (os error 6: No such device or address); server and Brave unavailable"
+    },
+    {
+      "case": "UI-5",
+      "theme": "dark",
+      "viewport": 1024,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T07:43:55.000000+00:00",
+      "reason": "runner stopped before browser: build failed with Turbopack error reading out-run1/brave-profile/SingletonSocket (os error 6: No such device or address); server and Brave unavailable"
+    },
+    {
+      "case": "UI-5",
+      "theme": "dark",
+      "viewport": 1440,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T07:43:55.000000+00:00",
+      "reason": "runner stopped before browser: build failed with Turbopack error reading out-run1/brave-profile/SingletonSocket (os error 6: No such device or address); server and Brave unavailable"
+    },
+    {
+      "case": "UI-6",
+      "theme": "light",
+      "viewport": 375,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T07:43:55.000000+00:00",
+      "reason": "runner stopped before browser: build failed with Turbopack error reading out-run1/brave-profile/SingletonSocket (os error 6: No such device or address); server and Brave unavailable"
+    },
+    {
+      "case": "UI-6",
+      "theme": "light",
+      "viewport": 768,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T07:43:55.000000+00:00",
+      "reason": "runner stopped before browser: build failed with Turbopack error reading out-run1/brave-profile/SingletonSocket (os error 6: No such device or address); server and Brave unavailable"
+    },
+    {
+      "case": "UI-6",
+      "theme": "light",
+      "viewport": 1024,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T07:43:55.000000+00:00",
+      "reason": "runner stopped before browser: build failed with Turbopack error reading out-run1/brave-profile/SingletonSocket (os error 6: No such device or address); server and Brave unavailable"
+    },
+    {
+      "case": "UI-6",
+      "theme": "light",
+      "viewport": 1440,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T07:43:55.000000+00:00",
+      "reason": "runner stopped before browser: build failed with Turbopack error reading out-run1/brave-profile/SingletonSocket (os error 6: No such device or address); server and Brave unavailable"
+    },
+    {
+      "case": "UI-6",
+      "theme": "dark",
+      "viewport": 375,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T07:43:55.000000+00:00",
+      "reason": "runner stopped before browser: build failed with Turbopack error reading out-run1/brave-profile/SingletonSocket (os error 6: No such device or address); server and Brave unavailable"
+    },
+    {
+      "case": "UI-6",
+      "theme": "dark",
+      "viewport": 768,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T07:43:55.000000+00:00",
+      "reason": "runner stopped before browser: build failed with Turbopack error reading out-run1/brave-profile/SingletonSocket (os error 6: No such device or address); server and Brave unavailable"
+    },
+    {
+      "case": "UI-6",
+      "theme": "dark",
+      "viewport": 1024,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T07:43:55.000000+00:00",
+      "reason": "runner stopped before browser: build failed with Turbopack error reading out-run1/brave-profile/SingletonSocket (os error 6: No such device or address); server and Brave unavailable"
+    },
+    {
+      "case": "UI-6",
+      "theme": "dark",
+      "viewport": 1440,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T07:43:55.000000+00:00",
+      "reason": "runner stopped before browser: build failed with Turbopack error reading out-run1/brave-profile/SingletonSocket (os error 6: No such device or address); server and Brave unavailable"
+    },
+    {
+      "case": "UI-7",
+      "theme": "light",
+      "viewport": 375,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T07:43:55.000000+00:00",
+      "reason": "runner stopped before browser: build failed with Turbopack error reading out-run1/brave-profile/SingletonSocket (os error 6: No such device or address); server and Brave unavailable"
+    },
+    {
+      "case": "UI-7",
+      "theme": "light",
+      "viewport": 768,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T07:43:55.000000+00:00",
+      "reason": "runner stopped before browser: build failed with Turbopack error reading out-run1/brave-profile/SingletonSocket (os error 6: No such device or address); server and Brave unavailable"
+    },
+    {
+      "case": "UI-7",
+      "theme": "light",
+      "viewport": 1024,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T07:43:55.000000+00:00",
+      "reason": "runner stopped before browser: build failed with Turbopack error reading out-run1/brave-profile/SingletonSocket (os error 6: No such device or address); server and Brave unavailable"
+    },
+    {
+      "case": "UI-7",
+      "theme": "light",
+      "viewport": 1440,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T07:43:55.000000+00:00",
+      "reason": "runner stopped before browser: build failed with Turbopack error reading out-run1/brave-profile/SingletonSocket (os error 6: No such device or address); server and Brave unavailable"
+    },
+    {
+      "case": "UI-7",
+      "theme": "dark",
+      "viewport": 375,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T07:43:55.000000+00:00",
+      "reason": "runner stopped before browser: build failed with Turbopack error reading out-run1/brave-profile/SingletonSocket (os error 6: No such device or address); server and Brave unavailable"
+    },
+    {
+      "case": "UI-7",
+      "theme": "dark",
+      "viewport": 768,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T07:43:55.000000+00:00",
+      "reason": "runner stopped before browser: build failed with Turbopack error reading out-run1/brave-profile/SingletonSocket (os error 6: No such device or address); server and Brave unavailable"
+    },
+    {
+      "case": "UI-7",
+      "theme": "dark",
+      "viewport": 1024,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T07:43:55.000000+00:00",
+      "reason": "runner stopped before browser: build failed with Turbopack error reading out-run1/brave-profile/SingletonSocket (os error 6: No such device or address); server and Brave unavailable"
+    },
+    {
+      "case": "UI-7",
+      "theme": "dark",
+      "viewport": 1440,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T07:43:55.000000+00:00",
+      "reason": "runner stopped before browser: build failed with Turbopack error reading out-run1/brave-profile/SingletonSocket (os error 6: No such device or address); server and Brave unavailable"
+    }
+  ]
+}

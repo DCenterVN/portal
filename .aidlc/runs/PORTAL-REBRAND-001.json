@@ -4,12 +4,12 @@
   "pipelineId": "sdlc",
   "context": {
     "epic": "PORTAL-REBRAND-001",
-    "worker": "unassigned",
-    "slices": "8/9"
+    "worker": "codex",
+    "slices": "9/9"
   },
   "startedAt": "2026-10-04T00:54:15+00:00",
-  "updatedAt": "2026-10-04T06:01:20+00:00",
-  "currentStepIdx": 4,
+  "updatedAt": "2026-10-04T09:52:30+00:00",
+  "currentStepIdx": 3,
   "status": "running",
   "steps": [
     {
@@ -43,7 +43,7 @@
       "stepIdx": 3,
       "agent": "sdlc-design",
       "revision": 1,
-      "status": "approved",
+      "status": "awaiting_review",
       "artifactsProduced": [
         ".aidlc/runs/PORTAL-REBRAND-001/plan.md"
       ]
@@ -52,8 +52,10 @@
       "stepIdx": 4,
       "agent": "sdlc-build",
       "revision": 1,
-      "status": "awaiting_work",
-      "artifactsProduced": []
+      "status": "pending",
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-REBRAND-001/handback.md"
+      ]
     },
     {
       "stepIdx": 5,
@@ -61,6 +63,7 @@
       "revision": 1,
       "status": "pending",
       "artifactsProduced": [
+        ".aidlc/runs/PORTAL-REBRAND-001/badcases.md",
         ".aidlc/runs/PORTAL-REBRAND-001/artifacts/verification.json"
       ]
     },
@@ -70,6 +73,7 @@
       "revision": 1,
       "status": "pending",
       "artifactsProduced": [
+        ".aidlc/runs/PORTAL-REBRAND-001/badcases.md",
         ".aidlc/runs/PORTAL-REBRAND-001/artifacts/verification.json"
       ]
     },
@@ -78,7 +82,9 @@
       "agent": "sdlc-release",
       "revision": 1,
       "status": "pending",
-      "artifactsProduced": []
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-REBRAND-001/artifacts/review-decision.json"
+      ]
     }
   ]
 }

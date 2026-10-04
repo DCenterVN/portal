@@ -1,0 +1,33 @@
+FAIL run: runner failed
+FAIL build: route table / First Load JS missing; do not invent sizes
+FAIL lh-home-mobile: [Errno 2] No such file or directory: '/mnt/win_d/feature/ticket/portal/.aidlc/runs/PORTAL-REBRAND-001/anti/out/lh-home-mobile.json'
+FAIL lh-home-desktop: [Errno 2] No such file or directory: '/mnt/win_d/feature/ticket/portal/.aidlc/runs/PORTAL-REBRAND-001/anti/out/lh-home-desktop.json'
+FAIL lh-login-mobile: [Errno 2] No such file or directory: '/mnt/win_d/feature/ticket/portal/.aidlc/runs/PORTAL-REBRAND-001/anti/out/lh-login-mobile.json'
+FAIL lh-login-desktop: [Errno 2] No such file or directory: '/mnt/win_d/feature/ticket/portal/.aidlc/runs/PORTAL-REBRAND-001/anti/out/lh-login-desktop.json'
+FAIL lh-console-mobile: [Errno 2] No such file or directory: '/mnt/win_d/feature/ticket/portal/.aidlc/runs/PORTAL-REBRAND-001/anti/out/lh-console-mobile.json'
+FAIL lh-console-desktop: [Errno 2] No such file or directory: '/mnt/win_d/feature/ticket/portal/.aidlc/runs/PORTAL-REBRAND-001/anti/out/lh-console-desktop.json'
+FAIL UI-2-light-375: duplicate screenshot hash
+FAIL UI-2-light-768: duplicate screenshot hash
+FAIL UI-2-light-1440: duplicate screenshot hash
+FAIL UI-2-dark-375: duplicate screenshot hash
+FAIL UI-2-dark-768: duplicate screenshot hash
+FAIL UI-3-dark-1024: duplicate screenshot hash
+FAIL UI-3-dark-1440: duplicate screenshot hash
+FAIL UI-4-light-375: duplicate screenshot hash
+FAIL UI-4-light-768: duplicate screenshot hash
+FAIL UI-4-light-1024: duplicate screenshot hash
+FAIL UI-4-light-1440: duplicate screenshot hash
+FAIL UI-4-dark-375: duplicate screenshot hash
+FAIL UI-4-dark-768: duplicate screenshot hash
+FAIL UI-4-dark-1024: duplicate screenshot hash
+FAIL UI-4-dark-1440: duplicate screenshot hash
+FAIL UI-7-light-375: duplicate screenshot hash
+FAIL UI-7-light-768: duplicate screenshot hash
+FAIL UI-7-light-1024: duplicate screenshot hash
+FAIL UI-7-light-1440: duplicate screenshot hash
+FAIL UI-7-dark-375: duplicate screenshot hash
+FAIL UI-7-dark-768: duplicate screenshot hash
+FAIL UI-7-dark-1024: duplicate screenshot hash
+FAIL UI-7-dark-1440: duplicate screenshot hash
+BLOCKED cells: 16/56
+VERDICT: FAIL errors=31 blocked=16

@@ -1,0 +1,1453 @@
+{
+  "schema": "portal-s9/1",
+  "cells": [
+    {
+      "case": "UI-1",
+      "theme": "light",
+      "viewport": 375,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:05:05+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, sans-serif",
+            "size_px": 24,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, sans-serif",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#2A1D17",
+            "background": "#FFFFFF",
+            "ratio": 16.3225
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#B93623",
+            "background": "#FFFFFF",
+            "ratio": 5.8095
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-1",
+      "theme": "light",
+      "viewport": 768,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:05:05+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, sans-serif",
+            "size_px": 24,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, sans-serif",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#2A1D17",
+            "background": "#FFFFFF",
+            "ratio": 16.3225
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#B93623",
+            "background": "#FFFFFF",
+            "ratio": 5.8095
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-1",
+      "theme": "light",
+      "viewport": 1024,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:05:05+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, sans-serif",
+            "size_px": 24,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, sans-serif",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#2A1D17",
+            "background": "#FFFFFF",
+            "ratio": 16.3225
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#B93623",
+            "background": "#FFFFFF",
+            "ratio": 5.8095
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-1",
+      "theme": "light",
+      "viewport": 1440,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:05:05+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, sans-serif",
+            "size_px": 24,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, sans-serif",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#2A1D17",
+            "background": "#FFFFFF",
+            "ratio": 16.3225
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#B93623",
+            "background": "#FFFFFF",
+            "ratio": 5.8095
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-1",
+      "theme": "dark",
+      "viewport": 375,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:05:05+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, sans-serif",
+            "size_px": 24,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, sans-serif",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#F8EFE5",
+            "background": "#2A211C",
+            "ratio": 13.858
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#F07A5F",
+            "background": "#2A211C",
+            "ratio": 5.7431
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-1",
+      "theme": "dark",
+      "viewport": 768,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:05:05+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, sans-serif",
+            "size_px": 24,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, sans-serif",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#F8EFE5",
+            "background": "#2A211C",
+            "ratio": 13.858
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#F07A5F",
+            "background": "#2A211C",
+            "ratio": 5.7431
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-1",
+      "theme": "dark",
+      "viewport": 1024,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:05:05+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, sans-serif",
+            "size_px": 24,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, sans-serif",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#F8EFE5",
+            "background": "#2A211C",
+            "ratio": 13.858
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#F07A5F",
+            "background": "#2A211C",
+            "ratio": 5.7431
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-1",
+      "theme": "dark",
+      "viewport": 1440,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:05:05+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, sans-serif",
+            "size_px": 24,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, sans-serif",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#F8EFE5",
+            "background": "#2A211C",
+            "ratio": 13.858
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#F07A5F",
+            "background": "#2A211C",
+            "ratio": 5.7431
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-2",
+      "theme": "light",
+      "viewport": 375,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:05:05+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/login",
+        "http://127.0.0.1:3000/register",
+        "http://127.0.0.1:3000/forgot-password",
+        "http://127.0.0.1:3000/reset-password"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/login",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, sans-serif",
+            "size_px": 24,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, sans-serif",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#2A1D17",
+            "background": "#FFFFFF",
+            "ratio": 16.3225
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#B93623",
+            "background": "#FFFFFF",
+            "ratio": 5.8095
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-2",
+      "theme": "light",
+      "viewport": 768,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:05:05+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/login",
+        "http://127.0.0.1:3000/register",
+        "http://127.0.0.1:3000/forgot-password",
+        "http://127.0.0.1:3000/reset-password"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/login",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, sans-serif",
+            "size_px": 24,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, sans-serif",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#2A1D17",
+            "background": "#FFFFFF",
+            "ratio": 16.3225
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#B93623",
+            "background": "#FFFFFF",
+            "ratio": 5.8095
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-2",
+      "theme": "light",
+      "viewport": 1024,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:05:05+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/login",
+        "http://127.0.0.1:3000/register",
+        "http://127.0.0.1:3000/forgot-password",
+        "http://127.0.0.1:3000/reset-password"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/login",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, sans-serif",
+            "size_px": 24,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, sans-serif",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#2A1D17",
+            "background": "#FFFFFF",
+            "ratio": 16.3225
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#B93623",
+            "background": "#FFFFFF",
+            "ratio": 5.8095
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-2",
+      "theme": "light",
+      "viewport": 1440,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:05:05+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/login",
+        "http://127.0.0.1:3000/register",
+        "http://127.0.0.1:3000/forgot-password",
+        "http://127.0.0.1:3000/reset-password"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/login",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, sans-serif",
+            "size_px": 24,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, sans-serif",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#2A1D17",
+            "background": "#FFFFFF",
+            "ratio": 16.3225
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#B93623",
+            "background": "#FFFFFF",
+            "ratio": 5.8095
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-2",
+      "theme": "dark",
+      "viewport": 375,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:05:05+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/login",
+        "http://127.0.0.1:3000/register",
+        "http://127.0.0.1:3000/forgot-password",
+        "http://127.0.0.1:3000/reset-password"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/login",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, sans-serif",
+            "size_px": 24,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, sans-serif",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#F8EFE5",
+            "background": "#2A211C",
+            "ratio": 13.858
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#F07A5F",
+            "background": "#2A211C",
+            "ratio": 5.7431
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-2",
+      "theme": "dark",
+      "viewport": 768,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:05:05+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/login",
+        "http://127.0.0.1:3000/register",
+        "http://127.0.0.1:3000/forgot-password",
+        "http://127.0.0.1:3000/reset-password"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/login",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, sans-serif",
+            "size_px": 24,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, sans-serif",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#F8EFE5",
+            "background": "#2A211C",
+            "ratio": 13.858
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#F07A5F",
+            "background": "#2A211C",
+            "ratio": 5.7431
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-2",
+      "theme": "dark",
+      "viewport": 1024,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:05:05+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/login",
+        "http://127.0.0.1:3000/register",
+        "http://127.0.0.1:3000/forgot-password",
+        "http://127.0.0.1:3000/reset-password"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/login",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, sans-serif",
+            "size_px": 24,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, sans-serif",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#F8EFE5",
+            "background": "#2A211C",
+            "ratio": 13.858
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#F07A5F",
+            "background": "#2A211C",
+            "ratio": 5.7431
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-2",
+      "theme": "dark",
+      "viewport": 1440,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:05:05+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/login",
+        "http://127.0.0.1:3000/register",
+        "http://127.0.0.1:3000/forgot-password",
+        "http://127.0.0.1:3000/reset-password"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/login",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, sans-serif",
+            "size_px": 24,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, sans-serif",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#F8EFE5",
+            "background": "#2A211C",
+            "ratio": 13.858
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#F07A5F",
+            "background": "#2A211C",
+            "ratio": 5.7431
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-3",
+      "theme": "light",
+      "viewport": 375,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T08:05:37+00:00",
+      "reason": "BLOCKED: standalone server started by anti.sh lacked AUTH_SERVICE_URL from .env.local; BFF /api/auth/login failed with 500 (fetch failed to default http://localhost:8080 instead of Kong :8000); seeded role accounts cannot log in to access authenticated routes"
+    },
+    {
+      "case": "UI-3",
+      "theme": "light",
+      "viewport": 768,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T08:05:37+00:00",
+      "reason": "BLOCKED: standalone server started by anti.sh lacked AUTH_SERVICE_URL from .env.local; BFF /api/auth/login failed with 500 (fetch failed to default http://localhost:8080 instead of Kong :8000); seeded role accounts cannot log in to access authenticated routes"
+    },
+    {
+      "case": "UI-3",
+      "theme": "light",
+      "viewport": 1024,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T08:05:37+00:00",
+      "reason": "BLOCKED: standalone server started by anti.sh lacked AUTH_SERVICE_URL from .env.local; BFF /api/auth/login failed with 500 (fetch failed to default http://localhost:8080 instead of Kong :8000); seeded role accounts cannot log in to access authenticated routes"
+    },
+    {
+      "case": "UI-3",
+      "theme": "light",
+      "viewport": 1440,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T08:05:37+00:00",
+      "reason": "BLOCKED: standalone server started by anti.sh lacked AUTH_SERVICE_URL from .env.local; BFF /api/auth/login failed with 500 (fetch failed to default http://localhost:8080 instead of Kong :8000); seeded role accounts cannot log in to access authenticated routes"
+    },
+    {
+      "case": "UI-3",
+      "theme": "dark",
+      "viewport": 375,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T08:05:37+00:00",
+      "reason": "BLOCKED: standalone server started by anti.sh lacked AUTH_SERVICE_URL from .env.local; BFF /api/auth/login failed with 500 (fetch failed to default http://localhost:8080 instead of Kong :8000); seeded role accounts cannot log in to access authenticated routes"
+    },
+    {
+      "case": "UI-3",
+      "theme": "dark",
+      "viewport": 768,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T08:05:37+00:00",
+      "reason": "BLOCKED: standalone server started by anti.sh lacked AUTH_SERVICE_URL from .env.local; BFF /api/auth/login failed with 500 (fetch failed to default http://localhost:8080 instead of Kong :8000); seeded role accounts cannot log in to access authenticated routes"
+    },
+    {
+      "case": "UI-3",
+      "theme": "dark",
+      "viewport": 1024,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T08:05:37+00:00",
+      "reason": "BLOCKED: standalone server started by anti.sh lacked AUTH_SERVICE_URL from .env.local; BFF /api/auth/login failed with 500 (fetch failed to default http://localhost:8080 instead of Kong :8000); seeded role accounts cannot log in to access authenticated routes"
+    },
+    {
+      "case": "UI-3",
+      "theme": "dark",
+      "viewport": 1440,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T08:05:37+00:00",
+      "reason": "BLOCKED: standalone server started by anti.sh lacked AUTH_SERVICE_URL from .env.local; BFF /api/auth/login failed with 500 (fetch failed to default http://localhost:8080 instead of Kong :8000); seeded role accounts cannot log in to access authenticated routes"
+    },
+    {
+      "case": "UI-4",
+      "theme": "light",
+      "viewport": 375,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T08:05:37+00:00",
+      "reason": "BLOCKED: standalone server started by anti.sh lacked AUTH_SERVICE_URL from .env.local; BFF /api/auth/login failed with 500 (fetch failed to default http://localhost:8080 instead of Kong :8000); seeded role accounts cannot log in to access authenticated routes"
+    },
+    {
+      "case": "UI-4",
+      "theme": "light",
+      "viewport": 768,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T08:05:37+00:00",
+      "reason": "BLOCKED: standalone server started by anti.sh lacked AUTH_SERVICE_URL from .env.local; BFF /api/auth/login failed with 500 (fetch failed to default http://localhost:8080 instead of Kong :8000); seeded role accounts cannot log in to access authenticated routes"
+    },
+    {
+      "case": "UI-4",
+      "theme": "light",
+      "viewport": 1024,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T08:05:37+00:00",
+      "reason": "BLOCKED: standalone server started by anti.sh lacked AUTH_SERVICE_URL from .env.local; BFF /api/auth/login failed with 500 (fetch failed to default http://localhost:8080 instead of Kong :8000); seeded role accounts cannot log in to access authenticated routes"
+    },
+    {
+      "case": "UI-4",
+      "theme": "light",
+      "viewport": 1440,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T08:05:37+00:00",
+      "reason": "BLOCKED: standalone server started by anti.sh lacked AUTH_SERVICE_URL from .env.local; BFF /api/auth/login failed with 500 (fetch failed to default http://localhost:8080 instead of Kong :8000); seeded role accounts cannot log in to access authenticated routes"
+    },
+    {
+      "case": "UI-4",
+      "theme": "dark",
+      "viewport": 375,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T08:05:37+00:00",
+      "reason": "BLOCKED: standalone server started by anti.sh lacked AUTH_SERVICE_URL from .env.local; BFF /api/auth/login failed with 500 (fetch failed to default http://localhost:8080 instead of Kong :8000); seeded role accounts cannot log in to access authenticated routes"
+    },
+    {
+      "case": "UI-4",
+      "theme": "dark",
+      "viewport": 768,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T08:05:37+00:00",
+      "reason": "BLOCKED: standalone server started by anti.sh lacked AUTH_SERVICE_URL from .env.local; BFF /api/auth/login failed with 500 (fetch failed to default http://localhost:8080 instead of Kong :8000); seeded role accounts cannot log in to access authenticated routes"
+    },
+    {
+      "case": "UI-4",
+      "theme": "dark",
+      "viewport": 1024,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T08:05:37+00:00",
+      "reason": "BLOCKED: standalone server started by anti.sh lacked AUTH_SERVICE_URL from .env.local; BFF /api/auth/login failed with 500 (fetch failed to default http://localhost:8080 instead of Kong :8000); seeded role accounts cannot log in to access authenticated routes"
+    },
+    {
+      "case": "UI-4",
+      "theme": "dark",
+      "viewport": 1440,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T08:05:37+00:00",
+      "reason": "BLOCKED: standalone server started by anti.sh lacked AUTH_SERVICE_URL from .env.local; BFF /api/auth/login failed with 500 (fetch failed to default http://localhost:8080 instead of Kong :8000); seeded role accounts cannot log in to access authenticated routes"
+    },
+    {
+      "case": "UI-5",
+      "theme": "light",
+      "viewport": 375,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T08:05:37+00:00",
+      "reason": "BLOCKED: standalone server started by anti.sh lacked AUTH_SERVICE_URL from .env.local; BFF /api/auth/login failed with 500 (fetch failed to default http://localhost:8080 instead of Kong :8000); seeded role accounts cannot log in to access authenticated routes"
+    },
+    {
+      "case": "UI-5",
+      "theme": "light",
+      "viewport": 768,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T08:05:37+00:00",
+      "reason": "BLOCKED: standalone server started by anti.sh lacked AUTH_SERVICE_URL from .env.local; BFF /api/auth/login failed with 500 (fetch failed to default http://localhost:8080 instead of Kong :8000); seeded role accounts cannot log in to access authenticated routes"
+    },
+    {
+      "case": "UI-5",
+      "theme": "light",
+      "viewport": 1024,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T08:05:37+00:00",
+      "reason": "BLOCKED: standalone server started by anti.sh lacked AUTH_SERVICE_URL from .env.local; BFF /api/auth/login failed with 500 (fetch failed to default http://localhost:8080 instead of Kong :8000); seeded role accounts cannot log in to access authenticated routes"
+    },
+    {
+      "case": "UI-5",
+      "theme": "light",
+      "viewport": 1440,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T08:05:37+00:00",
+      "reason": "BLOCKED: standalone server started by anti.sh lacked AUTH_SERVICE_URL from .env.local; BFF /api/auth/login failed with 500 (fetch failed to default http://localhost:8080 instead of Kong :8000); seeded role accounts cannot log in to access authenticated routes"
+    },
+    {
+      "case": "UI-5",
+      "theme": "dark",
+      "viewport": 375,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T08:05:37+00:00",
+      "reason": "BLOCKED: standalone server started by anti.sh lacked AUTH_SERVICE_URL from .env.local; BFF /api/auth/login failed with 500 (fetch failed to default http://localhost:8080 instead of Kong :8000); seeded role accounts cannot log in to access authenticated routes"
+    },
+    {
+      "case": "UI-5",
+      "theme": "dark",
+      "viewport": 768,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T08:05:37+00:00",
+      "reason": "BLOCKED: standalone server started by anti.sh lacked AUTH_SERVICE_URL from .env.local; BFF /api/auth/login failed with 500 (fetch failed to default http://localhost:8080 instead of Kong :8000); seeded role accounts cannot log in to access authenticated routes"
+    },
+    {
+      "case": "UI-5",
+      "theme": "dark",
+      "viewport": 1024,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T08:05:37+00:00",
+      "reason": "BLOCKED: standalone server started by anti.sh lacked AUTH_SERVICE_URL from .env.local; BFF /api/auth/login failed with 500 (fetch failed to default http://localhost:8080 instead of Kong :8000); seeded role accounts cannot log in to access authenticated routes"
+    },
+    {
+      "case": "UI-5",
+      "theme": "dark",
+      "viewport": 1440,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T08:05:37+00:00",
+      "reason": "BLOCKED: standalone server started by anti.sh lacked AUTH_SERVICE_URL from .env.local; BFF /api/auth/login failed with 500 (fetch failed to default http://localhost:8080 instead of Kong :8000); seeded role accounts cannot log in to access authenticated routes"
+    },
+    {
+      "case": "UI-6",
+      "theme": "light",
+      "viewport": 375,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T08:05:37+00:00",
+      "reason": "BLOCKED: standalone server started by anti.sh lacked AUTH_SERVICE_URL from .env.local; BFF /api/auth/login failed with 500 (fetch failed to default http://localhost:8080 instead of Kong :8000); seeded role accounts cannot log in to access authenticated routes"
+    },
+    {
+      "case": "UI-6",
+      "theme": "light",
+      "viewport": 768,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T08:05:37+00:00",
+      "reason": "BLOCKED: standalone server started by anti.sh lacked AUTH_SERVICE_URL from .env.local; BFF /api/auth/login failed with 500 (fetch failed to default http://localhost:8080 instead of Kong :8000); seeded role accounts cannot log in to access authenticated routes"
+    },
+    {
+      "case": "UI-6",
+      "theme": "light",
+      "viewport": 1024,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T08:05:37+00:00",
+      "reason": "BLOCKED: standalone server started by anti.sh lacked AUTH_SERVICE_URL from .env.local; BFF /api/auth/login failed with 500 (fetch failed to default http://localhost:8080 instead of Kong :8000); seeded role accounts cannot log in to access authenticated routes"
+    },
+    {
+      "case": "UI-6",
+      "theme": "light",
+      "viewport": 1440,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T08:05:37+00:00",
+      "reason": "BLOCKED: standalone server started by anti.sh lacked AUTH_SERVICE_URL from .env.local; BFF /api/auth/login failed with 500 (fetch failed to default http://localhost:8080 instead of Kong :8000); seeded role accounts cannot log in to access authenticated routes"
+    },
+    {
+      "case": "UI-6",
+      "theme": "dark",
+      "viewport": 375,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T08:05:37+00:00",
+      "reason": "BLOCKED: standalone server started by anti.sh lacked AUTH_SERVICE_URL from .env.local; BFF /api/auth/login failed with 500 (fetch failed to default http://localhost:8080 instead of Kong :8000); seeded role accounts cannot log in to access authenticated routes"
+    },
+    {
+      "case": "UI-6",
+      "theme": "dark",
+      "viewport": 768,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T08:05:37+00:00",
+      "reason": "BLOCKED: standalone server started by anti.sh lacked AUTH_SERVICE_URL from .env.local; BFF /api/auth/login failed with 500 (fetch failed to default http://localhost:8080 instead of Kong :8000); seeded role accounts cannot log in to access authenticated routes"
+    },
+    {
+      "case": "UI-6",
+      "theme": "dark",
+      "viewport": 1024,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T08:05:37+00:00",
+      "reason": "BLOCKED: standalone server started by anti.sh lacked AUTH_SERVICE_URL from .env.local; BFF /api/auth/login failed with 500 (fetch failed to default http://localhost:8080 instead of Kong :8000); seeded role accounts cannot log in to access authenticated routes"
+    },
+    {
+      "case": "UI-6",
+      "theme": "dark",
+      "viewport": 1440,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T08:05:37+00:00",
+      "reason": "BLOCKED: standalone server started by anti.sh lacked AUTH_SERVICE_URL from .env.local; BFF /api/auth/login failed with 500 (fetch failed to default http://localhost:8080 instead of Kong :8000); seeded role accounts cannot log in to access authenticated routes"
+    },
+    {
+      "case": "UI-7",
+      "theme": "light",
+      "viewport": 375,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T08:05:37+00:00",
+      "reason": "BLOCKED: standalone server started by anti.sh lacked AUTH_SERVICE_URL from .env.local; BFF /api/auth/login failed with 500 (fetch failed to default http://localhost:8080 instead of Kong :8000); seeded role accounts cannot log in to access authenticated routes"
+    },
+    {
+      "case": "UI-7",
+      "theme": "light",
+      "viewport": 768,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T08:05:37+00:00",
+      "reason": "BLOCKED: standalone server started by anti.sh lacked AUTH_SERVICE_URL from .env.local; BFF /api/auth/login failed with 500 (fetch failed to default http://localhost:8080 instead of Kong :8000); seeded role accounts cannot log in to access authenticated routes"
+    },
+    {
+      "case": "UI-7",
+      "theme": "light",
+      "viewport": 1024,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T08:05:37+00:00",
+      "reason": "BLOCKED: standalone server started by anti.sh lacked AUTH_SERVICE_URL from .env.local; BFF /api/auth/login failed with 500 (fetch failed to default http://localhost:8080 instead of Kong :8000); seeded role accounts cannot log in to access authenticated routes"
+    },
+    {
+      "case": "UI-7",
+      "theme": "light",
+      "viewport": 1440,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T08:05:37+00:00",
+      "reason": "BLOCKED: standalone server started by anti.sh lacked AUTH_SERVICE_URL from .env.local; BFF /api/auth/login failed with 500 (fetch failed to default http://localhost:8080 instead of Kong :8000); seeded role accounts cannot log in to access authenticated routes"
+    },
+    {
+      "case": "UI-7",
+      "theme": "dark",
+      "viewport": 375,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T08:05:37+00:00",
+      "reason": "BLOCKED: standalone server started by anti.sh lacked AUTH_SERVICE_URL from .env.local; BFF /api/auth/login failed with 500 (fetch failed to default http://localhost:8080 instead of Kong :8000); seeded role accounts cannot log in to access authenticated routes"
+    },
+    {
+      "case": "UI-7",
+      "theme": "dark",
+      "viewport": 768,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T08:05:37+00:00",
+      "reason": "BLOCKED: standalone server started by anti.sh lacked AUTH_SERVICE_URL from .env.local; BFF /api/auth/login failed with 500 (fetch failed to default http://localhost:8080 instead of Kong :8000); seeded role accounts cannot log in to access authenticated routes"
+    },
+    {
+      "case": "UI-7",
+      "theme": "dark",
+      "viewport": 1024,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T08:05:37+00:00",
+      "reason": "BLOCKED: standalone server started by anti.sh lacked AUTH_SERVICE_URL from .env.local; BFF /api/auth/login failed with 500 (fetch failed to default http://localhost:8080 instead of Kong :8000); seeded role accounts cannot log in to access authenticated routes"
+    },
+    {
+      "case": "UI-7",
+      "theme": "dark",
+      "viewport": 1440,
+      "status": "BLOCKED",
+      "captured_at": "2026-10-04T08:05:37+00:00",
+      "reason": "BLOCKED: standalone server started by anti.sh lacked AUTH_SERVICE_URL from .env.local; BFF /api/auth/login failed with 500 (fetch failed to default http://localhost:8080 instead of Kong :8000); seeded role accounts cannot log in to access authenticated routes"
+    }
+  ]
+}

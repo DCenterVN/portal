@@ -1,7 +1,7 @@
 {
   "id": "PORTAL-REBRAND-001",
   "title": "Fresh Meal Kit brand through the existing portal token pipeline",
-  "description": "worker: unassigned · slices: 8/9 · next: review: review-decision.json missing",
+  "description": "worker: codex · slices: 9/9 · next: approval: testkit/ changed after approval (happy case / error list are the giver's) - re-approve",
   "pipeline": "sdlc",
   "agent": null,
   "agents": [
@@ -14,10 +14,10 @@
     "sdlc-e2e",
     "sdlc-release"
   ],
-  "currentStep": 4,
+  "currentStep": 3,
   "status": "in_progress",
   "createdAt": "2026-10-04T00:54:15+00:00",
-  "updatedAt": "2026-10-04T06:01:20+00:00",
+  "updatedAt": "2026-10-04T09:52:30+00:00",
   "stepStates": [
     {
       "agent": "sdlc-discovery",
@@ -54,9 +54,9 @@
     },
     {
       "agent": "sdlc-design",
-      "status": "done",
+      "status": "in_progress",
       "revision": 1,
-      "runStatus": "approved",
+      "runStatus": "awaiting_review",
       "startedAt": null,
       "finishedAt": null,
       "artifactsProduced": [
@@ -65,12 +65,14 @@
     },
     {
       "agent": "sdlc-build",
-      "status": "in_progress",
+      "status": "pending",
       "revision": 1,
-      "runStatus": "awaiting_work",
+      "runStatus": "pending",
       "startedAt": null,
       "finishedAt": null,
-      "artifactsProduced": []
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-REBRAND-001/handback.md"
+      ]
     },
     {
       "agent": "sdlc-integration",
@@ -80,6 +82,7 @@
       "startedAt": null,
       "finishedAt": null,
       "artifactsProduced": [
+        ".aidlc/runs/PORTAL-REBRAND-001/badcases.md",
         ".aidlc/runs/PORTAL-REBRAND-001/artifacts/verification.json"
       ]
     },
@@ -91,6 +94,7 @@
       "startedAt": null,
       "finishedAt": null,
       "artifactsProduced": [
+        ".aidlc/runs/PORTAL-REBRAND-001/badcases.md",
         ".aidlc/runs/PORTAL-REBRAND-001/artifacts/verification.json"
       ]
     },
@@ -101,7 +105,9 @@
       "runStatus": "pending",
       "startedAt": null,
       "finishedAt": null,
-      "artifactsProduced": []
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-REBRAND-001/artifacts/review-decision.json"
+      ]
     }
   ]
 }

@@ -35,7 +35,11 @@ import type { UserProfile } from "../lib/auth/client";
 
 // SSR cannot mount a portal. Only expose its rendered tree; effects/keyboard are
 // covered by the existing dialog behavior tests and the later browser audit.
-const portalRender = vi.hoisted(() => ({ mounted: false, states: [] as unknown[] }));
+const portalRender = vi.hoisted(() => ({
+  mounted: false, states: [] as unknown[],
+  filter: undefined as string | undefined,
+  filterClicks: {} as Record<string, () => void>,
+}));
 vi.mock("../components/ui/toast", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../components/ui/toast")>();
   return { ...actual, useToast: () => ({ toast: vi.fn() }) };
@@ -43,7 +47,23 @@ vi.mock("../components/ui/toast", async (importOriginal) => {
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }) }));
 vi.mock("react", async (importOriginal) => {
   const actual = await importOriginal<typeof React>();
-  return { ...actual, useState: (initial: unknown) => actual.useState(portalRender.states.length ? portalRender.states.shift() : portalRender.mounted && initial === false ? true : initial) };
+  return { ...actual, useState: (initial: unknown) => {
+    const state = actual.useState(portalRender.states.length ? portalRender.states.shift() : portalRender.mounted && initial === false ? true : initial);
+    if (initial === "ALL" && portalRender.filter !== undefined) {
+      return [portalRender.filter, (filter: string) => { portalRender.filter = filter; }];
+    }
+    return state;
+  } };
+});
+vi.mock("../components/ui/button", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../components/ui/button")>();
+  return { ...actual, Button: React.forwardRef<HTMLButtonElement, React.ComponentProps<typeof actual.Button>>((props, ref) => {
+    if (portalRender.filter !== undefined && props.onClick) {
+      const name = renderToStaticMarkup(React.createElement(React.Fragment, null, props.children)).replace(/<[^>]*>/g, "").trim();
+      portalRender.filterClicks[name] = () => props.onClick!({} as React.MouseEvent<HTMLButtonElement>);
+    }
+    return React.createElement(actual.Button, { ...props, ref });
+  }) };
 });
 vi.mock("react-dom", async (importOriginal) => {
   const actual = await importOriginal<typeof import("react-dom")>();
@@ -738,6 +758,104 @@ const s8Trace: PublicTraceability = {
   ingredients: [{ material_name: "Cá hồi", supplier_code: "SUP-42" }],
   timeline: [{ stage: "QC", title: "Kiểm định hoàn tất", timestamp: "2026-09-29", passed: true }],
 };
+
+// Query the rendered SSR tree by label association, independent of generated IDs.
+// Wrapped radio labels and explicit for/id pairs both name their controls.
+function getByLabelText(html: string, text: string) {
+  const plainText = (markup: string) => markup.replace(/<[^>]*>/g, "").replaceAll("&amp;", "&").trim();
+  const labels = [...html.matchAll(/<label\b([^>]*)>([\s\S]*?)<\/label>/g)]
+    .filter((label) => plainText(label[2]) === text);
+  expect(labels, `label: ${text}`).toHaveLength(1);
+  const id = labels[0][1].match(/\bfor="([^"]+)"/)?.[1];
+  const controls = id
+    ? (html.match(/<(?:input|select|textarea)\b[^>]*>/g) ?? []).filter((control) => control.includes(`id="${id}"`))
+    : labels[0][2].match(/<(?:input|select|textarea)\b[^>]*>/g) ?? [];
+  expect(controls, `control named by label: ${text}`).toHaveLength(1);
+  return controls[0];
+}
+
+function catalogueFilters(html: string) {
+  return (html.match(/<button\b[\s\S]*?<\/button>/g) ?? [])
+    .filter((button) => />(?:Tất cả|Đang mở bán|Bản nháp) \(\d+\)<\/button>/.test(button));
+}
+
+describe("review fix rendered accessibility and filter selection", () => {
+  it.each([
+    ["Tên sản phẩm (*)", "input"],
+    ["Mã định danh SKU (*)", "input"],
+    ["Đơn vị tính (UOM) (*)", "select"],
+    ["Giá niêm yết (VND) (*)", "input"],
+    ["Mô tả sản phẩm & Quy cách bảo quản", "input"],
+  ])("finds the product control by its label: %s", (label, tag) => {
+    const html = s7Markup(React.createElement(ProductCreateDialog, { open: true, onOpenChange: () => {} }), []);
+    expect(getByLabelText(html, label)).toMatch(new RegExp(`^<${tag}\\b`));
+  });
+
+  it("finds the session PIN control by its label", () => {
+    const html = s7Markup(React.createElement(SessionTimeoutModal, { open: true }), []);
+    expect(getByLabelText(html, "Mật khẩu hoặc mã PIN 6 số")).toContain('type="password"');
+  });
+
+  it.each([
+    ["Nhiệt độ tâm sau cấp đông (°C)", "input", 'type="number"'],
+    ["Ghi nhận kiểm tra cảm quan", "textarea", 'required=""'],
+    ["Bao bì nguyên vẹn, hút chân không đạt", "input", 'type="radio"'],
+    ["Bao bì lỗi / hở", "input", 'type="radio"'],
+  ])("finds the QC control by its label: %s", (label, tag, attribute) => {
+    const html = surfaceMarkup(React.createElement(QCView, { completedOrders: productionFixtures }),
+      [productionFixtures, productionFixtures[4], -18.5, true, "Mẫu đạt", false]);
+    const control = getByLabelText(html, label);
+    expect(control).toMatch(new RegExp(`^<${tag}\\b`));
+    expect(control).toContain(attribute);
+  });
+
+  it("moves the sole pressed filter and its leading hidden Check icon through rendered click handlers", () => {
+    portalRender.filter = "ALL";
+    try {
+      for (const label of ["Tất cả (3)", "Đang mở bán (1)", "Bản nháp (1)", "Tất cả (3)"]) {
+        if (portalRender.filterClicks[label]) portalRender.filterClicks[label]();
+        const html = surfaceMarkup(React.createElement(ProductsView, { initialProducts: s8Products }));
+        const filters = catalogueFilters(html);
+        expect(filters).toHaveLength(3);
+        const pressed = filters.filter((button) => button.includes('aria-pressed="true"'));
+        expect(pressed).toHaveLength(1);
+        expect(pressed[0].replace(/<[^>]*>/g, "").trim()).toBe(label);
+        const checks = pressed[0].match(/<svg\b[^>]*class="[^"]*\blucide-check\b[^"]*"[^>]*>/g) ?? [];
+        expect(checks).toHaveLength(1);
+        expect(checks[0]).toContain('aria-hidden="true"');
+        expect(pressed[0]).toMatch(/<button\b[^>]*><svg\b/);
+        for (const button of filters.filter((button) => button !== pressed[0])) {
+          expect(button).toContain('aria-pressed="false"');
+          expect(button).not.toContain("lucide-check");
+        }
+        expectS7Roles(html, 1);
+      }
+    } finally {
+      portalRender.filter = undefined;
+      portalRender.filterClicks = {};
+    }
+  });
+
+  it.each(["ALL", "ACTIVE", "DRAFT"])("uses secondary selection and outline alternatives without destructive styling (%s)", (filter) => {
+    const html = surfaceMarkup(React.createElement(ProductsView, { initialProducts: s8Products }), [s8Products, "", filter, false, null]);
+    const filters = catalogueFilters(html);
+    expect(filters).toHaveLength(3);
+    expect(filters.filter((button) => button.includes('aria-pressed="true"'))).toHaveLength(1);
+    for (const button of filters) {
+      const classes = classesFor(button, "button");
+      expect(classes).not.toMatch(/destructive|color-danger/);
+      if (button.includes('aria-pressed="true"')) {
+        expect(classes).toContain("bg-transparent");
+        expect(classes).toContain("text-[var(--primary)]");
+      } else {
+        expect(classes).toContain("bg-[var(--card)]");
+        expect(classes).toContain("text-[var(--foreground)]");
+      }
+    }
+    expectS7Roles(html, 1);
+  });
+});
+
 describe("S8 rendered product and traceability roles", () => {
   it.each(s8Products)("preserves detail status, facts and CTA hierarchy ($status)", (product) => {
     const html = surfaceMarkup(React.createElement(ProductDetailView, { initialProduct: product }));

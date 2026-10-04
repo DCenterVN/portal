@@ -2,17 +2,17 @@
   "task": "PORTAL-REBRAND-001",
   "actor": "agent:claude-code(171709704+dawnmoriaty@users.noreply.github.com)",
   "worker": null,
-  "ts": "2026-10-04T06:01:14+00:00",
+  "ts": "2026-10-04T09:48:01+00:00",
   "cwd": ".",
-  "head": "082757be73d18f478b9665ecca4c29a849605296",
+  "head": "53a8e16567b39f69d67b5e4f7962ddae52bf0269",
   "dirty": true,
   "checks": [
     {
       "name": "unit",
-      "command": "python3 .aidlc/runs/PORTAL-REBRAND-001/testkit/check-brand.py  --scan-path 'components/layout/console-sidebar.tsx' --scan-path 'components/ui/input.tsx' --scan-path 'components/ui/dialog.tsx' --scan-path 'components/ui/badge.tsx' --scan-path 'components/ui/toast.tsx' --scan-path 'components/modals/confirm-qc-decision-modal.tsx' --scan-path 'components/modals/session-timeout-modal.tsx' --scan-path 'components/auth/login-form.tsx' --scan-path 'app/(store)/me/profile-client.tsx' --scan-path 'features/branches/branches-view.tsx' --scan-path 'features/memberships/memberships-view.tsx' --scan-path 'features/inventory/shelves-view.tsx' --scan-path 'features/roles/roles-view.tsx' --scan-path 'features/production/orders-view.tsx' --scan-path 'features/production/qc-view.tsx' --scan-path 'features/production/targets-view.tsx' --scan-path 'features/products/cart-view.tsx' --scan-path 'features/products/orders-view.tsx' --scan-path 'features/products/product-create-dialog.tsx' --scan-path 'features/products/product-detail-view.tsx' --scan-path 'features/products/products-view.tsx' --scan-path 'features/traceability/trace-view.tsx'",
+      "command": "python3 .aidlc/runs/PORTAL-REBRAND-001/testkit/check-brand.py",
       "exit": 0,
       "status": "PASS",
-      "seconds": 0.1,
+      "seconds": 0.2,
       "log": ".aidlc/runs/PORTAL-REBRAND-001/artifacts/logs/unit.log",
       "sha256": "e9895770234de963946abb10b6718802d94651744bf547cf9b7fee07375ddce7",
       "tail": [
@@ -33,6 +33,38 @@
         "PASS M7 generated CSS edit -> red drift",
         "PASS M8 source green + regeneration -> red token contract",
         "PASS M9 pale body text -> red contrast"
+      ]
+    },
+    {
+      "name": "unit_runner_selftest",
+      "command": "python3 -B .aidlc/runs/PORTAL-REBRAND-001/anti/anti_runner_selftest.py </dev/null",
+      "exit": 0,
+      "status": "PASS",
+      "seconds": 4.4,
+      "log": ".aidlc/runs/PORTAL-REBRAND-001/artifacts/logs/unit_runner_selftest.log",
+      "sha256": "c79d8d0ba380d68bc6c1d3fe78bd3f82bac52eaa4b2327a28e17f629c60daaf7",
+      "tail": [
+        "PASS runner port 3000",
+        "PASS runner port 9222",
+        "PASS runner tracked drift",
+        "PASS runner foreign pid",
+        "RUNNER SELF-TEST: 8/8 (offline synthetic shims only)"
+      ]
+    },
+    {
+      "name": "unit_grader_selftest",
+      "command": "python3 -B .aidlc/runs/PORTAL-REBRAND-001/anti/anti_check.py --self-test",
+      "exit": 0,
+      "status": "PASS",
+      "seconds": 0.2,
+      "log": ".aidlc/runs/PORTAL-REBRAND-001/artifacts/logs/unit_grader_selftest.log",
+      "sha256": "cb235c1db4889a3c2195fc07f31c48a27e2440510b12679abac876bdef7fc6b8",
+      "tail": [
+        "PASS self-test reject authenticated screenshot /login",
+        "PASS self-test reject LH fetchTime outside window",
+        "PASS self-test reject mobile LCP 2501",
+        "PASS self-test BLOCKED distinct from PASS (exit 2)",
+        "SELF-TEST: 15/15 PASS (synthetic fixtures only)"
       ]
     },
     {
@@ -63,18 +95,18 @@
     },
     {
       "name": "e2e_regression",
-      "command": "bash -o pipefail -c \"npm test 2>&1 | tee /dev/stderr | grep -E '^ +Tests +[0-9]+ passed' | grep -oE '[0-9]+' | head -1 | xargs -I{} test {} -ge 350\"",
+      "command": "bash -o pipefail -c \"npm test 2>&1 | tee /dev/stderr | grep -E '^ +Tests +[0-9]+ passed' | grep -oE '[0-9]+' | head -1 | xargs -I{} test {} -ge 364\"",
       "exit": 0,
       "status": "PASS",
-      "seconds": 3.1,
+      "seconds": 3.0,
       "log": ".aidlc/runs/PORTAL-REBRAND-001/artifacts/logs/e2e_regression.log",
-      "sha256": "a415a2a89276da70ffae04ed5094384ddd8165e19f97eaba74fe4c033f01dffb",
+      "sha256": "df8ca7d4d49973c93195b4b485259f264b9df2a3393885899b748f9f8b3d41a9",
       "tail": [
         "",
         " Test Files  38 passed (38)",
-        "      Tests  350 passed (350)",
-        "   Start at  13:01:10",
-        "   Duration  2.78s (transform 3.09s, setup 0ms, collect 15.64s, tests 1.84s, environment 8ms, prepare 15.14s)"
+        "      Tests  364 passed (364)",
+        "   Start at  16:47:57",
+        "   Duration  2.65s (transform 3.15s, setup 0ms, collect 13.96s, tests 1.88s, environment 6ms, prepare 15.35s)"
       ]
     },
     {

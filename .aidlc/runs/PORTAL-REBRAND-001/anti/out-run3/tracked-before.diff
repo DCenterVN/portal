@@ -1,0 +1,18 @@
+diff --git a/.aidlc/runs/PORTAL-REBRAND-001/testkit/errors.md b/.aidlc/runs/PORTAL-REBRAND-001/testkit/errors.md
+index 165ea66..af60b7a 100644
+--- a/.aidlc/runs/PORTAL-REBRAND-001/testkit/errors.md
++++ b/.aidlc/runs/PORTAL-REBRAND-001/testkit/errors.md
+@@ -21,3 +21,13 @@
+ The full gate is expected to return 1 on the old brand. `baseline-brand-gate.txt` is a probe transcript, not debt allowance. The positive fixture and nine mutants passed; runtime UI acceptance remains pending.
+ 
+ During gate development, the first positive fixture rejected light info/tint at 4.39:1; the final plan prohibits that pairing and checks allowed ink text instead. An early broad glass regex incorrectly matched business break-glass variables. The final gate checks visual string/selector uses and preserves business terminology, with a positive regression fixture. These fixes did not waive old brand or gradient/blur checks.
++
++## S9 Anti kit Fix 2 — observed run 1 / plan deviation for Dawn
++
++Run 1: runner exit **126**; Lighthouse `Permission denied` from `anti/out/npm-cache` on NTFS. Build actually compiled (Next 16.3.0 Turbopack) and emitted route table, but no `First Load JS` column; server warned `next start` incompatible with `output: standalone`. Grader reported **31 errors**, **16/56 BLOCKED**; claimed 40 PASS cells were not reliable: duplicate UI-2/3/4/7 screenshot hashes and authenticated UI-4-dark-1024 login screenshot. Preserved first run as archived evidence; never feed it to new brief/grader.
++
++**Plan deviation (Dawn):** replace unavailable Turbopack First Load JS source with Lighthouse `resource-summary` script `transferSize`, ceiling **200000 bytes (200 kB)** per audited route/form; record `total-byte-weight` separately. This measures transferred scripts rather than First Load JS; do not call the two equivalent. Keep `Compiled successfully` + required route table as independent build proof. User explicitly authorized this kit change; root plan unchanged under requested write boundary.
++
++Fix runner cache to external executable filesystem, temp Brave profile, standalone server with copied static/public outputs; retain tracked diff check. Require every non-BLOCKED cell final_urls + screenshot_url, authenticate and verify URL/heading before each authenticated cell, re-login on redirect within one runner run. Current environment only auth/org/customer/integration/notification plus VT-21: sales/inventory/production and seeded customer/employee/platform-admin/company-owner accounts, product id and trace code are Dawn prerequisites. Missing prerequisites legitimately BLOCKED; no new browser acceptance claimed by this kit fix.
++
++Fix 2 focused verification: extended fixtures first returned **11/14 FAIL** (missing script-size, authenticated URL, and final_urls checks). Final `python3 -B anti/anti_check.py --self-test`: **15/15 PASS**, exit 0; `bash -n anti/anti.sh`: exit 0. Temp-copy mutations: remove login checks → **13/15 FAIL**, exit 1; remove script-size ceiling → **14/15 FAIL**, exit 1. **Killed/total 2/2**. Full output: `anti/fix2-validation.txt`. `git check-ignore anti/accounts.local.md` confirms exclusion. Only allowed kit files and this append changed; no live run or S9 PASS asserted.

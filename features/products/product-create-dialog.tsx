@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useId, useState } from "react";
 import { PackagePlus } from "lucide-react";
 import {
   Dialog,
@@ -27,6 +27,7 @@ export function ProductCreateDialog({
   onOpenChange,
   onSuccess,
 }: ProductCreateDialogProps) {
+  const formId = useId();
   const { toast } = useToast();
   const [name, setName] = useState("");
   const [skuCode, setSkuCode] = useState("");
@@ -89,8 +90,9 @@ export function ProductCreateDialog({
 
           <div className="space-y-3.5 my-3 text-xs">
             <div>
-              <Label className="text-xs font-semibold">Tên sản phẩm (*)</Label>
+              <Label htmlFor={`${formId}-name`} className="text-xs font-semibold">Tên sản phẩm (*)</Label>
               <Input
+                id={`${formId}-name`}
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -101,8 +103,9 @@ export function ProductCreateDialog({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <Label className="text-xs font-semibold">Mã định danh SKU (*)</Label>
+                <Label htmlFor={`${formId}-sku`} className="text-xs font-semibold">Mã định danh SKU (*)</Label>
                 <Input
+                  id={`${formId}-sku`}
                   required
                   value={skuCode}
                   onChange={(e) => setSkuCode(e.target.value.toUpperCase())}
@@ -115,8 +118,9 @@ export function ProductCreateDialog({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <Label className="text-xs font-semibold">Đơn vị tính (UOM) (*)</Label>
+                <Label htmlFor={`${formId}-uom`} className="text-xs font-semibold">Đơn vị tính (UOM) (*)</Label>
                 <select
+                  id={`${formId}-uom`}
                   style={{ borderWidth: 1.5 }}
                   value={uom}
                   onChange={(e) => setUom(e.target.value)}
@@ -132,8 +136,9 @@ export function ProductCreateDialog({
               </div>
 
               <div>
-                <Label className="text-xs font-semibold">Giá niêm yết (VND) (*)</Label>
+                <Label htmlFor={`${formId}-price`} className="text-xs font-semibold">Giá niêm yết (VND) (*)</Label>
                 <Input
+                  id={`${formId}-price`}
                   required
                   type="number"
                   min="0"
@@ -147,8 +152,9 @@ export function ProductCreateDialog({
             </div>
 
             <div>
-              <Label className="text-xs font-semibold">Mô tả sản phẩm & Quy cách bảo quản</Label>
+              <Label htmlFor={`${formId}-description`} className="text-xs font-semibold">Mô tả sản phẩm & Quy cách bảo quản</Label>
               <Input
+                id={`${formId}-description`}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Mô tả nguồn gốc, cấp đông IQF -18°C..."

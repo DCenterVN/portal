@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useId, useState } from "react";
 import { Lock, LogIn, KeyRound } from "lucide-react";
 import {
   Dialog,
@@ -33,6 +33,7 @@ export function SessionTimeoutModal({
   onUnlock,
   onLogout,
 }: SessionTimeoutModalProps) {
+  const pinId = useId();
   const [pin, setPin] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -93,10 +94,11 @@ export function SessionTimeoutModal({
             )}
 
             <div className="text-left">
-              <Label className="text-xs font-semibold">Mật khẩu hoặc mã PIN 6 số</Label>
+              <Label htmlFor={pinId} className="text-xs font-semibold">Mật khẩu hoặc mã PIN 6 số</Label>
               <div className="relative mt-1">
                 <KeyRound className="size-4 text-[var(--color-muted)] absolute left-3 top-2.5" />
                 <Input
+                  id={pinId}
                   type="password"
                   required
                   autoFocus

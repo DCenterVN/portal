@@ -1,0 +1,6 @@
+FAIL lh-home-mobile: mobile LCP >2500 ms
+FAIL lh-login-mobile: mobile LCP >2500 ms
+FAIL lh-console-mobile: script transferSize >200 kB
+FAIL lh-console-desktop: script transferSize >200 kB
+BLOCKED cells: 0/56
+VERDICT: FAIL errors=4 blocked=0
