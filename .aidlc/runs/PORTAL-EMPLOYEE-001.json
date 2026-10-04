@@ -6,18 +6,19 @@
     "epic": "PORTAL-EMPLOYEE-001",
     "worker": "unassigned",
     "story": "US-UI-002",
-    "sprint": "02"
+    "sprint": "02",
+    "slices": "0/7"
   },
   "startedAt": "2026-09-28T01:17:57+00:00",
-  "updatedAt": "2026-09-28T01:17:57+00:00",
-  "currentStepIdx": 0,
+  "updatedAt": "2026-10-03T17:08:54+00:00",
+  "currentStepIdx": 3,
   "status": "running",
   "steps": [
     {
       "stepIdx": 0,
       "agent": "sdlc-discovery",
       "revision": 1,
-      "status": "awaiting_work",
+      "status": "approved",
       "artifactsProduced": [
         ".aidlc/runs/PORTAL-EMPLOYEE-001/plan.md"
       ]
@@ -26,7 +27,7 @@
       "stepIdx": 1,
       "agent": "sdlc-technical",
       "revision": 1,
-      "status": "pending",
+      "status": "approved",
       "artifactsProduced": [
         ".aidlc/runs/PORTAL-EMPLOYEE-001/plan.md"
       ]
@@ -35,7 +36,7 @@
       "stepIdx": 2,
       "agent": "sdlc-ux",
       "revision": 1,
-      "status": "pending",
+      "status": "approved",
       "artifactsProduced": [
         ".aidlc/runs/PORTAL-EMPLOYEE-001/plan.md"
       ]
@@ -44,7 +45,7 @@
       "stepIdx": 3,
       "agent": "sdlc-design",
       "revision": 1,
-      "status": "pending",
+      "status": "awaiting_review",
       "artifactsProduced": [
         ".aidlc/runs/PORTAL-EMPLOYEE-001/plan.md"
       ]

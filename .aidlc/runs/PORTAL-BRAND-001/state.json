@@ -1,7 +1,7 @@
 {
   "id": "PORTAL-BRAND-001",
   "title": "\"Đồng xanh\" brand tokens wired end-to-end + password show/hide on every password field",
-  "description": "worker: unassigned · story: US-UI-001 · sprint: 01 · slices: 4/4 · next: verification: stale (code changed since verify: .aidlc/arch-baseline.txt)",
+  "description": "worker: unassigned · story: US-UI-001 · sprint: 01 · slices: 4/4 · next: verification: stale (code changed since verify: .aidlc/arch-baseline.txt, .aidlc/stage-policy.json, AGENTS.md)",
   "pipeline": "sdlc",
   "agent": null,
   "agents": [
@@ -17,7 +17,7 @@
   "currentStep": 5,
   "status": "in_progress",
   "createdAt": "2026-09-26T01:09:17+00:00",
-  "updatedAt": "2026-09-26T07:25:54+00:00",
+  "updatedAt": "2026-10-03T17:08:54+00:00",
   "stepStates": [
     {
       "agent": "sdlc-discovery",

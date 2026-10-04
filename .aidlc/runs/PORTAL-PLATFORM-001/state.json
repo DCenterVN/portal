@@ -1,7 +1,7 @@
 {
   "id": "PORTAL-PLATFORM-001",
   "title": "UI nền tảng và quản trị công ty Đồng xanh",
-  "description": "worker: claude · story: US-UI-001 · sprint: 01 · slices: 19/19 · next: verification: stale (code changed since verify: .aidlc/arch-baseline.txt)",
+  "description": "worker: claude · story: US-UI-001 · sprint: 01 · slices: 19/19 · next: verification: stale (code changed since verify: .aidlc/arch-baseline.txt, .aidlc/stage-policy.json, AGENTS.md)",
   "pipeline": "sdlc",
   "agent": null,
   "agents": [
@@ -17,7 +17,7 @@
   "currentStep": 5,
   "status": "in_progress",
   "createdAt": "2026-09-27T17:11:55+00:00",
-  "updatedAt": "2026-09-29T00:38:02+00:00",
+  "updatedAt": "2026-10-03T17:08:54+00:00",
   "stepStates": [
     {
       "agent": "sdlc-discovery",
