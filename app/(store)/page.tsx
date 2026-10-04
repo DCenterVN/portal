@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Route } from "next";
-import { ArrowRight, BadgeCheck, Building2, Check, ChefHat, ClipboardCheck, Leaf, MapPin, PackageCheck, QrCode, ShieldCheck, ShoppingBasket, Snowflake, Sprout, ThermometerSnowflake, Truck, Users } from "lucide-react";
+import { ArrowRight, BadgeCheck, Check, ChefHat, ClipboardCheck, Leaf, MapPin, PackageCheck, QrCode, ShieldCheck, ShoppingBasket, Snowflake, Sprout, ThermometerSnowflake, Truck, Users } from "lucide-react";
 
 export const revalidate = 3600;
 

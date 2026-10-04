@@ -41,6 +41,7 @@ export function TargetsView({ initialTargets }: { initialTargets: ProductionTarg
 
   const canCreate = permissions.includes("production:target:create");
   const canApprove = permissions.includes("production:target:approve");
+  const primaryTargetId = !canCreate && !showCreate ? targets.find((target) => (target.status === "DRAFT" && canApprove) || target.status === "APPROVED" || target.status === "IN_PLANNING")?.id : undefined;
   const validLines = lines.every((line) => line.product_ref.trim() && line.target_quantity > 0 && line.uom.trim());
   const updateLine = (index: number, patch: Partial<TargetLine>) => setLines((current) => current.map((line, lineIndex) => lineIndex === index ? { ...line, ...patch } : line));
 
@@ -76,11 +77,11 @@ export function TargetsView({ initialTargets }: { initialTargets: ProductionTarg
     }
   };
 
-  return <PageShell>
+  return <PageShell className="bg-[var(--color-bg)] text-[var(--color-ink)]">
     <PageHeader title="Chỉ tiêu sản xuất" description="Giao chỉ tiêu ABC theo chi nhánh; người lập và người duyệt được tách quyền."
-      actions={canCreate ? <Button onClick={() => setShowCreate((value) => !value)}><Plus className="mr-2 h-4 w-4" />Tạo chỉ tiêu</Button> : undefined} />
+      actions={canCreate ? <Button variant={showCreate ? "outline" : "default"} onClick={() => setShowCreate((value) => !value)}><Plus className="mr-2 h-4 w-4" />Tạo chỉ tiêu</Button> : undefined} />
 
-    {showCreate && <Card className="mb-6"><CardContent className="pt-6"><form onSubmit={handleCreate} className="space-y-4">
+    {showCreate && <Card className="mb-6 border-[var(--color-line)] bg-[var(--color-surface)]"><CardContent className="pt-6"><form onSubmit={handleCreate} className="space-y-4">
       <div className="grid gap-4 md:grid-cols-2">
         <Field label="Tiêu đề" value={title} onChange={setTitle} required />
         <Field label="Chi nhánh từ phiên đăng nhập" value={branchRef} onChange={setBranchRef} disabled required />
@@ -99,14 +100,14 @@ export function TargetsView({ initialTargets }: { initialTargets: ProductionTarg
       <div className="flex gap-2"><Button type="submit" disabled={loading || !branchRef || !validLines || !title.trim() || periodEnd < periodStart}>Lưu DRAFT</Button><Button type="button" variant="outline" onClick={() => setShowCreate(false)}>Hủy</Button></div>
     </form></CardContent></Card>}
 
-    <Card><CardContent className="p-0"><Table><TableHeader><TableRow><TableHead>Mã</TableHead><TableHead>Tiêu đề</TableHead><TableHead>Chi nhánh</TableHead><TableHead>Kỳ</TableHead><TableHead>Trạng thái</TableHead><TableHead className="text-right">Thao tác</TableHead></TableRow></TableHeader><TableBody>
-      {targets.length === 0 ? <TableRow><TableCell colSpan={6} className="py-6 text-center text-muted-foreground">Chưa có chỉ tiêu sản xuất</TableCell></TableRow> : targets.map((target) => <TableRow key={target.id}>
+    <Card className="border-[var(--color-line)] bg-[var(--color-surface)]"><CardContent className="p-0"><Table><TableHeader><TableRow><TableHead>Mã</TableHead><TableHead>Tiêu đề</TableHead><TableHead>Chi nhánh</TableHead><TableHead>Kỳ</TableHead><TableHead>Trạng thái</TableHead><TableHead className="text-right">Thao tác</TableHead></TableRow></TableHeader><TableBody>
+      {targets.length === 0 ? <TableRow><TableCell colSpan={6} className="py-6 text-center text-[var(--color-muted)]">Chưa có chỉ tiêu sản xuất</TableCell></TableRow> : targets.map((target) => <TableRow key={target.id}>
         <TableCell className="font-mono font-medium">{target.target_code}</TableCell><TableCell>{target.title}</TableCell><TableCell className="font-mono text-xs">{target.branch_ref}</TableCell>
         <TableCell>{new Date(target.period_start).toLocaleDateString("vi-VN")} – {new Date(target.period_end).toLocaleDateString("vi-VN")}</TableCell>
         <TableCell><Badge variant={target.status === "APPROVED" ? "active" : target.status === "REJECTED" ? "revoked" : "outline"}>{target.status}</Badge></TableCell>
         <TableCell className="text-right"><div className="flex justify-end gap-2">
-          {target.status === "DRAFT" && canApprove && <><Button size="sm" variant="outline" onClick={() => handleApprove(target.id, "APPROVE")}><CheckCircle2 className="mr-1 h-4 w-4 text-green-600" />Duyệt</Button><Button size="sm" variant="outline" onClick={() => handleApprove(target.id, "REJECT")}><XCircle className="mr-1 h-4 w-4 text-red-600" />Từ chối</Button></>}
-          {(target.status === "APPROVED" || target.status === "IN_PLANNING") && <Button asChild size="sm"><Link href={`/production/food-plans?target_id=${encodeURIComponent(target.id)}`}>Tạo variant/BOM</Link></Button>}
+          {target.status === "DRAFT" && canApprove && <><Button size="sm" variant={target.id === primaryTargetId ? "default" : "outline"} onClick={() => handleApprove(target.id, "APPROVE")}><CheckCircle2 className={target.id === primaryTargetId ? "mr-1 h-4 w-4 text-[var(--color-primary-ink)]" : "mr-1 h-4 w-4 text-[var(--color-leaf)]"} />Duyệt</Button><Button size="sm" variant="outline" onClick={() => handleApprove(target.id, "REJECT")}><XCircle className="mr-1 h-4 w-4 text-[var(--color-danger)]" />Từ chối</Button></>}
+          {(target.status === "APPROVED" || target.status === "IN_PLANNING") && <Button asChild size="sm" variant={target.id === primaryTargetId ? "default" : "outline"}><Link href={`/production/food-plans?target_id=${encodeURIComponent(target.id)}`}>Tạo variant/BOM</Link></Button>}
         </div></TableCell>
       </TableRow>)}
     </TableBody></Table></CardContent></Card>
@@ -114,5 +115,5 @@ export function TargetsView({ initialTargets }: { initialTargets: ProductionTarg
 }
 
 function Field({ label, value, onChange, type = "text", required = false, disabled = false }: { label: string; value: string; onChange: (value: string) => void; type?: string; required?: boolean; disabled?: boolean }) {
-  return <label className="block text-sm"><span className="mb-1 block text-muted-foreground">{label}</span><input className="w-full rounded border p-2 disabled:bg-muted" type={type} value={value} required={required} disabled={disabled} min={type === "number" ? 0.000001 : undefined} step={type === "number" ? "any" : undefined} onChange={(event) => onChange(event.target.value)} /></label>;
+  return <label className="block text-sm"><span className="mb-1 block text-[var(--color-muted)]">{label}</span><input style={{ borderWidth: 1.5 }} className="h-11 w-full rounded-[var(--radius-md)] border border-[var(--color-input-border)] bg-[var(--color-surface)] p-2 text-[var(--color-ink)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus)] disabled:bg-[var(--color-tint)]" type={type} value={value} required={required} disabled={disabled} min={type === "number" ? 0.000001 : undefined} step={type === "number" ? "any" : undefined} onChange={(event) => onChange(event.target.value)} /></label>;
 }

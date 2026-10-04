@@ -7,7 +7,7 @@ import useSWR from "swr";
 import { NextIntlClientProvider, useTranslations } from "next-intl";
 import messages from "@/messages/vi.json";
 import { fetcher } from "@/lib/fetcher";
-import { PlatformShell, type ShellNavItem } from "@/components/layout/platform-shell";
+import { ConsoleShell, type ShellNavItem } from "@/components/layout/console-shell";
 import { EmptyState, ErrorState, Skeleton } from "@/components/ui/state";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field, Select } from "@/components/ui/field";
@@ -52,7 +52,7 @@ function accessKey(plane: Plane, root: string) {
 function Gate({ plane, root, children }: { plane: Plane; root: string; children: ReactNode }) {
   const t = useTranslations("platform");
   const { data, error, isLoading, mutate } = useSWR<unknown>(accessKey(plane, root), fetcher, { revalidateOnFocus: true, shouldRetryOnError: false });
-  const frame = (body: ReactNode) => <main className="mx-auto max-w-2xl px-4 py-16">{body}</main>;
+  const frame = (body: ReactNode) => <main id="main" className="mx-auto max-w-2xl px-4 py-16">{body}</main>;
   if (isLoading) return frame(<Skeleton title={t("loading")} />);
   const decide = plane === "platform" ? platformAccess : companyAccess;
   const access: AccessState = error ? decide(errorStatus(error), null) : decide(200, data);
@@ -64,14 +64,16 @@ function Gate({ plane, root, children }: { plane: Plane; root: string; children:
   const nav = navFor(plane, access.actions, root).map((item) => ({ ...item, label: t(item.label) }));
   return (
     <AccessProvider value={{ plane, actions: access.actions, root, role: access.role }}>
-      <PlatformShell
-        title={plane === "platform" ? t("title") : t("myCompany")}
-        subtitle={plane === "company" ? `MAIN ${root}` : undefined}
-        badge={plane === "platform" ? access.role : undefined}
-        nav={nav}
+      <ConsoleShell
+        nav={[{ title: plane === "platform" ? t("title") : t("myCompany"), items: nav }]}
+        context={{
+          label: plane === "platform" ? "Nền tảng" : t("myCompany"),
+          sublabel: plane === "company" ? `MAIN ${root}` : undefined,
+        }}
+        user={{ name: access.role || (plane === "platform" ? "Nhân sự nền tảng" : "Nhân sự công ty") }}
       >
         {children}
-      </PlatformShell>
+      </ConsoleShell>
     </AccessProvider>
   );
 }
@@ -79,7 +81,7 @@ function Gate({ plane, root, children }: { plane: Plane; root: string; children:
 function CompanyPicker() {
   const router = useRouter();
   const { data, error, isLoading, mutate } = useSWR<{ contexts?: AccessContextItem[] }>("/api/auth/context", fetcher, { shouldRetryOnError: false });
-  const frame = (body: ReactNode) => <main className="mx-auto max-w-xl px-4 py-16">{body}</main>;
+  const frame = (body: ReactNode) => <main id="main" className="mx-auto max-w-xl px-4 py-16">{body}</main>;
   if (isLoading) return frame(<Skeleton title="Đang tải các công ty của bạn…" />);
   if (error) return frame(<ErrorState title="Không tải được phạm vi tổ chức." description="Truy cập bị chặn cho tới khi tổ chức trả lời." onRetry={() => void mutate()} />);
   const choices = companyChoices(data?.contexts);
@@ -123,7 +125,7 @@ function Inner({ plane, children }: { plane: Plane; children: ReactNode }) {
 function Workspace({ plane, children }: { plane: Plane; children: ReactNode }) {
   return (
     <NextIntlClientProvider locale="vi" messages={messages} timeZone="Asia/Ho_Chi_Minh">
-      <Suspense fallback={<main className="mx-auto max-w-2xl px-4 py-16"><Skeleton title="Đang xác minh quyền truy cập…" /></main>}>
+      <Suspense fallback={<main id="main" className="mx-auto max-w-2xl px-4 py-16"><Skeleton title="Đang xác minh quyền truy cập…" /></main>}>
         <Inner plane={plane}>{children}</Inner>
       </Suspense>
     </NextIntlClientProvider>

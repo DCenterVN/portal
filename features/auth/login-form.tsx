@@ -48,7 +48,7 @@ export function LoginForm() {
         <PasswordInput id="password" name="password" autoComplete="current-password" required disabled={busy} />
         <Link href={"/forgot-password" as Route} className="block text-right text-xs font-medium text-[var(--primary)] hover:underline">Quên mật khẩu?</Link>
       </div>
-      <Button type="submit" disabled={busy} className="h-10 w-full">{busy ? "Đang đăng nhập…" : "Đăng nhập"}</Button>
+      <Button type="submit" disabled={busy} className="w-full">{busy ? "Đang đăng nhập…" : "Đăng nhập"}</Button>
       <div className="space-y-1 border-t border-[var(--border)] pt-4 text-center text-sm text-[var(--muted-foreground)]">
         <p>Chưa có tài khoản? <Link href={"/register" as Route} className="font-semibold text-[var(--primary)] hover:underline">Đăng ký mua hàng</Link></p>
         <p className="text-xs">Nhân viên dùng tài khoản do quản trị viên cấp qua email.</p>

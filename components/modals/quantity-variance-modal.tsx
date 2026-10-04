@@ -134,7 +134,7 @@ export function QuantityVarianceModal({
             type="button"
             variant="outline"
             onClick={() => onOpenChange(false)}
-            className="rounded-xl border-[var(--border)] text-xs font-semibold"
+            size="default"
           >
             Huỷ
           </Button>
@@ -142,7 +142,8 @@ export function QuantityVarianceModal({
           <Button
             type="button"
             onClick={handleSave}
-            className="rounded-xl bg-[var(--primary)] hover:bg-[var(--primary)]/90 text-white text-xs font-bold"
+            variant="default"
+            size="default"
           >
             Lưu biên bản
           </Button>

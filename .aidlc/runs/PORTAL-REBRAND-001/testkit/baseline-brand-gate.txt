@@ -1,0 +1,281 @@
+TOKEN light.bg: #F6F8F3 != #FBF6EE
+TOKEN light.tint: #E8F3E4 != #F5E9DA
+TOKEN light.ink: #14291A != #2A1D17
+TOKEN light.muted: #5B6B5E != #6F5C50
+TOKEN light.primary: #1B5E20 != #D2402A
+TOKEN light.primary-hover: #14491A != #B93623
+TOKEN light.leaf: #2F7D32 != #3E8E4A
+TOKEN light.accent: #B83E14 != #F2A33A
+TOKEN light.accent-ink: #FFFFFF != #2A1D17
+TOKEN light.accent-hover: #9C3110 != #DB8A26
+TOKEN light.sun: #EAB64B != #F2A33A
+TOKEN light.info: #2F6FD0 != #2E6FAD
+TOKEN light.danger: #B42318 != #9B2C55
+TOKEN light.warn-ink: #8A5A00 != #805000
+TOKEN light.line: #DCE5D8 != #EADFD0
+TOKEN light.input-border: #7D907F != #8A7464
+TOKEN light.focus: #1B5E20 != #B93623
+TOKEN dark.bg: #0F1A12 != #1D1714
+TOKEN dark.surface: #172619 != #2A211C
+TOKEN dark.tint: #1C3020 != #352821
+TOKEN dark.ink: #F1F6EE != #F8EFE5
+TOKEN dark.muted: #A3B3A5 != #C2B2A4
+TOKEN dark.primary: #5FBF6A != #F07A5F
+TOKEN dark.primary-ink: #0F1A12 != #1D1714
+TOKEN dark.primary-hover: #7BD085 != #E56449
+TOKEN dark.leaf: #6FCB78 != #70B878
+TOKEN dark.accent: #F0805A != #F2A33A
+TOKEN dark.accent-ink: #14291A != #2A1D17
+TOKEN dark.accent-hover: #F79572 != #DB8A26
+TOKEN dark.sun: #EAB64B != #F2A33A
+TOKEN dark.info: #7AA8F0 != #8DB8E8
+TOKEN dark.danger: #FF8A80 != #E46A83
+TOKEN dark.warn-ink: #EAB64B != #F2C56F
+TOKEN dark.line: #2A3D2D != #49372C
+TOKEN dark.input-border: #6F8672 != #8D7667
+TOKEN dark.focus: #5FBF6A != #F07A5F
+FONT font.display: expected "Quicksand", system-ui, sans-serif
+FONT font.sans: expected "Nunito", system-ui, -apple-system, "Segoe UI", sans-serif
+DRIFT tokens.generated.css differs byte-for-byte from uigen(tokens.json)
+CONTRAST light accent-ink/sun: 1.86 < 4.5
+CONTRAST light input-border/tint: 2.98 < 3.0
+LEFTOVER platform-docs/ui/tokens.json:7: #F6F8F3
+LEFTOVER platform-docs/ui/tokens.json:15: #E8F3E4
+LEFTOVER platform-docs/ui/tokens.json:19: #14291A
+GREEN platform-docs/ui/tokens.json:19: #14291A
+LEFTOVER platform-docs/ui/tokens.json:23: #5B6B5E
+GREEN platform-docs/ui/tokens.json:23: #5B6B5E
+LEFTOVER platform-docs/ui/tokens.json:27: #1B5E20
+GREEN platform-docs/ui/tokens.json:27: #1B5E20
+LEFTOVER platform-docs/ui/tokens.json:35: #14491A
+GREEN platform-docs/ui/tokens.json:35: #14491A
+LEFTOVER platform-docs/ui/tokens.json:39: #2F7D32
+GREEN platform-docs/ui/tokens.json:39: #2F7D32
+LEFTOVER platform-docs/ui/tokens.json:71: #DCE5D8
+LEFTOVER platform-docs/ui/tokens.json:75: #7D907F
+GREEN platform-docs/ui/tokens.json:75: #7D907F
+LEFTOVER platform-docs/ui/tokens.json:79: #1B5E20
+GREEN platform-docs/ui/tokens.json:79: #1B5E20
+LEFTOVER platform-docs/ui/tokens.json:85: #0F1A12
+GREEN platform-docs/ui/tokens.json:85: #0F1A12
+LEFTOVER platform-docs/ui/tokens.json:89: #172619
+GREEN platform-docs/ui/tokens.json:89: #172619
+LEFTOVER platform-docs/ui/tokens.json:93: #1C3020
+GREEN platform-docs/ui/tokens.json:93: #1C3020
+LEFTOVER platform-docs/ui/tokens.json:97: #F1F6EE
+LEFTOVER platform-docs/ui/tokens.json:101: #A3B3A5
+LEFTOVER platform-docs/ui/tokens.json:105: #5FBF6A
+GREEN platform-docs/ui/tokens.json:105: #5FBF6A
+LEFTOVER platform-docs/ui/tokens.json:109: #0F1A12
+GREEN platform-docs/ui/tokens.json:109: #0F1A12
+LEFTOVER platform-docs/ui/tokens.json:113: #7BD085
+GREEN platform-docs/ui/tokens.json:113: #7BD085
+LEFTOVER platform-docs/ui/tokens.json:117: #6FCB78
+GREEN platform-docs/ui/tokens.json:117: #6FCB78
+LEFTOVER platform-docs/ui/tokens.json:125: #14291A
+GREEN platform-docs/ui/tokens.json:125: #14291A
+LEFTOVER platform-docs/ui/tokens.json:149: #2A3D2D
+GREEN platform-docs/ui/tokens.json:149: #2A3D2D
+LEFTOVER platform-docs/ui/tokens.json:153: #6F8672
+GREEN platform-docs/ui/tokens.json:153: #6F8672
+LEFTOVER platform-docs/ui/tokens.json:157: #5FBF6A
+GREEN platform-docs/ui/tokens.json:157: #5FBF6A
+LEFTOVER platform-docs/ui/tokens.json:192: Be Vietnam Pro
+LEFTOVER platform-docs/ui/tokens.json:196: Be Vietnam Pro
+LEFTOVER portal/app/(store)/me/profile-client.tsx:124: bg-gradient-to-tr
+GREEN portal/app/globals.css:34: #065F46
+GREEN portal/app/globals.css:35: #10B981
+LEFTOVER portal/app/globals.css:45: #F0F4EE
+LEFTOVER portal/app/globals.css:46: #364233
+GREEN portal/app/globals.css:46: #364233
+LEFTOVER portal/app/globals.css:47: #E0E7DC
+GREEN portal/app/globals.css:52: #064E3B
+GREEN portal/app/globals.css:53: #6EE7B7
+GREEN portal/app/globals.css:54: #34D399
+LEFTOVER portal/app/globals.css:64: #192017
+GREEN portal/app/globals.css:64: #192017
+LEFTOVER portal/app/globals.css:65: #D6E0D3
+LEFTOVER portal/app/globals.css:66: #242E20
+GREEN portal/app/globals.css:66: #242E20
+LEFTOVER portal/app/globals.css:87: --land-green
+GREEN portal/app/globals.css:87: #183126
+GREEN portal/app/globals.css:87: #1f5b3a
+GREEN portal/app/globals.css:87: #143d29
+LEFTOVER portal/app/globals.css:88: --land-green
+GREEN portal/app/globals.css:88: #77bd88
+GREEN portal/app/globals.css:88: #142d20
+GREEN portal/app/globals.css:88: #1b3023
+GREEN portal/app/globals.css:88: #111d16
+GREEN portal/app/globals.css:88: #0b140f
+GREEN portal/app/globals.css:88: #2c4334
+LEFTOVER portal/app/globals.css:93: --land-green
+LEFTOVER portal/app/globals.css:97: --land-green
+LEFTOVER portal/app/globals.css:104: --land-green
+GREEN portal/app/globals.css:105: #0a1a10
+LEFTOVER portal/app/globals.css:106: --land-green
+LEFTOVER portal/app/globals.css:107: --land-green
+LEFTOVER portal/app/globals.css:108: --land-sage
+LEFTOVER portal/app/globals.css:110: --land-green
+LEFTOVER portal/app/globals.css:115: --land-green
+LEFTOVER portal/app/globals.css:117: --land-green
+LEFTOVER portal/app/globals.css:118: --land-green
+LEFTOVER portal/app/globals.css:122: --land-green
+LEFTOVER portal/app/globals.css:124: --land-sage
+LEFTOVER portal/app/globals.css:125: --land-green
+LEFTOVER portal/app/globals.css:126: --land-green
+GREEN portal/app/globals.css:126: #b5dabd
+GREEN portal/app/globals.css:126: #173c28
+LEFTOVER portal/app/globals.css:127: --land-green
+LEFTOVER portal/app/icon.svg:1: #1B5E20
+GREEN portal/app/icon.svg:1: #1B5E20
+LEFTOVER portal/app/layout.tsx:2: Be_Vietnam_Pro
+LEFTOVER portal/app/layout.tsx:14: beVietnamPro
+GREEN portal/app/layout.tsx:92: #121410
+LEFTOVER portal/app/layout.tsx:103: beVietnamPro
+LEFTOVER portal/app/tokens.generated.css:3: #F6F8F3
+LEFTOVER portal/app/tokens.generated.css:5: #E8F3E4
+LEFTOVER portal/app/tokens.generated.css:6: #14291A
+GREEN portal/app/tokens.generated.css:6: #14291A
+LEFTOVER portal/app/tokens.generated.css:7: #5B6B5E
+GREEN portal/app/tokens.generated.css:7: #5B6B5E
+LEFTOVER portal/app/tokens.generated.css:8: #1B5E20
+GREEN portal/app/tokens.generated.css:8: #1B5E20
+LEFTOVER portal/app/tokens.generated.css:10: #14491A
+GREEN portal/app/tokens.generated.css:10: #14491A
+LEFTOVER portal/app/tokens.generated.css:11: #2F7D32
+GREEN portal/app/tokens.generated.css:11: #2F7D32
+LEFTOVER portal/app/tokens.generated.css:19: #DCE5D8
+LEFTOVER portal/app/tokens.generated.css:20: #7D907F
+GREEN portal/app/tokens.generated.css:20: #7D907F
+LEFTOVER portal/app/tokens.generated.css:21: #1B5E20
+GREEN portal/app/tokens.generated.css:21: #1B5E20
+LEFTOVER portal/app/tokens.generated.css:22: #14291A
+GREEN portal/app/tokens.generated.css:22: #14291A
+LEFTOVER portal/app/tokens.generated.css:29: Be Vietnam Pro
+LEFTOVER portal/app/tokens.generated.css:30: Be Vietnam Pro
+LEFTOVER portal/app/tokens.generated.css:34: #0F1A12
+GREEN portal/app/tokens.generated.css:34: #0F1A12
+LEFTOVER portal/app/tokens.generated.css:35: #172619
+GREEN portal/app/tokens.generated.css:35: #172619
+LEFTOVER portal/app/tokens.generated.css:36: #1C3020
+GREEN portal/app/tokens.generated.css:36: #1C3020
+LEFTOVER portal/app/tokens.generated.css:37: #F1F6EE
+LEFTOVER portal/app/tokens.generated.css:38: #A3B3A5
+LEFTOVER portal/app/tokens.generated.css:39: #5FBF6A
+GREEN portal/app/tokens.generated.css:39: #5FBF6A
+LEFTOVER portal/app/tokens.generated.css:40: #0F1A12
+GREEN portal/app/tokens.generated.css:40: #0F1A12
+LEFTOVER portal/app/tokens.generated.css:41: #7BD085
+GREEN portal/app/tokens.generated.css:41: #7BD085
+LEFTOVER portal/app/tokens.generated.css:42: #6FCB78
+GREEN portal/app/tokens.generated.css:42: #6FCB78
+LEFTOVER portal/app/tokens.generated.css:44: #14291A
+GREEN portal/app/tokens.generated.css:44: #14291A
+LEFTOVER portal/app/tokens.generated.css:50: #2A3D2D
+GREEN portal/app/tokens.generated.css:50: #2A3D2D
+LEFTOVER portal/app/tokens.generated.css:51: #6F8672
+GREEN portal/app/tokens.generated.css:51: #6F8672
+LEFTOVER portal/app/tokens.generated.css:52: #5FBF6A
+GREEN portal/app/tokens.generated.css:52: #5FBF6A
+GREEN portal/app/tokens.generated.css:53: #0A120C
+LEFTOVER portal/app/tokens.generated.css:58: #0F1A12
+GREEN portal/app/tokens.generated.css:58: #0F1A12
+LEFTOVER portal/app/tokens.generated.css:59: #172619
+GREEN portal/app/tokens.generated.css:59: #172619
+LEFTOVER portal/app/tokens.generated.css:60: #1C3020
+GREEN portal/app/tokens.generated.css:60: #1C3020
+LEFTOVER portal/app/tokens.generated.css:61: #F1F6EE
+LEFTOVER portal/app/tokens.generated.css:62: #A3B3A5
+LEFTOVER portal/app/tokens.generated.css:63: #5FBF6A
+GREEN portal/app/tokens.generated.css:63: #5FBF6A
+LEFTOVER portal/app/tokens.generated.css:64: #0F1A12
+GREEN portal/app/tokens.generated.css:64: #0F1A12
+LEFTOVER portal/app/tokens.generated.css:65: #7BD085
+GREEN portal/app/tokens.generated.css:65: #7BD085
+LEFTOVER portal/app/tokens.generated.css:66: #6FCB78
+GREEN portal/app/tokens.generated.css:66: #6FCB78
+LEFTOVER portal/app/tokens.generated.css:68: #14291A
+GREEN portal/app/tokens.generated.css:68: #14291A
+LEFTOVER portal/app/tokens.generated.css:74: #2A3D2D
+GREEN portal/app/tokens.generated.css:74: #2A3D2D
+LEFTOVER portal/app/tokens.generated.css:75: #6F8672
+GREEN portal/app/tokens.generated.css:75: #6F8672
+LEFTOVER portal/app/tokens.generated.css:76: #5FBF6A
+GREEN portal/app/tokens.generated.css:76: #5FBF6A
+GREEN portal/app/tokens.generated.css:77: #0A120C
+LEFTOVER portal/components/auth/login-form.tsx:45: bg-gradient-to-br
+GREEN portal/components/auth/login-form.tsx:45: #0F766E
+LEFTOVER portal/components/auth/login-form.tsx:118: bg-gradient-to-r
+GREEN portal/components/auth/login-form.tsx:118: #0F766E
+LEFTOVER portal/components/auth/login-form.tsx:128: text-emerald-500
+LEFTOVER portal/components/modals/confirm-qc-decision-modal.tsx:47: text-emerald-600
+LEFTOVER portal/components/modals/confirm-qc-decision-modal.tsx:48: bg-emerald-500
+LEFTOVER portal/components/modals/confirm-qc-decision-modal.tsx:71: text-emerald-600
+LEFTOVER portal/components/modals/confirm-qc-decision-modal.tsx:85: border-emerald-500
+LEFTOVER portal/components/modals/confirm-qc-decision-modal.tsx:87: text-emerald-500
+LEFTOVER portal/components/modals/confirm-qc-decision-modal.tsx:112: bg-emerald-600
+LEFTOVER portal/components/modals/session-timeout-modal.tsx:80: bg-gradient-to-tr
+LEFTOVER portal/components/modals/session-timeout-modal.tsx:116: bg-emerald-600
+LEFTOVER portal/components/ui/badge.tsx:18: border-emerald-200
+LEFTOVER portal/components/ui/button.tsx:11: linear-gradient(
+LEFTOVER portal/components/ui/dialog.tsx:116: backdrop-blur-md
+LEFTOVER portal/components/ui/dialog.tsx:122: backdrop-blur-lg
+LEFTOVER portal/components/ui/dialog.tsx:128: backdrop-blur-2xl
+GREEN portal/components/ui/toast.tsx:157: #15231c
+LEFTOVER portal/components/ui/toast.tsx:158: border-emerald-500
+LEFTOVER portal/components/ui/toast.tsx:159: text-emerald-500
+LEFTOVER portal/features/branches/branches-view.tsx:101: bg-gradient-to-r
+LEFTOVER portal/features/branches/branches-view.tsx:140: bg-emerald-500
+LEFTOVER portal/features/inventory/shelves-view.tsx:90: border-emerald-200
+LEFTOVER portal/features/inventory/shelves-view.tsx:162: text-emerald-600
+LEFTOVER portal/features/inventory/shelves-view.tsx:177: text-emerald-700
+LEFTOVER portal/features/memberships/memberships-view.tsx:123: bg-gradient-to-r
+LEFTOVER portal/features/memberships/memberships-view.tsx:137: text-emerald-600
+LEFTOVER portal/features/memberships/memberships-view.tsx:141: bg-emerald-500
+LEFTOVER portal/features/memberships/memberships-view.tsx:296: text-emerald-600
+LEFTOVER portal/features/production/orders-view.tsx:191: text-green-600
+LEFTOVER portal/features/production/qc-view.tsx:183: text-green-700
+LEFTOVER portal/features/production/targets-view.tsx:108: text-green-600
+LEFTOVER portal/features/products/cart-view.tsx:101: text-emerald-600
+LEFTOVER portal/features/products/cart-view.tsx:160: text-emerald-700
+LEFTOVER portal/features/products/cart-view.tsx:188: text-emerald-500
+LEFTOVER portal/features/products/cart-view.tsx:214: text-emerald-600
+LEFTOVER portal/features/products/cart-view.tsx:237: bg-emerald-500
+LEFTOVER portal/features/products/cart-view.tsx:248: border-emerald-500
+LEFTOVER portal/features/products/cart-view.tsx:252: text-emerald-700
+LEFTOVER portal/features/products/orders-view.tsx:33: border-emerald-500
+LEFTOVER portal/features/products/product-create-dialog.tsx:75: text-emerald-600
+LEFTOVER portal/features/products/product-create-dialog.tsx:76: bg-emerald-500
+LEFTOVER portal/features/products/product-detail-view.tsx:79: text-emerald-600
+LEFTOVER portal/features/products/product-detail-view.tsx:168: text-emerald-500
+LEFTOVER portal/features/products/product-detail-view.tsx:178: text-emerald-500
+LEFTOVER portal/features/products/product-detail-view.tsx:188: text-emerald-500
+LEFTOVER portal/features/products/product-detail-view.tsx:198: text-emerald-500
+LEFTOVER portal/features/products/product-detail-view.tsx:219: border-emerald-500
+LEFTOVER portal/features/products/product-detail-view.tsx:223: text-emerald-500
+LEFTOVER portal/features/products/product-detail-view.tsx:230: text-emerald-600
+LEFTOVER portal/features/products/products-view.tsx:127: text-emerald-600
+LEFTOVER portal/features/products/products-view.tsx:153: border-emerald-500
+LEFTOVER portal/features/products/products-view.tsx:155: text-emerald-700
+LEFTOVER portal/features/products/products-view.tsx:159: text-emerald-700
+LEFTOVER portal/features/products/products-view.tsx:251: text-emerald-600
+LEFTOVER portal/features/products/products-view.tsx:265: text-emerald-700
+LEFTOVER portal/features/roles/roles-view.tsx:312: text-emerald-600
+LEFTOVER portal/features/traceability/trace-view.tsx:17: bg-gradient-to-r
+LEFTOVER portal/features/traceability/trace-view.tsx:20: text-emerald-300
+LEFTOVER portal/features/traceability/trace-view.tsx:23: text-emerald-100
+LEFTOVER portal/features/traceability/trace-view.tsx:32: border-emerald-200
+LEFTOVER portal/features/traceability/trace-view.tsx:35: bg-emerald-600
+LEFTOVER portal/features/traceability/trace-view.tsx:39: text-emerald-950
+LEFTOVER portal/features/traceability/trace-view.tsx:43: text-emerald-700
+LEFTOVER portal/features/traceability/trace-view.tsx:49: border-emerald-200
+LEFTOVER portal/features/traceability/trace-view.tsx:66: text-emerald-800
+LEFTOVER portal/features/traceability/trace-view.tsx:78: text-emerald-600
+LEFTOVER portal/features/traceability/trace-view.tsx:85: text-emerald-700
+LEFTOVER portal/features/traceability/trace-view.tsx:98: text-teal-600
+LEFTOVER portal/features/traceability/trace-view.tsx:101: bg-emerald-200
+LEFTOVER portal/features/traceability/trace-view.tsx:104: bg-emerald-600
+GREEN portal/public/manifest.json:7: #0f4f4a
+brand gate: 278 errors (all)
+
+exit=1

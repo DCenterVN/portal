@@ -3,7 +3,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const badgeVariants = cva(
-  "inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--ring)] focus:ring-offset-2",
+  "inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold transition-colors duration-150 ease-out motion-reduce:transition-none focus:outline-none focus:ring-2 focus:ring-[var(--ring)] focus:ring-offset-2",
   {
     variants: {
       variant: {
@@ -15,11 +15,11 @@ const badgeVariants = cva(
           "border-transparent bg-[var(--destructive)] text-[var(--destructive-foreground)] shadow",
         outline: "text-[var(--foreground)] border border-[var(--border)]",
         active:
-          "bg-[var(--badge-active-bg)] text-[var(--badge-active-text)] border border-emerald-200/40 dark:border-emerald-800/40",
+          "bg-[var(--badge-active-bg)] text-[var(--badge-active-text)] border border-[var(--color-leaf)]",
         suspended:
-          "bg-[var(--badge-suspended-bg)] text-[var(--badge-suspended-text)] border border-amber-200/40 dark:border-amber-800/40",
+          "bg-[var(--badge-suspended-bg)] text-[var(--badge-suspended-text)] border border-[var(--color-sun)]",
         revoked:
-          "bg-[var(--badge-revoked-bg)] text-[var(--badge-revoked-text)] border border-rose-200/40 dark:border-rose-800/40",
+          "bg-[var(--badge-revoked-bg)] text-[var(--badge-revoked-text)] border border-[var(--color-danger)]",
       },
     },
     defaultVariants: {
@@ -47,7 +47,7 @@ function Badge({ className, variant, dot = true, children, ...props }: BadgeProp
           })}
         />
       )}
-      {children}
+      {children ?? (variant === "active" ? "Đang hoạt động" : variant === "suspended" ? "Tạm ngưng" : variant === "revoked" ? "Đã thu hồi" : null)}
     </div>
   );
 }

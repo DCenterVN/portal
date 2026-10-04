@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Be_Vietnam_Pro, Quicksand } from "next/font/google";
+import { Nunito, Quicksand } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ToastProvider } from "@/components/ui/toast";
@@ -7,14 +7,14 @@ import { ToastProvider } from "@/components/ui/toast";
 const quicksand = Quicksand({
   subsets: ["vietnamese", "latin"],
   weight: ["600", "700"],
-  variable: "--font-display",
+  variable: "--font-quicksand",
   display: "swap",
 });
 
-const beVietnamPro = Be_Vietnam_Pro({
+const nunito = Nunito({
   subsets: ["vietnamese", "latin"],
   weight: ["400", "500", "600", "700", "800"],
-  variable: "--font-sans",
+  variable: "--font-nunito",
   display: "swap",
 });
 
@@ -27,15 +27,12 @@ export const metadata: Metadata = {
     template: "%s | Việt Sạch",
   },
   description:
-    "Hệ thống phân phối thực phẩm hữu cơ, nông sản đạt chuẩn VietGAP và thực phẩm cấp đông sâu với công nghệ giám sát nhiệt độ chuỗi lạnh liên tục -18°C. Minh bạch 100% nguồn gốc.",
+    "Fresh Meal Kit: nguyên liệu sơ chế và bộ nguyên liệu cho bữa ăn, hỗ trợ chuẩn bị món ăn và truy xuất nguồn gốc.",
   keywords: [
-    "thực phẩm sạch",
-    "nông sản hữu cơ",
-    "chuỗi lạnh",
-    "VietGAP",
-    "GlobalGAP",
-    "cá hồi Na Uy",
-    "thịt bò Wagyu",
+    "Fresh Meal Kit",
+    "bộ nguyên liệu bữa ăn",
+    "nguyên liệu sơ chế",
+    "chuẩn bị bữa ăn",
     "truy xuất nguồn gốc",
     "Việt Sạch",
   ],
@@ -54,7 +51,7 @@ export const metadata: Metadata = {
     siteName: "Việt Sạch",
     title: "Việt Sạch — Chuỗi Cung Ứng Thực Phẩm Sạch & Chuỗi Lạnh An Toàn",
     description:
-      "Hệ thống phân phối thực phẩm hữu cơ, nông sản đạt chuẩn VietGAP và thực phẩm cấp đông sâu với công nghệ giám sát nhiệt độ chuỗi lạnh liên tục -18°C.",
+      "Fresh Meal Kit: nguyên liệu sơ chế và bộ nguyên liệu cho bữa ăn, hỗ trợ chuẩn bị món ăn và truy xuất nguồn gốc.",
     images: [
       {
         url: "/og-image.png",
@@ -68,7 +65,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Việt Sạch — Chuỗi Cung Ứng Thực Phẩm Sạch & Chuỗi Lạnh An Toàn",
     description:
-      "Thực phẩm sạch từ nông trại hữu cơ đến bàn ăn gia đình. Chuỗi lạnh -18°C kiểm soát liên tục.",
+      "Fresh Meal Kit: bộ nguyên liệu sơ chế giúp chuẩn bị bữa ăn gia đình.",
     images: ["/og-image.png"],
   },
   robots: {
@@ -88,8 +85,8 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#121410" },
+    { media: "(prefers-color-scheme: light)", color: "#FBF6EE" },
+    { media: "(prefers-color-scheme: dark)", color: "#1D1714" },
   ],
 };
 
@@ -100,7 +97,7 @@ export default function RootLayout({
     <html
       lang="vi"
       suppressHydrationWarning
-      className={`${quicksand.variable} ${beVietnamPro.variable}`}
+      className={`${quicksand.variable} ${nunito.variable}`}
     >
       <body className="min-h-screen bg-[var(--background)] text-[var(--foreground)] antialiased transition-colors duration-200">
         <ThemeProvider>

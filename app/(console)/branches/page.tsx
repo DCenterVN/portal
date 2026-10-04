@@ -1,5 +1,4 @@
 import { BranchesView } from "@/features/branches/branches-view";
-import { SAMPLE_BRANCHES } from "@/components/navbar";
 
 export const metadata = {
   title: "Danh sách Chi nhánh — ColdChain HQ",
@@ -7,5 +6,5 @@ export const metadata = {
 };
 
 export default function BranchesPage() {
-  return <BranchesView initialBranches={SAMPLE_BRANCHES} />;
+  return <BranchesView initialBranches={[]} />;
 }

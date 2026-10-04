@@ -8,9 +8,9 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-[linear-gradient(180deg,color-mix(in_srgb,var(--primary)_94%,var(--surface)),var(--primary))] text-[var(--primary-foreground)] shadow-[var(--elevation-shadow-card)] hover:bg-[var(--color-primary-hover)] hover:[background-image:none]",
+          "bg-[var(--primary)] text-[var(--primary-foreground)] shadow-[var(--elevation-shadow-card)] hover:bg-[var(--color-primary-hover)]",
         accent:
-          "bg-[var(--accent)] text-[var(--accent-foreground)] shadow-[var(--elevation-shadow-card)] hover:bg-[var(--color-accent-hover)]",
+          "bg-[var(--primary)] text-[var(--primary-foreground)] shadow-[var(--elevation-shadow-card)] hover:bg-[var(--color-primary-hover)]",
         destructive: "bg-[var(--destructive)] text-[var(--destructive-foreground)] hover:opacity-90",
         outline:
           "border border-[var(--border)] bg-[var(--card)] text-[var(--foreground)] hover:border-[var(--input)]",

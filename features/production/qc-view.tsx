@@ -60,15 +60,15 @@ export function QCView({ completedOrders }: QCViewProps) {
   };
 
   return (
-    <PageShell>
+    <PageShell className="bg-[var(--color-bg)] text-[var(--color-ink)]">
       <PageHeader
         title="Kiểm định Chất lượng Thành phẩm (VT-13 QC)"
         description="Nghiệm thu cảm quan, nhiệt độ tâm cấp đông (-18°C) và kiểm tra bao bì với Phân tách trách nhiệm (SoD)"
       />
 
-      <div className="mb-6 p-4 border border-amber-200 bg-amber-50 rounded-lg flex items-start gap-3">
-        <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
-        <div className="text-sm text-amber-800">
+      <div className="mb-6 p-4 border border-[var(--color-line)] bg-[var(--color-tint)] rounded-lg flex items-start gap-3">
+        <AlertTriangle className="h-5 w-5 text-[var(--color-sun)] shrink-0 mt-0.5" />
+        <div className="text-sm text-[var(--color-warn-ink)]">
           <p className="font-semibold">Nguyên tắc Phân tách Trách nhiệm (SoD Enforcement):</p>
           <p>
             Chuyên viên QC (VT-13) bắt buộc phải là nhân sự <strong>độc lập</strong> với người trực tiếp điều phối, sơ chế, nấu chín hoặc đóng gói lô hàng. Hệ thống tự động từ chối (403 Forbidden) nếu phát hiện trùng lặp người thực hiện.
@@ -77,25 +77,26 @@ export function QCView({ completedOrders }: QCViewProps) {
       </div>
 
       {selectedOrder && (
-        <Card className="mb-6 border-indigo-200 bg-indigo-50/20">
+        <Card className="mb-6 border-[var(--color-line)] bg-[var(--color-surface)] text-[var(--color-ink)]">
           <CardContent className="pt-6">
             <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
-              <ShieldCheck className="h-5 w-5 text-indigo-600" />
+              <ShieldCheck className="h-5 w-5 text-[var(--color-info)]" />
               Nghiệm thu Lệnh: {selectedOrder.order_code} ({selectedOrder.planned_quantity} {selectedOrder.uom})
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
                 <label className="text-sm font-medium flex items-center gap-1">
-                  <Thermometer className="h-4 w-4 text-blue-600" /> Nhiệt độ tâm sau cấp đông (°C)
+                  <Thermometer className="h-4 w-4 text-[var(--color-info)]" /> Nhiệt độ tâm sau cấp đông (°C)
                 </label>
                 <input
                   type="number"
                   step="0.1"
-                  className="w-full mt-1 p-2 border rounded-md"
+                  style={{ borderWidth: "1.5px" }}
+                    className="w-full mt-1 px-3 h-11 border bg-[var(--color-surface)] text-[var(--color-ink)] border-[var(--color-input-border)] rounded-[var(--radius-md)] focus:outline-none focus:ring-2 focus:ring-[var(--color-focus)]"
                   value={temperature}
                   onChange={(e) => setTemperature(Number(e.target.value))}
                 />
-                <p className="text-xs text-muted-foreground mt-1">Tiêu chuẩn cấp đông an toàn: ≤ -18.0°C</p>
+                <p className="text-xs text-[var(--color-muted)] mt-1">Tiêu chuẩn cấp đông an toàn: ≤ -18.0°C</p>
               </div>
               <div>
                 <label className="text-sm font-medium">Kiểm tra niêm phong & bao bì</label>
@@ -103,6 +104,7 @@ export function QCView({ completedOrders }: QCViewProps) {
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="radio"
+                      className="accent-[var(--color-primary)] border-[var(--color-input-border)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus)]"
                       name="packageCheck"
                       checked={packagePassed}
                       onChange={() => setPackagePassed(true)}
@@ -112,6 +114,7 @@ export function QCView({ completedOrders }: QCViewProps) {
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="radio"
+                      className="accent-[var(--color-primary)] border-[var(--color-input-border)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus)]"
                       name="packageCheck"
                       checked={!packagePassed}
                       onChange={() => setPackagePassed(false)}
@@ -122,21 +125,19 @@ export function QCView({ completedOrders }: QCViewProps) {
               </div>
               <div className="md:col-span-2">
                 <label className="text-sm font-medium">Ghi nhận kiểm tra cảm quan</label>
-                <textarea className="mt-1 min-h-24 w-full rounded-md border p-2" required value={sensoryNotes} onChange={(event) => setSensoryNotes(event.target.value)} placeholder="Màu sắc, mùi, cấu trúc và nhận xét thực tế của mẫu kiểm tra" />
+                <textarea style={{ borderWidth: "1.5px" }} className="mt-1 min-h-24 w-full rounded-[var(--radius-md)] border bg-[var(--color-surface)] text-[var(--color-ink)] border-[var(--color-input-border)] p-3 focus:outline-none focus:ring-2 focus:ring-[var(--color-focus)]" required value={sensoryNotes} onChange={(event) => setSensoryNotes(event.target.value)} placeholder="Màu sắc, mùi, cấu trúc và nhận xét thực tế của mẫu kiểm tra" />
               </div>
             </div>
             <div className="flex gap-2">
               <Button
                 disabled={loading || !sensoryNotes.trim()}
-                className="bg-green-600 hover:bg-green-700 text-white"
                 onClick={() => handleDecision("PASS")}
               >
                 <CheckCircle2 className="h-4 w-4 mr-1" /> Phê duyệt QC (PASS) — Cho phép lên kệ
               </Button>
               <Button
                 disabled={loading || !sensoryNotes.trim()}
-                variant="outline"
-                className="text-red-600 border-red-300 hover:bg-red-50"
+                variant="destructive"
                 onClick={() => handleDecision("FAIL")}
               >
                 <XCircle className="h-4 w-4 mr-1" /> Từ chối QC (FAIL) — Hủy lô
@@ -147,7 +148,7 @@ export function QCView({ completedOrders }: QCViewProps) {
         </Card>
       )}
 
-      <Card>
+      <Card className="bg-[var(--color-surface)] text-[var(--color-ink)] border-[var(--color-line)]">
         <CardContent className="p-0">
           <Table>
             <TableHeader>
@@ -161,7 +162,7 @@ export function QCView({ completedOrders }: QCViewProps) {
             <TableBody>
               {orders.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center py-6 text-muted-foreground">
+                  <TableCell colSpan={4} className="text-center py-6 text-[var(--color-muted)]">
                     Không có lô thành phẩm nào đang chờ kiểm định QC
                   </TableCell>
                 </TableRow>
@@ -177,12 +178,12 @@ export function QCView({ completedOrders }: QCViewProps) {
                     </TableCell>
                     <TableCell className="text-right">
                       {o.status === "COMPLETED" && (
-                        <Button size="sm" onClick={() => setSelectedOrder(o)}>
+                        <Button size="sm" variant={!selectedOrder && orders.find((order) => order.status === "COMPLETED")?.id === o.id ? "default" : "outline"} onClick={() => setSelectedOrder(o)}>
                           <ShieldCheck className="h-4 w-4 mr-1" /> Tiến hành nghiệm thu
                         </Button>
                       )}
                       {o.status === "QC_PASSED" && (
-                        <Badge variant="outline" className="text-green-700 bg-green-50">
+                        <Badge variant="outline" className="text-[var(--color-ink)] bg-[var(--color-tint)] border-[var(--color-leaf)]">
                           Đã phê duyệt đạt chuẩn
                         </Badge>
                       )}

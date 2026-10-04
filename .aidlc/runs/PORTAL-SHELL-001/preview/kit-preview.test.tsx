@@ -50,6 +50,7 @@ function Section({ id, title, children }: { id: string; title: string; children:
 }
 
 test("render kit preview", () => {
+  const previewCollapsed = process.env.PREVIEW_WIDTH === "390";
   const store = (
     <StoreShell nav={STORE_NAV} user={null} cartHref="/cart" loginHref="/login" footer={STORE_FOOTER}>
       <div className="py-10 space-y-6">
@@ -78,6 +79,7 @@ test("render kit preview", () => {
       user={{ name: "Người dùng mẫu", detail: "Nhân viên kho" }}
       statusText="Đã đồng bộ"
       actions={<Button size="sm">Tạo phiếu</Button>}
+      defaultCollapsed={previewCollapsed}
     >
       <div className="space-y-4 p-6">
         <h1 className="text-xl font-semibold">Kho</h1>
@@ -87,6 +89,27 @@ test("render kit preview", () => {
           <Card title="Chờ QC">3 phiếu</Card>
         </div>
         <div className="flex gap-3"><Button>Lưu</Button><Button variant="outline">Huỷ</Button><Button variant="ghost">Bỏ qua</Button></div>
+      </div>
+    </ConsoleShell>
+  );
+  const platformEl = (
+    <ConsoleShell
+      nav={[{ title: "Nền tảng", items: [
+        { href: "/platform/companies", label: "Công ty", match: "/platform/companies", icon: Package },
+        { href: "/platform/staff", label: "Nhân sự", match: "/platform/staff", icon: Users },
+      ] }]}
+      context={{ label: "Nền tảng" }}
+      user={{ name: "Platform Admin", detail: "Quản trị hệ thống" }}
+      statusText="Đã đồng bộ"
+      defaultCollapsed={previewCollapsed}
+    >
+      <div className="space-y-4 p-6">
+        <h1 className="text-xl font-semibold">Không gian nền tảng</h1>
+        <div className="grid gap-4 sm:grid-cols-3">
+          <Card title="Công ty">24 đang hoạt động</Card>
+          <Card title="Nhân sự">8 quản trị viên</Card>
+          <Card title="Audit">Không có cảnh báo</Card>
+        </div>
       </div>
     </ConsoleShell>
   );
@@ -101,13 +124,18 @@ test("render kit preview", () => {
       </div>
     </AuthShell>
   );
-  const body = (theme: string) => `
-    <div class="${theme}" style="background:var(--background);color:var(--foreground);padding:24px">
-      <h1 class="preview-title">Bộ component PORTAL-SHELL-001 — ${theme === "dark" ? "Tối" : "Sáng"}</h1>
-      ${renderToStaticMarkup(<Section id="buttons" title="Button — 7 variant × 3 size"><div className="p-6"><Buttons /></div></Section>)}
-      ${renderToStaticMarkup(<Section id="store" title="StoreShell — khách (landing)">{store}</Section>)}
-      ${renderToStaticMarkup(<Section id="console" title="ConsoleShell — nhân viên (CRM)">{consoleEl}</Section>)}
-      ${renderToStaticMarkup(<Section id="auth" title="AuthShell — đăng nhập">{auth}</Section>)}
-    </div>`;
-  writeFileSync(process.env.PREVIEW_OUT!, body("light") + body("dark"));
+  const role = process.env.PREVIEW_ROLE ?? "customer";
+  const theme = process.env.PREVIEW_THEME ?? "light";
+  const selected = role === "employee" ? consoleEl : role === "platform" ? platformEl : store;
+  const markup = renderToStaticMarkup(selected);
+  writeFileSync(process.env.PREVIEW_OUT!, `<!doctype html>
+    <html lang="vi" class="${theme === "dark" ? "dark" : ""}">
+      <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="stylesheet" href="http://localhost:3000/_next/static/chunks/%5Broot-of-the-server%5D__0n5r116._.css" />
+        <title>${role} ${theme}</title>
+      </head>
+      <body class="min-h-screen bg-[var(--background)] text-[var(--foreground)]">${markup}</body>
+    </html>`);
 });

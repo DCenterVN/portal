@@ -161,13 +161,17 @@ Menu nhân viên (`console-frame.tsx`):
 - Quản trị: `/branches`, `/memberships`, `/roles`
 
 ## Files planned
+- vitest.config.ts
 - app/tokens.generated.css
 - app/globals.css
 - components/ui/button.tsx
 - components/ui/button.test.tsx
 - components/ui/page.tsx
+- components/ui/page.test.tsx
 - components/ui/dialog.tsx
 - components/ui/toast.tsx
+- components/ui/overlay.test.tsx
+- components/modals/session-timeout-modal.tsx
 - components/patterns/auth-heading.tsx
 - components/layout/index.ts
 - components/layout/console-shell.tsx
@@ -219,6 +223,15 @@ Menu nhân viên (`console-frame.tsx`):
 - features/platform/workspace.tsx
 - features/branches/branches-view.tsx
 - features/memberships/memberships-view.tsx
+- features/roles/roles-view.tsx
+- components/auth/login-form.tsx
+- components/modals/allergen-warning-modal.tsx
+- components/modals/cold-chain-violation-modal.tsx
+- components/modals/confirm-qc-decision-modal.tsx
+- components/modals/invite-member-modal.tsx
+- components/modals/quantity-variance-modal.tsx
+- components/modals/session-timeout-modal.tsx
+- components/modals/supplier-suspension-modal.tsx
 - features/traceability/trace-view.tsx
 - features/products/cart-view.tsx
 - features/products/product-detail-view.tsx
@@ -235,7 +248,7 @@ Menu nhân viên (`console-frame.tsx`):
 ## Tests planned
 | TC | AC | Layer | Command |
 |---|---|---|---|
-| TC-0 | token | unit | `(cd .. && python3 platform-docs/scripts/uigen.py check --root .)` + `grep -q -- '--color-chrome' app/tokens.generated.css` |
+| TC-0 | token | unit | `npm test` + đúng 1 token chrome sáng `#14291A` và 2 token chrome tối `#0A120C` trong `app/tokens.generated.css` |
 | TC-1 | AC-6 | unit | `npm test -- components/ui/button` (`buttonVariants()` base chứa `min-h-11`; `sm` = `min-h-9`; `touch`/`lg` không thấp hơn base) + `npm run typecheck` |
 | TC-2 | AC-3 | unit | `npm test -- components/layout/console-shell` (`initialCollapsed`, `isActive`; static render có `data-collapsed`, `aria-expanded`, `aria-current`, 1 `<main id="main">`) |
 | TC-3 | AC-2 | unit | `npm test -- components/layout/store-shell` (static render: 1 header, 1 footer, 4 cột, 1 `<main id="main">`, không `backdrop-blur`) |
@@ -260,30 +273,34 @@ Mutation (điều kiện nghiệm thu):
 - Thêm `const SAMPLE_X` vào `features/` → TC-6 đỏ.
 
 ## Slices
-- [ ] S0: token chrome vào portal (files: app/tokens.generated.css, app/globals.css; test: (cd .. && python3 platform-docs/scripts/uigen.py check --root .) && grep -q -- '--color-chrome' app/tokens.generated.css)
-- [ ] S1: Button theo kit, giữ tên variant/size (files: components/ui/button.tsx, components/ui/button.test.tsx; test: npm test -- components/ui/button && npm run typecheck)
-- [ ] S2: ConsoleShell CRM chỉ nhận props, export ShellNavItem, index.ts bỏ export shell cũ (files: components/layout/console-shell.tsx, components/layout/console-sidebar.tsx, components/layout/console-header.tsx, components/layout/console-shell.test.tsx, components/layout/index.ts; test: npm test -- components/layout/console-shell && npm run typecheck)
-- [ ] S3: StoreShell landing, header đặc, footer chrome (files: components/layout/store-shell.tsx, components/layout/store-header.tsx, components/layout/site-footer.tsx, components/layout/store-shell.test.tsx, components/layout/index.ts; test: npm test -- components/layout/store-shell)
-- [ ] S4a: Khung (auth): layout nhóm card + MiniFooter, AuthHeading (files: app/(auth)/, components/layout/auth-shell.tsx, components/patterns/auth-heading.tsx; test: npm run typecheck)
-- [ ] S4b: Dời login/register/activate vào (auth) (files: app/(auth)/, app/login/, app/register/, app/activate/, features/auth/; test: rm -rf .next/types .next/dev/types && npm run typecheck && npm test -- features/auth)
-- [ ] S4c: Dời forgot/reset/switch-branch/switch-org vào (auth) (files: app/(auth)/, app/forgot-password/, app/reset-password/, app/switch-branch/, app/switch-org/; test: rm -rf .next/types .next/dev/types && npm run typecheck && npm test -- features/auth)
-- [ ] S5a: store-frame (fetch thô, 401 → khách vãng lai) + mocks/store.ts + layout (store) (files: app/(store)/, features/store/store-frame.tsx, features/store/store-frame.test.ts, mocks/; test: npm test -- features/store)
-- [ ] S5b: Root layout chỉ còn provider, SEO về (store), dời trang chủ, not-found (files: app/layout.tsx, app/page.tsx, app/not-found.tsx, app/(store)/; test: rm -rf .next/types .next/dev/types && npm run typecheck)
-- [ ] S5c: Dời products/cart vào (store) (files: app/(store)/, app/products/, app/cart/; test: rm -rf .next/types .next/dev/types && npm run typecheck)
-- [ ] S5d: Dời orders/me/traceability vào (store) (files: app/(store)/, app/orders/, app/me/, app/traceability/; test: rm -rf .next/types .next/dev/types && npm run typecheck && npm test)
-- [ ] S6: Một `<main>` mỗi trang (files: components/ui/page.tsx, app/(store)/page.tsx, features/traceability/trace-view.tsx; test: npm test && ! grep -rn '<main' components/ui features app/\(store\)/page.tsx)
-- [ ] S7a: console-frame dữ liệu thật + mocks/console.ts + layout (console) (files: app/(console)/, features/console/console-frame.tsx, features/console/console-frame.test.ts, mocks/; test: npm test -- features/console)
-- [ ] S7b: Dời console/branches, gỡ SAMPLE khỏi branches (files: app/(console)/, app/console/, app/branches/, features/branches/branches-view.tsx; test: rm -rf .next/types .next/dev/types && npm run typecheck && npm test -- features/branches)
-- [ ] S7c: Dời memberships/roles/inventory (files: app/(console)/, app/memberships/, app/roles/, app/inventory/; test: rm -rf .next/types .next/dev/types && npm run typecheck)
-- [ ] S7d: Dời production/sales (files: app/(console)/, app/production/, app/sales/; test: rm -rf .next/types .next/dev/types && npm run typecheck)
-- [ ] S7e: Xoá navbar/header/sidebar/app-shell (files: components/navbar.tsx, components/layout/app-shell.tsx, components/layout/header.tsx, components/layout/sidebar.tsx; test: rm -rf .next/types .next/dev/types && npm run typecheck && npm test)
-- [ ] S8: Nền tảng/công ty dùng ConsoleShell, workspace bỏ `<main>`, xoá PlatformShell (files: features/platform/workspace.tsx, components/layout/platform-shell.tsx; test: npm test -- features/platform && npm run typecheck)
-- [ ] S9: Glass chỉ ở scrim dialog + gate layout/glass/main/mocks (files: app/layout-gate.test.ts, components/ui/dialog.tsx, components/ui/toast.tsx, features/memberships/memberships-view.tsx; test: npm test -- app/layout-gate)
-- [ ] S10: Bỏ override nút ở auth (files: features/auth/; test: npm test -- features/auth)
-- [ ] S11: Bỏ override nút + `<button>` thô ở khách/kho (files: features/products/cart-view.tsx, features/products/product-detail-view.tsx, features/console/live-console.tsx, features/inventory/shelves-view.tsx, app/(store)/me/; test: npm test -- features/products features/inventory features/console)
-- [ ] S12a: Bỏ override nút màu thô ở sản phẩm/sản xuất (files: features/products/products-view.tsx, features/products/product-create-dialog.tsx, features/production/orders-view.tsx, features/production/qc-view.tsx; test: npm test -- features/products features/production)
-- [ ] S12b: switch-branch + bật gate nút toàn cây (files: app/(auth)/switch-branch/, app/layout-gate.test.ts; test: npm test -- app/layout-gate && npm test)
-- [ ] S13: Bằng chứng UI 3 vai × 2 cỡ × 2 theme + máy chấm (files: .aidlc/runs/PORTAL-SHELL-001/; test: python3 .aidlc/runs/PORTAL-SHELL-001/anti_check.py)
+- [x] S0: token chrome vào portal + loại artefact AIDLC khỏi Vitest (files: app/tokens.generated.css, app/globals.css, vitest.config.ts; test: npm test && test "$(grep -c -- '--color-chrome: #14291A;' app/tokens.generated.css)" -eq 1 && test "$(grep -c -- '--color-chrome: #0A120C;' app/tokens.generated.css)" -eq 2)
+- [x] S1: Button theo kit, giữ tên variant/size (files: components/ui/button.tsx, components/ui/button.test.tsx; test: npm test -- components/ui/button && npm run typecheck)
+- [x] S2: ConsoleShell CRM chỉ nhận props, export ShellNavItem, index.ts bỏ export shell cũ (files: components/layout/console-shell.tsx, components/layout/console-sidebar.tsx, components/layout/console-header.tsx, components/layout/console-shell.test.tsx, components/layout/index.ts; test: npm test -- components/layout/console-shell && npm run typecheck)
+- [x] S3: StoreShell landing, header đặc, footer chrome (files: components/layout/store-shell.tsx, components/layout/store-header.tsx, components/layout/site-footer.tsx, components/layout/store-shell.test.tsx, components/layout/index.ts; test: npm test -- components/layout/store-shell)
+- [x] S4a: Khung (auth): layout nhóm card + MiniFooter, AuthHeading (files: app/(auth)/, components/layout/auth-shell.tsx, components/patterns/auth-heading.tsx; test: npm run typecheck)
+- [x] S4b: Dời login/register/activate vào (auth) (files: app/(auth)/, app/login/, app/register/, app/activate/, features/auth/; test: rm -rf .next/types .next/dev/types && npm run typecheck && npm test -- features/auth)
+- [x] S4c: Dời forgot/reset/switch-branch/switch-org vào (auth) (files: app/(auth)/, app/forgot-password/, app/reset-password/, app/switch-branch/, app/switch-org/; test: rm -rf .next/types .next/dev/types && npm run typecheck && npm test -- features/auth)
+- [x] S5a: store-frame (fetch thô, 401 → khách vãng lai) + mocks/store.ts + layout (store) (files: app/(store)/, features/store/store-frame.tsx, features/store/store-frame.test.ts, mocks/; test: npm test -- features/store)
+- [x] S5b: Root layout chỉ còn provider, SEO về (store), dời trang chủ, not-found (files: app/layout.tsx, app/page.tsx, app/not-found.tsx, app/(store)/; test: rm -rf .next/types .next/dev/types && npm run typecheck)
+- [x] S5c: Dời products/cart vào (store) (files: app/(store)/, app/products/, app/cart/; test: rm -rf .next/types .next/dev/types && npm run typecheck)
+- [x] S5d: Dời orders/me/traceability vào (store) (files: app/(store)/, app/orders/, app/me/, app/traceability/; test: rm -rf .next/types .next/dev/types && npm run typecheck && npm test)
+- [x] S6: Một `<main>` mỗi trang (files: components/ui/page.tsx, components/ui/page.test.tsx, app/(store)/page.tsx, features/traceability/trace-view.tsx; test: npm test && ! grep -n '<main' components/ui/page.tsx features/traceability/trace-view.tsx app/\(store\)/page.tsx)
+- [x] S7a: console-frame dữ liệu thật + mocks/console.ts + layout (console) (files: app/(console)/, features/console/console-frame.tsx, features/console/console-frame.test.ts, mocks/; test: npm test -- features/console)
+- [x] S7b: Dời console/branches, gỡ SAMPLE khỏi branches (files: app/(console)/, app/console/, app/branches/, features/branches/branches-view.tsx; test: rm -rf .next/types .next/dev/types && npm run typecheck && npm test -- features/branches)
+- [x] S7c: Dời memberships/roles/inventory (files: app/(console)/, app/memberships/, app/roles/, app/inventory/; test: rm -rf .next/types .next/dev/types && npm run typecheck)
+- [x] S7d: Dời production/sales (files: app/(console)/, app/production/, app/sales/; test: rm -rf .next/types .next/dev/types && npm run typecheck)
+- [x] S7e: Xoá navbar/header/sidebar/app-shell, chuyển regression test sang console nav (files: components/navbar.tsx, components/layout/app-shell.tsx, components/layout/header.tsx, components/layout/sidebar.tsx, components/ui/overlay.test.tsx; test: rm -rf .next/types .next/dev/types && npm run typecheck && npm test)
+- [x] S8: Nền tảng/công ty dùng ConsoleShell, workspace bỏ `<main>`, xoá PlatformShell (files: features/platform/workspace.tsx, components/layout/platform-shell.tsx; test: npm test -- features/platform && npm run typecheck)
+- [x] S9a: Dọn glass và fixture khỏi toast/membership; dialog giữ scrim glass (files: components/ui/dialog.tsx, components/ui/toast.tsx, features/memberships/memberships-view.tsx; test: ! grep -n 'backdrop-blur' components/ui/toast.tsx features/memberships/memberships-view.tsx)
+- [x] S9b: Gate layout/glass/main/mocks và dọn dependency cuối (files: app/layout-gate.test.ts, features/traceability/trace-view.tsx, components/modals/session-timeout-modal.tsx, app/(console)/memberships/page.tsx; test: npm test -- app/layout-gate && npm run typecheck)
+- [x] S10: Bỏ override nút ở auth (files: features/auth/; test: npm test -- features/auth)
+- [x] S11: Bỏ override nút + `<button>` thô ở khách/kho (files: features/products/cart-view.tsx, features/products/product-detail-view.tsx, features/console/live-console.tsx, features/inventory/shelves-view.tsx, app/(store)/me/; test: npm test -- features/products features/inventory features/console)
+- [x] S12a: Bỏ override nút màu thô ở sản phẩm/sản xuất (files: features/products/products-view.tsx, features/products/product-create-dialog.tsx, features/production/orders-view.tsx, features/production/qc-view.tsx; test: npm test -- features/products features/production)
+- [x] S12b: switch-branch + bật gate nút toàn cây (files: app/(auth)/switch-branch/, app/layout-gate.test.ts, features/memberships/memberships-view.tsx; test: npm test -- app/layout-gate && npm test)
+- [x] S14: Sửa review-2: profile `display_name` rỗng vẫn hợp lệ (nhãn dự phòng), gate Button quét AST bắt cả callback `=>` và biểu thức JSX, dọn 7 override Button còn sót (review-2-codex-sol.md #1, #2) (files: features/store/store-frame.tsx, features/console/console-frame.tsx, app/layout-gate.test.ts, features/memberships/memberships-view.tsx, features/roles/roles-view.tsx; test: npm test && npm run lint)
+- [x] S15: Dọn override Button ở components/ phần 1 (review-3-codex-sol.md #1) chỉ bằng variant/size có sẵn (files: components/auth/login-form.tsx, components/modals/allergen-warning-modal.tsx, components/modals/cold-chain-violation-modal.tsx, components/modals/confirm-qc-decision-modal.tsx, components/modals/invite-member-modal.tsx; test: npm test && npm run lint)
+- [x] S16: Dọn override Button ở components/ phần 2, mở rộng gate Button AST sang components/ (0 override toàn portal) (files: components/modals/quantity-variance-modal.tsx, components/modals/session-timeout-modal.tsx, components/modals/supplier-suspension-modal.tsx, app/layout-gate.test.ts; test: npm test && npm run lint)
+- [x] S13: Bằng chứng UI 3 vai × 2 cỡ × 2 theme + máy chấm (files: .aidlc/runs/PORTAL-SHELL-001/; test: python3 .aidlc/runs/PORTAL-SHELL-001/anti_check.py)
 
 Ghi chú: override nút ở `memberships-view` được sửa trong S9, ở `branches-view` trong S7b.
 

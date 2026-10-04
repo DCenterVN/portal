@@ -113,19 +113,19 @@ const LAYER_CONFIG: Record<DialogLayer, { container: string; surface: string; ba
   standard: {
     container: "z-[70]",
     surface: "z-[71]",
-    backdrop: "bg-black/60 backdrop-blur-md",
+    backdrop: "bg-[var(--color-chrome)]/60",
     preventDismiss: false,
   },
   critical: {
     container: "z-[80]",
     surface: "z-[81]",
-    backdrop: "bg-black/75 backdrop-blur-lg",
+    backdrop: "bg-[var(--color-chrome)]/75",
     preventDismiss: true, // No Esc, no backdrop click
   },
   session: {
     container: "z-[90]",
     surface: "z-[91]",
-    backdrop: "bg-black/85 backdrop-blur-2xl",
+    backdrop: "bg-[var(--color-chrome)]/85",
     preventDismiss: true, // Full app lock
   },
 };
@@ -252,7 +252,7 @@ export function DialogContent({
       {/* Backdrop */}
       <div
         className={cn(
-          "fixed inset-0 transition-opacity animate-in fade-in-0 duration-200",
+          "fixed inset-0 transition-opacity animate-in fade-in-0 duration-200 ease-out motion-reduce:animate-none motion-reduce:transition-none",
           config.backdrop
         )}
         onClick={handleBackdropClick}
@@ -266,7 +266,7 @@ export function DialogContent({
         aria-modal="true"
         tabIndex={-1}
         className={cn(
-          "relative w-full rounded-2xl outline-none border border-[var(--border)] bg-[var(--card)] p-6 text-[var(--card-foreground)] shadow-2xl transition-all animate-in fade-in-0 zoom-in-95 duration-200 will-change-transform",
+          "relative w-full rounded-[var(--radius-lg)] outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus)] border border-[var(--color-line)] bg-[var(--color-surface)] p-6 text-[var(--color-ink)] shadow-[var(--elevation-shadow-pop)] transition-all animate-in fade-in-0 zoom-in-95 duration-200 ease-out motion-reduce:animate-none motion-reduce:transition-none will-change-transform",
           config.surface,
           sizeClasses[size],
           className
@@ -279,7 +279,7 @@ export function DialogContent({
           <button
             type="button"
             onClick={() => setOpen(false)}
-            className="absolute right-2 top-2 inline-flex size-11 items-center justify-center rounded-xl text-[var(--muted-foreground)] hover:bg-[var(--secondary)] hover:text-[var(--foreground)] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
+            className="absolute right-2 top-2 inline-flex size-11 items-center justify-center rounded-xl text-[var(--color-muted)] hover:bg-[var(--color-tint)] hover:text-[var(--color-ink)] transition-colors duration-150 ease-out motion-reduce:transition-none focus:outline-none focus:ring-2 focus:ring-[var(--color-focus)]"
             aria-label="Đóng hộp thoại"
           >
             <X className="size-4" />
@@ -311,7 +311,7 @@ export function DialogFooter({
   return (
     <div
       className={cn(
-        "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 pt-4 mt-6 border-t border-[var(--border)] gap-2 sm:gap-0",
+        "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 pt-4 mt-6 border-t border-[var(--color-line)] gap-2 sm:gap-0",
         className
       )}
       {...props}
@@ -326,7 +326,7 @@ export function DialogTitle({
   return (
     <h2
       className={cn(
-        "font-serif text-lg sm:text-xl font-bold tracking-tight text-[var(--foreground)]",
+        "font-serif text-lg sm:text-xl font-bold tracking-tight text-[var(--color-ink)]",
         className
       )}
       {...props}
@@ -340,7 +340,7 @@ export function DialogDescription({
 }: React.HTMLAttributes<HTMLParagraphElement>) {
   return (
     <p
-      className={cn("text-xs text-[var(--muted-foreground)] leading-relaxed", className)}
+      className={cn("text-xs text-[var(--color-muted)] leading-relaxed", className)}
       {...props}
     />
   );

@@ -296,7 +296,7 @@ export function RolesView() {
   const totalFeatures = PERMISSION_GROUPS.reduce((acc, g) => acc + g.features.length, 0);
 
   return (
-    <PageShell>
+    <PageShell className="bg-[var(--color-bg)] text-[var(--color-ink)]">
       <PageHeader
         icon={<ShieldCheck />}
         title="Ma Trận Phân Quyền Chi Nhánh"
@@ -309,11 +309,11 @@ export function RolesView() {
         actions={
           <div className="flex items-center gap-2">
             {savedSuccess && (
-              <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                <Check className="size-3.5" /> Đã lưu ma trận!
+              <span className="text-xs font-bold text-[var(--color-ink)] flex items-center gap-1">
+                <Check className="size-3.5 text-[var(--color-leaf)]" /> Đã lưu ma trận!
               </span>
             )}
-            <Button size="sm" onClick={handleSave} className="gap-1.5 text-xs font-bold shadow-sm">
+            <Button size="sm" onClick={handleSave}>
               <Save className="size-3.5" />
               <span>Lưu ma trận quyền</span>
             </Button>
@@ -324,26 +324,25 @@ export function RolesView() {
       {/* Filter & Action Toolbar */}
       <div className="pt-6 pb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
         <div className="relative w-full md:w-80">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-[var(--muted-foreground)]" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-[var(--color-muted)]" />
           <Input
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Tìm chức năng, phân hệ..."
-            className="pl-9 h-9 text-xs rounded-xl bg-[var(--card)]"
+            className="pl-9 h-11 text-xs bg-[var(--color-surface)]"
           />
         </div>
 
-        <div className="flex items-center gap-4 text-xs text-[var(--muted-foreground)]">
+        <div className="flex items-center gap-4 text-xs text-[var(--color-muted)]">
           <span className="font-semibold">
             {PERMISSION_GROUPS.length} nhóm quyền · {totalFeatures} chức năng
           </span>
-          <div className="h-3.5 w-px bg-[var(--border)] hidden sm:block" />
+          <div className="h-3.5 w-px bg-[var(--color-line)] hidden sm:block" />
           <div className="flex items-center gap-1">
             <Button
               onClick={expandAll}
               type="button"
-              variant="link"
-              className="h-auto p-0 text-xs text-[var(--primary)] font-medium"
+              variant="ghost"
             >
               Mở rộng
             </Button>
@@ -351,8 +350,7 @@ export function RolesView() {
             <Button
               onClick={collapseAll}
               type="button"
-              variant="link"
-              className="h-auto p-0 text-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)] font-medium"
+              variant="ghost"
             >
               Thu gọn
             </Button>
@@ -360,8 +358,7 @@ export function RolesView() {
             <Button
               onClick={() => setSearchTerm("")}
               type="button"
-              variant="link"
-              className="h-auto p-0 text-xs inline-flex items-center gap-1 text-[var(--muted-foreground)] hover:text-[var(--foreground)] font-medium"
+              variant="ghost"
             >
               <RotateCcw className="size-3" /> Tải lại
             </Button>
@@ -370,34 +367,34 @@ export function RolesView() {
       </div>
 
       {/* Permission Matrix Grid Card */}
-      <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-sm overflow-hidden">
+      <div className="rounded-2xl border border-[var(--color-line)] bg-[var(--color-surface)] shadow-[var(--elevation-shadow-card)] overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-[1100px]">
             {/* Table Header */}
             <thead>
               {/* Row 1: Role Group Headers */}
-              <tr className="border-b border-[var(--border)] bg-[var(--secondary)]/50 text-[var(--foreground)] text-xs font-bold">
-                <th rowSpan={2} className="p-3.5 pl-5 w-80 min-w-[280px] align-bottom border-r border-[var(--border)]">
+              <tr className="border-b border-[var(--color-line)] bg-[var(--color-tint)] text-[var(--color-ink)] text-xs font-bold">
+                <th rowSpan={2} className="p-3.5 pl-5 w-80 min-w-[280px] align-bottom border-r border-[var(--color-line)]">
                   Chức năng / Phân hệ
                 </th>
                 {ROLES_COLUMNS.map((role) => (
                   <th
                     key={role.id}
                     colSpan={5}
-                    className="p-2.5 text-center border-r border-[var(--border)] last:border-r-0"
+                    className="p-2.5 text-center border-r border-[var(--color-line)] last:border-r-0"
                   >
                     <div className="flex items-center justify-center gap-1.5">
-                      <span className="font-mono text-[10px] font-extrabold px-1.5 py-0.2 rounded bg-sky-500/10 text-[var(--primary)]">
+                      <span className="font-mono text-[10px] font-extrabold px-1.5 py-0.2 rounded bg-[var(--color-tint)] text-[var(--color-primary-hover)] dark:text-[var(--color-primary)]">
                         {role.code}
                       </span>
-                      <span className="text-xs font-bold text-[var(--foreground)]">{role.name}</span>
+                      <span className="text-xs font-bold text-[var(--color-ink)]">{role.name}</span>
                     </div>
                   </th>
                 ))}
               </tr>
 
               {/* Row 2: V A U D E Sub-columns */}
-              <tr className="border-b border-[var(--border)] bg-[var(--secondary)]/30 text-[10px] font-mono font-bold text-[var(--muted-foreground)] text-center">
+              <tr className="border-b border-[var(--color-line)] bg-[var(--color-tint)] text-[10px] font-mono font-bold text-[var(--color-muted)] text-center">
                 {ROLES_COLUMNS.map((role) => (
                   <React.Fragment key={`${role.id}-actions`}>
                     {(["V", "A", "U", "D", "E"] as ActionType[]).map((act) => (
@@ -415,19 +412,19 @@ export function RolesView() {
             </thead>
 
             {/* Table Body with Collapsible Groups */}
-            <tbody className="divide-y divide-[var(--border)] text-xs">
+            <tbody className="divide-y divide-[var(--color-line)] text-xs">
               {filteredGroups.map((group) => {
                 const isCollapsed = !!collapsedGroups[group.id];
                 return (
                   <React.Fragment key={group.id}>
                     {/* Group Header Row */}
-                    <tr className="bg-[var(--secondary)]/40 hover:bg-[var(--secondary)]/60 transition-colors font-bold text-[var(--foreground)]">
+                    <tr className="bg-[var(--color-tint)] hover:bg-[var(--color-tint)] transition-colors font-bold text-[var(--color-ink)]">
                       <td colSpan={1 + ROLES_COLUMNS.length * 5} className="p-2.5 pl-4">
                         <Button
                           type="button"
                           variant="ghost"
                           onClick={() => toggleGroup(group.id)}
-                          className="h-auto p-0 flex items-center gap-2 text-xs font-bold text-[var(--primary)] hover:bg-transparent hover:opacity-80"
+                          size="sm"
                         >
                           {isCollapsed ? (
                             <ChevronRight className="size-4" />
@@ -435,7 +432,7 @@ export function RolesView() {
                             <ChevronDown className="size-4" />
                           )}
                           <span>{group.name}</span>
-                          <span className="text-[10px] font-normal text-[var(--muted-foreground)] ml-1">
+                          <span className="text-[10px] font-normal text-[var(--color-muted)] ml-1">
                             ({group.features.length} chức năng)
                           </span>
                         </Button>
@@ -447,14 +444,14 @@ export function RolesView() {
                       group.features.map((feature) => (
                         <tr
                           key={feature.id}
-                          className="hover:bg-sky-500/[0.02] transition-colors border-b border-[var(--border)]/60"
+                          className="hover:bg-[var(--color-tint)] transition-colors border-b border-[var(--color-line)]"
                         >
                           {/* Feature Name & Description */}
-                          <td className="p-3 pl-8 border-r border-[var(--border)]">
-                            <div className="font-semibold text-[var(--foreground)] text-xs">
+                          <td className="p-3 pl-8 border-r border-[var(--color-line)]">
+                            <div className="font-semibold text-[var(--color-ink)] text-xs">
                               {feature.name}
                             </div>
-                            <div className="text-[11px] text-[var(--muted-foreground)] line-clamp-1 mt-0.5 font-normal">
+                            <div className="text-[11px] text-[var(--color-muted)] line-clamp-1 mt-0.5 font-normal">
                               {feature.description}
                             </div>
                           </td>
@@ -468,22 +465,21 @@ export function RolesView() {
                                 return (
                                   <td
                                     key={key}
-                                    className="p-1 text-center align-middle hover:bg-sky-500/10 transition-colors"
+                                    className="p-1 text-center align-middle hover:bg-[var(--color-tint)] transition-colors"
                                   >
                                     <Button
                                       type="button"
                                       variant="ghost"
                                       size="icon"
                                       onClick={() => handleToggle(feature.id, role.id, act)}
-                                      className="size-5 p-0 rounded flex items-center justify-center mx-auto transition-transform active:scale-95"
                                       title={`${role.name}: ${ACTION_LABELS[act].title} - ${feature.name}`}
                                     >
                                       {isChecked ? (
-                                        <div className="size-4 rounded bg-[#0284C7] text-white flex items-center justify-center shadow-xs">
+                                        <div className="size-4 rounded bg-[var(--color-primary)] text-[var(--color-primary-ink)] flex items-center justify-center shadow-xs">
                                           <Check className="size-3 stroke-[3]" />
                                         </div>
                                       ) : (
-                                        <div className="size-4 rounded border border-[var(--border)] hover:border-slate-400 dark:hover:border-slate-500 bg-[var(--card)]" />
+                                        <div className="size-4 rounded border border-[var(--color-input-border)] hover:border-[var(--color-focus)] bg-[var(--color-surface)]" />
                                       )}
                                     </Button>
                                   </td>
@@ -501,28 +497,28 @@ export function RolesView() {
         </div>
 
         {/* Matrix Legend Footer */}
-        <div className="p-4 border-t border-[var(--border)] bg-[var(--secondary)]/20 flex flex-wrap items-center justify-between gap-4 text-xs text-[var(--muted-foreground)]">
+        <div className="p-4 border-t border-[var(--color-line)] bg-[var(--color-tint)] flex flex-wrap items-center justify-between gap-4 text-xs text-[var(--color-muted)]">
           <div className="flex flex-wrap items-center gap-4">
-            <span className="font-bold text-[var(--foreground)]">Quy ước ký hiệu:</span>
+            <span className="font-bold text-[var(--color-ink)]">Quy ước ký hiệu:</span>
             <span className="flex items-center gap-1.5 font-mono">
-              <strong className="text-[var(--primary)] font-bold">V</strong>: Xem (View)
+              <strong className="text-[var(--color-primary-hover)] dark:text-[var(--color-primary)] font-bold">V</strong>: Xem (View)
             </span>
             <span className="flex items-center gap-1.5 font-mono">
-              <strong className="text-[var(--primary)] font-bold">A</strong>: Thêm (Add)
+              <strong className="text-[var(--color-primary-hover)] dark:text-[var(--color-primary)] font-bold">A</strong>: Thêm (Add)
             </span>
             <span className="flex items-center gap-1.5 font-mono">
-              <strong className="text-[var(--primary)] font-bold">U</strong>: Sửa (Update)
+              <strong className="text-[var(--color-primary-hover)] dark:text-[var(--color-primary)] font-bold">U</strong>: Sửa (Update)
             </span>
             <span className="flex items-center gap-1.5 font-mono">
-              <strong className="text-[var(--primary)] font-bold">D</strong>: Xóa (Delete)
+              <strong className="text-[var(--color-primary-hover)] dark:text-[var(--color-primary)] font-bold">D</strong>: Xóa (Delete)
             </span>
             <span className="flex items-center gap-1.5 font-mono">
-              <strong className="text-[var(--primary)] font-bold">E</strong>: Duyệt / Xuất dữ liệu (Export)
+              <strong className="text-[var(--color-primary-hover)] dark:text-[var(--color-primary)] font-bold">E</strong>: Duyệt / Xuất dữ liệu (Export)
             </span>
           </div>
 
           <div className="flex items-center gap-2 text-[11px]">
-            <Info className="size-3.5 text-[var(--primary)]" />
+            <Info className="size-3.5 text-[var(--color-primary-hover)] dark:text-[var(--color-primary)]" />
             <span>Phân quyền có hiệu lực tức thời cho phiên đăng nhập tiếp theo</span>
           </div>
         </div>

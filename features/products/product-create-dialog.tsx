@@ -69,11 +69,11 @@ export function ProductCreateDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent size="lg" className="bg-[var(--card)]">
+      <DialogContent size="lg" className="border-[var(--color-line)] bg-[var(--color-surface)] text-[var(--color-ink)]">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <div className="flex items-center gap-2.5 text-emerald-600 dark:text-emerald-400 mb-1">
-              <div className="flex size-9 items-center justify-center rounded-xl bg-emerald-500/10 shrink-0">
+            <div className="flex items-center gap-2.5 text-[var(--color-ink)] mb-1">
+              <div className="flex size-9 items-center justify-center rounded-xl bg-[var(--color-tint)] shrink-0">
                 <PackagePlus className="size-5" />
               </div>
               <div>
@@ -117,9 +117,10 @@ export function ProductCreateDialog({
               <div>
                 <Label className="text-xs font-semibold">Đơn vị tính (UOM) (*)</Label>
                 <select
+                  style={{ borderWidth: 1.5 }}
                   value={uom}
                   onChange={(e) => setUom(e.target.value)}
-                  className="mt-1 w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-xs text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
+                  className="mt-1 h-11 w-full rounded-[var(--radius-md)] border border-[var(--color-input-border)] bg-[var(--color-surface)] px-3 py-2 text-xs text-[var(--color-ink)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus)]"
                 >
                   <option value="kg">kg (Kilogram)</option>
                   <option value="g">g (Gram)</option>
@@ -162,7 +163,6 @@ export function ProductCreateDialog({
               variant="outline"
               onClick={() => onOpenChange(false)}
               disabled={submitting}
-              className="rounded-xl border-[var(--border)] text-xs font-semibold"
             >
               Huỷ
             </Button>
@@ -170,7 +170,6 @@ export function ProductCreateDialog({
             <Button
               type="submit"
               disabled={submitting}
-              className="rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold"
             >
               {submitting ? "Đang tạo..." : "Lưu bản nháp (DRAFT)"}
             </Button>

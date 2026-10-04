@@ -56,11 +56,11 @@ export default function StoreLayout({ children }: { children: ReactNode }) {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdOrg) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdOrg).replace(/</g, "\\u003c") }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdWebSite) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdWebSite).replace(/</g, "\\u003c") }}
       />
       <StoreFrame>{children}</StoreFrame>
     </>

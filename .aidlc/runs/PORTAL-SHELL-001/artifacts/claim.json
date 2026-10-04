@@ -1,9 +1,9 @@
 {
   "task": "PORTAL-SHELL-001",
-  "actor": "agent:claude-code(171709704+dawnmoriaty@users.noreply.github.com)",
-  "worker": null,
-  "ts": "2026-09-29T00:16:41+00:00",
+  "actor": "agent:codex",
+  "worker": "codex",
+  "ts": "2026-10-01T00:02:59+00:00",
   "by": "codex",
-  "previous": null,
+  "previous": "codex",
   "slice": null
 }

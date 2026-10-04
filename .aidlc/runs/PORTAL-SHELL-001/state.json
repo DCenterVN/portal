@@ -1,7 +1,7 @@
 {
   "id": "PORTAL-SHELL-001",
   "title": "Một layout cho mỗi loại người dùng theo kit Đồng xanh: StoreShell (khách), ConsoleShell (nhân viên + nền tảng), AuthShell; một bộ nút; glass đúng chỗ",
-  "description": "worker: codex · story: US-UI-002 · sprint: 02 · slices: 0/24 · next: verification: no 'integration*' check (pipeline stage integration)",
+  "description": "worker: codex · story: US-UI-002 · sprint: 02 · slices: 28/28",
   "pipeline": "sdlc",
   "agent": null,
   "agents": [
@@ -14,10 +14,10 @@
     "sdlc-e2e",
     "sdlc-release"
   ],
-  "currentStep": 4,
-  "status": "in_progress",
+  "currentStep": 7,
+  "status": "done",
   "createdAt": "2026-09-28T23:57:22+00:00",
-  "updatedAt": "2026-09-30T03:44:26+00:00",
+  "updatedAt": "2026-10-04T06:01:50+00:00",
   "stepStates": [
     {
       "agent": "sdlc-discovery",
@@ -65,9 +65,9 @@
     },
     {
       "agent": "sdlc-build",
-      "status": "in_progress",
+      "status": "done",
       "revision": 1,
-      "runStatus": "awaiting_work",
+      "runStatus": "approved",
       "startedAt": null,
       "finishedAt": null,
       "artifactsProduced": [
@@ -76,9 +76,9 @@
     },
     {
       "agent": "sdlc-integration",
-      "status": "pending",
+      "status": "done",
       "revision": 1,
-      "runStatus": "pending",
+      "runStatus": "approved",
       "startedAt": null,
       "finishedAt": null,
       "artifactsProduced": [
@@ -87,9 +87,9 @@
     },
     {
       "agent": "sdlc-e2e",
-      "status": "pending",
+      "status": "done",
       "revision": 1,
-      "runStatus": "pending",
+      "runStatus": "approved",
       "startedAt": null,
       "finishedAt": null,
       "artifactsProduced": [
@@ -98,12 +98,15 @@
     },
     {
       "agent": "sdlc-release",
-      "status": "pending",
+      "status": "done",
       "revision": 1,
-      "runStatus": "pending",
+      "runStatus": "approved",
       "startedAt": null,
       "finishedAt": null,
-      "artifactsProduced": []
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-SHELL-001/review.md",
+        ".aidlc/runs/PORTAL-SHELL-001/artifacts/review-decision.json"
+      ]
     }
   ]
 }

@@ -1,4 +1,4 @@
-import { MembershipsView, INITIAL_EMPLOYEES } from "@/features/memberships/memberships-view";
+import { MembershipsView } from "@/features/memberships/memberships-view";
 
 export const metadata = {
   title: "Quản lý Thành viên — ColdChain HQ",
@@ -6,5 +6,5 @@ export const metadata = {
 };
 
 export default function MembershipsPage() {
-  return <MembershipsView initialEmployees={INITIAL_EMPLOYEES} />;
+  return <MembershipsView initialEmployees={[]} />;
 }

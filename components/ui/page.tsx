@@ -9,9 +9,9 @@ export function PageShell({
   className?: string;
 }) {
   return (
-    <main className={cn("mx-auto max-w-7xl px-4 py-8 sm:px-6", className)}>
+    <div className={cn("mx-auto max-w-7xl px-4 py-8 sm:px-6", className)}>
       {children}
-    </main>
+    </div>
   );
 }
 

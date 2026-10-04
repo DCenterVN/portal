@@ -47,7 +47,7 @@ export function ForgotForm() {
         <Label htmlFor="email">Email</Label>
         <Input id="email" name="email" type="email" autoComplete="email" disabled={busy} className="h-10" />
       </div>
-      <Button type="submit" disabled={busy} className="h-10 w-full">{busy ? "Đang gửi…" : "Gửi liên kết đặt lại"}</Button>
+      <Button type="submit" disabled={busy} className="w-full">{busy ? "Đang gửi…" : "Gửi liên kết đặt lại"}</Button>
       <p className="border-t border-[var(--border)] pt-4 text-center text-sm text-[var(--muted-foreground)]">
         Nhớ mật khẩu rồi? <Link href={"/login" as Route} className="font-semibold text-[var(--primary)] hover:underline">Đăng nhập</Link>
       </p>

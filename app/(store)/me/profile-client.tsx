@@ -61,11 +61,11 @@ export default function ProfileClient() {
 
   if (loading) {
     return (
-      <PageShell>
+      <PageShell className="bg-[var(--color-bg)] text-[var(--color-ink)]">
         <div className="flex items-center justify-center min-h-[50vh]">
           <div className="text-center space-y-3">
-            <div className="size-8 border-3 border-[var(--primary)] border-t-transparent rounded-full animate-spin mx-auto" />
-            <p className="text-sm text-[var(--muted-foreground)]">Đang tải hồ sơ người dùng...</p>
+            <div className="size-8 border-3 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin mx-auto" />
+            <p className="text-sm text-[var(--color-muted)]">Đang tải hồ sơ người dùng...</p>
           </div>
         </div>
       </PageShell>
@@ -75,13 +75,13 @@ export default function ProfileClient() {
   if (error || !profile) {
     const isAuthExpired = errorStatus === 401 || error.toLowerCase().includes("hết hạn") || error.toLowerCase().includes("unauthorized");
     return (
-      <PageShell>
-        <Card className="max-w-md mx-auto mt-12 text-center p-6 border-[color-mix(in_srgb,var(--color-danger)_20%,transparent)]">
+      <PageShell className="bg-[var(--color-bg)] text-[var(--color-ink)]">
+        <Card className="bg-[var(--color-surface)] text-[var(--color-ink)] max-w-md mx-auto mt-12 text-center p-6 border-[var(--color-line)]">
           <AlertCircle className="size-10 text-[var(--color-danger)] mx-auto mb-3" />
-          <h2 className="text-lg font-bold text-[var(--foreground)]">
+          <h2 className="font-[family-name:var(--font-quicksand,var(--font-display))] text-lg font-bold text-[var(--color-ink)]">
             {isAuthExpired ? "Phiên làm việc hết hạn" : "Không thể tải hồ sơ"}
           </h2>
-          <p className="text-xs text-[var(--muted-foreground)] mt-1 mb-4">
+          <p className="text-xs text-[var(--color-muted)] mt-1 mb-4">
             {error || (isAuthExpired ? "Vui lòng đăng nhập lại." : "Vui lòng kiểm tra kết nối mạng và thử lại.")}
           </p>
           {isAuthExpired ? (
@@ -99,7 +99,7 @@ export default function ProfileClient() {
   }
 
   return (
-    <PageShell>
+    <PageShell className="bg-[var(--color-bg)] text-[var(--color-ink)]">
       <PageHeader
         icon={<User />}
         title="Hồ sơ & Tài khoản Cá nhân"
@@ -110,7 +110,7 @@ export default function ProfileClient() {
         }
         description="Quản lý thông tin định danh, quyền hạn phân bổ và các thiết lập bảo mật"
         actions={
-          <Button variant="outline" size="sm" onClick={handleLogout} className="gap-1.5 text-xs text-[var(--color-danger)] hover:bg-[color-mix(in_srgb,var(--color-danger)_10%,transparent)] border-[color-mix(in_srgb,var(--color-danger)_20%,transparent)]">
+          <Button variant="destructive" size="sm" onClick={handleLogout} className="gap-1.5">
             <LogOut className="size-3.5" />
             <span>Đăng xuất</span>
           </Button>
@@ -119,14 +119,14 @@ export default function ProfileClient() {
 
       {/* User Hero Banner */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 pt-6 pb-6">
-        <Card className="lg:col-span-1 p-5 rounded-2xl border-[var(--border)] bg-[var(--card)] text-[var(--card-foreground)] flex flex-col justify-between">
-          <div className="text-center pb-4 border-b border-[var(--border)]">
-            <div className="size-20 rounded-2xl bg-gradient-to-tr from-[var(--color-info)] to-[var(--color-primary)] text-[var(--color-primary-ink)] flex items-center justify-center font-extrabold text-2xl shadow-lg mx-auto mb-3">
+        <Card className="lg:col-span-1 p-5 rounded-2xl border-[var(--color-line)] bg-[var(--color-surface)] text-[var(--color-ink)] flex flex-col justify-between">
+          <div className="text-center pb-4 border-b border-[var(--color-line)]">
+            <div className="size-20 rounded-2xl bg-[var(--color-primary)] text-[var(--color-primary-ink)] flex items-center justify-center font-extrabold text-2xl shadow-[var(--elevation-shadow-card)] mx-auto mb-3">
               {profile.display_name?.slice(0, 2).toUpperCase() || "VS"}
             </div>
-            <h2 className="text-lg font-bold text-[var(--foreground)]">{profile.display_name || "Nhân sự Việt Sạch"}</h2>
-            <p className="text-xs text-[var(--muted-foreground)] mt-0.5">{profile.email || profile.phone}</p>
-            <Badge variant="secondary" className="mt-2.5 text-xs font-semibold bg-[color-mix(in_srgb,var(--color-info)_10%,transparent)] text-[var(--color-info)] border border-[color-mix(in_srgb,var(--color-info)_20%,transparent)]">
+            <h2 className="font-[family-name:var(--font-quicksand,var(--font-display))] text-lg font-bold text-[var(--color-ink)]">{profile.display_name || "Nhân sự Việt Sạch"}</h2>
+            <p className="text-xs text-[var(--color-muted)] mt-0.5">{profile.email || profile.phone}</p>
+            <Badge variant="secondary" className="mt-2.5 text-xs font-semibold bg-[var(--color-tint)] text-[var(--color-ink)] border border-[var(--color-line)]">
               Mã NV: {profile.id.slice(0, 8)}
             </Badge>
           </div>
@@ -162,42 +162,42 @@ export default function ProfileClient() {
         {/* Tab Content */}
         <div className="lg:col-span-3 space-y-6">
           {activeTab === "general" && (
-            <Card className="rounded-2xl border-[var(--border)] bg-[var(--card)] p-6">
-              <CardHeader className="p-0 pb-5 border-b border-[var(--border)]">
-                <CardTitle className="text-base font-bold">Thông tin cá nhân</CardTitle>
+            <Card className="rounded-2xl border-[var(--color-line)] bg-[var(--color-surface)] p-6">
+              <CardHeader className="p-0 pb-5 border-b border-[var(--color-line)]">
+                <CardTitle className="font-[family-name:var(--font-quicksand,var(--font-display))] text-base font-bold">Thông tin cá nhân</CardTitle>
                 <CardDescription className="text-xs">Dữ liệu tài khoản đã được xác thực trên hệ sinh thái DCenter</CardDescription>
               </CardHeader>
               <CardContent className="p-0 pt-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--secondary)]/30">
-                  <div className="flex items-center gap-2 text-xs text-[var(--muted-foreground)] font-medium">
+                <div className="p-3.5 rounded-xl border border-[var(--color-line)] bg-[var(--color-tint)]">
+                  <div className="flex items-center gap-2 text-xs text-[var(--color-muted)] font-medium">
                     <User className="size-3.5" />
                     <span>Họ và tên</span>
                   </div>
-                  <p className="text-sm font-bold text-[var(--foreground)] mt-1">{profile.display_name || "Chưa cập nhật"}</p>
+                  <p className="text-sm font-bold text-[var(--color-ink)] mt-1">{profile.display_name || "Chưa cập nhật"}</p>
                 </div>
 
-                <div className="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--secondary)]/30">
-                  <div className="flex items-center gap-2 text-xs text-[var(--muted-foreground)] font-medium">
+                <div className="p-3.5 rounded-xl border border-[var(--color-line)] bg-[var(--color-tint)]">
+                  <div className="flex items-center gap-2 text-xs text-[var(--color-muted)] font-medium">
                     <Mail className="size-3.5" />
                     <span>Email đăng ký</span>
                   </div>
-                  <p className="text-sm font-bold text-[var(--foreground)] mt-1">{profile.email || "—"}</p>
+                  <p className="text-sm font-bold text-[var(--color-ink)] mt-1">{profile.email || "—"}</p>
                 </div>
 
-                <div className="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--secondary)]/30">
-                  <div className="flex items-center gap-2 text-xs text-[var(--muted-foreground)] font-medium">
+                <div className="p-3.5 rounded-xl border border-[var(--color-line)] bg-[var(--color-tint)]">
+                  <div className="flex items-center gap-2 text-xs text-[var(--color-muted)] font-medium">
                     <Phone className="size-3.5" />
                     <span>Số điện thoại</span>
                   </div>
-                  <p className="text-sm font-bold text-[var(--foreground)] mt-1">{profile.phone || "—"}</p>
+                  <p className="text-sm font-bold text-[var(--color-ink)] mt-1">{profile.phone || "—"}</p>
                 </div>
 
-                <div className="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--secondary)]/30">
-                  <div className="flex items-center gap-2 text-xs text-[var(--muted-foreground)] font-medium">
+                <div className="p-3.5 rounded-xl border border-[var(--color-line)] bg-[var(--color-tint)]">
+                  <div className="flex items-center gap-2 text-xs text-[var(--color-muted)] font-medium">
                     <Calendar className="size-3.5" />
                     <span>Ngày khởi tạo</span>
                   </div>
-                  <p className="text-sm font-bold text-[var(--foreground)] mt-1">
+                  <p className="text-sm font-bold text-[var(--color-ink)] mt-1">
                     {profile.created_at ? new Date(profile.created_at).toLocaleDateString("vi-VN") : "27/08/2026"}
                   </p>
                 </div>
@@ -206,22 +206,22 @@ export default function ProfileClient() {
           )}
 
           {activeTab === "memberships" && (
-            <Card className="rounded-2xl border-[var(--border)] bg-[var(--card)] p-6">
-              <CardHeader className="p-0 pb-5 border-b border-[var(--border)]">
-                <CardTitle className="text-base font-bold">Danh sách Tổ chức & Phân quyền Chi nhánh</CardTitle>
+            <Card className="rounded-2xl border-[var(--color-line)] bg-[var(--color-surface)] p-6">
+              <CardHeader className="p-0 pb-5 border-b border-[var(--color-line)]">
+                <CardTitle className="font-[family-name:var(--font-quicksand,var(--font-display))] text-base font-bold">Danh sách Tổ chức & Phân quyền Chi nhánh</CardTitle>
                 <CardDescription className="text-xs">Các ngữ cảnh làm việc được liên kết với tài khoản này</CardDescription>
               </CardHeader>
               <CardContent className="p-0 pt-5 space-y-3">
                 {profile.memberships && profile.memberships.length > 0 ? (
                   profile.memberships.map((m, idx) => (
-                    <div key={idx} className="p-4 rounded-xl border border-[var(--border)] bg-[var(--secondary)]/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div key={idx} className="p-4 rounded-xl border border-[var(--color-line)] bg-[var(--color-tint)] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <div>
                         <div className="flex items-center gap-2">
-                          <Building2 className="size-4 text-[var(--primary)]" />
-                          <h4 className="text-sm font-bold text-[var(--foreground)]">{m.org_name || m.org_id}</h4>
+                          <Building2 className="size-4 text-[var(--color-primary)]" />
+                          <h4 className="font-[family-name:var(--font-quicksand,var(--font-display))] text-sm font-bold text-[var(--color-ink)]">{m.org_name || m.org_id}</h4>
                         </div>
                         {m.branch_name && (
-                          <p className="text-xs text-[var(--muted-foreground)] mt-1">Chi nhánh: {m.branch_name}</p>
+                          <p className="text-xs text-[var(--color-muted)] mt-1">Chi nhánh: {m.branch_name}</p>
                         )}
                         <div className="flex flex-wrap gap-1.5 mt-2">
                           {m.roles.map((r) => (
@@ -237,7 +237,7 @@ export default function ProfileClient() {
                     </div>
                   ))
                 ) : (
-                  <div className="text-center py-8 text-xs text-[var(--muted-foreground)]">
+                  <div className="text-center py-8 text-xs text-[var(--color-muted)]">
                     Bạn đang hoạt động dưới quyền Khách hàng vãng lai (CUSTOMER).
                   </div>
                 )}
@@ -246,20 +246,20 @@ export default function ProfileClient() {
           )}
 
           {activeTab === "security" && (
-            <Card className="rounded-2xl border-[var(--border)] bg-[var(--card)] p-6">
-              <CardHeader className="p-0 pb-5 border-b border-[var(--border)]">
-                <CardTitle className="text-base font-bold">Bảo mật & Phiên làm việc</CardTitle>
+            <Card className="rounded-2xl border-[var(--color-line)] bg-[var(--color-surface)] p-6">
+              <CardHeader className="p-0 pb-5 border-b border-[var(--color-line)]">
+                <CardTitle className="font-[family-name:var(--font-quicksand,var(--font-display))] text-base font-bold">Bảo mật & Phiên làm việc</CardTitle>
                 <CardDescription className="text-xs">Thiết lập mật khẩu mới và kiểm soát an toàn tài khoản</CardDescription>
               </CardHeader>
               <CardContent className="p-0 pt-5 space-y-4">
-                <div className="flex items-center justify-between p-4 rounded-xl border border-[var(--border)] bg-[var(--secondary)]/20">
+                <div className="flex items-center justify-between p-4 rounded-xl border border-[var(--color-line)] bg-[var(--color-tint)]">
                   <div className="flex items-center gap-3">
-                    <div className="size-9 rounded-xl bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)] text-[var(--color-primary)] flex items-center justify-center">
+                    <div className="size-9 rounded-xl bg-[var(--color-tint)] text-[var(--color-primary)] flex items-center justify-center">
                       <KeyRound className="size-4" />
                     </div>
                     <div>
-                      <h4 className="text-xs font-bold text-[var(--foreground)]">Mật khẩu tài khoản</h4>
-                      <p className="text-xs text-[var(--muted-foreground)]">Được cập nhật định kỳ để bảo vệ dữ liệu chuỗi lạnh</p>
+                      <h4 className="font-[family-name:var(--font-quicksand,var(--font-display))] text-xs font-bold text-[var(--color-ink)]">Mật khẩu tài khoản</h4>
+                      <p className="text-xs text-[var(--color-muted)]">Được cập nhật định kỳ để bảo vệ dữ liệu chuỗi lạnh</p>
                     </div>
                   </div>
                   <Button size="sm" variant="outline" onClick={() => router.push("/forgot-password")} className="text-xs">
@@ -267,17 +267,17 @@ export default function ProfileClient() {
                   </Button>
                 </div>
 
-                <div className="flex items-center justify-between p-4 rounded-xl border border-[var(--border)] bg-[var(--secondary)]/20">
+                <div className="flex items-center justify-between p-4 rounded-xl border border-[var(--color-line)] bg-[var(--color-tint)]">
                   <div className="flex items-center gap-3">
-                    <div className="size-9 rounded-xl bg-[color-mix(in_srgb,var(--color-info)_10%,transparent)] text-[var(--color-info)] flex items-center justify-center">
-                      <CheckCircle2 className="size-4" />
+                    <div className="size-9 rounded-xl bg-[var(--color-tint)] text-[var(--color-info)] flex items-center justify-center">
+                      <CheckCircle2 className="size-4 text-[var(--color-leaf)]" />
                     </div>
                     <div>
-                      <h4 className="text-xs font-bold text-[var(--foreground)]">Xác thực phiên làm việc BFF</h4>
-                      <p className="text-xs text-[var(--muted-foreground)]">HttpOnly cookie an toàn chống XSS & CSRF</p>
+                      <h4 className="font-[family-name:var(--font-quicksand,var(--font-display))] text-xs font-bold text-[var(--color-ink)]">Xác thực phiên làm việc BFF</h4>
+                      <p className="text-xs text-[var(--color-muted)]">HttpOnly cookie an toàn chống XSS & CSRF</p>
                     </div>
                   </div>
-                  <Badge variant="secondary" className="text-xs font-bold text-[var(--color-primary)]">
+                  <Badge variant="secondary" className="text-xs font-bold text-[var(--color-ink)]">
                     Bảo vệ 100%
                   </Badge>
                 </div>
