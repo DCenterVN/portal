@@ -2,9 +2,9 @@
   "task": "PORTAL-AUTH-SPLIT-001",
   "actor": "agent:claude-code(171709704+dawnmoriaty@users.noreply.github.com)",
   "worker": "codex",
-  "ts": "2026-10-05T01:36:30+00:00",
+  "ts": "2026-10-05T01:39:13+00:00",
   "cwd": ".",
-  "head": "77039a5152db31777036bdecf0241ef74024d96a",
+  "head": "b8b6659974cd822b1328bc01196bfac0ef8d19ec",
   "dirty": true,
   "checks": [
     {
@@ -12,7 +12,7 @@
       "command": "python3 .aidlc/runs/PORTAL-REBRAND-001/testkit/check-brand.py",
       "exit": 0,
       "status": "PASS",
-      "seconds": 0.2,
+      "seconds": 0.1,
       "log": ".aidlc/runs/PORTAL-AUTH-SPLIT-001/artifacts/logs/unit.log",
       "sha256": "e9895770234de963946abb10b6718802d94651744bf547cf9b7fee07375ddce7",
       "tail": [
@@ -37,7 +37,7 @@
       "command": "rm -rf .next/types .next/dev/types && npm run typecheck",
       "exit": 0,
       "status": "PASS",
-      "seconds": 3.5,
+      "seconds": 1.4,
       "log": ".aidlc/runs/PORTAL-AUTH-SPLIT-001/artifacts/logs/integration_typecheck.log",
       "sha256": "c5a440cd52c7fadc3d367658101693af6eb5b85d21dbd518cb3bda67056215e7",
       "tail": [
@@ -50,15 +50,15 @@
       "command": "bash -o pipefail -c \"npm test 2>&1 | tee /dev/stderr | grep -E '^ +Tests +[0-9]+ passed' | grep -oE '[0-9]+' | head -1 | xargs -I{} test {} -ge 763\"",
       "exit": 0,
       "status": "PASS",
-      "seconds": 3.6,
+      "seconds": 3.7,
       "log": ".aidlc/runs/PORTAL-AUTH-SPLIT-001/artifacts/logs/e2e_regression.log",
-      "sha256": "442e36055a24c9162ed19b215454d7ce2e77fef347f4b0cf0b843a0ac5bf03de",
+      "sha256": "61f198b2c131184d8a9de20e08c86d7bdc5f30c744cb330969bfde3409e6e1a8",
       "tail": [
         "",
         " Test Files  44 passed (44)",
         "      Tests  763 passed (763)",
-        "   Start at  08:36:17",
-        "   Duration  3.23s (transform 4.93s, setup 0ms, collect 18.40s, tests 4.35s, environment 8ms, prepare 17.21s)"
+        "   Start at  08:39:00",
+        "   Duration  3.39s (transform 5.49s, setup 0ms, collect 20.81s, tests 5.25s, environment 8ms, prepare 17.14s)"
       ]
     },
     {
@@ -66,7 +66,7 @@
       "command": "bash -o pipefail -c 'cd ../auth && python3 /home/dawn/agent_skills/sdlc/engine/speccheck.py .aidlc/specs/register.md .aidlc/specs/invite.md && cd ../org && python3 /home/dawn/agent_skills/sdlc/engine/speccheck.py .aidlc/specs/employee-onboard.md'",
       "exit": 0,
       "status": "PASS",
-      "seconds": 0.3,
+      "seconds": 0.4,
       "log": ".aidlc/runs/PORTAL-AUTH-SPLIT-001/artifacts/logs/spec.log",
       "sha256": "c031474c0fb5b5b1aef958dd7956336e6a2ee5212d7210e81b013accba888b12",
       "tail": [
@@ -80,7 +80,7 @@
       "command": "python3 /home/dawn/agent_skills/sdlc/engine/archcheck.py",
       "exit": 0,
       "status": "PASS",
-      "seconds": 1.2,
+      "seconds": 1.3,
       "log": ".aidlc/runs/PORTAL-AUTH-SPLIT-001/artifacts/logs/arch.log",
       "sha256": "c8ec59eae10446f9055168ca6a81c9f486ec46e3c138a15462411b34b409e2e9",
       "tail": [
@@ -92,9 +92,9 @@
       "command": "npm run build",
       "exit": 0,
       "status": "PASS",
-      "seconds": 8.3,
+      "seconds": 7.3,
       "log": ".aidlc/runs/PORTAL-AUTH-SPLIT-001/artifacts/logs/build.log",
-      "sha256": "b58f938cff5b9d6d7e4085306c72cb2c80b0d2d99f0af17346c089492db0631a",
+      "sha256": "6a395f58d3967e26be7648ed67d7ed2404a1d1fd0f5e7de8eb610c019a04fa44",
       "tail": [
         "",
         "ƒ Proxy (Middleware)",
