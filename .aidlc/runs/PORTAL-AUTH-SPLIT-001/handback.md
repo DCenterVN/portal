@@ -1,0 +1,100 @@
+# Handback PORTAL-AUTH-SPLIT-001
+
+## Done
+- 20/20 slice `[x]`. Customer journey `/login /register /activate /forgot-password /reset-password` (`features/customer-auth/`), employee journey `/staff/login /staff/invite/accept /staff/switch-org /staff/switch-branch` (`features/employee-auth/`); gate `features/auth-boundary.test.ts` cấm import chéo.
+- BFF chung `lib/api/auth-journey-bff.ts`: loại tài khoản quyết ở server (org access-contexts / platform/me), sai journey = 403 FORBIDDEN + revoke phiên tạm; CSRF login (Sec-Fetch-Site same-origin hoặc Origin == NEXT_PUBLIC_SITE_URL); error projection allowlist.
+- Verify `artifacts/verification.json` 7/7 PASS (brand, lint, typecheck, npm test ≥693, spec auth/org, arch, build).
+- Review codex gpt-6.1-sol: #1 BLOCKED → #2 BLOCKED → #3 PASS (`review-3-codex-sol.md`); fix `review-fix-report.md`, mutation M1/M2/M3 KILLED.
+- Anti browser acceptance desktop 48/48: run 3 nhận 45 ô (`anti/out-run3-accepted-45/`) + run 4 bù 3 ô (`anti/out-run4-supplement-3/`) = 46 PASS + 2 BLOCKED (D3 đúng kỳ vọng). Run 1/2 bị loại (giả/script; `anti/out-run1-rejected/`, `anti/out-run2-rejected/`). Grader đối chiếu log Kong trực tiếp + nhịp ≥20s; Claude mở ảnh kiểm tay từng nhóm trùng byte.
+
+## Files changed
+- app/(auth)/activate/page.tsx
+- app/(auth)/forgot-password/page.tsx
+- app/(auth)/layout.tsx
+- app/(auth)/legacy-context.test.ts
+- app/(auth)/login/page.tsx
+- app/(auth)/register/page.tsx
+- app/(auth)/reset-password/page.tsx
+- app/(auth)/switch-branch/page.tsx
+- app/(auth)/switch-org/page.tsx
+- app/(employee-auth)/invite/accept/page.tsx
+- app/(employee-auth)/layout.tsx
+- app/(employee-auth)/staff/forgot-password/page.tsx
+- app/(employee-auth)/staff/invite/accept/page.tsx
+- app/(employee-auth)/staff/login/page.tsx
+- app/(employee-auth)/staff/reset-password/page.tsx
+- app/(employee-auth)/staff/switch-branch/page.tsx
+- app/(employee-auth)/staff/switch-org/page.tsx
+- app/(store)/me/profile-client.tsx
+- app/api/auth/activate/resend/route.ts
+- app/api/auth/activate/route.ts
+- app/api/auth/bff.test.ts
+- app/api/auth/forgot/route.ts
+- app/api/auth/login/route.ts
+- app/api/auth/register/route.ts
+- app/api/auth/reset/route.ts
+- app/api/auth/staff/bff.test.ts
+- app/api/auth/staff/forgot/route.ts
+- app/api/auth/staff/invite/accept/route.ts
+- app/api/auth/staff/login/route.ts
+- app/api/auth/staff/reset/route.ts
+- app/api/auth/staff/switch-branch/route.ts
+- app/api/auth/staff/switch-org/route.ts
+- app/api/auth/switch-branch/route.ts
+- app/api/auth/switch-org/route.ts
+- app/layout-gate.test.ts
+- app/rebrand.test.ts
+- components/auth/login-form.tsx
+- components/layout/auth-shell.tsx
+- components/layout/customer-auth-shell.tsx
+- components/layout/employee-auth-shell.tsx
+- features/auth-boundary.test.ts
+- features/auth/activate-view.tsx
+- features/auth/forgot-form.tsx
+- features/auth/form-alert.tsx
+- features/auth/home-for.test.ts
+- features/auth/home-for.ts
+- features/auth/login-form.tsx
+- features/auth/register-form.tsx
+- features/auth/reset-form.tsx
+- features/auth/switch-branch-page.tsx
+- features/customer-auth/activate-view.tsx
+- features/customer-auth/forgot-form.tsx
+- features/customer-auth/form-feedback.tsx
+- features/customer-auth/journey.test.tsx
+- features/customer-auth/login-form.tsx
+- features/customer-auth/register-form.tsx
+- features/customer-auth/reset-form.tsx
+- features/employee-auth/forgot-form.tsx
+- features/employee-auth/form-feedback.tsx
+- features/employee-auth/invite-form.tsx
+- features/employee-auth/journey.test.tsx
+- features/employee-auth/login-form.tsx
+- features/employee-auth/reset-form.tsx
+- features/employee-auth/switch-context.tsx
+- lib/api/auth-journey-bff.test.ts
+- lib/api/auth-journey-bff.ts
+- lib/api/auth-review-fix.test.ts
+- lib/api/customer-auth.ts
+- lib/api/employee-auth.ts
+- lib/auth/client.test.ts
+- lib/auth/client.ts
+- lib/fetcher.test.ts
+- lib/fetcher.ts
+- messages/en.json
+- messages/vi.json
+- proxy.test.ts
+- proxy.ts
+
+## Decisions
+- D1 theo plan: employee vào /login customer → store landing.
+- D2 (Dawn 2026-10-05): platform staff đăng nhập ở `/staff/login` → `/platform/companies`; entry `/platform/login` riêng → nợ D-140.
+- D3: staff forgot/reset trả 503 "chưa khả dụng" → nợ D-143 (US-AUTH-STAFF-RECOVERY).
+- Mobile acceptance hoãn (Dawn 2026-10-04): chỉ chấm desktop.
+- 2 test `lib/api/auth-review-fix.test.ts`, `app/(auth)/legacy-context.test.ts` sinh từ review fix, đã thêm vào S20 của plan.
+
+## Left over
+- D-144 (Chặn trước go-live): login rate limit theo IP ở auth nhưng BFF không chuyển client IP → mọi user portal chung 1 bucket.
+- D-141: 429 ở /staff/login hiện link "Đăng nhập mua hàng". D-142: chuỗi token lỗi tiếng Anh ở màn invite (kiểm lại; run 3 màn activation đã tiếng Việt).
+- Acceptance mobile 48 ô chưa chạy.
+- Deploy phải đặt `NEXT_PUBLIC_SITE_URL` (CSRF login).

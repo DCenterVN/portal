@@ -1,14 +1,16 @@
+import {cookies} from "next/headers";
+import {getTranslations} from "@/features/customer-auth/form-feedback";
 import { Suspense } from "react";
-import type { Metadata } from "next";
+
 import { AuthHeading } from "@/components/patterns/auth-heading";
-import { ActivateView } from "@/features/auth/activate-view";
+import { ActivateView } from "@/features/customer-auth/activate-view";
 
-export const metadata: Metadata = { title: "Kích hoạt tài khoản" };
+export async function generateMetadata() { const t = getTranslations("customerAuth", (await cookies()).get("NEXT_LOCALE")?.value === "en" ? "en" : "vi"); return {title: t("activateTitle")}; }
 
-export default function Page() {
+export default async function Page() { const t = getTranslations("customerAuth", (await cookies()).get("NEXT_LOCALE")?.value === "en" ? "en" : "vi");
   return (
     <>
-      <AuthHeading title="Kích hoạt tài khoản" subtitle="Xác nhận email để bắt đầu sử dụng Việt Sạch." />
+      <AuthHeading title={t("activateTitle")} subtitle={t("activateSubtitle")} />
       <Suspense>
         <ActivateView />
       </Suspense>

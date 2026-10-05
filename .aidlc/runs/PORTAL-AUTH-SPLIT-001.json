@@ -1,0 +1,90 @@
+{
+  "schemaVersion": 1,
+  "runId": "PORTAL-AUTH-SPLIT-001",
+  "pipelineId": "sdlc",
+  "context": {
+    "epic": "PORTAL-AUTH-SPLIT-001",
+    "worker": "codex",
+    "story": "US-UI-002",
+    "sprint": "04",
+    "slices": "21/21"
+  },
+  "startedAt": "2026-10-04T12:06:03+00:00",
+  "updatedAt": "2026-10-05T01:37:10+00:00",
+  "currentStepIdx": 7,
+  "status": "completed",
+  "steps": [
+    {
+      "stepIdx": 0,
+      "agent": "sdlc-discovery",
+      "revision": 1,
+      "status": "approved",
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-AUTH-SPLIT-001/plan.md"
+      ]
+    },
+    {
+      "stepIdx": 1,
+      "agent": "sdlc-technical",
+      "revision": 1,
+      "status": "approved",
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-AUTH-SPLIT-001/plan.md"
+      ]
+    },
+    {
+      "stepIdx": 2,
+      "agent": "sdlc-ux",
+      "revision": 1,
+      "status": "approved",
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-AUTH-SPLIT-001/plan.md"
+      ]
+    },
+    {
+      "stepIdx": 3,
+      "agent": "sdlc-design",
+      "revision": 1,
+      "status": "approved",
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-AUTH-SPLIT-001/plan.md"
+      ]
+    },
+    {
+      "stepIdx": 4,
+      "agent": "sdlc-build",
+      "revision": 1,
+      "status": "approved",
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-AUTH-SPLIT-001/handback.md"
+      ]
+    },
+    {
+      "stepIdx": 5,
+      "agent": "sdlc-integration",
+      "revision": 1,
+      "status": "approved",
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-AUTH-SPLIT-001/artifacts/verification.json"
+      ]
+    },
+    {
+      "stepIdx": 6,
+      "agent": "sdlc-e2e",
+      "revision": 1,
+      "status": "approved",
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-AUTH-SPLIT-001/artifacts/verification.json"
+      ]
+    },
+    {
+      "stepIdx": 7,
+      "agent": "sdlc-release",
+      "revision": 1,
+      "status": "approved",
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-AUTH-SPLIT-001/artifacts/review-decision.json"
+      ]
+    }
+  ]
+}

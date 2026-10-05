@@ -1,0 +1,16 @@
+{
+  "task": "PORTAL-AUTH-SPLIT-001",
+  "actor": "agent:claude-code(171709704+dawnmoriaty@users.noreply.github.com)",
+  "worker": "codex",
+  "ts": "2026-10-05T01:37:10+00:00",
+  "verified_head": "77039a5152db31777036bdecf0241ef74024d96a",
+  "signals": {
+    "mutation": 1.0,
+    "review": 1.0,
+    "anti_desktop": 1.0
+  },
+  "score": 1.0,
+  "bar": 0.95,
+  "sensitive": false,
+  "verdict": "PASS"
+}

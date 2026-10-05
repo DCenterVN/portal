@@ -231,7 +231,7 @@ export default function ProfileClient() {
                           ))}
                         </div>
                       </div>
-                      <Button size="sm" variant="outline" onClick={() => router.push("/switch-org")} className="text-xs font-semibold">
+                      <Button size="sm" variant="outline" onClick={() => router.push("/staff/switch-org")} className="text-xs font-semibold">
                         Chuyển ngữ cảnh
                       </Button>
                     </div>

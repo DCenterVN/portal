@@ -1,0 +1,12 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><title>Local login CSRF probe</title>
+<h1>Cross-site login POST probe</h1><p>Use only this local page on port 3001. DevTools Network: preserve log, inspect actual POST status, response code FORBIDDEN, message “Yêu cầu không hợp lệ”, and response cookie presence without exporting values.</p>
+<label>Endpoint <select id="endpoint"><option value="/api/auth/login">Customer</option><option value="/api/auth/staff/login">Staff</option></select></label>
+<p>Login requires application/json plus same-origin fetch metadata or the configured site Origin. This text/plain cross-origin POST avoids CORS preflight and must be rejected by that guard.</p>
+<button id="send">Send credential-free cross-origin POST</button><pre id="result"></pre>
+<script>
+document.querySelector('#send').onclick = async () => {
+ const endpoint=document.querySelector('#endpoint').value;
+ try {const r=await fetch('http://127.0.0.1:3000'+endpoint,{method:'POST',mode:'cors',credentials:'include',headers:{'Content-Type':'text/plain'},body:JSON.stringify({identifier:'',password:''})});document.querySelector('#result').textContent='HTTP '+r.status;}
+ catch {document.querySelector('#result').textContent='CORS hides response: inspect actual POST in DevTools. Expected 403 FORBIDDEN: Yêu cầu không hợp lệ; zero Set-Cookie.';}
+};
+</script></html>

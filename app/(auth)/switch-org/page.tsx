@@ -1,1 +1,2 @@
-export { default } from "../switch-branch/page";
+import {redirect} from "next/navigation";
+export default function Page() {redirect("/staff/switch-org");}

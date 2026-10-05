@@ -1,14 +1,16 @@
+import {cookies} from "next/headers";
+import {getTranslations} from "@/features/customer-auth/form-feedback";
 import { Suspense } from "react";
-import type { Metadata } from "next";
+
 import { AuthHeading } from "@/components/patterns/auth-heading";
-import { LoginForm } from "@/features/auth/login-form";
+import { LoginForm } from "@/features/customer-auth/login-form";
 
-export const metadata: Metadata = { title: "Đăng nhập" };
+export async function generateMetadata() { const t = getTranslations("customerAuth", (await cookies()).get("NEXT_LOCALE")?.value === "en" ? "en" : "vi"); return {title: t("login")}; }
 
-export default function LoginPage() {
+export default async function LoginPage() { const t = getTranslations("customerAuth", (await cookies()).get("NEXT_LOCALE")?.value === "en" ? "en" : "vi");
   return (
     <>
-      <AuthHeading title="Đăng nhập" subtitle="Một tài khoản cho khách mua hàng và nhân viên chi nhánh." />
+      <AuthHeading title={t("login")} subtitle={t("loginSubtitle")} />
       <Suspense>
         <LoginForm />
       </Suspense>
