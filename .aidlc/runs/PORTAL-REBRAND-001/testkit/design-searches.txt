@@ -1,0 +1,364 @@
+$ python3 /home/dawn/.claude/plugins/marketplaces/ui-ux-pro-max-skill/.claude/skills/ui-ux-pro-max/scripts/search.py ['fresh meal kit food ecommerce operator console', '--design-system', '-p', 'Bep Tuoi']
+╔═════════════════════════════════════════════════════════════════════════════════════════╗
+║  TARGET: Bep Tuoi - RECOMMENDED DESIGN SYSTEM                                           ║
+╚═════════════════════════════════════════════════════════════════════════════════════════╝
+┌─────────────────────────────────────────────────────────────────────────────────────────┐
+├─── PATTERN ─────────────────────────────────────────────────────────────────────────────┤
+│  Name: Feature-Rich Showcase                                                            │
+│     Conversion: Clear feature hierarchy. One key message per card. Strong CTA           │
+│     repetition.                                                                         │
+│     CTA: Hero (sticky) + After features + Bottom                                        │
+│     Sections:                                                                           │
+│       1. Hero (value prop)                                                              │
+│       2. Feature grid/cards (4-6)                                                       │
+│       3. Use cases or benefits                                                          │
+│       4. Social proof or logos                                                          │
+│       5. CTA                                                                            │
+├─── STYLE ───────────────────────────────────────────────────────────────────────────────┤
+│  Name: Vibrant & Block-based                                                            │
+│     Mode Support: Light supported | Dark supported                                      │
+│     Keywords: Bold, energetic, playful, block layout, geometric shapes, high color      │
+│     contrast, duotone, modern, energetic                                                │
+│     Best For: Startups, creative agencies, gaming, social media, youth-focused,         │
+│     entertainment, consumer                                                             │
+│     Performance: cost:low|drivers:none | Accessibility:                                 │
+│     risk:conditional|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion   │
+├─── COLORS ──────────────────────────────────────────────────────────────────────────────┤
+│     Primary:           #059669    (--color-primary)                                     │
+│     On Primary:        #000000    (--color-on-primary)                                  │
+│     Secondary:         #10B981    (--color-secondary)                                   │
+│     On Secondary:      #0F172A    (--color-on-secondary)                                │
+│     Accent/CTA:        #EA580C    (--color-accent)                                      │
+│     On Accent/CTA:     #000000    (--color-on-accent)                                   │
+│     Background:        #ECFDF5    (--color-background)                                  │
+│     Foreground:        #064E3B    (--color-foreground)                                  │
+│     Card:              #FFFFFF    (--color-card)                                        │
+│     Card Foreground:   #064E3B    (--color-card-foreground)                             │
+│     Muted:             #E8F1F3    (--color-muted)                                       │
+│     Muted Foreground:  #475569    (--color-muted-foreground)                            │
+│     Border:            #A7F3D0    (--color-border)                                      │
+│     Destructive:       #DC2626    (--color-destructive)                                 │
+│     On Destructive:    #FFFFFF    (--color-on-destructive)                              │
+│     Ring:              #059669    (--color-ring)                                        │
+│     Notes: Success green + urgency orange [Accent adjusted from #F97316]                │
+├─── TYPOGRAPHY ──────────────────────────────────────────────────────────────────────────┤
+│  Rubik / Nunito Sans                                                                    │
+│     Mood: ecommerce, clean, shopping, product, retail, conversion                       │
+│     Best For: E-commerce, online stores, product pages, retail, shopping                │
+│     Google Fonts:                                                                       │
+│     https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;500;600;700&fami  │
+│     ly=Rubik:wght@300;400;500;600;700&display=swap                                      │
+│     CSS Import: @import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:w...  │
+├─── KEY EFFECTS ─────────────────────────────────────────────────────────────────────────┤
+│     Large sections (48px+ gaps), animated patterns, bold hover (color shift),           │
+│     scroll-snap, large type (32px+), 200-300ms                                          │
+├─── AVOID ───────────────────────────────────────────────────────────────────────────────┤
+│     Flat design without depth + Text-heavy pages                                        │
+├─── PRE-DELIVERY CHECKLIST ──────────────────────────────────────────────────────────────┤
+│     [ ] No emojis as icons (use SVG: Heroicons/Lucide)                                  │
+│     [ ] cursor-pointer on all clickable elements                                        │
+│     [ ] Hover states with smooth transitions (150-300ms)                                │
+│     [ ] Light mode: text contrast 4.5:1 minimum                                         │
+│     [ ] Focus states visible for keyboard nav                                           │
+│     [ ] prefers-reduced-motion respected                                                │
+│     [ ] Responsive: 375px, 768px, 1024px, 1440px                                        │
+└─────────────────────────────────────────────────────────────────────────────────────────┘
+
+exit=0
+
+$ python3 /home/dawn/.claude/plugins/marketplaces/ui-ux-pro-max-skill/.claude/skills/ui-ux-pro-max/scripts/search.py ['tomato red food', '--domain', 'color']
+## UI Pro Max Search Results
+**Domain:** color | **Query:** tomato red food
+**Source:** colors.csv | **Found:** 3 results
+
+### Result 1
+- **Product Type:** Restaurant/Food Service
+- **Primary:** #DC2626
+- **On Primary:** #FFFFFF
+- **Secondary:** #F87171
+- **On Secondary:** #0F172A
+- **Accent:** #A16207
+- **On Accent:** #FFFFFF
+- **Background:** #FEF2F2
+- **Foreground:** #450A0A
+- **Card:** #FFFFFF
+- **Card Foreground:** #450A0A
+- **Muted:** #F0EDF1
+- **Muted Foreground:** #475569
+- **Border:** #FECACA
+- **Destructive:** #DC2626
+- **On Destructive:** #FFFFFF
+- **Ring:** #DC2626
+- **Notes:** Appetizing red + warm gold [Accent adjusted from #CA8A04]
+
+### Result 2
+- **Product Type:** Food Delivery / On-Demand
+- **Primary:** #EA580C
+- **On Primary:** #000000
+- **Secondary:** #F97316
+- **On Secondary:** #000000
+- **Accent:** #2563EB
+- **On Accent:** #FFFFFF
+- **Background:** #FFF7ED
+- **Foreground:** #0F172A
+- **Card:** #FFFFFF
+- **Card Foreground:** #0F172A
+- **Muted:** #FDF4F0
+- **Muted Foreground:** #475569
+- **Border:** #FCEAE1
+- **Destructive:** #DC2626
+- **On Destructive:** #FFFFFF
+- **Ring:** #EA580C
+- **Notes:** Appetizing orange + trust blue
+
+### Result 3
+- **Product Type:** Grocery & Shopping List
+- **Primary:** #059669
+- **On Primary:** #000000
+- **Secondary:** #10B981
+- **On Secondary:** #000000
+- **Accent:** #D97706
+- **On Accent:** #000000
+- **Background:** #ECFDF5
+- **Foreground:** #0F172A
+- **Card:** #FFFFFF
+- **Card Foreground:** #0F172A
+- **Muted:** #F0F8F6
+- **Muted Foreground:** #475569
+- **Border:** #E1F2ED
+- **Destructive:** #DC2626
+- **On Destructive:** #FFFFFF
+- **Ring:** #059669
+- **Notes:** Fresh green + food amber
+
+
+exit=0
+
+$ python3 /home/dawn/.claude/plugins/marketplaces/ui-ux-pro-max-skill/.claude/skills/ui-ux-pro-max/scripts/search.py ['Quicksand Nunito', '--domain', 'typography']
+## UI Pro Max Search Results
+**Domain:** typography | **Query:** Quicksand Nunito
+**Source:** typography.csv | **Found:** 3 results
+
+### Result 1
+- **Font Pairing Name:** Handwritten Charm
+- **Category:** Script + Sans
+- **Heading Font:** Caveat
+- **Body Font:** Quicksand
+- **Mood/Style Keywords:** handwritten, personal, friendly, casual, warm, charming
+- **Best For:** Personal blogs, invitations, creative portfolios, lifestyle brands
+- **Google Fonts URL:** https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=Quicksand:wght@300;400;500;600;700&display=swap
+- **CSS Import:** @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=Quicksand:wght@300;400;500;600;700&display=swap');
+- **Tailwind Config:** fontFamily: { script: ['Caveat', 'cursive'], sans: ['Quicksand', 'sans-serif'] }
+- **Notes:** Use Caveat sparingly for accents. Quicksand for body.
+
+### Result 2
+- **Font Pairing Name:** Claymorphism Mobile (Nunito + DM Sans)
+- **Category:** Display Rounded + Geometric Sans
+- **Heading Font:** Nunito
+- **Body Font:** DM Sans
+- **Mood/Style Keywords:** claymorphism, clay, rounded, playful, candy, bubbly, soft, 3d, children, education, tactile, spring, nunito, dm sans
+- **Best For:** Children education apps, teen social, brand mascot apps, creative tools, fintech gamification
+- **Google Fonts URL:** https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&family=Nunito:ital,wght@0,700;0,800;0,900;1,700
+- **CSS Import:** @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&family=Nunito:ital,wght@0,700;0,800;0,900;1,700&display=swap');
+- **Tailwind Config:** fontFamily: { display: ['Nunito', 'sans-serif'], body: ['DM Sans', 'sans-serif'] }
+- **Notes:** Dual-stack: Nunito Black (900) or ExtraBold (800) for ALL headings — rounded terminals are mandatory. DM Sans Medium (500) for body text — clean and geometric. Scale: Hero 48px lineHeight 52 letterSpacing -1. Section Title 32px lineHeight 38. Card Title 22px lineHeight 28. Body 16px lineHeight 24. N...
+
+### Result 3
+- **Font Pairing Name:** Playful Creative
+- **Category:** Display + Sans
+- **Heading Font:** Fredoka
+- **Body Font:** Nunito
+- **Mood/Style Keywords:** playful, friendly, fun, creative, warm, approachable
+- **Best For:** Children's apps, educational, gaming, creative tools, entertainment
+- **Google Fonts URL:** https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@300;400;500;600;700&display=swap
+- **CSS Import:** @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@300;400;500;600;700&display=swap');
+- **Tailwind Config:** fontFamily: { heading: ['Fredoka', 'sans-serif'], body: ['Nunito', 'sans-serif'] }
+- **Notes:** Rounded, friendly fonts perfect for playful UIs.
+
+
+exit=0
+
+$ python3 /home/dawn/.claude/plugins/marketplaces/ui-ux-pro-max-skill/.claude/skills/ui-ux-pro-max/scripts/search.py ['form input sidebar accessibility', '--domain', 'ux']
+## UI Pro Max Search Results
+**Domain:** ux | **Query:** form input sidebar accessibility
+**Source:** ux-guidelines.csv | **Found:** 3 results
+
+### Result 1
+- **Category:** Accessibility
+- **Issue:** Form Labels
+- **Platform:** All
+- **Description:** Inputs must have associated labels
+- **Do:** Use label with for attribute or wrap input
+- **Don't:** Placeholder-only inputs
+- **Code Example Good:** <label for='email'>
+- **Code Example Bad:** placeholder='Email' only
+- **Severity:** High
+
+### Result 2
+- **Category:** Forms
+- **Issue:** Input Types
+- **Platform:** All
+- **Description:** Use appropriate input types
+- **Do:** Use email tel number url etc
+- **Don't:** Text input for everything
+- **Code Example Good:** type='email'
+- **Code Example Bad:** type='text' for email
+- **Severity:** Medium
+
+### Result 3
+- **Category:** Forms
+- **Issue:** Input Labels
+- **Platform:** All
+- **Description:** Every input needs a visible label
+- **Do:** Always show label above or beside input
+- **Don't:** Placeholder as only label
+- **Code Example Good:** <label>Email</label><input>
+- **Code Example Bad:** placeholder='Email' only
+- **Severity:** High
+
+
+exit=0
+
+$ python3 /home/dawn/.claude/plugins/marketplaces/ui-ux-pro-max-skill/.claude/skills/ui-ux-pro-max/scripts/search.py ['nextjs tailwind', '--stack', 'nextjs']
+## UI Pro Max Stack Guidelines
+**Stack:** nextjs | **Query:** nextjs tailwind
+**Source:** stacks/nextjs.csv | **Found:** 0 results
+
+No matches. This is not a match with an empty value -- the query did not hit the database. Retry with broader/different keywords before falling back to general defaults, and say explicitly that no database match was found if you do fall back.
+
+exit=0
+
+$ python3 /home/dawn/.claude/plugins/marketplaces/ui-ux-pro-max-skill/.claude/skills/ui-ux-pro-max/scripts/search.py ['font optimization', '--stack', 'nextjs']
+## UI Pro Max Stack Guidelines
+**Stack:** nextjs | **Query:** font optimization
+**Source:** stacks/nextjs.csv | **Found:** 3 results
+
+### Result 1
+- **Category:** Images
+- **Guideline:** Use next/image for optimization
+- **Description:** Automatic image optimization and lazy loading
+- **Do:** <Image> component for all images
+- **Don't:** <img> tags directly
+- **Code Good:** <Image src={} alt={} width={} height={}>
+- **Code Bad:** <img src={}/>
+- **Severity:** High
+- **Docs URL:** https://nextjs.org/docs/app/building-your-application/optimizing/images
+- **Applies To:** nextjs 16.2
+- **Status:** active
+- **Verified At:** 2026-08-13
+
+### Result 2
+- **Category:** Fonts
+- **Guideline:** Use next/font for fonts
+- **Description:** Self-hosted fonts with zero layout shift
+- **Do:** next/font/google or next/font/local
+- **Don't:** External font links
+- **Code Good:** import { Inter } from 'next/font/google'
+- **Code Bad:** <link href="fonts.googleapis.com"/>
+- **Severity:** Medium
+- **Docs URL:** https://nextjs.org/docs/app/building-your-application/optimizing/fonts
+- **Applies To:** nextjs 16.2
+- **Status:** active
+- **Verified At:** 2026-08-13
+
+### Result 3
+- **Category:** Fonts
+- **Guideline:** Apply font to layout
+- **Description:** Set font in root layout for consistency
+- **Do:** className on body in layout.tsx
+- **Don't:** Font in individual pages
+- **Code Good:** <body className={inter.className}>
+- **Code Bad:** Each page imports font
+- **Severity:** Low
+- **Docs URL:** 
+- **Applies To:** nextjs 16.2
+- **Status:** active
+- **Verified At:** 2026-08-13
+
+
+exit=0
+
+$ python3 /home/dawn/.claude/plugins/marketplaces/ui-ux-pro-max-skill/.claude/skills/ui-ux-pro-max/scripts/search.py ['rounded friendly', '--domain', 'typography']
+## UI Pro Max Search Results
+**Domain:** typography | **Query:** rounded friendly
+**Source:** typography.csv | **Found:** 3 results
+
+### Result 1
+- **Font Pairing Name:** Soft Rounded
+- **Category:** Sans + Sans
+- **Heading Font:** Varela Round
+- **Body Font:** Nunito Sans
+- **Mood/Style Keywords:** soft, rounded, friendly, approachable, warm, gentle
+- **Best For:** Children's products, pet apps, friendly brands, wellness, soft UI
+- **Google Fonts URL:** https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;500;600;700&family=Varela+Round&display=swap
+- **CSS Import:** @import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;500;600;700&family=Varela+Round&display=swap');
+- **Tailwind Config:** fontFamily: { heading: ['Varela Round', 'sans-serif'], body: ['Nunito Sans', 'sans-serif'] }
+- **Notes:** Both rounded and friendly. Perfect for soft UI designs.
+
+### Result 2
+- **Font Pairing Name:** Material You MD3 (Roboto System)
+- **Category:** Sans (System Default)
+- **Heading Font:** Roboto
+- **Body Font:** Roboto
+- **Mood/Style Keywords:** material design 3, md3, android, google, tonal, friendly, rounded, accessible, adaptive
+- **Best For:** Android apps, cross-platform tools, productivity software, data-heavy B2B dashboards, enterprise mobile
+- **Google Fonts URL:** https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;1,400
+- **CSS Import:** @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap');
+- **Tailwind Config:** fontFamily: { sans: ['Roboto', 'sans-serif'] }
+- **Notes:** MD3 type scale: Display Large 56px/400/64px. Headline Large 32px/500/40px. Title Large 22px/500/28px. Body Large 16px/400/24px. Label Medium 12px/500/16px. Buttons and Labels: letterSpacing 0.1px. Use system Roboto on Android; load from Google Fonts for iOS parity. Never use custom weights beyond 30...
+
+### Result 3
+- **Font Pairing Name:** Claymorphism Mobile (Nunito + DM Sans)
+- **Category:** Display Rounded + Geometric Sans
+- **Heading Font:** Nunito
+- **Body Font:** DM Sans
+- **Mood/Style Keywords:** claymorphism, clay, rounded, playful, candy, bubbly, soft, 3d, children, education, tactile, spring, nunito, dm sans
+- **Best For:** Children education apps, teen social, brand mascot apps, creative tools, fintech gamification
+- **Google Fonts URL:** https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&family=Nunito:ital,wght@0,700;0,800;0,900;1,700
+- **CSS Import:** @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&family=Nunito:ital,wght@0,700;0,800;0,900;1,700&display=swap');
+- **Tailwind Config:** fontFamily: { display: ['Nunito', 'sans-serif'], body: ['DM Sans', 'sans-serif'] }
+- **Notes:** Dual-stack: Nunito Black (900) or ExtraBold (800) for ALL headings — rounded terminals are mandatory. DM Sans Medium (500) for body text — clean and geometric. Scale: Hero 48px lineHeight 52 letterSpacing -1. Section Title 32px lineHeight 38. Card Title 22px lineHeight 28. Body 16px lineHeight 24. N...
+
+
+exit=0
+
+$ python3 /home/dawn/.claude/plugins/marketplaces/ui-ux-pro-max-skill/.claude/skills/ui-ux-pro-max/scripts/search.py ['keyboard focus contrast', '--domain', 'ux']
+## UI Pro Max Search Results
+**Domain:** ux | **Query:** keyboard focus contrast
+**Source:** ux-guidelines.csv | **Found:** 3 results
+
+### Result 1
+- **Category:** Accessibility
+- **Issue:** Focus Appearance
+- **Platform:** Web
+- **Description:** WCAG 2.2 AAA defines minimum area and contrast for focus indicators
+- **Do:** Use an indicator at least as large as a 2 CSS px perimeter with 3:1 state contrast
+- **Don't:** Present this enhanced AAA criterion as an AA requirement or use a thin low-contrast outline
+- **Code Example Good:** outline: 2px solid currentColor; outline-offset: 2px
+- **Code Example Bad:** box-shadow: 0 0 1px low-contrast
+- **Severity:** Medium
+
+### Result 2
+- **Category:** Interaction
+- **Issue:** Focus States
+- **Platform:** All
+- **Description:** Keyboard focus, including controls inside a modal, needs a visible indicator
+- **Do:** Use a visible focus ring on every interactive control, including modal controls
+- **Don't:** Remove focus outline without replacement
+- **Code Example Good:** focus:ring-2 focus:ring-blue-500
+- **Code Example Bad:** outline-none without alternative
+- **Severity:** High
+
+### Result 3
+- **Category:** Accessibility
+- **Issue:** Focus Not Obscured (Enhanced)
+- **Platform:** Web
+- **Description:** WCAG 2.2 AAA requires keyboard focus to remain fully visible
+- **Do:** Keep the entire focused component unobscured by author-created content
+- **Don't:** Present this enhanced AAA criterion as an AA requirement or allow persistent UI to hide any part of focus
+- **Code Example Good:** close persistent overlay before focus moves behind it
+- **Code Example Bad:** sticky footer covers half the focused button
+- **Severity:** Medium
+
+
+exit=0

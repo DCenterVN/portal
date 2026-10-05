@@ -1,0 +1,13 @@
+PASS positive fixture (v4 palette + prompt font overrides)
+PASS M1 old green hex -> red scan
+PASS M2 old font -> red scan
+PASS M3 dialog blur -> red scan
+PASS M4 Tailwind gradient -> red scan
+PASS M5 CSS gradient -> red scan
+PASS M6 green ramp -> red scan
+PASS business break-glass is not a visual glass utility
+PASS M7 generated CSS edit -> red drift
+PASS M8 source green + regeneration -> red token contract
+PASS M9 pale body text -> red contrast
+
+exit=0

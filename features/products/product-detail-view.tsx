@@ -76,7 +76,7 @@ export function ProductDetailView({ initialProduct }: ProductDetailViewProps) {
       <div className="mb-4">
         <Link
           href={"/products" as Route}
-          className="inline-flex items-center gap-1.5 text-xs text-[var(--muted-foreground)] hover:text-emerald-600 dark:hover:text-emerald-400 font-semibold transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs text-[var(--color-muted)] hover:text-[var(--color-primary-hover)] dark:hover:text-[var(--color-primary)] font-semibold transition-colors"
         >
           <ArrowLeft className="size-3.5" /> Quay lại Danh mục Sản phẩm
         </Link>
@@ -91,7 +91,7 @@ export function ProductDetailView({ initialProduct }: ProductDetailViewProps) {
               Đang mở bán
             </Badge>
           ) : product.status === "DRAFT" ? (
-            <Badge variant="secondary" dot className="text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 border-amber-500/20">
+            <Badge variant="secondary" dot className="text-xs font-bold text-[var(--color-ink)] bg-[var(--color-surface)] border-[var(--color-line)]">
               Bản nháp (DRAFT)
             </Badge>
           ) : (
@@ -107,36 +107,38 @@ export function ProductDetailView({ initialProduct }: ProductDetailViewProps) {
               type="button"
               onClick={handleActivate}
               disabled={activating}
-              className="rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs"
             >
               <CheckCircle2 className="size-4 mr-1.5" />
               {activating ? "Đang kích hoạt..." : "Kích hoạt mở bán (ACTIVE)"}
             </Button>
           ) : product.status === "ACTIVE" ? (
             <div className="flex items-center gap-2">
-              <div className="flex items-center border border-[var(--border)] rounded-xl bg-[var(--card)] px-2 py-1">
-                <button
+              <div className="flex items-center border border-[var(--color-line)] rounded-xl bg-[var(--color-surface)] px-2 py-1">
+                <Button
                   type="button"
+                  variant="outline"
+                  size="icon"
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="px-2 py-0.5 text-xs font-bold text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+                  aria-label="Giảm số lượng"
                 >
                   -
-                </button>
-                <span className="px-2 text-xs font-bold text-[var(--foreground)]">{quantity}</span>
-                <button
+                </Button>
+                <span className="px-2 text-xs font-bold text-[var(--color-ink)]">{quantity}</span>
+                <Button
                   type="button"
+                  variant="outline"
+                  size="icon"
                   onClick={() => setQuantity(quantity + 1)}
-                  className="px-2 py-0.5 text-xs font-bold text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+                  aria-label="Tăng số lượng"
                 >
                   +
-                </button>
+                </Button>
               </div>
 
               <Button
                 type="button"
                 onClick={handleAddToCart}
                 disabled={addingToCart}
-                className="rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-600/20"
               >
                 <ShoppingCart className="size-4 mr-1.5" />
                 {addingToCart ? "Đang thêm..." : "Thêm vào giỏ hàng"}
@@ -149,62 +151,62 @@ export function ProductDetailView({ initialProduct }: ProductDetailViewProps) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
         {/* Left Column: Product Information */}
         <div className="lg:col-span-2 space-y-6">
-          <Card className="rounded-2xl border-[var(--border)] bg-[var(--card)] p-6">
-            <CardHeader className="p-0 pb-4 border-b border-[var(--border)]">
-              <CardTitle className="text-base font-bold text-[var(--foreground)]">
+          <Card className="rounded-2xl border-[var(--color-line)] bg-[var(--color-surface)] p-6">
+            <CardHeader className="p-0 pb-4 border-b border-[var(--color-line)]">
+              <CardTitle className="text-base font-bold text-[var(--color-ink)]">
                 Thông tin Chi tiết Sản phẩm
               </CardTitle>
-              <CardDescription className="text-xs text-[var(--muted-foreground)]">
+              <CardDescription className="text-xs text-[var(--color-muted)]">
                 Quy cách đóng gói, mã định danh và mô tả bảo quản thực phẩm
               </CardDescription>
             </CardHeader>
 
             <CardContent className="p-0 pt-5 space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="p-3.5 rounded-xl bg-[var(--secondary)]/40 border border-[var(--border)]">
-                  <div className="flex items-center gap-1.5 text-[11px] text-[var(--muted-foreground)] font-semibold uppercase">
-                    <Tag className="size-3.5 text-emerald-500" />
+                <div className="p-3.5 rounded-xl bg-[var(--color-tint)] border border-[var(--color-line)]">
+                  <div className="flex items-center gap-1.5 text-[11px] text-[var(--color-muted)] font-semibold uppercase">
+                    <Tag className="size-3.5 text-[var(--color-ink)]" />
                     <span>Mã SKU</span>
                   </div>
-                  <div className="text-sm font-mono font-bold text-[var(--foreground)] mt-1">
+                  <div className="text-sm font-mono font-bold text-[var(--color-ink)] mt-1">
                     {product.sku_code}
                   </div>
                 </div>
 
-                <div className="p-3.5 rounded-xl bg-[var(--secondary)]/40 border border-[var(--border)]">
-                  <div className="flex items-center gap-1.5 text-[11px] text-[var(--muted-foreground)] font-semibold uppercase">
-                    <Barcode className="size-3.5 text-emerald-500" />
+                <div className="p-3.5 rounded-xl bg-[var(--color-tint)] border border-[var(--color-line)]">
+                  <div className="flex items-center gap-1.5 text-[11px] text-[var(--color-muted)] font-semibold uppercase">
+                    <Barcode className="size-3.5 text-[var(--color-ink)]" />
                     <span>Mã vạch Barcode</span>
                   </div>
-                  <div className="text-sm font-mono font-bold text-[var(--foreground)] mt-1">
+                  <div className="text-sm font-mono font-bold text-[var(--color-ink)] mt-1">
                     {product.barcode || "Chưa gán mã"}
                   </div>
                 </div>
 
-                <div className="p-3.5 rounded-xl bg-[var(--secondary)]/40 border border-[var(--border)]">
-                  <div className="flex items-center gap-1.5 text-[11px] text-[var(--muted-foreground)] font-semibold uppercase">
-                    <Layers className="size-3.5 text-emerald-500" />
+                <div className="p-3.5 rounded-xl bg-[var(--color-tint)] border border-[var(--color-line)]">
+                  <div className="flex items-center gap-1.5 text-[11px] text-[var(--color-muted)] font-semibold uppercase">
+                    <Layers className="size-3.5 text-[var(--color-ink)]" />
                     <span>Đơn vị tính</span>
                   </div>
-                  <div className="text-sm font-bold text-[var(--foreground)] mt-1">
+                  <div className="text-sm font-bold text-[var(--color-ink)] mt-1">
                     {product.uom}
                   </div>
                 </div>
 
-                <div className="p-3.5 rounded-xl bg-[var(--secondary)]/40 border border-[var(--border)]">
-                  <div className="flex items-center gap-1.5 text-[11px] text-[var(--muted-foreground)] font-semibold uppercase">
-                    <Calendar className="size-3.5 text-emerald-500" />
+                <div className="p-3.5 rounded-xl bg-[var(--color-tint)] border border-[var(--color-line)]">
+                  <div className="flex items-center gap-1.5 text-[11px] text-[var(--color-muted)] font-semibold uppercase">
+                    <Calendar className="size-3.5 text-[var(--color-ink)]" />
                     <span>Ngày tạo SKU</span>
                   </div>
-                  <div className="text-xs font-semibold text-[var(--foreground)] mt-1">
+                  <div className="text-xs font-semibold text-[var(--color-ink)] mt-1">
                     {new Date(product.created_at).toLocaleString("vi-VN")}
                   </div>
                 </div>
               </div>
 
-              <div className="p-4 rounded-xl border border-[var(--border)] bg-[var(--secondary)]/20">
-                <h4 className="text-xs font-bold text-[var(--foreground)] mb-1">Mô tả mặt hàng:</h4>
-                <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
+              <div className="p-4 rounded-xl border border-[var(--color-line)] bg-[var(--color-tint)]">
+                <h4 className="font-[family-name:var(--font-quicksand,var(--font-display))] text-xs font-bold text-[var(--color-ink)] mb-1">Mô tả mặt hàng:</h4>
+                <p className="text-xs text-[var(--color-muted)] leading-relaxed">
                   {product.description || "Chưa có mô tả chi tiết cho mặt hàng này."}
                 </p>
               </div>
@@ -214,25 +216,25 @@ export function ProductDetailView({ initialProduct }: ProductDetailViewProps) {
 
         {/* Right Column: Pricing & Quick Actions */}
         <div className="space-y-6">
-          <Card className="rounded-2xl border-emerald-500/20 bg-gradient-to-b from-emerald-500/5 to-transparent p-6">
-            <CardHeader className="p-0 pb-4 border-b border-[var(--border)]">
-              <CardTitle className="text-base font-bold text-[var(--foreground)] flex items-center justify-between">
+          <Card className="rounded-2xl border-[var(--color-line)] bg-[var(--color-surface)] p-6">
+            <CardHeader className="p-0 pb-4 border-b border-[var(--color-line)]">
+              <CardTitle className="text-base font-bold text-[var(--color-ink)] flex items-center justify-between">
                 <span>Giá Niêm Yết</span>
-                <Sparkles className="size-4 text-emerald-500" />
+                <Sparkles className="size-4 text-[var(--color-ink)]" />
               </CardTitle>
             </CardHeader>
 
             <CardContent className="p-0 pt-5 space-y-4">
               <div>
-                <div className="text-xs text-[var(--muted-foreground)]">Đơn giá chuẩn / {product.uom}</div>
-                <div className="font-serif text-3xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-1">
+                <div className="text-xs text-[var(--color-muted)]">Đơn giá chuẩn / {product.uom}</div>
+                <div className="font-serif text-3xl font-extrabold text-[var(--color-ink)] mt-1">
                   {formatVND(product.base_price_vnd)}
                 </div>
               </div>
 
               {product.status === "DRAFT" && (
-                <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300 text-xs flex items-start gap-2">
-                  <AlertCircle className="size-4 shrink-0 text-amber-500 mt-0.5" />
+                <div className="p-3 rounded-xl bg-[var(--color-surface)] border border-[var(--color-line)] text-[var(--color-ink)] text-xs flex items-start gap-2">
+                  <AlertCircle className="size-4 shrink-0 text-[var(--color-warn-ink)] mt-0.5" />
                   <div>
                     Sản phẩm chưa mở bán. Cần bấm <strong>Kích hoạt mở bán</strong> phía trên để cho phép nhân viên và khách hàng thêm vào giỏ.
                   </div>

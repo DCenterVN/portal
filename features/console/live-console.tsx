@@ -5,6 +5,7 @@ import { AlertCircle, Building2, KeyRound, LoaderCircle, UserRound } from "lucid
 import { fetcher } from "@/lib/fetcher";
 import { PageHeader, PageShell } from "@/components/ui/page";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 type AccessContext = { org_id: string; org_name: string; branch_id: string; branch_name: string; roles: string[] };
 type ConsoleResponse = { user: { id?: string; display_name?: string; email?: string }; contexts: AccessContext[]; active_context: { org_id: string; branch_id: string }; permissions: string[]; limitations: string[] };
@@ -12,7 +13,7 @@ type ConsoleResponse = { user: { id?: string; display_name?: string; email?: str
 export function LiveConsole() {
   const { data, error, isLoading, mutate } = useSWR<ConsoleResponse>("/api/console", fetcher, { revalidateOnFocus: false, errorRetryCount: 1 });
   if (isLoading) return <PageShell><div className="flex min-h-64 items-center justify-center gap-2 text-sm text-[var(--muted-foreground)]"><LoaderCircle className="size-5 animate-spin" /> Đang tải dữ liệu vận hành…</div></PageShell>;
-  if (error || !data) return <PageShell><div role="alert" className="mx-auto mt-12 max-w-xl border border-rose-500/40 bg-rose-500/10 p-5"><AlertCircle className="mb-3 size-6 text-rose-600" /><h1 className="font-serif text-xl font-bold">Không thể tải console</h1><p className="mt-2 text-sm text-[var(--muted-foreground)]">{error instanceof Error ? error.message : "Backend không trả về dữ liệu hợp lệ."}</p><button className="mt-4 border border-[var(--border)] px-4 py-2 text-sm font-bold" onClick={() => void mutate()}>Thử lại</button></div></PageShell>;
+  if (error || !data) return <PageShell><div role="alert" className="mx-auto mt-12 max-w-xl border border-rose-500/40 bg-rose-500/10 p-5"><AlertCircle className="mb-3 size-6 text-rose-600" /><h1 className="font-serif text-xl font-bold">Không thể tải console</h1><p className="mt-2 text-sm text-[var(--muted-foreground)]">{error instanceof Error ? error.message : "Backend không trả về dữ liệu hợp lệ."}</p><Button className="mt-4" variant="outline" onClick={() => void mutate()}>Thử lại</Button></div></PageShell>;
   return <PageShell className="space-y-6 py-8">
     <PageHeader icon={<Building2 />} title="Console vận hành" description="Dữ liệu trực tiếp theo phạm vi tổ chức và quyền của phiên đăng nhập hiện tại" />
     <div className="grid gap-4 md:grid-cols-3">

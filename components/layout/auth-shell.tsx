@@ -1,41 +1,52 @@
 import Link from "next/link";
-import { Leaf, QrCode, ShieldCheck, Snowflake } from "lucide-react";
+import type { ReactNode } from "react";
+import { Leaf } from "lucide-react";
+import { AuthHeading } from "@/components/patterns/auth-heading";
 
-const PROMISES = [
-  { icon: Snowflake, text: "Chuỗi lạnh giám sát từ kho tới tay bạn" },
-  { icon: QrCode, text: "Mỗi lô hàng tra được nguồn gốc" },
-  { icon: ShieldCheck, text: "Tài khoản bảo vệ bằng xác thực phiên an toàn" },
-];
+type Props = {
+  children: ReactNode;
+  title?: string;
+  description?: string;
+  skipLinkLabel?: string;
+  logoLabel?: string;
+  legalText?: string;
+};
 
-export function AuthShell({ title, description, children }: { title: string; description: string; children: React.ReactNode }) {
+function MiniFooter({ text }: { text: string }) {
   return (
-    <main className="min-h-screen grid lg:grid-cols-12 bg-[var(--background)] text-[var(--foreground)]">
-      <aside className="hidden lg:flex lg:col-span-5 flex-col justify-between p-12 bg-[var(--primary)] text-[var(--primary-foreground)]">
-        <Link href="/" className="flex items-center gap-2 font-serif text-xl font-bold">
-          <Leaf aria-hidden="true" className="size-6" /> Việt Sạch
-        </Link>
-        <div className="space-y-6">
-          <p className="font-serif text-3xl font-bold leading-tight">Tươi là một cảm giác.<br />Sạch là điều kiểm chứng được.</p>
-          <ul className="space-y-3 text-sm">
-            {PROMISES.map(({ icon: Icon, text }) => (
-              <li key={text} className="flex items-center gap-3"><Icon aria-hidden="true" className="size-4 shrink-0" />{text}</li>
-            ))}
-          </ul>
-        </div>
-        <p className="text-xs opacity-80">© 2026 Việt Sạch</p>
-      </aside>
-      <section className="lg:col-span-7 flex items-center justify-center p-6 sm:p-12">
-        <div className="w-full max-w-md space-y-6">
-          <Link href="/" className="lg:hidden flex items-center justify-center gap-2 font-serif text-lg font-bold text-[var(--primary)]">
-            <Leaf aria-hidden="true" className="size-5" /> Việt Sạch
+    <footer className="px-4 pb-5 text-center text-xs text-[var(--muted-foreground)]">
+      {text}
+    </footer>
+  );
+}
+
+export function AuthShell({
+  children,
+  title,
+  description,
+  skipLinkLabel = "Bỏ qua tới nội dung",
+  logoLabel = "Việt Sạch",
+  legalText = "© 2026 Việt Sạch",
+}: Props) {
+  return (
+    <div data-surface="auth" className="flex min-h-screen flex-col bg-[var(--background)] text-[var(--foreground)]">
+      <a
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:rounded-md focus:bg-[var(--surface)] focus:px-4 focus:py-2"
+        href="#main"
+      >
+        {skipLinkLabel}
+      </a>
+      <main id="main" className="grid flex-1 place-items-center px-4 py-10 sm:px-6">
+        <section className="w-full max-w-md rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm sm:p-8">
+          <Link href="/" aria-label={logoLabel} className="mb-6 flex items-center justify-center gap-2 font-serif text-lg font-bold">
+            <Leaf aria-hidden="true" className="size-5" />
+            <span>{logoLabel}</span>
           </Link>
-          <header className="space-y-1.5 text-center">
-            <h1 className="font-serif text-2xl font-bold">{title}</h1>
-            <p className="text-sm text-[var(--muted-foreground)]">{description}</p>
-          </header>
+          {title && <AuthHeading title={title} subtitle={description} />}
           {children}
-        </div>
-      </section>
-    </main>
+        </section>
+      </main>
+      <MiniFooter text={legalText} />
+    </div>
   );
 }

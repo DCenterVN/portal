@@ -20,7 +20,7 @@ Boundary/domain rules: [AI_CONTEXT.md](AI_CONTEXT.md). Workspace map + workflow:
 - Board first: `.aidlc/planning/board.md` (refresh: `python3 ~/agent_skills/sdlc/engine/sdlc.py board`).
 - Stories: `.aidlc/planning/backlog.md` · specs (feature contract, checked by `speccheck.py`): `.aidlc/specs/` · ADRs: `.aidlc/adrs/` · tasks: `.aidlc/runs/<TASK>/plan.md`.
 - Pipeline: `discovery > technical > ux > design > build > integration > e2e > release` (`.aidlc/stage-policy.json`). Take one slice card (`sdlc.py next`), load only what it links.
-- Standards: `../platform-docs/standards/` (frontend.md). Check: `python3 ~/agent_skills/sdlc/engine/archcheck.py` (debt: `.aidlc/arch-baseline.txt`, fixed by `ARCH-ALIGN-001`).
+- Standards: `../platform-docs/standards/` (frontend.md; **ui-ux.md before any screen work**). Check: `python3 ~/agent_skills/sdlc/engine/archcheck.py` (debt: `.aidlc/arch-baseline.txt`, fixed by `ARCH-ALIGN-001`).
 - Code shape: early return, nesting ≤ 2–3, functions ~40 lines, no boilerplate. Reuse before adding (platform-go first).
 
 ## Check

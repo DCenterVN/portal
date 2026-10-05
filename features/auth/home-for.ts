@@ -1,4 +1,5 @@
 import { apiFetch } from "@/lib/fetcher";
+import { platformMeSchema, decodePlatform } from "@/lib/api/platform-contract";
 import { sanitizeRedirectUrl } from "@/lib/auth/client";
 
 const CUSTOMER_PREFIXES = ["/products", "/cart", "/orders", "/me", "/traceability"];
@@ -22,9 +23,25 @@ export function staffBranchCount(contexts: AccessContext[] = []): number {
 }
 
 export async function resolveHome(redirect: string | null | undefined): Promise<string> {
+  const platform = await apiFetch("/api/platform/me");
+  if (platform.ok) {
+    return platformHome(platform.status, await platform.json().catch(() => null), redirect) || "/";
+  }
+  if (platform.status !== 404) return "/";
   const res = await apiFetch("/api/auth/context");
   // ponytail: context unavailable -> least-privilege home; staff re-enter via /switch-branch
   if (!res.ok) return homeFor(0, redirect);
-  const data: { contexts?: AccessContext[] } = await res.json();
+  const data: { contexts?: AccessContext[] } = await res.json().catch(() => ({}));
   return homeFor(staffBranchCount(data.contexts), redirect);
+}
+
+export function platformHome(status: number, body: unknown, redirect: string | null | undefined): string | null {
+  if (status === 404) return null;
+  if (status !== 200) return "/";
+  try {
+    decodePlatform(body, platformMeSchema);
+  } catch {
+    return "/";
+  }
+  return sanitizeRedirectUrl(redirect, "") || "/platform/companies";
 }

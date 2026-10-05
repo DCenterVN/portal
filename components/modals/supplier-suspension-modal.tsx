@@ -105,7 +105,7 @@ export function SupplierSuspensionModal({
             type="button"
             variant="outline"
             onClick={() => onOpenChange(false)}
-            className="rounded-xl border-[var(--border)] text-xs font-semibold"
+            size="default"
           >
             Đóng
           </Button>
@@ -113,7 +113,8 @@ export function SupplierSuspensionModal({
           <Button
             type="button"
             onClick={handleConfirm}
-            className="rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold"
+            variant="destructive"
+            size="default"
           >
             <AlertOctagon className="size-3.5 mr-1.5" />
             Xác nhận đình chỉ (SUSPENDED)

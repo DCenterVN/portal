@@ -55,7 +55,7 @@ export function ResetForm() {
         <Label htmlFor="confirm">Nhập lại mật khẩu mới</Label>
         <PasswordInput id="confirm" name="confirm" autoComplete="new-password" disabled={busy || !token} />
       </div>
-      <Button type="submit" disabled={busy || !token} className="h-10 w-full">{busy ? "Đang lưu…" : "Đặt lại mật khẩu"}</Button>
+      <Button type="submit" disabled={busy || !token} className="w-full">{busy ? "Đang lưu…" : "Đặt lại mật khẩu"}</Button>
       <p className="border-t border-[var(--border)] pt-4 text-center text-sm text-[var(--muted-foreground)]">
         <Link href={"/forgot-password" as Route} className="font-semibold text-[var(--primary)] hover:underline">Yêu cầu liên kết mới</Link>
       </p>

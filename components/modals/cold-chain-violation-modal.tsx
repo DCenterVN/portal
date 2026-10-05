@@ -109,7 +109,7 @@ export function ColdChainViolationModal({
             type="button"
             variant="outline"
             onClick={onViewHeatmap}
-            className="rounded-xl border-[var(--border)] text-xs font-semibold"
+            size="default"
           >
             <BarChart2 className="size-3.5 mr-1.5" />
             Xem biểu đồ nhiệt chi tiết
@@ -118,7 +118,8 @@ export function ColdChainViolationModal({
           <Button
             type="button"
             onClick={onCreateDisposalReport}
-            className="rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold"
+            variant="destructive"
+            size="default"
           >
             <FileX className="size-3.5 mr-1.5" />
             Lập biên bản huỷ lô hàng

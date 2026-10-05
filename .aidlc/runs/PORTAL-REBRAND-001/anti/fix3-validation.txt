@@ -1,0 +1,93 @@
+PORTAL-REBRAND-001 S9 runner fix3 validation
+
+Scope: runner repair authorized by the user. All proof below is offline and synthetic; no real build, server, login, browser acceptance, or Lighthouse result is claimed. PATH shims cover npm/node/curl/npx/brave/brave-browser/git/python3; every phase has stdin=/dev/null.
+
+Changed files:
+- anti.sh: start/lighthouse/stop phases; Node --env-file; customer login-200 gate; employee access_token header file; private audit output with credential redaction; process identity cleanup; preserved tracked-diff/run verdict.
+- anti-test.md: start → UI-1..UI-7 → lighthouse → stop → grader instructions.
+- anti_runner_selftest.py: offline phase regressions and temporary mutation proof.
+- fix3-validation.txt: this command/output record and handoff.
+- anti_check.py: unchanged. Archived out-run*/ evidence: read-only.
+
+$ python3 -B anti_runner_selftest.py /tmp/anti-fix3-before.sh </dev/null
+FAIL detail phases EOF: AssertionError: start failed
+FAIL runner phases EOF
+FAIL runner login 500
+FAIL detail console redirect: AssertionError: start failed
+FAIL runner console redirect
+PASS runner existing run
+PASS runner port 3000
+PASS runner port 9222
+FAIL detail tracked drift: AssertionError: start failed
+FAIL runner tracked drift
+FAIL detail foreign pid: AssertionError: start failed
+FAIL runner foreign pid
+RUNNER SELF-TEST: 3/8 (offline synthetic shims only)
+exit=1
+
+$ python3 -B anti_runner_selftest.py </dev/null
+PASS runner phases EOF
+PASS runner login 500
+PASS runner console redirect
+PASS runner existing run
+PASS runner port 3000
+PASS runner port 9222
+PASS runner tracked drift
+PASS runner foreign pid
+RUNNER SELF-TEST: 8/8 (offline synthetic shims only)
+exit=0
+
+$ python3 -B anti_runner_selftest.py --mutation </dev/null
+PASS runner phases EOF
+FAIL runner login 500
+PASS runner console redirect
+PASS runner existing run
+PASS runner port 3000
+PASS runner port 9222
+PASS runner tracked drift
+PASS runner foreign pid
+RUNNER SELF-TEST: 7/8 (offline synthetic shims only)
+MUTATION: login-200 guard removed; self-test exit=1; KILLED
+exit=0
+
+$ python3 -B anti_check.py --self-test </dev/null
+PASS self-test positive fixture
+PASS self-test reject missing cell
+PASS self-test reject PASS without measurements
+PASS self-test reject contrast 4.3
+PASS self-test reject duplicate screenshot
+PASS self-test reject wrong-width PNG
+PASS self-test reject LH a11y 0.89
+PASS self-test reject LH script 210 kB
+PASS self-test reject build without route table
+PASS self-test reject authenticated final_url /login
+PASS self-test reject missing final_urls
+PASS self-test reject authenticated screenshot /login
+PASS self-test reject LH fetchTime outside window
+PASS self-test reject mobile LCP 2501
+PASS self-test BLOCKED distinct from PASS (exit 2)
+SELF-TEST: 15/15 PASS (synthetic fixtures only)
+exit=0
+
+$ bash -n anti.sh </dev/null
+(no output)
+exit=0
+
+$ shellcheck anti.sh </dev/null
+(no output)
+exit=0
+
+
+Mutation implementation: --mutation makes a temporary /tmp copy of anti.sh, replaces only the login-200 guard with a no-op, then executes the same complete runner suite. KILLED requires suite exit != 0. Original runner is untouched.
+
+
+Harness probes (report-only): hs-run plan next --plan ../plan.md --fast reported an unrecognized scaffold; hs-run cook next with the absolute parent plan reported status None / not_startable. hs-run test next resolved HARNESS_DATA_ROOT=/home/dawn and found no declared suite; hs-run ship next reported no_plan_resolved. No harness receipt/approval or push is claimed; no parent plan, harness settings, or git state was edited. The explicit user repair scope and test commands governed this local fix.
+
+
+Where it started: Run 3 had login BFF 500 and zero Lighthouse files; standalone omitted env and prompts failed at stdin EOF.
+Decisions locked: use process-only dotenv, phased commands, real BFF sessions, private temporary credential/header files, and preserve failures through stop.
+Key files: anti.sh; anti-test.md; anti_runner_selftest.py; anti_check.py.
+Running state: proof servers/browsers are shims in temporary copies; each owned test process is stopped. No real acceptance run was started.
+Verification: exact commands and outputs above; no acceptance score claimed.
+Deferred: real browser UI evidence and production Lighthouse are for Anti.
+Pick up here: follow anti-test.md using start, browser matrix, lighthouse, stop, then grader; preserve any existing run.json and archived evidence.

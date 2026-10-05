@@ -70,7 +70,7 @@ export function AllergenWarningModal({
             type="button"
             variant="outline"
             onClick={onQuarantine}
-            className="rounded-xl border-[var(--border)] text-xs font-semibold"
+            size="default"
           >
             <ShieldAlert className="size-3.5 mr-1.5 text-amber-500" />
             Cách ly kệ hàng
@@ -79,7 +79,8 @@ export function AllergenWarningModal({
           <Button
             type="button"
             onClick={onRelocate}
-            className="rounded-xl bg-[var(--primary)] hover:bg-[var(--primary)]/90 text-[var(--primary-foreground)] text-xs font-bold"
+            variant="default"
+            size="default"
           >
             <ArrowRightLeft className="size-3.5 mr-1.5" />
             Chuyển vị trí kho chỉ định

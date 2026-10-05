@@ -1,29 +1,51 @@
- M .aidlc/ACTIVE
- M .aidlc/arch-baseline.txt
- M .aidlc/planning/board.md
- M .aidlc/runs/ARCH-ALIGN-001.json
- M .aidlc/runs/ARCH-ALIGN-001/state.json
+ D .aidlc/runs/PORTAL-AUTH-UI-001/anti/check.txt
+ D .aidlc/runs/PORTAL-AUTH-UI-001/anti/git_status_after.txt
+ M .aidlc/runs/PORTAL-AUTH-UI-001/anti/git_status_before.txt
+ D .aidlc/runs/PORTAL-AUTH-UI-001/anti/lh/activate.json
+ D .aidlc/runs/PORTAL-AUTH-UI-001/anti/lh/forgot-password.json
+ D .aidlc/runs/PORTAL-AUTH-UI-001/anti/lh/login.json
+ D .aidlc/runs/PORTAL-AUTH-UI-001/anti/lh/register.json
+ D .aidlc/runs/PORTAL-AUTH-UI-001/anti/lh/reset-password.json
+ D .aidlc/runs/PORTAL-AUTH-UI-001/anti/preflight.txt
+ D .aidlc/runs/PORTAL-AUTH-UI-001/anti/report.md
+ M .aidlc/runs/PORTAL-AUTH-UI-001/anti/run.env
+ D .aidlc/runs/PORTAL-AUTH-UI-001/anti/staff.txt
+ D .aidlc/runs/PORTAL-AUTH-UI-001/anti/ui/01-register-empty.png
+ D .aidlc/runs/PORTAL-AUTH-UI-001/anti/ui/01-register-empty.txt
+ D .aidlc/runs/PORTAL-AUTH-UI-001/anti/ui/02-register-error.png
+ D .aidlc/runs/PORTAL-AUTH-UI-001/anti/ui/02-register-error.txt
+ D .aidlc/runs/PORTAL-AUTH-UI-001/anti/ui/03-register-ok.png
+ D .aidlc/runs/PORTAL-AUTH-UI-001/anti/ui/03-register-ok.txt
+ D .aidlc/runs/PORTAL-AUTH-UI-001/anti/ui/04-activate-bad-token.png
+ D .aidlc/runs/PORTAL-AUTH-UI-001/anti/ui/04-activate-bad-token.txt
+ D .aidlc/runs/PORTAL-AUTH-UI-001/anti/ui/05-activate-resent.png
+ D .aidlc/runs/PORTAL-AUTH-UI-001/anti/ui/05-activate-resent.txt
+ D .aidlc/runs/PORTAL-AUTH-UI-001/anti/ui/06-activate-ok.png
+ D .aidlc/runs/PORTAL-AUTH-UI-001/anti/ui/06-activate-ok.txt
+ D .aidlc/runs/PORTAL-AUTH-UI-001/anti/ui/07-login-error.png
+ D .aidlc/runs/PORTAL-AUTH-UI-001/anti/ui/07-login-error.txt
+ D .aidlc/runs/PORTAL-AUTH-UI-001/anti/ui/08-login-customer-home.png
+ D .aidlc/runs/PORTAL-AUTH-UI-001/anti/ui/08-login-customer-home.txt
+ D .aidlc/runs/PORTAL-AUTH-UI-001/anti/ui/09-customer-console-blocked.png
+ D .aidlc/runs/PORTAL-AUTH-UI-001/anti/ui/09-customer-console-blocked.txt
+ D .aidlc/runs/PORTAL-AUTH-UI-001/anti/ui/10-login-staff-console.png
+ D .aidlc/runs/PORTAL-AUTH-UI-001/anti/ui/10-login-staff-console.txt
+ D .aidlc/runs/PORTAL-AUTH-UI-001/anti/ui/11-forgot-ok.png
+ D .aidlc/runs/PORTAL-AUTH-UI-001/anti/ui/11-forgot-ok.txt
+ D .aidlc/runs/PORTAL-AUTH-UI-001/anti/ui/12-reset-bad-token.png
+ D .aidlc/runs/PORTAL-AUTH-UI-001/anti/ui/12-reset-bad-token.txt
+ D .aidlc/runs/PORTAL-AUTH-UI-001/anti/ui/13-reset-ok.png
+ D .aidlc/runs/PORTAL-AUTH-UI-001/anti/ui/13-reset-ok.txt
+ D .aidlc/runs/PORTAL-AUTH-UI-001/anti/ui/14-login-new-password.png
+ D .aidlc/runs/PORTAL-AUTH-UI-001/anti/ui/14-login-new-password.txt
+ D .aidlc/runs/PORTAL-AUTH-UI-001/anti/ui/15-login-mobile.png
+ D .aidlc/runs/PORTAL-AUTH-UI-001/anti/ui/15-login-mobile.txt
+ D .aidlc/runs/PORTAL-AUTH-UI-001/anti/ui/console.txt
+ D .aidlc/runs/PORTAL-AUTH-UI-001/anti/ui/tokens.txt
+ D .aidlc/runs/PORTAL-AUTH-UI-001/anti/ui/urls.txt
+ D .aidlc/runs/PORTAL-AUTH-UI-001/anti/unit.exit
+ M .aidlc/runs/PORTAL-BRAND-001.json
+ M .aidlc/runs/PORTAL-BRAND-001/state.json
  M .aidlc/trace.jsonl
- M app/activate/page.tsx
- M app/forgot-password/page.tsx
- M app/globals.css
- M app/layout.tsx
- M app/login/page.tsx
- M app/register/page.tsx
- M app/reset-password/page.tsx
- M app/tokens.generated.css
- M components/ui/button.tsx
- M eslint.config.mjs
- M lib/auth/client.ts
  M next-env.d.ts
- M proxy.test.ts
- M proxy.ts
-?? .aidlc/runs/PORTAL-AUTH-UI-001.json
-?? .aidlc/runs/PORTAL-AUTH-UI-001/
-?? .aidlc/runs/PORTAL-BRAND-001.json
-?? .aidlc/runs/PORTAL-BRAND-001/
-?? app/api/auth/activate/resend/
-?? app/icon.svg
-?? components/layout/auth-shell.tsx
-?? components/patterns/
-?? features/auth/
+?? .aidlc/runs/PORTAL-AUTH-UI-001/__pycache__/

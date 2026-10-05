@@ -97,14 +97,22 @@ export function OrdersView({ initialOrders }: OrdersViewProps) {
     }
   };
 
+  // Visual emphasis only: retain every existing permission-gated row action.
+  const primaryOrderId = orders.find((order) =>
+    (order.status === "HANDED_OFF" && permissions.includes("production:order:accept")) ||
+    (order.status === "ACCEPTED" && permissions.includes("production:order:allocate")) ||
+    (order.status === "ALLOCATED" && permissions.includes("production:order:start")) ||
+    (order.status === "IN_PROGRESS" && permissions.includes("production:order:complete"))
+  )?.id;
+
   return (
-    <PageShell>
+    <PageShell className="bg-[var(--color-bg)] text-[var(--color-ink)]">
       <PageHeader
         title="Điều hành Sản xuất & Chế biến (VT-09 .. VT-12)"
         description="Quy trình Make-to-Stock: Tiếp nhận → Phân bổ FEFO → Sơ chế & Nấu → Đóng gói & Cấp đông"
       />
 
-      <Card>
+      <Card className="bg-[var(--color-surface)] text-[var(--color-ink)] border-[var(--color-line)]">
         <CardContent className="p-0">
           <Table>
             <TableHeader>
@@ -119,7 +127,7 @@ export function OrdersView({ initialOrders }: OrdersViewProps) {
             <TableBody>
               {orders.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-6 text-muted-foreground">
+                  <TableCell colSpan={5} className="text-center py-6 text-[var(--color-muted)]">
                     Chưa có lệnh sản xuất nào được chuyển giao từ Chuyên gia dinh dưỡng (VT-21)
                   </TableCell>
                 </TableRow>
@@ -148,6 +156,7 @@ export function OrdersView({ initialOrders }: OrdersViewProps) {
                       {o.status === "HANDED_OFF" && permissions.includes("production:order:accept") && (
                         <Button
                           size="sm"
+                          variant={o.id === primaryOrderId ? "default" : "outline"}
                           disabled={loadingId === o.id}
                           onClick={() => handleAccept(o.id)}
                         >
@@ -157,8 +166,7 @@ export function OrdersView({ initialOrders }: OrdersViewProps) {
                       {o.status === "ACCEPTED" && permissions.includes("production:order:allocate") && (
                         <Button
                           size="sm"
-                          variant="outline"
-                          className="border-blue-600 text-blue-600 hover:bg-blue-50"
+                          variant={o.id === primaryOrderId ? "default" : "outline"}
                           disabled={loadingId === o.id}
                           onClick={() => handleAllocate(o.id)}
                         >
@@ -168,7 +176,7 @@ export function OrdersView({ initialOrders }: OrdersViewProps) {
                       {o.status === "ALLOCATED" && permissions.includes("production:order:start") && (
                         <Button
                           size="sm"
-                          className="bg-amber-600 hover:bg-amber-700 text-white"
+                          variant={o.id === primaryOrderId ? "default" : "outline"}
                           disabled={loadingId === o.id}
                           onClick={() => handleStart(o.id)}
                         >
@@ -178,7 +186,7 @@ export function OrdersView({ initialOrders }: OrdersViewProps) {
                       {o.status === "IN_PROGRESS" && permissions.includes("production:order:complete") && (
                         <Button
                           size="sm"
-                          className="bg-purple-600 hover:bg-purple-700 text-white"
+                          variant={o.id === primaryOrderId ? "default" : "outline"}
                           disabled={loadingId === o.id}
                           onClick={() => handleComplete(o.id, o.planned_quantity)}
                         >
@@ -186,13 +194,13 @@ export function OrdersView({ initialOrders }: OrdersViewProps) {
                         </Button>
                       )}
                       {o.status === "COMPLETED" && (
-                        <span className="text-sm font-medium text-amber-600 flex items-center justify-end">
-                          <Clock className="h-4 w-4 mr-1" /> Chờ QC nghiệm thu (VT-13)
+                        <span className="text-sm font-medium text-[var(--color-ink)] flex items-center justify-end">
+                          <Clock className="h-4 w-4 mr-1 text-[var(--color-sun)]" /> Chờ QC nghiệm thu (VT-13)
                         </span>
                       )}
                       {o.status === "QC_PASSED" && (
-                        <span className="text-sm font-medium text-green-600 flex items-center justify-end">
-                          <CheckCircle2 className="h-4 w-4 mr-1" /> QC Đạt — Sẵn sàng lên kệ
+                        <span className="text-sm font-medium text-[var(--color-ink)] flex items-center justify-end">
+                          <CheckCircle2 className="h-4 w-4 mr-1 text-[var(--color-leaf)]" /> QC Đạt — Sẵn sàng lên kệ
                         </span>
                       )}
                     </TableCell>

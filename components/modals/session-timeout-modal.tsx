@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useId, useState } from "react";
 import { Lock, LogIn, KeyRound } from "lucide-react";
 import {
   Dialog,
@@ -27,12 +27,13 @@ interface SessionTimeoutModalProps {
 export function SessionTimeoutModal({
   open,
   onOpenChange,
-  userName = "Nguyễn Văn Quản",
-  userEmail = "quan.nguyen@vietsach.vn",
-  avatarInitials = "NV",
+  userName = "Tài khoản",
+  userEmail = "",
+  avatarInitials = "TK",
   onUnlock,
   onLogout,
 }: SessionTimeoutModalProps) {
+  const pinId = useId();
   const [pin, setPin] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -60,10 +61,10 @@ export function SessionTimeoutModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent size="sm" layer="session" showClose={false} className="bg-[var(--card)] text-center">
+      <DialogContent size="sm" layer="session" showClose={false} className="bg-[var(--color-surface)] text-center">
         <form onSubmit={handleUnlock}>
           <DialogHeader className="text-center items-center">
-            <div className="flex size-12 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-500 mb-2">
+            <div className="flex size-12 items-center justify-center rounded-2xl bg-[var(--color-tint)] text-[var(--color-warn-ink)] mb-2">
               <Lock className="size-6" />
             </div>
             <DialogTitle className="text-lg font-bold">
@@ -76,27 +77,28 @@ export function SessionTimeoutModal({
 
           <div className="space-y-4 my-3 text-xs">
             {/* User Profile Tile */}
-            <div className="p-3 rounded-xl bg-[var(--secondary)]/50 border border-[var(--border)] flex items-center gap-3">
-              <div className="size-10 rounded-xl bg-gradient-to-tr from-[#0284C7] to-emerald-500 text-white font-bold flex items-center justify-center text-sm shadow-xs shrink-0">
+            <div className="p-3 rounded-xl bg-[var(--color-tint)] border border-[var(--color-line)] flex items-center gap-3">
+              <div className="size-10 rounded-xl bg-[var(--color-tint)] text-[var(--color-ink)] font-bold flex items-center justify-center text-sm shadow-[var(--elevation-shadow-card)] shrink-0">
                 {avatarInitials}
               </div>
               <div className="text-left overflow-hidden">
-                <div className="font-bold text-[var(--foreground)] truncate">{userName}</div>
-                <div className="text-[11px] text-[var(--muted-foreground)] truncate">{userEmail}</div>
+                <div className="font-bold text-[var(--color-ink)] truncate">{userName}</div>
+                <div className="text-[11px] text-[var(--color-muted)] truncate">{userEmail}</div>
               </div>
             </div>
 
             {error && (
-              <div className="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-xs text-left">
+              <div className="p-2.5 rounded-xl bg-[var(--color-tint)] border border-[var(--color-danger)] text-[var(--color-danger)] text-xs text-left">
                 {error}
               </div>
             )}
 
             <div className="text-left">
-              <Label className="text-xs font-semibold">Mật khẩu hoặc mã PIN 6 số</Label>
+              <Label htmlFor={pinId} className="text-xs font-semibold">Mật khẩu hoặc mã PIN 6 số</Label>
               <div className="relative mt-1">
-                <KeyRound className="size-4 text-[var(--muted-foreground)] absolute left-3 top-2.5" />
+                <KeyRound className="size-4 text-[var(--color-muted)] absolute left-3 top-2.5" />
                 <Input
+                  id={pinId}
                   type="password"
                   required
                   autoFocus
@@ -113,7 +115,9 @@ export function SessionTimeoutModal({
             <Button
               type="submit"
               disabled={loading}
-              className="w-full rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold"
+              variant="default"
+              size="default"
+              className="w-full"
             >
               {loading ? "Đang xác thực..." : "Mở khóa tiếp tục"}
             </Button>
@@ -122,7 +126,7 @@ export function SessionTimeoutModal({
               type="button"
               variant="ghost"
               onClick={onLogout}
-              className="w-full text-xs text-[var(--muted-foreground)] hover:text-rose-600"
+              className="w-full text-xs text-[var(--muted-foreground)]"
             >
               <LogIn className="size-3.5 mr-1" />
               Đăng nhập bằng tài khoản khác

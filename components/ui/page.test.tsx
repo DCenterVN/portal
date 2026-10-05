@@ -3,14 +3,14 @@ import React from "react";
 import { PageShell, PageHeader } from "./page";
 
 describe("Page Components", () => {
-  it("PageShell creates a main container with standard class names", () => {
+  it("PageShell creates a neutral container with standard class names", () => {
     const element = PageShell({
       children: React.createElement("div", null, "Test Content"),
       className: "custom-class",
     });
 
     expect(element).toBeDefined();
-    expect(element.type).toBe("main");
+    expect(element.type).toBe("div");
     expect(element.props.className).toContain("mx-auto max-w-7xl px-4 py-8 sm:px-6");
     expect(element.props.className).toContain("custom-class");
   });

@@ -1,0 +1,919 @@
+import { readFileSync } from "node:fs";
+import path from "node:path";
+import { describe, expect, it, vi } from "vitest";
+import * as React from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import { ConsoleSidebar } from "../components/layout/console-sidebar";
+import { Input } from "../components/ui/input";
+import { Dialog, DialogContent } from "../components/ui/dialog";
+import { Badge } from "../components/ui/badge";
+import { ToastContainer, type ToastVariant } from "../components/ui/toast";
+import { ConfirmQCDecisionModal } from "../components/modals/confirm-qc-decision-modal";
+import { SessionTimeoutModal } from "../components/modals/session-timeout-modal";
+import { buttonVariants } from "../components/ui/button";
+import { LoginForm } from "../components/auth/login-form";
+import ProfileClient from "./(store)/me/profile-client";
+import { BranchesView } from "../features/branches/branches-view";
+import { MembershipsView, type Employee } from "../features/memberships/memberships-view";
+import { ThemeProvider } from "../components/theme-provider";
+import { ShelvesView } from "../features/inventory/shelves-view";
+import { RolesView } from "../features/roles/roles-view";
+import { OrdersView } from "../features/production/orders-view";
+import { QCView } from "../features/production/qc-view";
+import { TargetsView } from "../features/production/targets-view";
+import { CartView } from "../features/products/cart-view";
+import { OrdersView as SalesOrdersView } from "../features/products/orders-view";
+import { ProductCreateDialog } from "../features/products/product-create-dialog";
+import { ProductDetailView } from "../features/products/product-detail-view";
+import { ProductsView } from "../features/products/products-view";
+import { TraceView } from "../features/traceability/trace-view";
+import type { Product } from "../lib/api/sales";
+import type { PublicTraceability } from "../lib/api/production";
+import type { Cart, Order } from "../lib/api/sales";
+import type { ProductionTarget, ProductionOrder, ShelfPlacement } from "../lib/api/production";
+import type { UserProfile } from "../lib/auth/client";
+
+// SSR cannot mount a portal. Only expose its rendered tree; effects/keyboard are
+// covered by the existing dialog behavior tests and the later browser audit.
+const portalRender = vi.hoisted(() => ({
+  mounted: false, states: [] as unknown[],
+  filter: undefined as string | undefined,
+  filterClicks: {} as Record<string, () => void>,
+}));
+vi.mock("../components/ui/toast", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../components/ui/toast")>();
+  return { ...actual, useToast: () => ({ toast: vi.fn() }) };
+});
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }) }));
+vi.mock("react", async (importOriginal) => {
+  const actual = await importOriginal<typeof React>();
+  return { ...actual, useState: (initial: unknown) => {
+    const state = actual.useState(portalRender.states.length ? portalRender.states.shift() : portalRender.mounted && initial === false ? true : initial);
+    if (initial === "ALL" && portalRender.filter !== undefined) {
+      return [portalRender.filter, (filter: string) => { portalRender.filter = filter; }];
+    }
+    return state;
+  } };
+});
+vi.mock("../components/ui/button", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../components/ui/button")>();
+  return { ...actual, Button: React.forwardRef<HTMLButtonElement, React.ComponentProps<typeof actual.Button>>((props, ref) => {
+    if (portalRender.filter !== undefined && props.onClick) {
+      const name = renderToStaticMarkup(React.createElement(React.Fragment, null, props.children)).replace(/<[^>]*>/g, "").trim();
+      portalRender.filterClicks[name] = () => props.onClick!({} as React.MouseEvent<HTMLButtonElement>);
+    }
+    return React.createElement(actual.Button, { ...props, ref });
+  }) };
+});
+vi.mock("react-dom", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("react-dom")>();
+  return { ...actual, createPortal: (children: React.ReactNode) => children };
+});
+
+function classesFor(html: string, tag: string, attribute = "") {
+  const element = html.match(new RegExp(`<${tag}\\b[^>]*${attribute}[^>]*>`))?.[0];
+  expect(element).toBeDefined();
+  return element!.match(/class="([^"]*)"/)?.[1] ?? "";
+}
+
+describe("S3 rendered sidebar and controls", () => {
+  it.each([false, true])("uses warm surface roles and focused tomato selection (collapsed=%s)", (collapsed) => {
+    const html = renderToStaticMarkup(React.createElement(ConsoleSidebar, {
+      id: "brand-sidebar", collapsed, pathname: "/inventory/lots",
+      nav: [{ title: "Vận hành", items: [
+        { href: "/inventory", match: "/inventory", label: "Kho" },
+        { href: "/orders", match: "/orders", label: "Đơn hàng" },
+      ] }], context: { label: "Chi nhánh", sublabel: "Hà Nội" },
+      user: { name: "Dawn", detail: "Nhân viên" }, logo: "VS",
+    }));
+    const aside = classesFor(html, "aside");
+    expect(aside).toContain("bg-[var(--color-surface)]");
+    expect(aside).toContain("text-[var(--color-ink)]");
+    expect(aside).toContain(collapsed ? "w-17" : "w-60");
+    const active = classesFor(html, "a", 'aria-current="page"');
+    expect(active).toContain("bg-[var(--color-tint)]");
+    expect(active).toContain("text-[var(--color-ink)]");
+    expect(active).toContain("border-l-[var(--color-primary)]");
+    const links = html.match(/<a\b[^>]*>/g)!;
+    expect(links).toHaveLength(2);
+    for (const link of links) {
+      expect(link).toContain("focus-visible:ring-2");
+      expect(link).toContain("focus-visible:ring-[var(--color-focus)]");
+    }
+    expect(html).toContain("text-[var(--color-muted)]");
+    expect(html).not.toMatch(/color-chrome|color-sun|color-leaf|color-mix|text-\[color:white\]|#[\da-f]{3,8}\b/i);
+  });
+
+  it("renders a 44px input with role border, radius, surface and visible focus", () => {
+    const html = renderToStaticMarkup(React.createElement(Input, {
+      type: "password", name: "password", autoComplete: "current-password", disabled: true, "aria-label": "Mật khẩu",
+    }));
+    const classes = classesFor(html, "input");
+    for (const token of ["h-11", "border-[var(--color-input-border)]", "rounded-[var(--radius-md)]", "bg-[var(--color-surface)]", "text-[var(--color-ink)]", "focus-visible:ring-2", "focus-visible:ring-[var(--color-focus)]"]) expect(classes).toContain(token);
+    expect(html).toContain('style="border-width:1.5px"');
+    expect(classes).not.toMatch(/\bh-(?:9|10)\b/);
+    expect(html).toContain('type="password"');
+    expect(html).toContain('name="password"');
+    expect(html).toContain('autoComplete="current-password"');
+    expect(html).toContain('disabled=""');
+  });
+
+  it.each(["standard", "critical", "session"] as const)("renders solid token dialog/overlay in layer %s", (layer) => {
+    portalRender.mounted = true;
+    vi.stubGlobal("document", { body: {} });
+    vi.stubGlobal("HTMLElement", class {});
+    try {
+      const html = renderToStaticMarkup(React.createElement(Dialog, { open: true },
+        React.createElement(DialogContent, { layer, "aria-labelledby": "brand-dialog", size: "sm" }, "Nội dung")));
+      const surface = classesFor(html, "div", 'role="dialog"');
+      for (const token of ["bg-[var(--color-surface)]", "text-[var(--color-ink)]", "rounded-[var(--radius-lg)]", "shadow-[var(--elevation-shadow-pop)]", "focus-visible:ring-2", "focus-visible:ring-[var(--color-focus)]"]) expect(surface).toContain(token);
+      const overlay = classesFor(html, "div", 'aria-hidden="true"');
+      expect(overlay).toContain("bg-[var(--color-chrome)]/");
+      expect(html).not.toMatch(/blur|glass|gradient|#[\da-f]{3,8}\b/i);
+      expect(html).toContain('aria-modal="true"');
+      expect(html).toContain('aria-labelledby="brand-dialog"');
+      expect(surface).toContain("max-w-sm");
+      expect(html.includes('aria-label="Đóng hộp thoại"')).toBe(layer === "standard");
+    } finally {
+      portalRender.mounted = false;
+      vi.unstubAllGlobals();
+    }
+    expect(readFileSync("components/ui/dialog.tsx", "utf8")).not.toMatch(/backdrop-blur|backdrop-filter|#[\da-f]{3,8}\b/i);
+  });
+});
+
+const root = path.resolve("..");
+const tokens = JSON.parse(readFileSync(path.join(root, "platform-docs/ui/tokens.json"), "utf8"));
+const css = readFileSync("app/globals.css", "utf8");
+const generated = readFileSync("app/tokens.generated.css", "utf8");
+const layout = readFileSync("app/layout.tsx", "utf8");
+const roles = "bg surface tint ink muted primary primary-ink primary-hover leaf accent accent-ink accent-hover sun info danger warn-ink line input-border focus".split(" ");
+const palette = {
+  light: "#FBF6EE #FFFFFF #F5E9DA #2A1D17 #6F5C50 #D2402A #FFFFFF #B93623 #3E8E4A #F2A33A #2A1D17 #DB8A26 #F2A33A #2E6FAD #9B2C55 #805000 #EADFD0 #8A7464 #B93623",
+  dark: "#1D1714 #2A211C #352821 #F8EFE5 #C2B2A4 #F07A5F #1D1714 #E56449 #70B878 #F2A33A #2A1D17 #DB8A26 #F2A33A #8DB8E8 #E46A83 #F2C56F #49372C #8D7667 #F07A5F",
+};
+
+describe("S2 root brand contract", () => {
+  it.each([
+    ["Quicksand", ["600", "700"], "--font-quicksand"],
+    ["Nunito", ["400", "500", "600", "700", "800"], "--font-nunito"],
+  ] as const)("loads %s with Vietnamese/Latin, explicit weights and swap", (font, weights, variable) => {
+    expect(layout).toMatch(new RegExp(`import \\{[^}]*\\b${font}\\b[^}]*\\} from "next/font/google"`));
+    const options = layout.match(new RegExp(`const (\\w+) = ${font}\\(\\{([\\s\\S]*?)\\}\\)`));
+    expect(options).not.toBeNull();
+    const config = options![2];
+    expect(config.match(/subsets:\s*(\[[^\]]*\])/)?.[1]).toBe('["vietnamese", "latin"]');
+    expect(config.match(/weight:\s*(\[[^\]]*\])/)?.[1]).toBe(JSON.stringify(weights).replaceAll(",", ", "));
+    expect(config).toContain(`variable: "${variable}"`);
+    expect(config).toContain('display: "swap"');
+    expect(layout).toContain(`\${${options![1]}.variable}`);
+    expect(layout).not.toMatch(/Be[ _]*Vietnam[ _]*Pro/i);
+  });
+
+  it("uses solid primary for the default and legacy accent CTA with visible focus", () => {
+    for (const variant of [undefined, "default", "accent"] as const) {
+      const classes = buttonVariants({ variant });
+      expect(classes).toContain("bg-[var(--primary)]");
+      expect(classes).toContain("text-[var(--primary-foreground)]");
+      expect(classes).toContain("hover:bg-[var(--color-primary-hover)]");
+      expect(classes).toContain("focus-visible:ring-2");
+      expect(classes).toContain("focus-visible:ring-[var(--ring)]");
+      expect(classes).not.toMatch(/gradient|background-image|color-mix/);
+    }
+  });
+
+  it("matches browser chrome and icon colours to the approved light/dark roles", () => {
+    const manifest = JSON.parse(readFileSync("public/manifest.json", "utf8"));
+    expect(manifest.theme_color).toBe(tokens.color.light.primary.$value);
+    expect(manifest.background_color).toBe(tokens.color.light.bg.$value);
+    const icon = readFileSync("app/icon.svg", "utf8");
+    expect(icon).toContain(`fill="${tokens.color.light.primary.$value}"`);
+    expect(icon).toContain(`stroke="${tokens.color.light["primary-ink"].$value}"`);
+    for (const mode of ["light", "dark"] as const) {
+      expect(layout).toContain(`{ media: "(prefers-color-scheme: ${mode})", color: "${tokens.color[mode].bg.$value}" }`);
+    }
+  });
+
+  it("keeps identity while describing factual meal-kit preparation", () => {
+    expect(layout).toContain('"https://vietsach.reborn.vn"');
+    expect(layout).toContain('siteName: "Việt Sạch"');
+    expect(layout).toContain("Fresh Meal Kit");
+    expect(layout).not.toMatch(/hữu cơ|nông trại|VietGAP|GlobalGAP/);
+  });
+});
+
+function contrast(foreground: string, background: string) {
+  const luminance = (hex: string) => [1, 3, 5].reduce((sum, offset, index) => {
+    const channel = parseInt(hex.slice(offset, offset + 2), 16) / 255;
+    const linear = channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+    return sum + linear * [0.2126, 0.7152, 0.0722][index];
+  }, 0);
+  const [low, high] = [luminance(foreground), luminance(background)].sort((a, b) => a - b);
+  return (high + 0.05) / (low + 0.05);
+}
+
+describe("S1 approved brand contract", () => {
+  it.each(Object.entries(palette))("preserves %s role names/types and exact approved colours", (mode, values) => {
+    expect(Object.keys(tokens.color[mode])).toEqual(roles);
+    roles.forEach((role, index) => {
+      expect(tokens.color[mode][role]).toEqual({ $type: "color", $value: values.split(" ")[index] });
+    });
+  });
+
+  it("preserves token groups and sets the requested font stacks, elevations and radii", () => {
+    expect(Object.keys(tokens)).toEqual(["$description", "color", "elevation", "radius", "font"]);
+    expect(tokens.font).toEqual({
+      display: { $type: "fontFamily", $value: '"Quicksand", system-ui, sans-serif' },
+      sans: { $type: "fontFamily", $value: '"Nunito", system-ui, -apple-system, "Segoe UI", sans-serif' },
+    });
+    expect(tokens.elevation).toEqual({
+      "shadow-card": { $type: "shadow", $value: "0 2px 8px rgb(42 29 23 / .08)" },
+      "shadow-pop": { $type: "shadow", $value: "0 12px 28px rgb(42 29 23 / .18)" },
+    });
+    expect(tokens.radius).toEqual(Object.fromEntries([
+      ["sm", "8px"], ["md", "12px"], ["lg", "16px"], ["pill", "9999px"],
+    ].map(([key, value]) => [key, { $type: "dimension", $value: value }])));
+  });
+
+  it("carries every source token into the generated light, dark and automatic themes", () => {
+    const blocks = [...generated.matchAll(/\{([^{}]+)\}/g)].map((match) => match[1]);
+    expect(blocks).toHaveLength(3);
+    for (const [index, mode] of ["light", "dark", "dark"].entries()) {
+      const declarations = Object.fromEntries([...blocks[index].matchAll(/--([\w-]+):\s*([^;]+);/g)].map((match) => [match[1], match[2]]));
+      const expected: Record<string, string> = {};
+      for (const role of roles) expected[`color-${role}`] = tokens.color[mode][role].$value;
+      if (index === 0) {
+        for (const group of ["font", "radius", "elevation"]) {
+          for (const [key, token] of Object.entries(tokens[group]) as [string, { $value: string }][]) expected[`${group}-${key}`] = token.$value;
+        }
+      }
+      expect(declarations).toEqual(expected);
+    }
+    expect(generated).toContain(':root, [data-theme="light"]');
+    expect(generated).toContain('[data-theme="dark"], .dark');
+    expect(generated).toContain('@media (prefers-color-scheme: dark)');
+    expect(generated).toContain(':root:not([data-theme="light"])');
+  });
+
+  it.each(["light", "dark"])("meets unrounded text and control contrast in %s", (mode) => {
+    const colors = tokens.color[mode];
+    const ratio = (fg: string, bg: string) => contrast(colors[fg].$value, colors[bg].$value);
+    for (const background of ["bg", "surface", "tint"]) {
+      for (const foreground of ["ink", "muted", "danger", "warn-ink", mode === "light" ? "primary-hover" : "primary"]) expect(ratio(foreground, background)).toBeGreaterThanOrEqual(4.5);
+      if (mode === "dark" || background !== "tint") expect(ratio("info", background)).toBeGreaterThanOrEqual(4.5);
+      for (const control of ["input-border", "focus"]) expect(ratio(control, background)).toBeGreaterThanOrEqual(3);
+    }
+    for (const background of ["primary", "primary-hover", "danger"]) expect(ratio("primary-ink", background)).toBeGreaterThanOrEqual(4.5);
+    for (const background of ["accent", "accent-hover", "sun"]) expect(ratio("accent-ink", background)).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it("uses role aliases for semantic status, tags, destructive foreground and radius", () => {
+    const aliases = {
+      "destructive-foreground": "color-primary-ink", radius: "radius-md",
+      "badge-active-bg": "color-tint", "badge-active-text": "color-ink", "badge-active-dot": "color-leaf",
+      "badge-suspended-bg": "color-tint", "badge-suspended-text": "color-warn-ink", "badge-suspended-dot": "color-sun",
+      "badge-revoked-bg": "color-tint", "badge-revoked-text": "color-danger", "badge-revoked-dot": "color-danger",
+      "tag-bg": "color-tint", "tag-text": "color-ink", "tag-border": "color-line",
+    };
+    for (const [alias, role] of Object.entries(aliases)) expect(css).toContain(`--${alias}: var(--${role});`);
+    expect(css).not.toMatch(/#[\da-f]{3,8}\b|--land-(?:green|sage)|color-mix\([^;]*transparent/i);
+  });
+
+  it("keeps landing text/CTA contrast-safe, uses elevation shadows and loader fallbacks", () => {
+    expect(css).toContain("--land-link: var(--color-primary-hover);");
+    expect(css).toContain("--land-primary: var(--color-primary);");
+    expect(css).toContain("--land-primary-ink: var(--color-primary-ink);");
+    expect(css).toContain("--land-link: var(--color-primary);");
+    expect(css).toContain("--color-chrome: var(--color-ink);");
+    expect(css).toContain("--color-chrome: var(--color-bg);");
+    expect(css.match(/box-shadow:\s*([^;]+);/g)).toEqual(["box-shadow: var(--elevation-shadow-pop);"]);
+    expect(css).toContain("font-family: var(--font-nunito, var(--font-sans));");
+    expect(css).toContain("font-family: var(--font-quicksand, var(--font-display));");
+    expect(css).toContain("@import \"./tokens.generated.css\";");
+  });
+});
+
+
+const rawDecoration = /(?:bg|text|border|ring|from|via|to|fill|stroke|shadow)-(?:green|emerald|teal|amber|rose|sky|white|black)(?:-\d+)?\b|#[\da-f]{3,8}\b|blur|glass|gradient/i;
+
+function mountedMarkup(element: React.ReactNode) {
+  portalRender.mounted = true;
+  vi.stubGlobal("document", { body: {} });
+  vi.stubGlobal("HTMLElement", class {});
+  try {
+    return renderToStaticMarkup(element);
+  } finally {
+    portalRender.mounted = false;
+    vi.unstubAllGlobals();
+  }
+}
+
+describe("S4 rendered semantic status and modal content", () => {
+  it.each([
+    ["active", "Đang hoạt động", "ink", "leaf"],
+    ["suspended", "Tạm ngưng", "warn-ink", "sun"],
+    ["revoked", "Đã thu hồi", "danger", "danger"],
+  ] as const)("renders %s badge with readable text and semantic indicator", (variant, label, ink, indicator) => {
+    const html = renderToStaticMarkup(React.createElement(Badge, { variant, "aria-label": label }, label));
+    const classes = classesFor(html, "div");
+    const aliases: Record<string, string> = { active: "active", suspended: "suspended", revoked: "revoked" };
+    expect(classes).toContain(`bg-[var(--badge-${aliases[variant]}-bg)]`);
+    expect(classes).toContain(`text-[var(--badge-${aliases[variant]}-text)]`);
+    expect(css).toContain(`--badge-${aliases[variant]}-text: var(--color-${ink});`);
+    expect(css).toContain(`--badge-${aliases[variant]}-dot: var(--color-${indicator});`);
+    expect(html).toContain(label);
+    expect(classesFor(html, "span")).toContain(`bg-[var(--badge-${aliases[variant]}-dot)]`);
+    expect(html).not.toMatch(rawDecoration);
+    expect(classes).not.toContain("text-[var(--color-leaf)]");
+    const withoutDot = renderToStaticMarkup(React.createElement(Badge, { variant, dot: false }, label));
+    expect(withoutDot).toContain(label);
+    expect(withoutDot).not.toContain("<span");
+  });
+
+  it.each(["active", "suspended", "revoked"] as const)("keeps %s meaningful without caller text, including dot=false", (variant) => {
+    for (const dot of [true, false]) {
+      const html = renderToStaticMarkup(React.createElement(Badge, { variant, dot }));
+      expect(html.replace(/<[^>]*>/g, "").trim()).not.toBe("");
+    }
+  });
+
+  it.each([
+    ["success", "leaf", "circle-check"],
+    ["warning", "sun", "triangle-alert"],
+    ["error", "danger", "circle-alert"],
+    ["info", "info", "lucide-info"],
+  ] as const)("renders %s toast with solid surface, semantic icon and ink label", (variant, indicator, icon) => {
+    const html = mountedMarkup(React.createElement(ToastContainer, {
+      toasts: [{ id: variant, variant: variant as ToastVariant, title: "Trạng thái xử lý", description: "Chi tiết thao tác" }], onDismiss: () => {},
+    }));
+    expect(html).toContain('aria-live="polite"');
+    expect(html).toContain('aria-atomic="true"');
+    expect(html).toContain('role="alert"');
+    expect(classesFor(html, "div", 'role="alert"')).toContain("bg-[var(--color-surface)]");
+    const svg = html.match(/<svg\b[^>]*>/g)!;
+    expect(svg).toHaveLength(2);
+    expect(svg[0]).toContain(icon);
+    expect(svg[0]).toContain(`text-[var(--color-${indicator})]`);
+    expect(classesFor(html, "h4")).toContain("text-[var(--color-ink)]");
+    expect(html).toContain("Trạng thái xử lý");
+    expect(html).toContain("Chi tiết thao tác");
+    expect(html).toContain('aria-label="Đóng thông báo"');
+    expect(classesFor(html, "button")).toContain("focus-visible:ring-[var(--color-focus)]");
+    expect(html).not.toMatch(rawDecoration);
+    expect(html).not.toContain("/95");
+  });
+
+  it.each(["qc", "session"] as const)("renders %s modal with solid role decoration and existing actions", (kind) => {
+    const element = kind === "qc"
+      ? React.createElement(ConfirmQCDecisionModal, { open: true, onOpenChange: () => {}, productName: "Lô kiểm tra", lotCode: "LOT-42" })
+      : React.createElement(SessionTimeoutModal, { open: true, userName: "Dawn", userEmail: "dawn@example.test" });
+    const html = mountedMarkup(element);
+    expect(html).toContain('role="dialog"');
+    expect(html).toContain("bg-[var(--color-surface)]");
+    expect(html).toContain("bg-[var(--color-tint)]");
+    expect(html).not.toMatch(rawDecoration);
+    if (kind === "qc") {
+      expect(html).toContain("Lô kiểm tra");
+      expect(html).toContain("ĐẠT");
+      expect(html).toContain("Xác nhận nhập kho thương mại");
+      expect(html).toContain("Huỷ bỏ");
+    } else {
+      expect(html).toContain("Dawn");
+      expect(html).toContain('type="password"');
+      expect(html).toContain("Đăng nhập bằng tài khoản khác");
+      expect(html).not.toContain('aria-label="Đóng hộp thoại"');
+    }
+    // Also cover decoration of session's client-only error branch.
+    expect(readFileSync(`components/modals/${kind === "qc" ? "confirm-qc-decision" : "session-timeout"}-modal.tsx`, "utf8")).not.toMatch(rawDecoration);
+  });
+});
+
+// SSR state injection exposes client branches without changing production hooks.
+function surfaceMarkup(element: React.ReactNode, states: unknown[] = []) {
+  portalRender.states = [...states];
+  try {
+    return renderToStaticMarkup(element);
+  } finally {
+    portalRender.states = [];
+  }
+}
+
+const profileFixture: UserProfile = {
+  id: "user-42", email: "dawn@example.test", phone: "0901234567", display_name: "Dawn",
+  status: "ACTIVE", created_at: "2026-09-29", memberships: [{ org_id: "org-1", org_name: "Bếp Hà Nội", roles: ["STAFF"] }],
+};
+const branchFixtures = ["branch-1", "branch-2"].map((id) => ({
+  id, name: `Chi nhánh ${id}`, code: id, address: "Hà Nội", type: "MAIN", tempZone: "-18 °C", membersCount: 3,
+}));
+const employeeFixtures: Employee[] = (["active", "suspended", "revoked"] as const).map((status) => ({
+  id: status, userId: "user-42", branchId: "branch-1", name: `Dawn ${status}`, phone: "0901234567",
+  email: "dawn@example.test", departmentId: null, departmentName: "Kho", roles: [{ code: "STAFF", name: "Nhân viên" }], status, joinedAt: "Hôm nay",
+}));
+const rawSurface = /(?:bg|text|border|ring|from|via|to|fill|stroke|shadow)-(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|white|black)(?:-\d+)?\b|#[\da-f]{3,8}\b|gradient|blur|glass/i;
+
+function expectRoleSurface(html: string) {
+  // This exact shared PageHeader icon wrapper belongs to a later slice. All
+  // caller actions and content remain in the rendered scan, including inputs.
+  const owned = html.replace(/class="flex size-9 items-center justify-center rounded-xl bg-sky-500\/10 text-\[var\(--primary\)\] shrink-0 \[&amp;_svg\]:size-5"/g, "");
+  expect(owned.match(rawSurface)?.[0] ?? null).toBeNull();
+  expect(html).toContain("text-[var(--color-ink)]");
+  expect(html).toContain("bg-[var(--color-surface)]");
+  expect(html).toContain("border-[var(--color-line)]");
+  for (const heading of html.match(/<h[1-4]\b[^>]*>/g) ?? []) {
+    // h1–h3 inherit the root display role; h4 needs an explicit role.
+    if (heading.startsWith("<h4")) expect(heading).toContain("font-[family-name:var(--font-quicksand,var(--font-display))]");
+    else expect(css).toMatch(/h1, h2, h3, \.font-serif\s*\{\s*font-family: var\(--font-quicksand, var\(--font-display\)\)/);
+  }
+}
+
+describe("S5 rendered auth, profile, branch and membership roles", () => {
+  it("keeps legacy login fields and solid primary branding with semantic security cue", () => {
+    const html = surfaceMarkup(React.createElement(ThemeProvider, null, React.createElement(LoginForm)));
+    expectRoleSurface(html);
+    expect(html).toContain("bg-[var(--color-primary)]");
+    expect(html).toContain("text-[var(--color-leaf)]");
+    expect(html).toContain('for="email"');
+    expect(html).toContain('for="password"');
+    expect(html).toContain('type="password"');
+    expect(html).toContain("Vào hệ thống chi nhánh");
+    for (const input of html.match(/<input[^>]*type="(?:text|password)"[^>]*>/g)!) {
+      expect(input).toContain("h-11");
+      expect(input).not.toMatch(/\bh-(?:9|10)\b/);
+    }
+  });
+
+  it.each(["general", "memberships", "security"])("renders profile %s tab with solid roles and original content", (tab) => {
+    const html = surfaceMarkup(React.createElement(ProfileClient), [profileFixture, false, "", null, tab]);
+    expectRoleSurface(html);
+    expect(html).toContain("Dawn");
+    expect(html).toContain("Đăng xuất");
+    expect(html).toContain("bg-[var(--color-primary)]");
+    if (tab === "memberships") expect(html).toContain("Bếp Hà Nội");
+    if (tab === "security") expect(html).toContain("text-[var(--color-leaf)]");
+  });
+
+  it.each([401, 500])("renders profile error %s with readable danger cue", (status) => {
+    const html = surfaceMarkup(React.createElement(ProfileClient), [null, false, "Lỗi kết nối", status, "general"]);
+    expectRoleSurface(html);
+    expect(html).toContain("text-[var(--color-danger)]");
+    expect(html).toContain(status === 401 ? "Đăng nhập lại" : "Thử lại");
+  });
+
+  it("keeps profile loading and empty memberships distinct", () => {
+    const loading = surfaceMarkup(React.createElement(ProfileClient));
+    expect(loading).toContain("Đang tải hồ sơ người dùng...");
+    expect(loading).not.toMatch(rawSurface);
+    const empty = surfaceMarkup(React.createElement(ProfileClient), [{ ...profileFixture, memberships: [] }, false, "", null, "memberships"]);
+    expectRoleSurface(empty);
+    expect(empty).toContain("Khách hàng vãng lai (CUSTOMER)");
+  });
+
+  it("renders selected and unselected branches with ink status and role boundaries", () => {
+    const html = surfaceMarkup(React.createElement(BranchesView, { initialBranches: branchFixtures }));
+    expectRoleSurface(html);
+    expect(html).toContain("Đang vận hành");
+    expect(html).toContain("text-[var(--color-leaf)]");
+    expect(html).toContain("ring-[var(--color-focus)]");
+    expect(html).toContain("Chọn chi nhánh này");
+    expect(classesFor(html, "input")).toContain("h-11");
+  });
+
+  it.each([false, true])("renders membership table and semantic summaries (empty=%s)", (empty) => {
+    const html = surfaceMarkup(React.createElement(MembershipsView, { initialEmployees: empty ? [] : employeeFixtures }));
+    expectRoleSurface(html);
+    for (const role of ["leaf", "sun", "danger"]) expect(html).toContain(`text-[var(--color-${role})]`);
+    expect(html).toContain("Đang hoạt động (Active)");
+    if (empty) expect(html).toContain("Không tìm thấy nhân viên nào phù hợp với bộ lọc.");
+    else expect(html).toContain("Dawn active");
+    expect(classesFor(html, "input")).toContain("h-11");
+    expect(classesFor(html, "select")).toContain("h-11");
+  });
+
+  it("renders invite form with solid scrim, display title and unchanged required fields", () => {
+    const html = surfaceMarkup(React.createElement(MembershipsView), [employeeFixtures, "", "all", true, "", "", "", "VT-02"]);
+    expectRoleSurface(html);
+    expect(html).toContain("bg-[var(--color-chrome)]/60");
+    expect(html).toContain("Thêm / Mời Thành Viên Mới");
+    expect(html).toContain("Xác nhận thêm");
+    expect(html.match(/required=""/g)).toHaveLength(2);
+    for (const select of html.match(/<select\b[^>]*>/g)!) {
+      expect(select).toContain("h-11");
+      expect(select).toContain("border-[var(--color-input-border)]");
+      expect(select).toContain("focus:ring-[var(--color-focus)]");
+    }
+  });
+});
+
+const productionFixtures: ProductionOrder[] = (["HANDED_OFF", "ACCEPTED", "ALLOCATED", "IN_PROGRESS", "COMPLETED", "QC_PASSED", "QC_FAILED", "FAILED"] as const).map((status) => ({
+  id: status, order_code: `ORDER-${status}`, source_plan_ref: "plan", target_ref: "target", branch_ref: "branch",
+  output_sku_ref: "sku", bom_ref: "bom", planned_quantity: 20, actual_output_quantity: 10, uom: "EA", status, created_at: "2026-09-29",
+}));
+const shelfFixtures: ShelfPlacement[] = (["PLACED", "DEPLETED"] as const).map((status) => ({
+  id: status, finished_lot_ref: "lot", branch_ref: "branch", shelf_code: `SHELF-${status}`, placed_quantity: 20,
+  available_quantity: status === "PLACED" ? 10 : 0, uom: "EA", status, trace_code: `QR-${status}`, placed_at: "2026-09-29",
+}));
+const productionPermissions = ["accept", "allocate", "start", "complete"].map((action) => `production:order:${action}`);
+
+function expectS6Roles(html: string, primaryCount: number) {
+  expectRoleSurface(html);
+  expect(html).toContain("bg-[var(--color-bg)]");
+  const primaryButtons = (html.match(/<button\b[^>]*>/g) ?? []).filter((button) => button.includes("bg-[var(--primary)]"));
+  expect(primaryButtons).toHaveLength(primaryCount);
+  for (const control of html.match(/<(?:input|textarea)\b[^>]*>/g) ?? []) {
+    expect(control).toContain("border-[var(--color-input-border)]");
+    expect(control).toContain("ring-[var(--color-focus)]");
+    if (!control.includes('type="radio"') && !control.startsWith("<textarea")) expect(control).toContain("h-11");
+  }
+}
+
+describe("S6 rendered inventory, permission and production state roles", () => {
+  it.each([false, true])("keeps shelves labelled states, QR links and fail-closed action (empty=%s)", (empty) => {
+    const html = surfaceMarkup(React.createElement(ShelvesView, { initialPlacements: empty ? [] : shelfFixtures }));
+    expectS6Roles(html, 1);
+    expect(classesFor(html, "button")).toContain("bg-[var(--primary)]");
+    expect(html).toContain('disabled=""');
+    if (empty) expect(html).toContain("Chưa có mặt hàng nào được đưa lên kệ");
+    else {
+      expect(html).toContain("PLACED");
+      expect(html).toContain("DEPLETED");
+      expect(html).toContain("badge-active-dot");
+      expect(classesFor(html, "a")).toContain("text-[var(--color-primary-hover)]");
+      expect(classesFor(html, "a")).toContain("dark:text-[var(--color-primary)]");
+      expect(html).toContain('href="/traceability/QR-PLACED"');
+    }
+  });
+
+  it("gives shelf submit sole primary emphasis with original fields and permission guard", () => {
+    const html = surfaceMarkup(React.createElement(ShelvesView, { initialPlacements: shelfFixtures }), [shelfFixtures, true, "KE-MAT-01", "lot", "branch", ["inventory:shelf_placement:create"], 20, false]);
+    expectS6Roles(html, 1);
+    expect(classesFor(html, "button")).not.toContain("bg-[var(--primary)]");
+    expect(classesFor(html, "button", 'type="submit"')).toContain("bg-[var(--primary)]");
+    expect(html.match(/required=""/g)).toHaveLength(3);
+    expect(html).toContain("Xác nhận lên kệ &amp; Sinh mã QR");
+  });
+
+  it.each([false, true])("keeps permission checks and saved confirmation non-colour cues (saved=%s)", (saved) => {
+    const html = surfaceMarkup(React.createElement(RolesView), ["", {}, saved]);
+    expectS6Roles(html, 1);
+    expect(html).toContain("overflow-x-auto");
+    expect(html).toContain("lucide-check");
+    expect(html).toContain("bg-[var(--color-primary)]");
+    expect(html).toContain("text-[var(--color-primary-ink)]");
+    expect(html).toContain("View (Xem)");
+    if (saved) {
+      expect(html).toContain("Đã lưu ma trận!");
+      expect(html).toContain("text-[var(--color-leaf)]");
+    }
+  });
+
+  it("keeps collapsed and search-empty permission matrix with one save action", () => {
+    const collapsed = surfaceMarkup(React.createElement(RolesView), ["", { inventory_coldchain: true }, false]);
+    expectS6Roles(collapsed, 1);
+    expect(collapsed).toContain("lucide-chevron-right");
+    expect(collapsed).not.toContain('title="Giám đốc chi nhánh: View (Xem) - Kiểm nhận');
+    const empty = surfaceMarkup(React.createElement(RolesView), ["NO-MATCH", {}, false]);
+    expectS6Roles(empty, 1);
+    expect(empty).not.toContain("lucide-chevron-down");
+  });
+
+  it.each([false, true])("preserves production permission visibility and labelled workflow (authorized=%s)", (authorized) => {
+    const html = surfaceMarkup(React.createElement(OrdersView, { initialOrders: productionFixtures }), [productionFixtures, null, authorized ? productionPermissions : [], "VT-10"]);
+    expectS6Roles(html, authorized ? 1 : 0);
+    for (const status of productionFixtures.map((order) => order.status)) expect(html).toContain(status);
+    expect(html).toContain("QC Đạt — Sẵn sàng lên kệ");
+    expect(html).toContain("Chờ QC nghiệm thu (VT-13)");
+    expect(html).toContain("text-[var(--color-leaf)]");
+    expect(html).toContain("text-[var(--color-sun)]");
+    expect(html.includes("Tiếp nhận (VT-09)")).toBe(authorized);
+    expect((html.match(/<button\b[\s\S]*?<\/button>/g) ?? []).some((button) => button.includes("Phân bổ FEFO"))).toBe(authorized);
+    expect(html.includes("Bắt đầu nấu (VT-10/11)")).toBe(authorized);
+    expect(html.includes("Đóng gói &amp; Cấp đông (VT-12)")).toBe(authorized);
+  });
+
+  it("keeps production empty and busy branches", () => {
+    const empty = surfaceMarkup(React.createElement(OrdersView, { initialOrders: [] }));
+    expectS6Roles(empty, 0);
+    expect(empty).toContain("Chưa có lệnh sản xuất nào");
+    const busy = surfaceMarkup(React.createElement(OrdersView, { initialOrders: productionFixtures }), [productionFixtures, "HANDED_OFF", productionPermissions, "VT-11"]);
+    expectS6Roles(busy, 1);
+    expect(classesFor(busy, "button")).toContain("bg-[var(--primary)]");
+    expect(busy).toContain('disabled=""');
+  });
+
+  it("renders QC pass/fail as readable status labels alongside semantic indicators", () => {
+    const html = surfaceMarkup(React.createElement(QCView, { completedOrders: productionFixtures }));
+    expectS6Roles(html, 1);
+    for (const status of ["QC_PASSED", "QC_FAILED"]) {
+      const row = (html.match(/<tr\b[\s\S]*?<\/tr>/g) ?? []).find((item) => item.includes(`ORDER-${status}`))!;
+      const cells = row.match(/<td\b[\s\S]*?<\/td>/g)!;
+      expect(cells[2]).toContain(`>${status}</div>`);
+      expect(cells[2]).toContain(status === "QC_PASSED" ? "badge-active-dot" : "badge-revoked-dot");
+    }
+    expect(html).toContain("Đã phê duyệt đạt chuẩn");
+    expect(html).toContain("SoD Enforcement");
+  });
+
+  it.each([false, true])("keeps QC form decisions, package states and busy disabling (busy=%s)", (busy) => {
+    const html = surfaceMarkup(React.createElement(QCView, { completedOrders: productionFixtures }), [productionFixtures, productionFixtures[4], -18.5, !busy, busy ? "" : "Mẫu đạt", busy]);
+    expectS6Roles(html, 1);
+    expect(html).toContain("Phê duyệt QC (PASS) — Cho phép lên kệ");
+    expect(html).toContain("Từ chối QC (FAIL) — Hủy lô");
+    expect(html).toContain("Hủy bỏ");
+    expect(html).toContain("lucide-circle-check");
+    expect(html).toContain("lucide-circle-x");
+    expect(html).toContain('name="packageCheck"');
+    expect(html.match(/checked=""/g)).toHaveLength(1);
+    if (busy) expect(html.match(/disabled=""/g)).toHaveLength(2);
+  });
+
+  it("keeps QC empty message and separation warning readable", () => {
+    const html = surfaceMarkup(React.createElement(QCView, { completedOrders: [] }));
+    expectS6Roles(html, 0);
+    expect(html).toContain("Không có lô thành phẩm nào đang chờ kiểm định QC");
+    expect(html).toContain("text-[var(--color-warn-ink)]");
+  });
+});
+
+
+const targetFixtures: ProductionTarget[] = (["DRAFT", "APPROVED", "IN_PLANNING", "HANDED_OFF", "COMPLETED", "REJECTED"] as const).map((status) => ({
+  id: status, target_code: `TARGET-${status}`, title: `Chỉ tiêu ${status}`, branch_ref: "branch-1",
+  period_start: "2026-09-29", period_end: "2026-10-29", status, created_by: "user-1", created_at: "2026-09-29",
+  lines: [{ product_ref: "product-1", target_quantity: 20, uom: "EA" }],
+}));
+const cartFixture: Cart = { id: "cart-1", total_amount_vnd: 999, items: [
+  { product_id: "fish", sku_code: "SKU-FISH", name: "Cá hồi", quantity: 2, price_snapshot_vnd: 300000, uom: "kg" },
+  { product_id: "rice", sku_code: "SKU-RICE", name: "Gạo", quantity: 3, price_snapshot_vnd: 20000, uom: "túi" },
+] };
+const salesOrderFixtures: Order[] = (["CREATED", "CANCELLED"] as const).map((status) => ({
+  id: `SALE-${status}`, cart_ref: "cart-1", status, subtotal_vnd: 660000, total_vnd: 660000, created_at: "2026-09-29",
+}));
+function s7Markup(element: React.ReactNode, states: unknown[]) {
+  portalRender.states = [...states];
+  try { return mountedMarkup(element); } finally { portalRender.states = []; }
+}
+function expectS7Roles(html: string, primaryCount: number) {
+  expectRoleSurface(html);
+  // Include asChild anchors as well as ordinary buttons in CTA competition.
+  const primary = (html.match(/<(?:button|a)\b[^>]*>/g) ?? []).filter((tag) => /bg-\[var\(--(?:color-)?primary\)\]/.test(tag));
+  expect(primary).toHaveLength(primaryCount);
+  for (const tag of html.match(/<(?:input|select)\b[^>]*>/g) ?? []) {
+    expect(tag).toContain("h-11");
+    expect(tag).toContain("border-[var(--color-input-border)]");
+    expect(tag).toContain("ring-[var(--color-focus)]");
+  }
+}
+describe("S7 rendered target, cart, orders and product creation roles", () => {
+  it.each([false, true])("keeps target permissions, labelled statuses and sole create/submit emphasis (form=%s)", (form) => {
+    const html = surfaceMarkup(React.createElement(TargetsView, { initialTargets: targetFixtures }), [
+      targetFixtures, ["production:target:create", "production:target:approve"], "branch-1", form,
+      "Chỉ tiêu tháng", "2026-09-29", "2026-10-29", targetFixtures[0].lines, false,
+    ]);
+    expectS7Roles(html, 1);
+    for (const target of targetFixtures) expect(html).toContain(target.target_code);
+    expect(html).toContain("badge-active-dot");
+    expect(html).toContain("badge-revoked-dot");
+    expect(html).toContain("text-[var(--color-leaf)]");
+    expect(html).toContain("Duyệt");
+    expect(html).toContain("Từ chối");
+    expect(html).toContain('href="/production/food-plans?target_id=APPROVED"');
+    if (form) {
+      expect(classesFor(html, "button", 'type="submit"')).toContain("bg-[var(--primary)]");
+      expect(html).toContain("Lưu DRAFT");
+      expect(html).toContain('aria-label="Xóa dòng"');
+      expect(html.match(/required=""/g)).toHaveLength(7);
+    }
+  });
+  it("keeps target empty and permission-denied actions fail closed", () => {
+    const html = surfaceMarkup(React.createElement(TargetsView, { initialTargets: [] }));
+    expectS7Roles(html, 0);
+    expect(html).toContain("Chưa có chỉ tiêu sản xuất");
+    expect(html).not.toContain("Tạo chỉ tiêu</button>");
+  });
+  it.each([false, true])("keeps derived cart totals, data and checkout disabling (busy=%s)", (busy) => {
+    const html = surfaceMarkup(React.createElement(CartView, { initialCart: cartFixture }), [cartFixture.items, cartFixture.id, busy, null]);
+    expectS7Roles(html, 1);
+    for (const label of ["Cá hồi", "SKU-FISH", "Gạo", "SKU-RICE", "660.000", "600.000", "60.000"]) expect(html).toContain(label);
+    expect(html).toContain('>5</span>');
+    expect(html).not.toContain("999");
+    expect(html.includes('disabled=""')).toBe(busy);
+    expect(html).toContain(busy ? "Đang tạo đơn hàng..." : "Tạo Đơn Hàng");
+  });
+  it("keeps empty cart and success dialog meaningful with one primary", () => {
+    const empty = surfaceMarkup(React.createElement(CartView));
+    expectS7Roles(empty, 1);
+    expect(empty).toContain("Giỏ hàng hiện đang trống.");
+    expect(empty).toContain('disabled=""');
+    const success = s7Markup(React.createElement(CartView, { initialCart: cartFixture }), [[], "", false, "SALE-42"]);
+    expectS7Roles(success, 1);
+    expect(success).toContain("SALE-42");
+    expect(success).toContain("Đã Tạo Đơn Hàng Thành Công!");
+    expect(success).toContain("lucide-circle-check");
+    expect(success).toContain("text-[var(--color-leaf)]");
+  });
+  it("keeps order status labels alongside semantic cues and original amounts/links", () => {
+    const html = surfaceMarkup(React.createElement(SalesOrdersView), [salesOrderFixtures, false, ""]);
+    expectS7Roles(html, 0);
+    for (const order of salesOrderFixtures) {
+      const link = (html.match(/<a\b[\s\S]*?<\/a>/g) ?? []).find((tag) => tag.includes(`/orders/${order.id}`))!;
+      expect(link).toContain(`>${order.status}</span>`);
+      expect(link).toContain("text-[var(--color-ink)]");
+      expect(link).toContain(order.status === "CANCELLED" ? "badge-revoked-dot" : "badge-active-dot");
+      expect(link).toContain("660.000");
+      expect(link).toContain("cart-1");
+    }
+  });
+  it.each(["loading", "empty", "error"])("preserves orders %s feedback", (state) => {
+    const html = surfaceMarkup(React.createElement(SalesOrdersView), [[], state === "loading", state === "error" ? "Lỗi kết nối" : ""]);
+    expectRoleSurface(html);
+    expect(html).toContain(state === "loading" ? "Đang tải đơn hàng…" : state === "empty" ? "Chưa có đơn hàng." : "Lỗi kết nối");
+    if (state === "error") {
+      expect(html).toContain('role="alert"');
+      expect(html).toContain("text-[var(--color-danger)]");
+      expect(html).toContain("lucide-circle-alert");
+    }
+    if (state === "empty") expect(classesFor(html, "a")).toContain("text-[var(--color-primary-hover)]");
+  });
+  it.each([false, true])("keeps product fields, values, validation constraints and submit feedback (busy=%s)", (busy) => {
+    const html = s7Markup(React.createElement(ProductCreateDialog, { open: true, onOpenChange: () => {} }), ["Cá hồi", "SKU-FISH", "kg", 300000, "Bảo quản lạnh", busy]);
+    expectS7Roles(html, 1);
+    expect(html).toContain('role="dialog"');
+    for (const value of ["Cá hồi", "SKU-FISH", "300000", "Bảo quản lạnh"]) expect(html).toContain(value);
+    expect(html.match(/required=""/g)).toHaveLength(3);
+    expect(html).toContain('min="0"');
+    expect(html).toContain('step="1000"');
+    expect(html.match(/<option\b/g)).toHaveLength(6);
+    expect(html).toContain(busy ? "Đang tạo..." : "Lưu bản nháp (DRAFT)");
+    expect((html.match(/disabled=""/g) ?? []).length).toBe(busy ? 2 : 0);
+  });
+});
+
+
+const s8Products: Product[] = (["ACTIVE", "DRAFT", "SUSPENDED"] as const).map((status) => ({
+  id: status, sku_code: `SKU-${status}`, name: `Cá hồi ${status}`, description: "Bảo quản lạnh",
+  barcode: "893001", uom: "kg", base_price_vnd: 300000, status, created_at: "2026-09-29",
+}));
+const s8Trace: PublicTraceability = {
+  trace_code: "TRACE-42", product_name: "Cá hồi", variant_name: "250 g", qc_status: "PASS",
+  produced_at: "2026-09-29", expires_at: "2026-10-29",
+  ingredients: [{ material_name: "Cá hồi", supplier_code: "SUP-42" }],
+  timeline: [{ stage: "QC", title: "Kiểm định hoàn tất", timestamp: "2026-09-29", passed: true }],
+};
+
+// Query the rendered SSR tree by label association, independent of generated IDs.
+// Wrapped radio labels and explicit for/id pairs both name their controls.
+function getByLabelText(html: string, text: string) {
+  const plainText = (markup: string) => markup.replace(/<[^>]*>/g, "").replaceAll("&amp;", "&").trim();
+  const labels = [...html.matchAll(/<label\b([^>]*)>([\s\S]*?)<\/label>/g)]
+    .filter((label) => plainText(label[2]) === text);
+  expect(labels, `label: ${text}`).toHaveLength(1);
+  const id = labels[0][1].match(/\bfor="([^"]+)"/)?.[1];
+  const controls = id
+    ? (html.match(/<(?:input|select|textarea)\b[^>]*>/g) ?? []).filter((control) => control.includes(`id="${id}"`))
+    : labels[0][2].match(/<(?:input|select|textarea)\b[^>]*>/g) ?? [];
+  expect(controls, `control named by label: ${text}`).toHaveLength(1);
+  return controls[0];
+}
+
+function catalogueFilters(html: string) {
+  return (html.match(/<button\b[\s\S]*?<\/button>/g) ?? [])
+    .filter((button) => />(?:Tất cả|Đang mở bán|Bản nháp) \(\d+\)<\/button>/.test(button));
+}
+
+describe("review fix rendered accessibility and filter selection", () => {
+  it.each([
+    ["Tên sản phẩm (*)", "input"],
+    ["Mã định danh SKU (*)", "input"],
+    ["Đơn vị tính (UOM) (*)", "select"],
+    ["Giá niêm yết (VND) (*)", "input"],
+    ["Mô tả sản phẩm & Quy cách bảo quản", "input"],
+  ])("finds the product control by its label: %s", (label, tag) => {
+    const html = s7Markup(React.createElement(ProductCreateDialog, { open: true, onOpenChange: () => {} }), []);
+    expect(getByLabelText(html, label)).toMatch(new RegExp(`^<${tag}\\b`));
+  });
+
+  it("finds the session PIN control by its label", () => {
+    const html = s7Markup(React.createElement(SessionTimeoutModal, { open: true }), []);
+    expect(getByLabelText(html, "Mật khẩu hoặc mã PIN 6 số")).toContain('type="password"');
+  });
+
+  it.each([
+    ["Nhiệt độ tâm sau cấp đông (°C)", "input", 'type="number"'],
+    ["Ghi nhận kiểm tra cảm quan", "textarea", 'required=""'],
+    ["Bao bì nguyên vẹn, hút chân không đạt", "input", 'type="radio"'],
+    ["Bao bì lỗi / hở", "input", 'type="radio"'],
+  ])("finds the QC control by its label: %s", (label, tag, attribute) => {
+    const html = surfaceMarkup(React.createElement(QCView, { completedOrders: productionFixtures }),
+      [productionFixtures, productionFixtures[4], -18.5, true, "Mẫu đạt", false]);
+    const control = getByLabelText(html, label);
+    expect(control).toMatch(new RegExp(`^<${tag}\\b`));
+    expect(control).toContain(attribute);
+  });
+
+  it("moves the sole pressed filter and its leading hidden Check icon through rendered click handlers", () => {
+    portalRender.filter = "ALL";
+    try {
+      for (const label of ["Tất cả (3)", "Đang mở bán (1)", "Bản nháp (1)", "Tất cả (3)"]) {
+        if (portalRender.filterClicks[label]) portalRender.filterClicks[label]();
+        const html = surfaceMarkup(React.createElement(ProductsView, { initialProducts: s8Products }));
+        const filters = catalogueFilters(html);
+        expect(filters).toHaveLength(3);
+        const pressed = filters.filter((button) => button.includes('aria-pressed="true"'));
+        expect(pressed).toHaveLength(1);
+        expect(pressed[0].replace(/<[^>]*>/g, "").trim()).toBe(label);
+        const checks = pressed[0].match(/<svg\b[^>]*class="[^"]*\blucide-check\b[^"]*"[^>]*>/g) ?? [];
+        expect(checks).toHaveLength(1);
+        expect(checks[0]).toContain('aria-hidden="true"');
+        expect(pressed[0]).toMatch(/<button\b[^>]*><svg\b/);
+        for (const button of filters.filter((button) => button !== pressed[0])) {
+          expect(button).toContain('aria-pressed="false"');
+          expect(button).not.toContain("lucide-check");
+        }
+        expectS7Roles(html, 1);
+      }
+    } finally {
+      portalRender.filter = undefined;
+      portalRender.filterClicks = {};
+    }
+  });
+
+  it.each(["ALL", "ACTIVE", "DRAFT"])("uses secondary selection and outline alternatives without destructive styling (%s)", (filter) => {
+    const html = surfaceMarkup(React.createElement(ProductsView, { initialProducts: s8Products }), [s8Products, "", filter, false, null]);
+    const filters = catalogueFilters(html);
+    expect(filters).toHaveLength(3);
+    expect(filters.filter((button) => button.includes('aria-pressed="true"'))).toHaveLength(1);
+    for (const button of filters) {
+      const classes = classesFor(button, "button");
+      expect(classes).not.toMatch(/destructive|color-danger/);
+      if (button.includes('aria-pressed="true"')) {
+        expect(classes).toContain("bg-transparent");
+        expect(classes).toContain("text-[var(--primary)]");
+      } else {
+        expect(classes).toContain("bg-[var(--card)]");
+        expect(classes).toContain("text-[var(--foreground)]");
+      }
+    }
+    expectS7Roles(html, 1);
+  });
+});
+
+describe("S8 rendered product and traceability roles", () => {
+  it.each(s8Products)("preserves detail status, facts and CTA hierarchy ($status)", (product) => {
+    const html = surfaceMarkup(React.createElement(ProductDetailView, { initialProduct: product }));
+    expectS7Roles(html, product.status === "SUSPENDED" ? 0 : 1);
+    for (const value of [product.name, product.sku_code, "893001", "Bảo quản lạnh", "300.000"]) expect(html).toContain(value);
+    expect(html).toContain('href="/products"');
+    expect(html).not.toMatch(/<img\b/);
+    expect(html.replace(/<svg\b[\s\S]*?<\/svg>/g, "")).not.toMatch(/text-\[var\(--color-leaf\)\]/);
+    if (product.status === "ACTIVE") {
+      expect(html).toContain("Thêm vào giỏ hàng");
+      expect(html).toContain('aria-label="Giảm số lượng"');
+      expect(html).toContain('aria-label="Tăng số lượng"');
+      expect(html).toContain("Đang mở bán");
+    } else expect(html).toContain(product.status === "DRAFT" ? "Kích hoạt mở bán (ACTIVE)" : "Tạm ngưng bán");
+  });
+  it.each(["ALL", "ACTIVE", "DRAFT"])("keeps one catalogue primary with neutral selected filter (%s)", (filter) => {
+    const html = surfaceMarkup(React.createElement(ProductsView, { initialProducts: s8Products }), [s8Products, "", filter, false, null]);
+    expectS7Roles(html, 1);
+    expect(html).toContain("Tạo sản phẩm mới");
+    expect(html).toContain('href="/cart"');
+    expect(html.replace(/<svg\b[\s\S]*?<\/svg>/g, "")).not.toMatch(/text-\[var\(--color-leaf\)\]/);
+    expect(html).toContain("Đang mở bán (ACTIVE)");
+    expect(html).toContain("Bản nháp (DRAFT)");
+    if (filter === "ALL") {
+      for (const label of ["Đang mở bán", "Bản nháp", "Tạm ngưng", "+ Giỏ", "Chi tiết"]) expect(html).toContain(label);
+      expect(html).toContain("300.000");
+      expect(html).toContain('href="/products/ACTIVE"');
+    }
+  });
+  it.each(["api", "unavailable"] as const)("preserves catalogue empty/error state (%s)", (dataSource) => {
+    const html = surfaceMarkup(React.createElement(ProductsView, { initialProducts: [], dataSource }));
+    expectS7Roles(html, 1);
+    expect(html).toContain("Không tìm thấy sản phẩm nào phù hợp");
+    if (dataSource === "unavailable") {
+      expect(html).toContain('role="alert"');
+      expect(html).toContain("Không thể tải dữ liệu từ Sales API");
+      expect(html).toContain("lucide-triangle-alert");
+    }
+  });
+  it.each([false, true])("keeps trace facts, status text/icons and solid timeline (empty=%s)", (empty) => {
+    const trace = empty ? { ...s8Trace, ingredients: [], timeline: [] } : s8Trace;
+    const html = surfaceMarkup(React.createElement(TraceView, { trace }));
+    // Trace is read-only: it has no existing CTA to recolour or invent.
+    expectS7Roles(html, 0);
+    expect(html).toContain("bg-[var(--color-bg)]");
+    expect(html).toContain("TRACE-42");
+    expect(html).toContain("PASS");
+    expect(html).toContain("250 g");
+    expect(html).toContain("lucide-shield-check");
+    expect(html).toContain("text-[var(--color-ink)]");
+    expect(html).not.toMatch(/<img\b/);
+    if (!empty) {
+      const title = (html.match(/<h4\b[^>]*>[^<]*<\/h4>/g) ?? [])[0];
+      expect(title).toContain("Kiểm định hoàn tất");
+      expect(title).toContain("text-[var(--color-ink)]");
+      expect(html).toContain("SUP-42");
+      expect(html).toContain("lucide-circle-check");
+      expect(html).toContain("before:bg-[var(--color-line)]");
+    }
+  });
+});

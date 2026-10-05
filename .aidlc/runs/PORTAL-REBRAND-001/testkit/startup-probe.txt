@@ -1,0 +1,14 @@
+
+> @dcentervn/portal@0.1.0 dev
+> node node_modules/next/dist/bin/next dev --hostname 127.0.0.1 --port 3199
+
+⨯ Failed to start server
+Error: listen EPERM: operation not permitted 127.0.0.1:3199
+    at <unknown> (Error: listen EPERM: operation not permitted 127.0.0.1:3199) {
+  code: 'EPERM',
+  errno: -1,
+  syscall: 'listen',
+  address: '127.0.0.1',
+  port: 3199
+}
+[?25h

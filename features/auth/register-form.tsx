@@ -72,7 +72,7 @@ export function RegisterForm() {
         <PasswordInput id="password" name="password" autoComplete="new-password" aria-describedby="password-hint" disabled={busy} />
         <p id="password-hint" className="text-xs text-[var(--muted-foreground)]">Ít nhất 12 ký tự.</p>
       </div>
-      <Button type="submit" variant="accent" disabled={busy} className="h-10 w-full">{busy ? "Đang tạo tài khoản…" : "Tạo tài khoản"}</Button>
+      <Button type="submit" variant="accent" disabled={busy} className="w-full">{busy ? "Đang tạo tài khoản…" : "Tạo tài khoản"}</Button>
       <div className="space-y-1 border-t border-[var(--border)] pt-4 text-center text-sm text-[var(--muted-foreground)]">
         <p>Đã có tài khoản? <Link href={"/login" as Route} className="font-semibold text-[var(--primary)] hover:underline">Đăng nhập</Link></p>
         <p className="text-xs">Trang này dành cho khách mua hàng. Nhân viên không tự đăng ký, tài khoản do quản trị viên cấp.</p>

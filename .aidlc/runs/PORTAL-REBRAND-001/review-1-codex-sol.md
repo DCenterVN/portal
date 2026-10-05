@@ -1,0 +1,8 @@
+**PASS_WITH_RISK**
+
+| severity | file:line | problem | concrete fix |
+|---|---|---|---|
+| Nên | [product-create-dialog.tsx:118](/mnt/win_d/feature/ticket/portal/features/products/product-create-dialog.tsx:118), [session-timeout-modal.tsx:96](/mnt/win_d/feature/ticket/portal/components/modals/session-timeout-modal.tsx:96), [qc-view.tsx:88](/mnt/win_d/feature/ticket/portal/features/production/qc-view.tsx:88) | Label đứng cạnh control nhưng không liên kết bằng `htmlFor`/`id`. UOM select không có accessible name; PIN và QC cũng thiếu association. Đã tồn tại ở base, nhưng AC-9 chưa hoàn tất và không thuộc waiver D-138/D-139. | Thêm ID duy nhất và `htmlFor`, hoặc bọc control trong label. Kiểm tra accessible name khi render. |
+| Nên | [products-view.tsx:192](/mnt/win_d/feature/ticket/portal/features/products/products-view.tsx:192) | Filter được chọn đổi thành `ghost`, mất nền selected rõ ràng. Khác biệt còn lại với `outline` chỉ khoảng **1.08:1** cho nền và **1.22:1** cho viền ở light mode; không có `aria-pressed`. Tests các filter state vẫn pass nếu bỏ điều kiện selected và dùng toàn bộ `outline`. | Giữ selected trung tính nhưng thêm dấu check/viền đủ tương phản và `aria-pressed`. Test từng filter có đúng một selected state; bỏ conditional phải làm test fail. |
+
+Brand gate chạy lại: **0 errors**. Review không sửa file; không chạy lại npm tests/browser. Giữ nguyên waiver hiệu năng và operations drift.

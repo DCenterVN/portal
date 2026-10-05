@@ -1,0 +1,9 @@
+{
+  "task": "PORTAL-SHELL-001",
+  "actor": "agent:codex",
+  "worker": "codex",
+  "ts": "2026-10-01T00:02:59+00:00",
+  "by": "codex",
+  "previous": "codex",
+  "slice": null
+}

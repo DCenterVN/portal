@@ -18,9 +18,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { BranchInfo, DEFAULT_FALLBACK_BRANCH } from "@/components/navbar";
-
 import { PageShell, PageHeader } from "@/components/ui/page";
+
+interface BranchInfo {
+  id: string;
+  name: string;
+  code: string;
+  address: string;
+  type: string;
+  tempZone: string;
+  membersCount: number;
+}
 
 interface BranchesViewProps {
   initialBranches: BranchInfo[];
@@ -29,8 +37,8 @@ interface BranchesViewProps {
 export function BranchesView({ initialBranches }: BranchesViewProps) {
   const router = useRouter();
   const [search, setSearch] = useState("");
-  const safeBranches = initialBranches && initialBranches.length > 0 ? initialBranches : [DEFAULT_FALLBACK_BRANCH];
-  const [activeBranchId, setActiveBranchId] = useState(safeBranches[0]?.id ?? "br-01-q7");
+  const safeBranches = initialBranches ?? [];
+  const [activeBranchId, setActiveBranchId] = useState(safeBranches[0]?.id ?? "");
 
   const filteredBranches = safeBranches.filter(
     (b) =>
@@ -45,7 +53,7 @@ export function BranchesView({ initialBranches }: BranchesViewProps) {
   };
 
   return (
-    <PageShell>
+    <PageShell className="bg-[var(--color-bg)] text-[var(--color-ink)]">
       <PageHeader
         icon={<Building2 />}
         title="Danh sách Chi nhánh Vận hành"
@@ -58,15 +66,15 @@ export function BranchesView({ initialBranches }: BranchesViewProps) {
         actions={
           <>
             <div className="relative w-64 sm:w-80">
-              <Search className="absolute left-3 top-2.5 size-3.5 text-[var(--muted-foreground)]" />
+              <Search className="absolute left-3 top-3.5 size-3.5 text-[var(--color-muted)]" />
               <Input
                 placeholder="Tìm mã hoặc tên chi nhánh..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-8 text-xs h-9 rounded-xl bg-[var(--card)] text-[var(--foreground)] border-[var(--border)]"
+                className="pl-8 text-xs h-11 rounded-[var(--radius-md)] bg-[var(--color-surface)] text-[var(--color-ink)] border-[var(--color-input-border)]"
               />
             </div>
-            <Button size="sm" className="gap-1.5 text-xs h-9 font-bold rounded-xl bg-gradient-to-r from-[#0284C7] to-emerald-600 hover:opacity-95 text-white shadow-md shadow-sky-500/15">
+            <Button size="sm">
               <Plus className="size-3.5" />
               <span>Thêm Chi Nhánh</span>
             </Button>
@@ -81,17 +89,17 @@ export function BranchesView({ initialBranches }: BranchesViewProps) {
           return (
             <Card
               key={branch.id}
-              className={`relative flex flex-col justify-between transition-all rounded-2xl border bg-[var(--card)] text-[var(--card-foreground)] overflow-hidden ${
+              className={`relative flex flex-col justify-between transition-all rounded-2xl border bg-[var(--color-surface)] text-[var(--color-ink)] overflow-hidden ${
                 isSelected
-                  ? "border-[var(--primary)] shadow-lg ring-2 ring-sky-500/20"
-                  : "border-[var(--border)] hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-md"
+                  ? "border-[var(--color-primary)] shadow-[var(--elevation-shadow-card)] ring-2 ring-[var(--color-focus)]"
+                  : "border-[var(--color-line)] hover:border-[var(--color-input-border)] hover:shadow-[var(--elevation-shadow-card)]"
               }`}
             >
               {/* Selected Pill Header */}
               {isSelected && (
                 <div className="absolute top-3 right-4 z-10">
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-[#0284C7] to-emerald-600 px-3 py-0.5 text-[11px] font-bold text-white shadow-sm">
-                    <CheckCircle2 className="size-3" /> Đang vận hành
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--color-tint)] px-3 py-0.5 text-[11px] font-bold text-[var(--color-ink)] shadow-[var(--elevation-shadow-card)]">
+                    <CheckCircle2 className="size-3 text-[var(--color-leaf)]" /> Đang vận hành
                   </span>
                 </div>
               )}
@@ -99,47 +107,47 @@ export function BranchesView({ initialBranches }: BranchesViewProps) {
               <CardHeader className="pb-3 pt-5">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-xs font-bold px-2 py-0.5 rounded-lg bg-[var(--secondary)] text-[var(--foreground)] border border-[var(--border)]">
+                    <span className="font-mono text-xs font-bold px-2 py-0.5 rounded-lg bg-[var(--color-tint)] text-[var(--color-ink)] border border-[var(--color-line)]">
                       {branch.code}
                     </span>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-50 dark:bg-sky-950/60 text-[var(--primary)] border border-sky-200/50 dark:border-sky-800/50">
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[var(--color-tint)] text-[var(--color-ink)] border border-[var(--color-line)]">
                       {branch.type === "MAIN" ? "Trụ sở chính" : "Chi nhánh con"}
                     </span>
                   </div>
                   {!isSelected && <Badge variant="active">Active</Badge>}
                 </div>
-                <CardTitle className="text-base font-bold mt-2.5 text-[var(--foreground)] leading-snug">
+                <CardTitle className="font-[family-name:var(--font-quicksand,var(--font-display))] text-base font-bold mt-2.5 text-[var(--color-ink)] leading-snug">
                   {branch.name}
                 </CardTitle>
-                <CardDescription className="flex items-start gap-1.5 text-xs text-[var(--muted-foreground)] pt-1 font-medium">
-                  <MapPin className="size-3.5 shrink-0 mt-0.5 text-[var(--primary)]" />
+                <CardDescription className="flex items-start gap-1.5 text-xs text-[var(--color-muted)] pt-1 font-medium">
+                  <MapPin className="size-3.5 shrink-0 mt-0.5 text-[var(--color-primary)]" />
                   <span>{branch.address}</span>
                 </CardDescription>
               </CardHeader>
 
               <CardContent className="space-y-3 pt-1 text-xs">
-                <div className="grid grid-cols-2 gap-2 rounded-xl bg-[var(--muted)] p-3 border border-[var(--border)]">
+                <div className="grid grid-cols-2 gap-2 rounded-xl bg-[var(--color-tint)] p-3 border border-[var(--color-line)]">
                   <div className="flex items-center gap-2.5">
-                    <div className="flex size-8 items-center justify-center rounded-lg bg-sky-500/10 text-sky-600 dark:text-sky-400">
+                    <div className="flex size-8 items-center justify-center rounded-lg bg-[var(--color-surface)] text-[var(--color-info)]">
                       <ThermometerSnowflake className="size-4" />
                     </div>
                     <div>
-                      <p className="text-[10px] text-[var(--muted-foreground)] font-medium">Nhiệt độ kho</p>
-                      <p className="font-bold text-[var(--foreground)] text-xs">{branch.tempZone}</p>
+                      <p className="text-[10px] text-[var(--color-muted)] font-medium">Nhiệt độ kho</p>
+                      <p className="font-bold text-[var(--color-ink)] text-xs">{branch.tempZone}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2.5">
-                    <div className="flex size-8 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                    <div className="flex size-8 items-center justify-center rounded-lg bg-[var(--color-surface)] text-[var(--color-muted)]">
                       <Users className="size-4" />
                     </div>
                     <div>
-                      <p className="text-[10px] text-[var(--muted-foreground)] font-medium">Nhân sự</p>
-                      <p className="font-bold text-[var(--foreground)] text-xs">{branch.membersCount} thành viên</p>
+                      <p className="text-[10px] text-[var(--color-muted)] font-medium">Nhân sự</p>
+                      <p className="font-bold text-[var(--color-ink)] text-xs">{branch.membersCount} thành viên</p>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between text-[11px] text-[var(--muted-foreground)] px-1 font-medium">
+                <div className="flex items-center justify-between text-[11px] text-[var(--color-muted)] px-1 font-medium">
                   <div className="flex items-center gap-1">
                     <Clock className="size-3" />
                     <span>Asia/Ho_Chi_Minh</span>
@@ -151,15 +159,11 @@ export function BranchesView({ initialBranches }: BranchesViewProps) {
                 </div>
               </CardContent>
 
-              <CardFooter className="border-t border-[var(--border)] pt-3 pb-3 bg-[var(--muted)]/40">
+              <CardFooter className="border-t border-[var(--color-line)] pt-3 pb-3 bg-[var(--color-tint)]">
                 <Button
                   onClick={() => handleSelectBranch(branch.id)}
                   variant={isSelected ? "default" : "outline"}
-                  className={`w-full h-8 text-xs font-bold rounded-xl gap-1.5 transition-all ${
-                    isSelected
-                      ? "bg-[#0284C7] hover:bg-[#0369A1] text-white shadow-sm"
-                      : "border-[var(--border)] hover:bg-[var(--secondary)] text-[var(--foreground)]"
-                  }`}
+                  className="w-full"
                 >
                   <span>{isSelected ? "Đang chọn chi nhánh này" : "Chọn chi nhánh này"}</span>
                   <ArrowUpRight className="size-3.5" />

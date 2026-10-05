@@ -1,29 +1,24 @@
- M .aidlc/ACTIVE
- M .aidlc/arch-baseline.txt
- M .aidlc/planning/board.md
- M .aidlc/runs/ARCH-ALIGN-001.json
- M .aidlc/runs/ARCH-ALIGN-001/state.json
+ M .aidlc/runs/PORTAL-AUTH-UI-001/anti/check.txt
+ M .aidlc/runs/PORTAL-AUTH-UI-001/anti/git_status_after.txt
+ M .aidlc/runs/PORTAL-AUTH-UI-001/anti/git_status_before.txt
+ M .aidlc/runs/PORTAL-AUTH-UI-001/anti/lh/activate.json
+ M .aidlc/runs/PORTAL-AUTH-UI-001/anti/lh/forgot-password.json
+ M .aidlc/runs/PORTAL-AUTH-UI-001/anti/lh/login.json
+ M .aidlc/runs/PORTAL-AUTH-UI-001/anti/lh/register.json
+ M .aidlc/runs/PORTAL-AUTH-UI-001/anti/lh/reset-password.json
+ M .aidlc/runs/PORTAL-AUTH-UI-001/anti/report.md
+ M .aidlc/runs/PORTAL-AUTH-UI-001/anti/run.env
+ M .aidlc/runs/PORTAL-AUTH-UI-001/anti/staff.txt
+ M .aidlc/runs/PORTAL-AUTH-UI-001/anti/ui/02-register-error.png
+ M .aidlc/runs/PORTAL-AUTH-UI-001/anti/ui/03-register-ok.png
+ M .aidlc/runs/PORTAL-AUTH-UI-001/anti/ui/03-register-ok.txt
+ M .aidlc/runs/PORTAL-AUTH-UI-001/anti/ui/07-login-error.png
+ M .aidlc/runs/PORTAL-AUTH-UI-001/anti/ui/console.txt
+ M .aidlc/runs/PORTAL-AUTH-UI-001/anti/ui/tokens.txt
+ M .aidlc/runs/PORTAL-AUTH-UI-001/anti_check.py
+ M .aidlc/runs/PORTAL-AUTH-UI-001/pace-samples.txt
+ M .aidlc/runs/PORTAL-BRAND-001.json
+ M .aidlc/runs/PORTAL-BRAND-001/state.json
  M .aidlc/trace.jsonl
- M app/activate/page.tsx
- M app/forgot-password/page.tsx
- M app/globals.css
- M app/layout.tsx
- M app/login/page.tsx
- M app/register/page.tsx
- M app/reset-password/page.tsx
- M app/tokens.generated.css
- M components/ui/button.tsx
- M eslint.config.mjs
- M lib/auth/client.ts
  M next-env.d.ts
- M proxy.test.ts
- M proxy.ts
-?? .aidlc/runs/PORTAL-AUTH-UI-001.json
-?? .aidlc/runs/PORTAL-AUTH-UI-001/
-?? .aidlc/runs/PORTAL-BRAND-001.json
-?? .aidlc/runs/PORTAL-BRAND-001/
-?? app/api/auth/activate/resend/
-?? app/icon.svg
-?? components/layout/auth-shell.tsx
-?? components/patterns/
-?? features/auth/
+?? .aidlc/runs/PORTAL-AUTH-UI-001/__pycache__/

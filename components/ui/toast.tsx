@@ -154,27 +154,27 @@ const variantStyles: Record<
   }
 > = {
   success: {
-    bg: "bg-[var(--card)]/95 dark:bg-[#15231c]/95",
-    border: "border-emerald-500/30",
-    iconColor: "text-emerald-500",
+    bg: "bg-[var(--color-surface)]",
+    border: "border-[var(--color-leaf)]",
+    iconColor: "text-[var(--color-leaf)]",
     icon: CheckCircle2,
   },
   error: {
-    bg: "bg-[var(--card)]/95 dark:bg-[#251518]/95",
-    border: "border-rose-500/30",
-    iconColor: "text-rose-500",
+    bg: "bg-[var(--color-surface)]",
+    border: "border-[var(--color-danger)]",
+    iconColor: "text-[var(--color-danger)]",
     icon: AlertCircle,
   },
   warning: {
-    bg: "bg-[var(--card)]/95 dark:bg-[#252015]/95",
-    border: "border-amber-500/30",
-    iconColor: "text-amber-500",
+    bg: "bg-[var(--color-surface)]",
+    border: "border-[var(--color-sun)]",
+    iconColor: "text-[var(--color-sun)]",
     icon: AlertTriangle,
   },
   info: {
-    bg: "bg-[var(--card)]/95 dark:bg-[#151e28]/95",
-    border: "border-sky-500/30",
-    iconColor: "text-sky-500",
+    bg: "bg-[var(--color-surface)]",
+    border: "border-[var(--color-info)]",
+    iconColor: "text-[var(--color-info)]",
     icon: Info,
   },
 };
@@ -193,18 +193,18 @@ function ToastItem({
     <div
       role="alert"
       className={cn(
-        "pointer-events-auto flex items-start gap-3 rounded-xl border p-4 shadow-xl backdrop-blur-md transition-all duration-300 animate-in slide-in-from-top-3 fade-in-0",
+        "pointer-events-auto flex items-start gap-3 rounded-[var(--radius-md)] border p-4 shadow-[var(--elevation-shadow-pop)] transition-all duration-200 ease-out animate-in slide-in-from-top-3 fade-in-0 motion-reduce:animate-none motion-reduce:transition-none",
         style.bg,
         style.border
       )}
     >
       <Icon className={cn("size-5 shrink-0 mt-0.5", style.iconColor)} />
       <div className="flex-1 space-y-0.5 text-left">
-        <h4 className="text-xs font-bold text-[var(--foreground)] leading-tight">
+        <h4 className="text-xs font-bold text-[var(--color-ink)] leading-tight">
           {toast.title}
         </h4>
         {toast.description && (
-          <p className="text-[11px] text-[var(--muted-foreground)] leading-relaxed">
+          <p className="text-[11px] text-[var(--color-muted)] leading-relaxed">
             {toast.description}
           </p>
         )}
@@ -212,7 +212,7 @@ function ToastItem({
       <button
         type="button"
         onClick={onDismiss}
-        className="rounded-lg p-1 text-[var(--muted-foreground)] hover:bg-[var(--secondary)] hover:text-[var(--foreground)] transition-colors"
+        className="rounded-lg p-1 text-[var(--color-muted)] hover:bg-[var(--color-tint)] hover:text-[var(--color-ink)] transition-colors duration-150 ease-out motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus)]"
         aria-label="Đóng thông báo"
       >
         <X className="size-3.5" />

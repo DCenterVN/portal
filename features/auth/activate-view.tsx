@@ -33,7 +33,7 @@ function ResendForm({ onSent }: { onSent: () => void }) {
       {error && <FormAlert>{error}</FormAlert>}
       <Label htmlFor="email">Email đã đăng ký</Label>
       <Input id="email" name="email" type="email" autoComplete="email" disabled={busy} className="h-10" />
-      <Button type="submit" disabled={busy} className="h-10 w-full">{busy ? "Đang gửi…" : "Gửi lại liên kết kích hoạt"}</Button>
+      <Button type="submit" disabled={busy} className="w-full">{busy ? "Đang gửi…" : "Gửi lại liên kết kích hoạt"}</Button>
     </form>
   );
 }

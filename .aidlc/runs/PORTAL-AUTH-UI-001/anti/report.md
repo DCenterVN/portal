@@ -1,7 +1,8 @@
-# Report PORTAL-AUTH-UI-001 (RUN=1790400781)
+# Report PORTAL-AUTH-UI-001 (RUN=1790407984)
+
 | Bước | PASS/FAIL | Bằng chứng (chép từ output hoặc tên file) |
 |---|---|---|
-| 0 | PASS | portal 200, staff ready, unit exit=0, Tests 90 passed, archcheck 0 new |
+| Bước 0 | PASS | portal 200, staff ready: anti_s_1790407984@test.local / AntiStaff123!, unit exit=0, Tests 90 passed, archcheck 0 new |
 | U1 | PASS | 01-register-empty.png |
 | U2 | PASS | 02-register-error.png |
 | U3 | PASS | 03-register-ok.png |
@@ -17,9 +18,10 @@
 | U13 | PASS | 13-reset-ok.png |
 | U14 | PASS | 14-login-new-password.png |
 | U15 | PASS | 15-login-mobile.png |
-| Lighthouse | PASS | login a11y 1 perf 0.94, register a11y 1 perf 0.82, activate a11y 1 perf 0.92, forgot-password a11y 1 perf 0.83, reset-password a11y 1 perf 0.81 |
+| Lighthouse | PASS | login a11y 1 perf 0.82; register a11y 1 perf 0.82; activate a11y 0.91 perf 0.82; forgot-password a11y 1 perf 0.95; reset-password a11y 1 perf 0.89 |
+
 Thông báo lỗi U2 (nguyên văn): Mật khẩu cần ít nhất 12 ký tự.
 Thông báo lỗi U7 (nguyên văn): Thông tin đăng nhập hoặc mật khẩu không đúng
-Thứ tự Tab trên /login: Logo Việt Sạch -> Logo Việt Sạch mobile -> Email -> Mật khẩu -> Hiện mật khẩu -> Quên mật khẩu? -> Đăng nhập -> Đăng ký mua hàng (có viền focus)
+Thứ tự Tab trên /login: Logo Việt Sạch -> Email -> Mật khẩu -> Hiện mật khẩu -> Quên mật khẩu? -> Đăng nhập -> Đăng ký mua hàng (viền focus rõ ràng)
 Số lần rl-reset thêm: 0
 Kết luận: PASS

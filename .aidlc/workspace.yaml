@@ -12,10 +12,10 @@ agents:
   - {id: sdlc-e2e, name: E2E, skills: [sdlc-test]}
   - {id: sdlc-release, name: Release, skills: [sdlc-ship]}
 skills:
-  - {id: sdlc-plan, path: /home/dawn/dawn-dotfiles/skills/sdlc/plan/SKILL.md}
-  - {id: sdlc-cook, path: /home/dawn/dawn-dotfiles/skills/sdlc/cook/SKILL.md}
-  - {id: sdlc-test, path: /home/dawn/dawn-dotfiles/skills/sdlc/test/SKILL.md}
-  - {id: sdlc-ship, path: /home/dawn/dawn-dotfiles/skills/sdlc/ship/SKILL.md}
+  - {id: sdlc-plan, path: /home/dawn/dawn-dotfiles/skills/ai-native-adlc/sdlc/plan/SKILL.md}
+  - {id: sdlc-cook, path: /home/dawn/dawn-dotfiles/skills/ai-native-adlc/sdlc/cook/SKILL.md}
+  - {id: sdlc-test, path: /home/dawn/dawn-dotfiles/skills/ai-native-adlc/sdlc/test/SKILL.md}
+  - {id: sdlc-ship, path: /home/dawn/dawn-dotfiles/skills/ai-native-adlc/sdlc/ship/SKILL.md}
 pipelines:
   - id: sdlc
     steps:

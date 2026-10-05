@@ -1,0 +1,113 @@
+{
+  "id": "PORTAL-REBRAND-001",
+  "title": "Fresh Meal Kit brand through the existing portal token pipeline",
+  "description": "worker: codex · slices: 9/9",
+  "pipeline": "sdlc",
+  "agent": null,
+  "agents": [
+    "sdlc-discovery",
+    "sdlc-technical",
+    "sdlc-ux",
+    "sdlc-design",
+    "sdlc-build",
+    "sdlc-integration",
+    "sdlc-e2e",
+    "sdlc-release"
+  ],
+  "currentStep": 7,
+  "status": "done",
+  "createdAt": "2026-10-04T00:54:15+00:00",
+  "updatedAt": "2026-10-04T12:15:21+00:00",
+  "stepStates": [
+    {
+      "agent": "sdlc-discovery",
+      "status": "done",
+      "revision": 1,
+      "runStatus": "approved",
+      "startedAt": null,
+      "finishedAt": null,
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-REBRAND-001/plan.md"
+      ]
+    },
+    {
+      "agent": "sdlc-technical",
+      "status": "done",
+      "revision": 1,
+      "runStatus": "approved",
+      "startedAt": null,
+      "finishedAt": null,
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-REBRAND-001/plan.md"
+      ]
+    },
+    {
+      "agent": "sdlc-ux",
+      "status": "done",
+      "revision": 1,
+      "runStatus": "approved",
+      "startedAt": null,
+      "finishedAt": null,
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-REBRAND-001/plan.md"
+      ]
+    },
+    {
+      "agent": "sdlc-design",
+      "status": "done",
+      "revision": 1,
+      "runStatus": "approved",
+      "startedAt": null,
+      "finishedAt": null,
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-REBRAND-001/plan.md"
+      ]
+    },
+    {
+      "agent": "sdlc-build",
+      "status": "done",
+      "revision": 1,
+      "runStatus": "approved",
+      "startedAt": null,
+      "finishedAt": null,
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-REBRAND-001/handback.md"
+      ]
+    },
+    {
+      "agent": "sdlc-integration",
+      "status": "done",
+      "revision": 1,
+      "runStatus": "approved",
+      "startedAt": null,
+      "finishedAt": null,
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-REBRAND-001/badcases.md",
+        ".aidlc/runs/PORTAL-REBRAND-001/artifacts/verification.json"
+      ]
+    },
+    {
+      "agent": "sdlc-e2e",
+      "status": "done",
+      "revision": 1,
+      "runStatus": "approved",
+      "startedAt": null,
+      "finishedAt": null,
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-REBRAND-001/badcases.md",
+        ".aidlc/runs/PORTAL-REBRAND-001/artifacts/verification.json"
+      ]
+    },
+    {
+      "agent": "sdlc-release",
+      "status": "done",
+      "revision": 1,
+      "runStatus": "approved",
+      "startedAt": null,
+      "finishedAt": null,
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-REBRAND-001/artifacts/review-decision.json"
+      ]
+    }
+  ]
+}

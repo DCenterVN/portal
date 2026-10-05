@@ -1,0 +1,4101 @@
+{
+  "schema": "portal-s9/1",
+  "cells": [
+    {
+      "case": "UI-1",
+      "theme": "light",
+      "viewport": 375,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:49:39.483303+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, \"Quicksand Fallback\"",
+            "size_px": 48.75,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#2A1D17",
+            "background": "#FFFFFF",
+            "ratio": 16.3225
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#B93623",
+            "background": "#FFFFFF",
+            "ratio": 5.8095
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-1",
+      "theme": "light",
+      "viewport": 768,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:49:40.420316+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, \"Quicksand Fallback\"",
+            "size_px": 44,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#2A1D17",
+            "background": "#FFFFFF",
+            "ratio": 16.3225
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#B93623",
+            "background": "#FFFFFF",
+            "ratio": 5.8095
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-1",
+      "theme": "light",
+      "viewport": 1024,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:49:41.388987+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, \"Quicksand Fallback\"",
+            "size_px": 55.296,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#2A1D17",
+            "background": "#FFFFFF",
+            "ratio": 16.3225
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#B93623",
+            "background": "#FFFFFF",
+            "ratio": 5.8095
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-1",
+      "theme": "light",
+      "viewport": 1440,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:49:42.346972+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, \"Quicksand Fallback\"",
+            "size_px": 77.76,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#2A1D17",
+            "background": "#FFFFFF",
+            "ratio": 16.3225
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#B93623",
+            "background": "#FFFFFF",
+            "ratio": 5.8095
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-1",
+      "theme": "dark",
+      "viewport": 375,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:49:43.338056+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, \"Quicksand Fallback\"",
+            "size_px": 48.75,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#F8EFE5",
+            "background": "#2A211C",
+            "ratio": 13.858
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#F07A5F",
+            "background": "#2A211C",
+            "ratio": 5.7431
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-1",
+      "theme": "dark",
+      "viewport": 768,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:49:44.320596+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, \"Quicksand Fallback\"",
+            "size_px": 44,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#F8EFE5",
+            "background": "#2A211C",
+            "ratio": 13.858
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#F07A5F",
+            "background": "#2A211C",
+            "ratio": 5.7431
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-1",
+      "theme": "dark",
+      "viewport": 1024,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:49:45.301712+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, \"Quicksand Fallback\"",
+            "size_px": 55.296,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#F8EFE5",
+            "background": "#2A211C",
+            "ratio": 13.858
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#F07A5F",
+            "background": "#2A211C",
+            "ratio": 5.7431
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-1",
+      "theme": "dark",
+      "viewport": 1440,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:49:46.281142+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, \"Quicksand Fallback\"",
+            "size_px": 77.76,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#F8EFE5",
+            "background": "#2A211C",
+            "ratio": 13.858
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#F07A5F",
+            "background": "#2A211C",
+            "ratio": 5.7431
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-2",
+      "theme": "light",
+      "viewport": 375,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:49:47.281309+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/login",
+        "http://127.0.0.1:3000/register",
+        "http://127.0.0.1:3000/forgot-password",
+        "http://127.0.0.1:3000/reset-password"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/login",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, \"Quicksand Fallback\"",
+            "size_px": 24,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#2A1D17",
+            "background": "#FFFFFF",
+            "ratio": 16.3225
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#B93623",
+            "background": "#FFFFFF",
+            "ratio": 5.8095
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-2",
+      "theme": "light",
+      "viewport": 768,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:49:49.082974+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/login",
+        "http://127.0.0.1:3000/register",
+        "http://127.0.0.1:3000/forgot-password",
+        "http://127.0.0.1:3000/reset-password"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/login",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, \"Quicksand Fallback\"",
+            "size_px": 24,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#2A1D17",
+            "background": "#FFFFFF",
+            "ratio": 16.3225
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#B93623",
+            "background": "#FFFFFF",
+            "ratio": 5.8095
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-2",
+      "theme": "light",
+      "viewport": 1024,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:49:50.870957+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/login",
+        "http://127.0.0.1:3000/register",
+        "http://127.0.0.1:3000/forgot-password",
+        "http://127.0.0.1:3000/reset-password"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/login",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, \"Quicksand Fallback\"",
+            "size_px": 24,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#2A1D17",
+            "background": "#FFFFFF",
+            "ratio": 16.3225
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#B93623",
+            "background": "#FFFFFF",
+            "ratio": 5.8095
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-2",
+      "theme": "light",
+      "viewport": 1440,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:49:52.671178+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/login",
+        "http://127.0.0.1:3000/register",
+        "http://127.0.0.1:3000/forgot-password",
+        "http://127.0.0.1:3000/reset-password"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/login",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, \"Quicksand Fallback\"",
+            "size_px": 24,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#2A1D17",
+            "background": "#FFFFFF",
+            "ratio": 16.3225
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#B93623",
+            "background": "#FFFFFF",
+            "ratio": 5.8095
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-2",
+      "theme": "dark",
+      "viewport": 375,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:49:54.462314+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/login",
+        "http://127.0.0.1:3000/register",
+        "http://127.0.0.1:3000/forgot-password",
+        "http://127.0.0.1:3000/reset-password"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/login",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, \"Quicksand Fallback\"",
+            "size_px": 24,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#F8EFE5",
+            "background": "#2A211C",
+            "ratio": 13.858
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#F07A5F",
+            "background": "#2A211C",
+            "ratio": 5.7431
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-2",
+      "theme": "dark",
+      "viewport": 768,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:49:56.249697+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/login",
+        "http://127.0.0.1:3000/register",
+        "http://127.0.0.1:3000/forgot-password",
+        "http://127.0.0.1:3000/reset-password"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/login",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, \"Quicksand Fallback\"",
+            "size_px": 24,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#F8EFE5",
+            "background": "#2A211C",
+            "ratio": 13.858
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#F07A5F",
+            "background": "#2A211C",
+            "ratio": 5.7431
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-2",
+      "theme": "dark",
+      "viewport": 1024,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:49:58.030052+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/login",
+        "http://127.0.0.1:3000/register",
+        "http://127.0.0.1:3000/forgot-password",
+        "http://127.0.0.1:3000/reset-password"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/login",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, \"Quicksand Fallback\"",
+            "size_px": 24,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#F8EFE5",
+            "background": "#2A211C",
+            "ratio": 13.858
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#F07A5F",
+            "background": "#2A211C",
+            "ratio": 5.7431
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-2",
+      "theme": "dark",
+      "viewport": 1440,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:49:59.820903+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/login",
+        "http://127.0.0.1:3000/register",
+        "http://127.0.0.1:3000/forgot-password",
+        "http://127.0.0.1:3000/reset-password"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/login",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, \"Quicksand Fallback\"",
+            "size_px": 24,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#F8EFE5",
+            "background": "#2A211C",
+            "ratio": 13.858
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#F07A5F",
+            "background": "#2A211C",
+            "ratio": 5.7431
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-3",
+      "theme": "light",
+      "viewport": 375,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:50:02.255951+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/console",
+        "http://127.0.0.1:3000/branches",
+        "http://127.0.0.1:3000/memberships",
+        "http://127.0.0.1:3000/roles",
+        "http://127.0.0.1:3000/inventory/shelves"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/console",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, \"Quicksand Fallback\"",
+            "size_px": 12,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#2A1D17",
+            "background": "#FFFFFF",
+            "ratio": 16.3225
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#B93623",
+            "background": "#FFFFFF",
+            "ratio": 5.8095
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-3",
+      "theme": "light",
+      "viewport": 768,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:50:04.187272+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/console",
+        "http://127.0.0.1:3000/branches",
+        "http://127.0.0.1:3000/memberships",
+        "http://127.0.0.1:3000/roles",
+        "http://127.0.0.1:3000/inventory/shelves"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/console",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, \"Quicksand Fallback\"",
+            "size_px": 12,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#2A1D17",
+            "background": "#FFFFFF",
+            "ratio": 16.3225
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#B93623",
+            "background": "#FFFFFF",
+            "ratio": 5.8095
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-3",
+      "theme": "light",
+      "viewport": 1024,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:50:06.116274+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/console",
+        "http://127.0.0.1:3000/branches",
+        "http://127.0.0.1:3000/memberships",
+        "http://127.0.0.1:3000/roles",
+        "http://127.0.0.1:3000/inventory/shelves"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/console",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, \"Quicksand Fallback\"",
+            "size_px": 12,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#2A1D17",
+            "background": "#FFFFFF",
+            "ratio": 16.3225
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#B93623",
+            "background": "#FFFFFF",
+            "ratio": 5.8095
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-3",
+      "theme": "light",
+      "viewport": 1440,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:50:08.180921+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/console",
+        "http://127.0.0.1:3000/branches",
+        "http://127.0.0.1:3000/memberships",
+        "http://127.0.0.1:3000/roles",
+        "http://127.0.0.1:3000/inventory/shelves"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/console",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, \"Quicksand Fallback\"",
+            "size_px": 12,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#2A1D17",
+            "background": "#FFFFFF",
+            "ratio": 16.3225
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#B93623",
+            "background": "#FFFFFF",
+            "ratio": 5.8095
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-3",
+      "theme": "dark",
+      "viewport": 375,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:50:10.216107+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/console",
+        "http://127.0.0.1:3000/branches",
+        "http://127.0.0.1:3000/memberships",
+        "http://127.0.0.1:3000/roles",
+        "http://127.0.0.1:3000/inventory/shelves"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/console",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, \"Quicksand Fallback\"",
+            "size_px": 12,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#F8EFE5",
+            "background": "#2A211C",
+            "ratio": 13.858
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#F07A5F",
+            "background": "#2A211C",
+            "ratio": 5.7431
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-3",
+      "theme": "dark",
+      "viewport": 768,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:50:12.137427+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/console",
+        "http://127.0.0.1:3000/branches",
+        "http://127.0.0.1:3000/memberships",
+        "http://127.0.0.1:3000/roles",
+        "http://127.0.0.1:3000/inventory/shelves"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/console",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, \"Quicksand Fallback\"",
+            "size_px": 12,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#F8EFE5",
+            "background": "#2A211C",
+            "ratio": 13.858
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#F07A5F",
+            "background": "#2A211C",
+            "ratio": 5.7431
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-3",
+      "theme": "dark",
+      "viewport": 1024,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:50:14.085124+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/console",
+        "http://127.0.0.1:3000/branches",
+        "http://127.0.0.1:3000/memberships",
+        "http://127.0.0.1:3000/roles",
+        "http://127.0.0.1:3000/inventory/shelves"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/console",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, \"Quicksand Fallback\"",
+            "size_px": 12,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#F8EFE5",
+            "background": "#2A211C",
+            "ratio": 13.858
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#F07A5F",
+            "background": "#2A211C",
+            "ratio": 5.7431
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-3",
+      "theme": "dark",
+      "viewport": 1440,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:50:16.143681+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/console",
+        "http://127.0.0.1:3000/branches",
+        "http://127.0.0.1:3000/memberships",
+        "http://127.0.0.1:3000/roles",
+        "http://127.0.0.1:3000/inventory/shelves"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/console",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, \"Quicksand Fallback\"",
+            "size_px": 12,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#F8EFE5",
+            "background": "#2A211C",
+            "ratio": 13.858
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#F07A5F",
+            "background": "#2A211C",
+            "ratio": 5.7431
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-4",
+      "theme": "light",
+      "viewport": 375,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:50:18.206679+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/products",
+        "http://127.0.0.1:3000/products/4135e0db-83d5-4314-9098-123bbdfae5a6",
+        "http://127.0.0.1:3000/cart",
+        "http://127.0.0.1:3000/orders",
+        "http://127.0.0.1:3000/me",
+        "http://127.0.0.1:3000/production/targets",
+        "http://127.0.0.1:3000/production/orders",
+        "http://127.0.0.1:3000/production/qc"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/products",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, \"Quicksand Fallback\"",
+            "size_px": 12,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#2A1D17",
+            "background": "#FFFFFF",
+            "ratio": 16.3225
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#B93623",
+            "background": "#FFFFFF",
+            "ratio": 5.8095
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-4",
+      "theme": "light",
+      "viewport": 768,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:50:21.466827+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/products",
+        "http://127.0.0.1:3000/products/4135e0db-83d5-4314-9098-123bbdfae5a6",
+        "http://127.0.0.1:3000/cart",
+        "http://127.0.0.1:3000/orders",
+        "http://127.0.0.1:3000/me",
+        "http://127.0.0.1:3000/production/targets",
+        "http://127.0.0.1:3000/production/orders",
+        "http://127.0.0.1:3000/production/qc"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/products",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, \"Quicksand Fallback\"",
+            "size_px": 12,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#2A1D17",
+            "background": "#FFFFFF",
+            "ratio": 16.3225
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#B93623",
+            "background": "#FFFFFF",
+            "ratio": 5.8095
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-4",
+      "theme": "light",
+      "viewport": 1024,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:50:24.325445+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/products",
+        "http://127.0.0.1:3000/products/4135e0db-83d5-4314-9098-123bbdfae5a6",
+        "http://127.0.0.1:3000/cart",
+        "http://127.0.0.1:3000/orders",
+        "http://127.0.0.1:3000/me",
+        "http://127.0.0.1:3000/production/targets",
+        "http://127.0.0.1:3000/production/orders",
+        "http://127.0.0.1:3000/production/qc"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/products",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, \"Quicksand Fallback\"",
+            "size_px": 12,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#2A1D17",
+            "background": "#FFFFFF",
+            "ratio": 16.3225
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#B93623",
+            "background": "#FFFFFF",
+            "ratio": 5.8095
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-4",
+      "theme": "light",
+      "viewport": 1440,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:50:27.152724+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/products",
+        "http://127.0.0.1:3000/products/4135e0db-83d5-4314-9098-123bbdfae5a6",
+        "http://127.0.0.1:3000/cart",
+        "http://127.0.0.1:3000/orders",
+        "http://127.0.0.1:3000/me",
+        "http://127.0.0.1:3000/production/targets",
+        "http://127.0.0.1:3000/production/orders",
+        "http://127.0.0.1:3000/production/qc"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/products",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, \"Quicksand Fallback\"",
+            "size_px": 12,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#2A1D17",
+            "background": "#FFFFFF",
+            "ratio": 16.3225
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#B93623",
+            "background": "#FFFFFF",
+            "ratio": 5.8095
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-4",
+      "theme": "dark",
+      "viewport": 375,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:50:29.975107+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/products",
+        "http://127.0.0.1:3000/products/4135e0db-83d5-4314-9098-123bbdfae5a6",
+        "http://127.0.0.1:3000/cart",
+        "http://127.0.0.1:3000/orders",
+        "http://127.0.0.1:3000/me",
+        "http://127.0.0.1:3000/production/targets",
+        "http://127.0.0.1:3000/production/orders",
+        "http://127.0.0.1:3000/production/qc"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/products",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, \"Quicksand Fallback\"",
+            "size_px": 12,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#F8EFE5",
+            "background": "#2A211C",
+            "ratio": 13.858
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#F07A5F",
+            "background": "#2A211C",
+            "ratio": 5.7431
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-4",
+      "theme": "dark",
+      "viewport": 768,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:50:32.833121+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/products",
+        "http://127.0.0.1:3000/products/4135e0db-83d5-4314-9098-123bbdfae5a6",
+        "http://127.0.0.1:3000/cart",
+        "http://127.0.0.1:3000/orders",
+        "http://127.0.0.1:3000/me",
+        "http://127.0.0.1:3000/production/targets",
+        "http://127.0.0.1:3000/production/orders",
+        "http://127.0.0.1:3000/production/qc"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/products",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, \"Quicksand Fallback\"",
+            "size_px": 12,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#F8EFE5",
+            "background": "#2A211C",
+            "ratio": 13.858
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#F07A5F",
+            "background": "#2A211C",
+            "ratio": 5.7431
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-4",
+      "theme": "dark",
+      "viewport": 1024,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:50:35.668647+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/products",
+        "http://127.0.0.1:3000/products/4135e0db-83d5-4314-9098-123bbdfae5a6",
+        "http://127.0.0.1:3000/cart",
+        "http://127.0.0.1:3000/orders",
+        "http://127.0.0.1:3000/me",
+        "http://127.0.0.1:3000/production/targets",
+        "http://127.0.0.1:3000/production/orders",
+        "http://127.0.0.1:3000/production/qc"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/products",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, \"Quicksand Fallback\"",
+            "size_px": 12,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#F8EFE5",
+            "background": "#2A211C",
+            "ratio": 13.858
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#F07A5F",
+            "background": "#2A211C",
+            "ratio": 5.7431
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-4",
+      "theme": "dark",
+      "viewport": 1440,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:50:38.504401+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/products",
+        "http://127.0.0.1:3000/products/4135e0db-83d5-4314-9098-123bbdfae5a6",
+        "http://127.0.0.1:3000/cart",
+        "http://127.0.0.1:3000/orders",
+        "http://127.0.0.1:3000/me",
+        "http://127.0.0.1:3000/production/targets",
+        "http://127.0.0.1:3000/production/orders",
+        "http://127.0.0.1:3000/production/qc"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/products",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, \"Quicksand Fallback\"",
+            "size_px": 12,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#F8EFE5",
+            "background": "#2A211C",
+            "ratio": 13.858
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#F07A5F",
+            "background": "#2A211C",
+            "ratio": 5.7431
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-5",
+      "theme": "light",
+      "viewport": 375,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:50:41.360546+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/traceability/LIVE-TRACE-c295426a"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/traceability/LIVE-TRACE-c295426a",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, \"Quicksand Fallback\"",
+            "size_px": 24,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#2A1D17",
+            "background": "#FFFFFF",
+            "ratio": 16.3225
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#B93623",
+            "background": "#FFFFFF",
+            "ratio": 5.8095
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-5",
+      "theme": "light",
+      "viewport": 768,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:50:42.286415+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/traceability/LIVE-TRACE-c295426a"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/traceability/LIVE-TRACE-c295426a",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, \"Quicksand Fallback\"",
+            "size_px": 24,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#2A1D17",
+            "background": "#FFFFFF",
+            "ratio": 16.3225
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#B93623",
+            "background": "#FFFFFF",
+            "ratio": 5.8095
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-5",
+      "theme": "light",
+      "viewport": 1024,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:50:43.209852+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/traceability/LIVE-TRACE-c295426a"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/traceability/LIVE-TRACE-c295426a",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, \"Quicksand Fallback\"",
+            "size_px": 24,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#2A1D17",
+            "background": "#FFFFFF",
+            "ratio": 16.3225
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#B93623",
+            "background": "#FFFFFF",
+            "ratio": 5.8095
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-5",
+      "theme": "light",
+      "viewport": 1440,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:50:44.246851+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/traceability/LIVE-TRACE-c295426a"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/traceability/LIVE-TRACE-c295426a",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, \"Quicksand Fallback\"",
+            "size_px": 24,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#2A1D17",
+            "background": "#FFFFFF",
+            "ratio": 16.3225
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#B93623",
+            "background": "#FFFFFF",
+            "ratio": 5.8095
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-5",
+      "theme": "dark",
+      "viewport": 375,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:50:45.275461+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/traceability/LIVE-TRACE-c295426a"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/traceability/LIVE-TRACE-c295426a",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, \"Quicksand Fallback\"",
+            "size_px": 24,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#F8EFE5",
+            "background": "#2A211C",
+            "ratio": 13.858
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#F07A5F",
+            "background": "#2A211C",
+            "ratio": 5.7431
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-5",
+      "theme": "dark",
+      "viewport": 768,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:50:46.221047+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/traceability/LIVE-TRACE-c295426a"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/traceability/LIVE-TRACE-c295426a",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, \"Quicksand Fallback\"",
+            "size_px": 24,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#F8EFE5",
+            "background": "#2A211C",
+            "ratio": 13.858
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#F07A5F",
+            "background": "#2A211C",
+            "ratio": 5.7431
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-5",
+      "theme": "dark",
+      "viewport": 1024,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:50:47.128196+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/traceability/LIVE-TRACE-c295426a"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/traceability/LIVE-TRACE-c295426a",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, \"Quicksand Fallback\"",
+            "size_px": 24,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#F8EFE5",
+            "background": "#2A211C",
+            "ratio": 13.858
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#F07A5F",
+            "background": "#2A211C",
+            "ratio": 5.7431
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-5",
+      "theme": "dark",
+      "viewport": 1440,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:50:48.158860+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/traceability/LIVE-TRACE-c295426a"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/traceability/LIVE-TRACE-c295426a",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, \"Quicksand Fallback\"",
+            "size_px": 24,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#F8EFE5",
+            "background": "#2A211C",
+            "ratio": 13.858
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#F07A5F",
+            "background": "#2A211C",
+            "ratio": 5.7431
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-6",
+      "theme": "light",
+      "viewport": 375,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:50:49.868747+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/platform",
+        "http://127.0.0.1:3000/company"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/company",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#2A1D17",
+            "background": "#FFFFFF",
+            "ratio": 16.3225
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#B93623",
+            "background": "#FFFFFF",
+            "ratio": 5.8095
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-6",
+      "theme": "light",
+      "viewport": 768,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:50:51.534021+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/platform",
+        "http://127.0.0.1:3000/company"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/company",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#2A1D17",
+            "background": "#FFFFFF",
+            "ratio": 16.3225
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#B93623",
+            "background": "#FFFFFF",
+            "ratio": 5.8095
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-6",
+      "theme": "light",
+      "viewport": 1024,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:50:53.003003+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/platform",
+        "http://127.0.0.1:3000/company"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/company",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#2A1D17",
+            "background": "#FFFFFF",
+            "ratio": 16.3225
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#B93623",
+            "background": "#FFFFFF",
+            "ratio": 5.8095
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-6",
+      "theme": "light",
+      "viewport": 1440,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:50:54.441373+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/platform",
+        "http://127.0.0.1:3000/company"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/company",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#2A1D17",
+            "background": "#FFFFFF",
+            "ratio": 16.3225
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#B93623",
+            "background": "#FFFFFF",
+            "ratio": 5.8095
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-6",
+      "theme": "dark",
+      "viewport": 375,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:50:55.688945+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/platform",
+        "http://127.0.0.1:3000/company"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/company",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#F8EFE5",
+            "background": "#2A211C",
+            "ratio": 13.858
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#F07A5F",
+            "background": "#2A211C",
+            "ratio": 5.7431
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-6",
+      "theme": "dark",
+      "viewport": 768,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:50:57.350417+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/platform",
+        "http://127.0.0.1:3000/company"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/company",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#F8EFE5",
+            "background": "#2A211C",
+            "ratio": 13.858
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#F07A5F",
+            "background": "#2A211C",
+            "ratio": 5.7431
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-6",
+      "theme": "dark",
+      "viewport": 1024,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:50:58.818474+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/platform",
+        "http://127.0.0.1:3000/company"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/company",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#F8EFE5",
+            "background": "#2A211C",
+            "ratio": 13.858
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#F07A5F",
+            "background": "#2A211C",
+            "ratio": 5.7431
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-6",
+      "theme": "dark",
+      "viewport": 1440,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:51:00.271284+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/platform",
+        "http://127.0.0.1:3000/company"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/company",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#F8EFE5",
+            "background": "#2A211C",
+            "ratio": 13.858
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#F07A5F",
+            "background": "#2A211C",
+            "ratio": 5.7431
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-7",
+      "theme": "light",
+      "viewport": 375,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:51:02.179881+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/",
+        "http://127.0.0.1:3000/console",
+        "http://127.0.0.1:3000/branches",
+        "http://127.0.0.1:3000/memberships",
+        "http://127.0.0.1:3000/roles",
+        "http://127.0.0.1:3000/inventory/shelves",
+        "http://127.0.0.1:3000/products",
+        "http://127.0.0.1:3000/products/4135e0db-83d5-4314-9098-123bbdfae5a6",
+        "http://127.0.0.1:3000/cart",
+        "http://127.0.0.1:3000/orders",
+        "http://127.0.0.1:3000/me",
+        "http://127.0.0.1:3000/production/targets",
+        "http://127.0.0.1:3000/production/orders",
+        "http://127.0.0.1:3000/production/qc",
+        "http://127.0.0.1:3000/traceability/LIVE-TRACE-c295426a"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/branches",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, \"Quicksand Fallback\"",
+            "size_px": 12,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#2A1D17",
+            "background": "#FFFFFF",
+            "ratio": 16.3225
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#B93623",
+            "background": "#FFFFFF",
+            "ratio": 5.8095
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-7",
+      "theme": "light",
+      "viewport": 768,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:51:06.886497+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/",
+        "http://127.0.0.1:3000/console",
+        "http://127.0.0.1:3000/branches",
+        "http://127.0.0.1:3000/memberships",
+        "http://127.0.0.1:3000/roles",
+        "http://127.0.0.1:3000/inventory/shelves",
+        "http://127.0.0.1:3000/products",
+        "http://127.0.0.1:3000/products/4135e0db-83d5-4314-9098-123bbdfae5a6",
+        "http://127.0.0.1:3000/cart",
+        "http://127.0.0.1:3000/orders",
+        "http://127.0.0.1:3000/me",
+        "http://127.0.0.1:3000/production/targets",
+        "http://127.0.0.1:3000/production/orders",
+        "http://127.0.0.1:3000/production/qc",
+        "http://127.0.0.1:3000/traceability/LIVE-TRACE-c295426a"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/branches",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, \"Quicksand Fallback\"",
+            "size_px": 12,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#2A1D17",
+            "background": "#FFFFFF",
+            "ratio": 16.3225
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#B93623",
+            "background": "#FFFFFF",
+            "ratio": 5.8095
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-7",
+      "theme": "light",
+      "viewport": 1024,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:51:11.421947+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/",
+        "http://127.0.0.1:3000/console",
+        "http://127.0.0.1:3000/branches",
+        "http://127.0.0.1:3000/memberships",
+        "http://127.0.0.1:3000/roles",
+        "http://127.0.0.1:3000/inventory/shelves",
+        "http://127.0.0.1:3000/products",
+        "http://127.0.0.1:3000/products/4135e0db-83d5-4314-9098-123bbdfae5a6",
+        "http://127.0.0.1:3000/cart",
+        "http://127.0.0.1:3000/orders",
+        "http://127.0.0.1:3000/me",
+        "http://127.0.0.1:3000/production/targets",
+        "http://127.0.0.1:3000/production/orders",
+        "http://127.0.0.1:3000/production/qc",
+        "http://127.0.0.1:3000/traceability/LIVE-TRACE-c295426a"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/branches",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, \"Quicksand Fallback\"",
+            "size_px": 12,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#2A1D17",
+            "background": "#FFFFFF",
+            "ratio": 16.3225
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#B93623",
+            "background": "#FFFFFF",
+            "ratio": 5.8095
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-7",
+      "theme": "light",
+      "viewport": 1440,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:51:16.090442+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/",
+        "http://127.0.0.1:3000/console",
+        "http://127.0.0.1:3000/branches",
+        "http://127.0.0.1:3000/memberships",
+        "http://127.0.0.1:3000/roles",
+        "http://127.0.0.1:3000/inventory/shelves",
+        "http://127.0.0.1:3000/products",
+        "http://127.0.0.1:3000/products/4135e0db-83d5-4314-9098-123bbdfae5a6",
+        "http://127.0.0.1:3000/cart",
+        "http://127.0.0.1:3000/orders",
+        "http://127.0.0.1:3000/me",
+        "http://127.0.0.1:3000/production/targets",
+        "http://127.0.0.1:3000/production/orders",
+        "http://127.0.0.1:3000/production/qc",
+        "http://127.0.0.1:3000/traceability/LIVE-TRACE-c295426a"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/branches",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, \"Quicksand Fallback\"",
+            "size_px": 12,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#2A1D17",
+            "background": "#FFFFFF",
+            "ratio": 16.3225
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#B93623",
+            "background": "#FFFFFF",
+            "ratio": 5.8095
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-7",
+      "theme": "dark",
+      "viewport": 375,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:51:20.764935+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/",
+        "http://127.0.0.1:3000/console",
+        "http://127.0.0.1:3000/branches",
+        "http://127.0.0.1:3000/memberships",
+        "http://127.0.0.1:3000/roles",
+        "http://127.0.0.1:3000/inventory/shelves",
+        "http://127.0.0.1:3000/products",
+        "http://127.0.0.1:3000/products/4135e0db-83d5-4314-9098-123bbdfae5a6",
+        "http://127.0.0.1:3000/cart",
+        "http://127.0.0.1:3000/orders",
+        "http://127.0.0.1:3000/me",
+        "http://127.0.0.1:3000/production/targets",
+        "http://127.0.0.1:3000/production/orders",
+        "http://127.0.0.1:3000/production/qc",
+        "http://127.0.0.1:3000/traceability/LIVE-TRACE-c295426a"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/branches",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, \"Quicksand Fallback\"",
+            "size_px": 12,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#F8EFE5",
+            "background": "#2A211C",
+            "ratio": 13.858
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#F07A5F",
+            "background": "#2A211C",
+            "ratio": 5.7431
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-7",
+      "theme": "dark",
+      "viewport": 768,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:51:25.464740+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/",
+        "http://127.0.0.1:3000/console",
+        "http://127.0.0.1:3000/branches",
+        "http://127.0.0.1:3000/memberships",
+        "http://127.0.0.1:3000/roles",
+        "http://127.0.0.1:3000/inventory/shelves",
+        "http://127.0.0.1:3000/products",
+        "http://127.0.0.1:3000/products/4135e0db-83d5-4314-9098-123bbdfae5a6",
+        "http://127.0.0.1:3000/cart",
+        "http://127.0.0.1:3000/orders",
+        "http://127.0.0.1:3000/me",
+        "http://127.0.0.1:3000/production/targets",
+        "http://127.0.0.1:3000/production/orders",
+        "http://127.0.0.1:3000/production/qc",
+        "http://127.0.0.1:3000/traceability/LIVE-TRACE-c295426a"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/branches",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, \"Quicksand Fallback\"",
+            "size_px": 12,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#F8EFE5",
+            "background": "#2A211C",
+            "ratio": 13.858
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#F07A5F",
+            "background": "#2A211C",
+            "ratio": 5.7431
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-7",
+      "theme": "dark",
+      "viewport": 1024,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:51:30.023103+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/",
+        "http://127.0.0.1:3000/console",
+        "http://127.0.0.1:3000/branches",
+        "http://127.0.0.1:3000/memberships",
+        "http://127.0.0.1:3000/roles",
+        "http://127.0.0.1:3000/inventory/shelves",
+        "http://127.0.0.1:3000/products",
+        "http://127.0.0.1:3000/products/4135e0db-83d5-4314-9098-123bbdfae5a6",
+        "http://127.0.0.1:3000/cart",
+        "http://127.0.0.1:3000/orders",
+        "http://127.0.0.1:3000/me",
+        "http://127.0.0.1:3000/production/targets",
+        "http://127.0.0.1:3000/production/orders",
+        "http://127.0.0.1:3000/production/qc",
+        "http://127.0.0.1:3000/traceability/LIVE-TRACE-c295426a"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/branches",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, \"Quicksand Fallback\"",
+            "size_px": 12,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#F8EFE5",
+            "background": "#2A211C",
+            "ratio": 13.858
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#F07A5F",
+            "background": "#2A211C",
+            "ratio": 5.7431
+          }
+        ]
+      }
+    },
+    {
+      "case": "UI-7",
+      "theme": "dark",
+      "viewport": 1440,
+      "status": "PASS",
+      "captured_at": "2026-10-04T08:51:34.696427+00:00",
+      "final_urls": [
+        "http://127.0.0.1:3000/",
+        "http://127.0.0.1:3000/console",
+        "http://127.0.0.1:3000/branches",
+        "http://127.0.0.1:3000/memberships",
+        "http://127.0.0.1:3000/roles",
+        "http://127.0.0.1:3000/inventory/shelves",
+        "http://127.0.0.1:3000/products",
+        "http://127.0.0.1:3000/products/4135e0db-83d5-4314-9098-123bbdfae5a6",
+        "http://127.0.0.1:3000/cart",
+        "http://127.0.0.1:3000/orders",
+        "http://127.0.0.1:3000/me",
+        "http://127.0.0.1:3000/production/targets",
+        "http://127.0.0.1:3000/production/orders",
+        "http://127.0.0.1:3000/production/qc",
+        "http://127.0.0.1:3000/traceability/LIVE-TRACE-c295426a"
+      ],
+      "screenshot_url": "http://127.0.0.1:3000/branches",
+      "measurements": {
+        "console_errors": 0,
+        "http_5xx": 0,
+        "horizontal_overflow": false,
+        "interaction": {
+          "Tab": true,
+          "Shift+Tab": true,
+          "Esc": true,
+          "focus_visible": true,
+          "reduced_motion": true
+        },
+        "fonts": {
+          "sample": "B\u1eefa \u0103n t\u01b0\u01a1i ngon: Nguy\u1ec5n, ti\u1ebfng Vi\u1ec7t, \u0103 \u00e2 \u00ea \u00f4 \u01a1 \u01b0 \u0111 \u00e1 \u1ec1 \u1ed7 \u1ef1",
+          "ready": true,
+          "heading": {
+            "family": "Quicksand",
+            "computed_family": "Quicksand, \"Quicksand Fallback\"",
+            "size_px": 12,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Quicksand",
+                "status": "loaded"
+              }
+            ]
+          },
+          "body": {
+            "family": "Nunito",
+            "computed_family": "Nunito, \"Nunito Fallback\"",
+            "size_px": 16,
+            "check": true,
+            "loaded_faces": [
+              {
+                "family": "Nunito",
+                "status": "loaded"
+              }
+            ]
+          }
+        },
+        "contrasts": [
+          {
+            "kind": "text",
+            "fg_role": "ink",
+            "bg_role": "surface",
+            "foreground": "#F8EFE5",
+            "background": "#2A211C",
+            "ratio": 13.858
+          },
+          {
+            "kind": "ui",
+            "fg_role": "focus",
+            "bg_role": "surface",
+            "foreground": "#F07A5F",
+            "background": "#2A211C",
+            "ratio": 5.7431
+          }
+        ]
+      }
+    }
+  ]
+}

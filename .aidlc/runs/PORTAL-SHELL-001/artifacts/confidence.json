@@ -1,0 +1,15 @@
+{
+  "task": "PORTAL-SHELL-001",
+  "actor": "agent:claude-code(171709704+dawnmoriaty@users.noreply.github.com)",
+  "worker": "codex",
+  "ts": "2026-10-04T06:01:50+00:00",
+  "verified_head": "082757be73d18f478b9665ecca4c29a849605296",
+  "signals": {
+    "mutation": 1.0,
+    "review": 1.0
+  },
+  "score": 1.0,
+  "bar": 0.95,
+  "sensitive": false,
+  "verdict": "PASS"
+}

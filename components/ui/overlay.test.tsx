@@ -10,7 +10,7 @@ import {
 } from "./dialog";
 import { ToastProvider, useToast } from "./toast";
 import { ColdChainViolationModal } from "../modals/cold-chain-violation-modal";
-import { MAIN_NAV_ITEMS } from "../layout/sidebar";
+import { CONSOLE_NAV } from "@/mocks/console";
 
 describe("Overlay & Modal System (00)", () => {
   it("Dialog components define structure properly", () => {
@@ -68,17 +68,17 @@ describe("Overlay & Modal System (00)", () => {
 });
 
 describe("Admin Shell & Sidebar Navigation", () => {
-  it("MAIN_NAV_ITEMS contains all required enterprise operations items without the word resort", () => {
-    expect(MAIN_NAV_ITEMS.length).toBeGreaterThanOrEqual(6);
+  it("CONSOLE_NAV contains real operations routes without the word resort", () => {
+    const items = CONSOLE_NAV.flatMap((group) => group.items);
+    expect(items.length).toBeGreaterThanOrEqual(6);
 
-    const labels = MAIN_NAV_ITEMS.map((item) => item.label);
-    expect(labels).toContain("Tổng quan Chi nhánh");
-    expect(labels).toContain("Kiểm nhận Hàng hoá");
-    expect(labels).toContain("Kiểm định QC & Lô");
-    expect(labels).toContain("Nhà cung cấp & Chuỗi lạnh");
+    const labels = items.map((item) => item.label);
+    expect(labels).toContain("Bảng điều khiển");
+    expect(labels).toContain("Kệ hàng");
+    expect(labels).toContain("Kiểm định");
+    expect(labels).toContain("Bảng giá");
 
-    // Strict rule: NEVER use the word "resort"
-    MAIN_NAV_ITEMS.forEach((item) => {
+    items.forEach((item) => {
       expect(item.label.toLowerCase()).not.toContain("resort");
       expect(item.href.toLowerCase()).not.toContain("resort");
     });

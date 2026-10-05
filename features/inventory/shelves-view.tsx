@@ -75,19 +75,19 @@ export function ShelvesView({ initialPlacements }: ShelvesViewProps) {
   };
 
   return (
-    <PageShell>
+    <PageShell className="bg-[var(--color-bg)] text-[var(--color-ink)]">
       <PageHeader
         title="Quản lý Kệ hàng & Tem Truy xuất QR (VT-08 / VT-16)"
         description="Đưa các lô thành phẩm đã APPROVED sau QC lên kệ chi nhánh và quản lý mã QR truy vết"
         actions={
-          <Button onClick={() => setShowCreate(true)} disabled={!canPlace || !branchRef}>
+          <Button variant={showCreate ? "outline" : "default"} onClick={() => setShowCreate(true)} disabled={!canPlace || !branchRef}>
             <Plus className="mr-2 h-4 w-4" /> Đưa lô thành phẩm lên kệ
           </Button>
         }
       />
 
       {showCreate && (
-        <Card className="mb-6 border-emerald-200 bg-emerald-50/20">
+        <Card className="mb-6 border-[var(--color-line)] bg-[var(--color-surface)] text-[var(--color-ink)]">
           <CardContent className="pt-6">
             <form onSubmit={handlePlace} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -97,7 +97,8 @@ export function ShelvesView({ initialPlacements }: ShelvesViewProps) {
                     type="text"
                     required
                     placeholder="UUID lô thành phẩm"
-                    className="w-full mt-1 p-2 border rounded-md font-mono"
+                    style={{ borderWidth: "1.5px" }}
+                    className="w-full mt-1 px-3 h-11 border bg-[var(--color-surface)] text-[var(--color-ink)] border-[var(--color-input-border)] rounded-[var(--radius-md)] focus:outline-none focus:ring-2 focus:ring-[var(--color-focus)] font-mono"
                     value={finishedLotRef}
                     onChange={(e) => setFinishedLotRef(e.target.value)}
                   />
@@ -108,7 +109,8 @@ export function ShelvesView({ initialPlacements }: ShelvesViewProps) {
                     type="text"
                     required
                     placeholder="VD: KE-MAT-01, KE-DONG-02"
-                    className="w-full mt-1 p-2 border rounded-md"
+                    style={{ borderWidth: "1.5px" }}
+                    className="w-full mt-1 px-3 h-11 border bg-[var(--color-surface)] text-[var(--color-ink)] border-[var(--color-input-border)] rounded-[var(--radius-md)] focus:outline-none focus:ring-2 focus:ring-[var(--color-focus)]"
                     value={shelfCode}
                     onChange={(e) => setShelfCode(e.target.value)}
                   />
@@ -119,14 +121,15 @@ export function ShelvesView({ initialPlacements }: ShelvesViewProps) {
                     type="number"
                     min="1"
                     required
-                    className="w-full mt-1 p-2 border rounded-md"
+                    style={{ borderWidth: "1.5px" }}
+                    className="w-full mt-1 px-3 h-11 border bg-[var(--color-surface)] text-[var(--color-ink)] border-[var(--color-input-border)] rounded-[var(--radius-md)] focus:outline-none focus:ring-2 focus:ring-[var(--color-focus)]"
                     value={placedQty}
                     onChange={(e) => setPlacedQty(Number(e.target.value))}
                   />
                 </div>
               </div>
               <div className="flex gap-2">
-                <Button type="submit" disabled={loading} className="bg-emerald-600 hover:bg-emerald-700 text-white">
+                <Button type="submit" disabled={loading}>
                   Xác nhận lên kệ & Sinh mã QR
                 </Button>
                 <Button type="button" variant="outline" onClick={() => setShowCreate(false)}>Hủy</Button>
@@ -136,7 +139,7 @@ export function ShelvesView({ initialPlacements }: ShelvesViewProps) {
         </Card>
       )}
 
-      <Card>
+      <Card className="bg-[var(--color-surface)] text-[var(--color-ink)] border-[var(--color-line)]">
         <CardContent className="p-0">
           <Table>
             <TableHeader>
@@ -151,7 +154,7 @@ export function ShelvesView({ initialPlacements }: ShelvesViewProps) {
             <TableBody>
               {placements.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-6 text-muted-foreground">
+                  <TableCell colSpan={5} className="text-center py-6 text-[var(--color-muted)]">
                     Chưa có mặt hàng nào được đưa lên kệ
                   </TableCell>
                 </TableRow>
@@ -159,9 +162,9 @@ export function ShelvesView({ initialPlacements }: ShelvesViewProps) {
                 placements.map((p) => (
                   <TableRow key={p.id}>
                     <TableCell className="font-semibold flex items-center gap-1.5">
-                      <Store className="h-4 w-4 text-emerald-600" /> {p.shelf_code}
+                      <Store className="h-4 w-4 text-[var(--color-muted)]" /> {p.shelf_code}
                     </TableCell>
-                    <TableCell className="font-mono text-sm font-medium text-blue-600">
+                    <TableCell className="font-mono text-sm font-medium text-[var(--color-ink)]">
                       {p.trace_code}
                     </TableCell>
                     <TableCell>{p.available_quantity} / {p.placed_quantity} {p.uom}</TableCell>
@@ -174,7 +177,7 @@ export function ShelvesView({ initialPlacements }: ShelvesViewProps) {
                       <Link
                         href={`/traceability/${encodeURIComponent(p.trace_code)}`}
                         target="_blank"
-                        className="inline-flex items-center text-sm font-medium text-emerald-700 hover:underline"
+                        className="inline-flex items-center text-sm font-medium text-[var(--color-primary-hover)] dark:text-[var(--color-primary)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus)]"
                       >
                         <ExternalLink className="h-4 w-4 mr-1" /> Xem trang QR xuất xứ
                       </Link>

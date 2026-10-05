@@ -133,14 +133,15 @@ export function InviteMemberModal({
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
-              className="rounded-xl border-[var(--border)] text-xs font-semibold"
+              size="default"
             >
               Huỷ
             </Button>
 
             <Button
               type="submit"
-              className="rounded-xl bg-[var(--primary)] hover:bg-[var(--primary)]/90 text-white text-xs font-bold"
+              variant="default"
+              size="default"
             >
               Gửi lời mời
             </Button>

@@ -1,6 +1,1 @@
-{
-  "app": {
-    "name": "DCenter Portal",
-    "subtitle": "Bảng điều khiển Branch IAM"
-  }
-}
+{"app":{"name":"DCenter Portal","subtitle":"Bảng điều khiển Branch IAM"},"platform":{"title":"Nền tảng","companies":"Công ty","support":"Hỗ trợ truy cập","staff":"Nhân sự nền tảng","audit":"Nhật ký kiểm toán","myCompany":"Công ty của tôi","companySupport":"Yêu cầu hỗ trợ","loading":"Đang xác minh quyền truy cập…","denied":"Tài khoản này không có quyền mở nội dung.","blocked":"Không thể xác minh quyền. Truy cập đang bị chặn; hãy thử lại sau.","retry":"Thử lại"}}

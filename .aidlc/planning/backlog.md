@@ -5,3 +5,4 @@
      Specs and ADRs are small files, one feature / one decision each, linked from plan.md - never pasted. -->
 
 - US-UI-001: Operator portal UI and auth screens
+- US-UI-002: As a customer, employee, or organization owner I want separate API-backed journeys for shopping, branch work, and organization administration so I can complete my tasks with no cross-scope access (specs: ../sales/.aidlc/specs/order-lifecycle.md, ../org/.aidlc/specs/org-admin.md, ../org/.aidlc/specs/employee-onboard.md).

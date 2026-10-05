@@ -1,0 +1,9 @@
+FAIL run: runner failed
+FAIL lh-home-mobile: [Errno 2] No such file or directory: '/mnt/win_d/feature/ticket/portal/.aidlc/runs/PORTAL-REBRAND-001/anti/out/lh-home-mobile.json'
+FAIL lh-home-desktop: [Errno 2] No such file or directory: '/mnt/win_d/feature/ticket/portal/.aidlc/runs/PORTAL-REBRAND-001/anti/out/lh-home-desktop.json'
+FAIL lh-login-mobile: [Errno 2] No such file or directory: '/mnt/win_d/feature/ticket/portal/.aidlc/runs/PORTAL-REBRAND-001/anti/out/lh-login-mobile.json'
+FAIL lh-login-desktop: [Errno 2] No such file or directory: '/mnt/win_d/feature/ticket/portal/.aidlc/runs/PORTAL-REBRAND-001/anti/out/lh-login-desktop.json'
+FAIL lh-console-mobile: [Errno 2] No such file or directory: '/mnt/win_d/feature/ticket/portal/.aidlc/runs/PORTAL-REBRAND-001/anti/out/lh-console-mobile.json'
+FAIL lh-console-desktop: [Errno 2] No such file or directory: '/mnt/win_d/feature/ticket/portal/.aidlc/runs/PORTAL-REBRAND-001/anti/out/lh-console-desktop.json'
+BLOCKED cells: 40/56
+VERDICT: FAIL errors=7 blocked=40

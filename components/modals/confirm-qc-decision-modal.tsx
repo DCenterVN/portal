@@ -42,10 +42,10 @@ export function ConfirmQCDecisionModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent size="lg" className="bg-[var(--card)]">
+      <DialogContent size="lg" className="bg-[var(--color-surface)]">
         <DialogHeader>
-          <div className="flex items-center gap-2.5 text-emerald-600 dark:text-emerald-400 mb-1">
-            <div className="flex size-9 items-center justify-center rounded-xl bg-emerald-500/10 shrink-0">
+          <div className="flex items-center gap-2.5 text-[var(--color-ink)] mb-1">
+            <div className="flex size-9 items-center justify-center rounded-xl bg-[var(--color-tint)] text-[var(--color-leaf)] shrink-0">
               <ShieldCheck className="size-5" />
             </div>
             <div>
@@ -61,14 +61,14 @@ export function ConfirmQCDecisionModal({
 
         <div className="space-y-4 my-2 text-xs">
           {/* Summary Banner */}
-          <div className="p-3 rounded-xl bg-[var(--secondary)]/50 border border-[var(--border)] flex items-center justify-between">
+          <div className="p-3 rounded-xl bg-[var(--color-tint)] border border-[var(--color-line)] flex items-center justify-between">
             <div>
-              <div className="font-bold text-sm text-[var(--foreground)]">{productName}</div>
-              <div className="text-[11px] text-[var(--muted-foreground)]">Khối lượng: {weightFormatted}</div>
+              <div className="font-bold text-sm text-[var(--color-ink)]">{productName}</div>
+              <div className="text-[11px] text-[var(--color-muted)]">Khối lượng: {weightFormatted}</div>
             </div>
             <div className="text-right">
-              <div className="text-[10px] text-[var(--muted-foreground)] uppercase font-semibold">Giá trị nhập</div>
-              <div className="font-serif font-bold text-emerald-600 dark:text-emerald-400 text-sm">
+              <div className="text-[10px] text-[var(--color-muted)] uppercase font-semibold">Giá trị nhập</div>
+              <div className="font-serif font-bold text-[var(--color-ink)] text-sm">
                 {totalValueFormatted}
               </div>
             </div>
@@ -76,18 +76,18 @@ export function ConfirmQCDecisionModal({
 
           {/* 4 Criteria Checklist */}
           <div className="space-y-2">
-            <div className="text-[11px] font-bold uppercase tracking-wider text-[var(--muted-foreground)]">
+            <div className="text-[11px] font-bold uppercase tracking-wider text-[var(--color-muted)]">
               Kết quả kiểm tra 4 tiêu chí bắt buộc:
             </div>
             {criteria.map((c, idx) => (
               <div
                 key={idx}
-                className="p-2.5 rounded-xl border border-emerald-500/20 bg-emerald-500/5 flex items-start gap-2"
+                className="p-2.5 rounded-xl border border-[var(--color-line)] bg-[var(--color-tint)] flex items-start gap-2"
               >
-                <CheckCircle2 className="size-4 text-emerald-500 shrink-0 mt-0.5" />
+                <CheckCircle2 className="size-4 text-[var(--color-leaf)] shrink-0 mt-0.5" />
                 <div className="text-[11px] leading-relaxed">
-                  <span className="font-bold text-[var(--foreground)] mr-1">{c.label}:</span>
-                  <span className="text-[var(--muted-foreground)]">{c.value}</span>
+                  <span className="font-bold text-[var(--color-ink)] mr-1">{c.label}:</span>
+                  <span className="text-[var(--color-muted)]">{c.value}</span>
                 </div>
               </div>
             ))}
@@ -100,7 +100,7 @@ export function ConfirmQCDecisionModal({
             variant="outline"
             onClick={() => onOpenChange(false)}
             disabled={isSubmitting}
-            className="rounded-xl border-[var(--border)] text-xs font-semibold"
+            size="default"
           >
             Huỷ bỏ
           </Button>
@@ -109,7 +109,8 @@ export function ConfirmQCDecisionModal({
             type="button"
             onClick={onConfirmApprove}
             disabled={isSubmitting}
-            className="rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold"
+            variant="default"
+            size="default"
           >
             {isSubmitting ? "Đang xử lý..." : "Xác nhận nhập kho thương mại"}
           </Button>
