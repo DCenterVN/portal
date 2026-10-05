@@ -1,4 +1,5 @@
 import "server-only";
+import {authHeaders, resolveClientIP} from "./client-ip";
 import {decodePlatform, platformMeSchema} from "./platform-contract";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -78,7 +79,7 @@ function setPortalPlane(result: NextResponse, req: NextRequest, employee: boolea
 async function revoke(req: NextRequest, token: string, cookies: string[]): Promise<void> {
   const pairs = cookies.map(cookie => cookie.split(";")[0]);
   const csrf = pairs.find(cookie => cookie.startsWith("CSRF-Token="))?.slice("CSRF-Token=".length) ?? "";
-  await fetch(`${authUrl()}/auth/web/logout`, {method: "POST", cache: "no-store", headers: {Cookie: pairs.join("; "), Authorization: `Bearer ${token}`, "X-CSRF-Token": csrf, "User-Agent": req.headers.get("user-agent") || "portal-bff"}});
+  await fetch(`${authUrl()}/auth/web/logout`, {method: "POST", cache: "no-store", headers: authHeaders(resolveClientIP(req.headers), {Cookie: pairs.join("; "), Authorization: `Bearer ${token}`, "X-CSRF-Token": csrf, "User-Agent": req.headers.get("user-agent") || "portal-bff"})});
 }
 async function upstreamError(upstream: Response): Promise<NextResponse> {
   const data: unknown = await upstream.json().catch(() => null);
@@ -95,7 +96,7 @@ function activeStaffContexts(rows: Context[]): Context[] {
   const employees = rows.filter(row => row.member_type === "EMPLOYEE" && (row.status === undefined || row.status === "ACTIVE"));
   return [...new Map(employees.map(row => [JSON.stringify([row.org_id, row.branch_id]), row])).values()];
 }
-async function staffDecision(token: string): Promise<{next_path: string; token: string; expires_in?: number; cookies?: string[]} | NextResponse> {
+async function staffDecision(token: string, clientIP: string | undefined): Promise<{next_path: string; token: string; expires_in?: number; cookies?: string[]} | NextResponse> {
   const platform = await fetch(`${orgUrl()}/platform/me`, {headers: {Authorization: `Bearer ${token}`}, cache: "no-store"});
   if (platform.ok) {
     decodePlatform(await platform.json(), platformMeSchema);
@@ -111,7 +112,7 @@ async function staffDecision(token: string): Promise<{next_path: string; token: 
   if (new Set(distinct.map(row => row.org_id)).size > 1) return {next_path: "/staff/switch-org", token};
   if (distinct.length > 1) return {next_path: "/staff/switch-branch", token};
   const {org_id, branch_id} = distinct[0];
-  const switched = await fetch(`${authUrl()}/auth/org-context`, {method: "POST", cache: "no-store", headers: {"Content-Type": "application/json", Authorization: `Bearer ${token}`}, body: JSON.stringify({org_id, branch_id})});
+  const switched = await fetch(`${authUrl()}/auth/org-context`, {method: "POST", cache: "no-store", headers: authHeaders(clientIP, {"Content-Type": "application/json", Authorization: `Bearer ${token}`}), body: JSON.stringify({org_id, branch_id})});
   if (!switched.ok) return upstreamError(switched);
   const data: unknown = await switched.json();
   if (!object(data) || typeof data.access_token !== "string" || !data.access_token) return unavailable();
@@ -130,17 +131,18 @@ async function authenticateJourney(req: NextRequest, journey: Journey): Promise<
   if (body instanceof NextResponse) return body;
   let temporaryToken = ""; let cookies: string[] = []; let accepted = false;
   try {
-    const upstream = await fetch(`${authUrl()}/auth/web/login`, {method: "POST", cache: "no-store", headers: {"Content-Type": "application/json", "User-Agent": req.headers.get("user-agent") || "portal-bff"}, body: JSON.stringify(body)});
+    const clientIP = resolveClientIP(req.headers);
+    const upstream = await fetch(`${authUrl()}/auth/web/login`, {method: "POST", cache: "no-store", headers: authHeaders(clientIP, {"Content-Type": "application/json", "User-Agent": req.headers.get("user-agent") || "portal-bff"}), body: JSON.stringify(body)});
     if (!upstream.ok) return upstreamError(upstream);
     cookies = sessionCookies(upstream);
     const data: unknown = await upstream.json();
     if (!object(data) || typeof data.access_token !== "string" || !data.access_token) return unavailable();
     temporaryToken = data.access_token;
-    const profile = await fetch(`${authUrl()}/auth/me`, {cache: "no-store", headers: {Authorization: `Bearer ${temporaryToken}`}});
+    const profile = await fetch(`${authUrl()}/auth/me`, {cache: "no-store", headers: authHeaders(clientIP, {Authorization: `Bearer ${temporaryToken}`})});
     if (!profile.ok) return upstreamError(profile);
     const user: unknown = await profile.json();
     if (!object(user) || typeof user.id !== "string" || user.status !== "ACTIVE") return response({error: "FORBIDDEN", message: "Tài khoản chưa được kích hoạt"}, 403);
-    const decision = journey === "customer" ? {next_path: "/", token: temporaryToken, expires_in: undefined, cookies: undefined} : await staffDecision(temporaryToken);
+    const decision = journey === "customer" ? {next_path: "/", token: temporaryToken, expires_in: undefined, cookies: undefined} : await staffDecision(temporaryToken, clientIP);
     if (decision instanceof NextResponse) return decision;
     const result = response({user: {id: user.id, email: user.email, phone: user.phone, display_name: user.display_name, status: user.status}, expires_in: decision.expires_in ?? data.expires_in, next_path: safeLanding(decision.next_path, journey)});
     const issuedCookies = decision.cookies?.length ? decision.cookies : cookies;
@@ -168,7 +170,7 @@ export async function customerOperation(req: NextRequest, operation: keyof typeo
   if (typeof password === "string" && ([...password].length < 12 || new TextEncoder().encode(password).length > 256)) return response({error: "VALIDATION_ERROR", message: "Mật khẩu cần ít nhất 12 ký tự và tối đa 256 byte UTF-8"}, 400);
   try {
     // Auth responses need credential redaction and Retry-After preservation; forwardService lacks both.
-    const upstream = await fetch(`${authUrl()}${contract.path}`, {method: "POST", cache: "no-store", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body)});
+    const upstream = await fetch(`${authUrl()}${contract.path}`, {method: "POST", cache: "no-store", headers: authHeaders(resolveClientIP(req.headers), {"Content-Type": "application/json"}), body: JSON.stringify(body)});
     if (!upstream.ok) return upstreamError(upstream);
     const data: unknown = await upstream.json();
     if (!object(data)) return unavailable();
@@ -182,7 +184,7 @@ export async function acceptStaffInvite(request: NextRequest) {
  if (fields instanceof NextResponse) return fields;
  if ([...(fields.password as string)].length<12 || new TextEncoder().encode(fields.password as string).length>256) return response({error:"VALIDATION_ERROR"},400);
  try {
-  const upstream=await fetch(`${process.env.AUTH_SERVICE_URL || "http://localhost:8080"}/auth/invite/accept`,{method:"POST",cache:"no-store",headers:{"Content-Type":"application/json"},body:JSON.stringify({token:fields.token,password:fields.password})});
+  const upstream=await fetch(`${process.env.AUTH_SERVICE_URL || "http://localhost:8080"}/auth/invite/accept`,{method:"POST",cache:"no-store",headers:authHeaders(resolveClientIP(request.headers), {"Content-Type":"application/json"}),body:JSON.stringify({token:fields.token,password:fields.password})});
   if (!upstream.ok) return upstreamError(upstream);
   const data=decodePlatform(await upstream.json(), {parse(value: unknown) {
    if (!object(value) || value.status !== "activated") throw Error("Invalid invite response");
@@ -216,9 +218,10 @@ export async function switchStaffContext(request: NextRequest) {
  const fields = await readFields(request, ["org_id", "branch_id"], ["org_id", "branch_id"], true);
  if (fields instanceof NextResponse) return fields;
  try {
+  const clientIP = resolveClientIP(request.headers);
   const rows=await verifiedContexts(request);if(rows instanceof NextResponse) return rows;
   if(!rows.some(row=>row.org_id===fields.org_id && row.branch_id===fields.branch_id)) return NextResponse.json({error:"FORBIDDEN",message:"Không có quyền nhân viên tại công ty và chi nhánh đã chọn."},{status:403,headers:noStore});
-  const upstream=await fetch(`${process.env.AUTH_SERVICE_URL || "http://localhost:8080"}/auth/org-context`,{method:"POST",cache:"no-store",headers:{"Content-Type":"application/json",Authorization:`Bearer ${request.cookies.get("access_token")!.value}`},body:JSON.stringify({org_id:fields.org_id,branch_id:fields.branch_id})});
+  const upstream=await fetch(`${process.env.AUTH_SERVICE_URL || "http://localhost:8080"}/auth/org-context`,{method:"POST",cache:"no-store",headers:authHeaders(clientIP, {"Content-Type":"application/json",Authorization:`Bearer ${request.cookies.get("access_token")!.value}`}),body:JSON.stringify({org_id:fields.org_id,branch_id:fields.branch_id})});
   if (!upstream.ok) return upstreamError(upstream);
   const data=await upstream.json();
   if(!object(data)) return failure();

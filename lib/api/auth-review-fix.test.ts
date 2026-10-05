@@ -123,3 +123,64 @@ describe("Round 2", () => {
   expect(await res.json()).toEqual({error:"VALIDATION_ERROR",message:"denied",retryable:true,retry_after_ms:8000,errors:{fields:[{field:"email",message:"invalid"}]}});expect(res.headers.get("retry-after")).toBe("8");
  });
 });
+
+
+describe("S7 refresh/logout client IP", () => {
+ const route = async (name: "refresh" | "logout") => name === "refresh"
+  ? (await import("../../app/api/auth/refresh/route")).POST
+  : (await import("../../app/api/auth/logout/route")).POST;
+ const edge = (ip: string | null = "::FFFF:C000:0201") => {
+  const req = request({}, {cookie: "access_token=caller; refresh_token=refresh; CSRF-Token=csrf", "User-Agent": "test-agent", "X-Forwarded-For": "198.51.100.99, 198.51.100.100", Forwarded: "for=198.51.100.99"});
+  if (ip !== null) req.headers.set("X-Real-IP", ip);
+  return req;
+ };
+ const allowed = (name: string) => ({cookie: "access_token=caller; refresh_token=refresh; CSRF-Token=csrf", "x-csrf-token": "csrf", "user-agent": "test-agent", ...(name === "logout" ? {authorization: "Bearer caller"} : {})});
+ for (const name of ["refresh", "logout"] as const) {
+  it.each([["192.0.2.1", "192.0.2.1"], ["::FFFF:C000:0201", "192.0.2.1"], ["2001:0DB8:0000:0000:0000:0000:0000:0001", "2001:db8::1"]])(`${name} forwards one canonical IP from %s with the exact allowlist`, async (raw, canonical) => {
+   vi.stubEnv("PORTAL_CLIENT_IP_SOURCE", "trusted-kong");
+   const fetch = vi.fn().mockResolvedValue(json({message: "ok", access_token: "rotated", expires_in: 900})); vi.stubGlobal("fetch", fetch);
+   const res = await (await route(name))(edge(raw)); expect(res.status).toBe(200);
+   expect(fetch).toHaveBeenCalledTimes(1);
+   expect(Object.fromEntries(new Headers(fetch.mock.calls[0][1].headers))).toEqual({...allowed(name), "x-forwarded-for": canonical});
+   if (name === "refresh") {
+    expect(await res.json()).toEqual({message: "ok"});
+    expect(res.headers.get("set-cookie")).toContain("access_token=rotated");
+   } else expect(res.headers.get("set-cookie")).toContain("access_token=;");
+  });
+  it.each([null, "", "192.0.2.1, 192.0.2.1", "192.0.2.1:80", "[::1]", "[::1]:80", "fe80::1%eth0", "invalid"])(`${name} rejects invalid ingress %s with 503 before fetch`, async ip => {
+   vi.stubEnv("PORTAL_CLIENT_IP_SOURCE", "trusted-kong");
+   const fetch = vi.fn(); vi.stubGlobal("fetch", fetch);
+   const res = await (await route(name))(edge(ip));
+   expect(res.status).toBe(503); expect(await res.json()).toMatchObject({error: "INTERNAL_ERROR"}); expect(fetch).not.toHaveBeenCalled();
+  });
+  it(`${name} rejects duplicate identical X-Real-IP values`, async () => {
+   vi.stubEnv("PORTAL_CLIENT_IP_SOURCE", "trusted-kong");
+   const req = edge("192.0.2.1"); req.headers.append("X-Real-IP", "192.0.2.1");
+   const fetch = vi.fn(); vi.stubGlobal("fetch", fetch);
+   expect((await (await route(name))(req)).status).toBe(503); expect(fetch).not.toHaveBeenCalled();
+  });
+  it(`${name} fails closed on unknown mode`, async () => {
+   vi.stubEnv("PORTAL_CLIENT_IP_SOURCE", "invalid");
+   const fetch = vi.fn(); vi.stubGlobal("fetch", fetch);
+   expect((await (await route(name))(edge())).status).toBe(503); expect(fetch).not.toHaveBeenCalled();
+  });
+  it(`${name} preserves auth 429 and Retry-After`, async () => {
+   vi.stubEnv("PORTAL_CLIENT_IP_SOURCE", "trusted-kong");
+   const fetch = vi.fn().mockResolvedValue(json(error("rate_limit_exceeded", 429), 429)); vi.stubGlobal("fetch", fetch);
+   const res = await (await route(name))(edge());
+   expect(res.status).toBe(429); expect(res.headers.get("retry-after")).toBe("8");
+   expect(await res.json()).toEqual(error("rate_limit_exceeded", 429));
+   expect(Object.fromEntries(new Headers(fetch.mock.calls[0][1].headers))).toEqual({...allowed(name), "x-forwarded-for": "192.0.2.1"});
+  });
+ }
+ it("unset mode warns once across refresh and logout and forwards no browser claims", async () => {
+  vi.stubEnv("PORTAL_CLIENT_IP_SOURCE", undefined); vi.resetModules();
+  const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+  const fetch = vi.fn().mockImplementation(async () => json({message: "ok"})); vi.stubGlobal("fetch", fetch);
+  for (const name of ["refresh", "logout", "refresh"] as const) {
+   expect((await (await route(name))(edge())).status).toBe(200);
+   expect(Object.fromEntries(new Headers(fetch.mock.calls.at(-1)![1].headers))).toEqual(allowed(name));
+  }
+  expect(warn).toHaveBeenCalledTimes(1);
+ });
+});

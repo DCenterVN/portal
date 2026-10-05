@@ -1,3 +1,4 @@
+import {resolveClientIP} from "@/lib/api/client-ip";
 import {NextRequest, NextResponse} from "next/server";
 import {
   BackendError,
@@ -89,9 +90,15 @@ export async function POST(
   }
 
   try {
+    let clientIP: string | undefined;
+    if (operation.service === "auth") {
+      try { clientIP = resolveClientIP(request.headers); }
+      catch { throw new BackendError("Dịch vụ xác thực hiện không khả dụng", 503, {error: "INTERNAL_ERROR"}); }
+    }
     const data = await operation.execute({
       params: input.params,
-      payload: input.payload
+      payload: input.payload,
+      clientIP
     });
     const durationMs = Math.round(performance.now() - startedAt);
     appendAudit({
@@ -149,7 +156,7 @@ export async function POST(
           ...(errorDetails ? {details: errorDetails} : {})
         }
       },
-      {status}
+      {status, headers: err instanceof BackendError && err.retryAfter ? {"Retry-After": err.retryAfter} : {}}
     );
   }
 }

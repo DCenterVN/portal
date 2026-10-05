@@ -1,3 +1,4 @@
+import {authHeaders} from "./client-ip";
 import {z} from "zod";
 
 export type OperationRisk = "read" | "mutation" | "credential";
@@ -5,6 +6,7 @@ export type OperationRisk = "read" | "mutation" | "credential";
 export type OperationExecuteContext = {
   params?: Record<string, string>;
   payload?: unknown;
+  clientIP?: string;
 };
 
 export type OperationDefinition = {
@@ -29,12 +31,14 @@ export const operationRequestSchema = z.object({
 export class BackendError extends Error {
   status: number;
   data: unknown;
+  retryAfter?: string;
 
-  constructor(message: string, status: number, data?: unknown) {
+  constructor(message: string, status: number, data?: unknown, retryAfter?: string) {
     super(message);
     this.name = "BackendError";
     this.status = status;
     this.data = data;
+    this.retryAfter = retryAfter;
   }
 }
 
@@ -75,16 +79,15 @@ export async function callBackend<T = unknown>(
   service: "auth" | "org" | "integration" | "notification",
   method: "GET" | "POST" | "PATCH" | "PUT",
   path: string,
-  body?: unknown
+  body?: unknown,
+  clientIP?: string
 ): Promise<T> {
   const baseUrl = getServiceBaseUrl(service);
   const url = `${baseUrl}${path}`;
+  const headers = {"Content-Type": "application/json", "User-Agent": "portal-bff/operator-console"};
   const res = await fetch(url, {
     method,
-    headers: {
-      "Content-Type": "application/json",
-      "User-Agent": "portal-bff/operator-console"
-    },
+    headers: service === "auth" ? authHeaders(clientIP, headers) : headers,
     ...(body !== undefined ? {body: JSON.stringify(body)} : {})
   });
 
@@ -100,7 +103,7 @@ export async function callBackend<T = unknown>(
       (typeof data === "string" && data.length > 0
         ? data
         : `Backend call failed with status ${res.status}`);
-    throw new BackendError(String(message), res.status, data);
+    throw new BackendError(String(message), res.status, data, service === "auth" && res.status === 429 ? res.headers.get("retry-after") ?? undefined : undefined);
   }
 
   return data as T;
@@ -116,7 +119,7 @@ export const operations: Record<string, OperationDefinition> = {
     risk: "read",
     requiresReason: false,
     allowedInProduction: true,
-    execute: () => callBackend("auth", "GET", "/internal/operator/users")
+    execute: (ctx) => callBackend("auth", "GET", "/internal/operator/users", undefined, ctx?.clientIP)
   },
   "auth.operator.user.security-action": {
     id: "auth.operator.user.security-action",
@@ -134,7 +137,8 @@ export const operations: Record<string, OperationDefinition> = {
         "auth",
         "POST",
         path,
-        ctx?.payload ?? {action: "SUSPEND"}
+        ctx?.payload ?? {action: "SUSPEND"},
+        ctx?.clientIP
       );
     }
   },
@@ -148,7 +152,7 @@ export const operations: Record<string, OperationDefinition> = {
     requiresReason: true,
     allowedInProduction: false,
     execute: (ctx) =>
-      callBackend("auth", "POST", "/auth/native/login", ctx?.payload)
+      callBackend("auth", "POST", "/auth/native/login", ctx?.payload, ctx?.clientIP)
   },
   "org.operator.branches.list": {
     id: "org.operator.branches.list",

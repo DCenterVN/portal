@@ -1,9 +1,9 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest, NextResponse } from "next/server";
 vi.mock("server-only", () => ({}));
 import { POST as customer } from "../../app/api/auth/login/route";
 import { POST as staff } from "../../app/api/auth/staff/login/route";
-import { safeLanding } from "./auth-journey-bff";
+import { customerOperation, acceptStaffInvite, switchStaffContext, safeLanding } from "./auth-journey-bff";
 const reply = (data: unknown, status = 200, cookies: string[] = []) => { const headers = new Headers({"content-type": "application/json"}); cookies.forEach(c => headers.append("set-cookie", c)); return new Response(JSON.stringify(data), {status, headers}); };
 const request = (body: unknown = {identifier: "a@example.com", password: "password-1234"}) => new NextRequest("http://localhost/api/auth/login", { method: "POST", headers: {"Content-Type":"application/json","Sec-Fetch-Site":"same-origin",cookie: "access_token=existing; refresh_token=existing"}, body: JSON.stringify(body) });
 const row = (org_id = "org-1", branch_id = "branch-1", member_type = "EMPLOYEE", status = "ACTIVE") => ({org_id, branch_id, member_type, status, roles: ["SALES"]});
@@ -107,5 +107,82 @@ describe("R4-1 login employee marker", () => {
     expect(res.status).toBe(401);
     expect(res.cookies.get("portal_plane")).toMatchObject({value: "", maxAge: 0, secure: false});
     expect(res.headers.getSetCookie()).toHaveLength(1);
+  });
+});
+
+afterEach(() => vi.unstubAllEnvs());
+describe("S5 auth client IP forwarding", () => {
+  function edge(body?: unknown, ip = "::FFFF:C000:0201") {
+    const req = request(body);
+    req.headers.set("X-Real-IP", ip);
+    req.headers.set("X-Forwarded-For", "198.51.100.99, 198.51.100.100");
+    req.headers.set("Forwarded", "for=198.51.100.99");
+    req.headers.set("User-Agent", "test-agent");
+    return req;
+  }
+  function exact(headers: HeadersInit | undefined, allowed: Record<string, string>) {
+    expect(Object.fromEntries(new Headers(headers))).toEqual({...allowed, "x-forwarded-for": "192.0.2.1"});
+  }
+  it.each([customer, staff])("login/profile/context use exact headers", async handler => {
+    vi.stubEnv("PORTAL_CLIENT_IP_SOURCE", "trusted-kong");
+    const calls: [string, RequestInit | undefined][] = [];
+    const original = upstream();
+    vi.stubGlobal("fetch", vi.fn(async (url: string, init?: RequestInit) => {calls.push([url, init]); return original(url);}));
+    expect((await handler(edge())).status).toBe(200);
+    for (const [url, init] of calls) {
+      if (url.endsWith("/auth/web/login")) exact(init?.headers, {"content-type": "application/json", "user-agent": "test-agent"});
+      else if (url.endsWith("/auth/org-context")) exact(init?.headers, {"content-type": "application/json", authorization: "Bearer temporary"});
+      else if (url.endsWith("/auth/me")) exact(init?.headers, {authorization: "Bearer temporary"});
+      else expect(Object.fromEntries(new Headers(init?.headers))).toEqual({authorization: "Bearer temporary"});
+    }
+  });
+  it("rejection revokes with the same sanitized IP", async () => {
+    vi.stubEnv("PORTAL_CLIENT_IP_SOURCE", "trusted-kong");
+    const original = upstream([]); const calls: [string, RequestInit | undefined][] = [];
+    vi.stubGlobal("fetch", vi.fn(async (url: string, init?: RequestInit) => {calls.push([url, init]); return original(url);}));
+    expect((await staff(edge())).status).toBe(403);
+    exact(calls.at(-1)?.[1]?.headers, {cookie: "refresh_token=temporary-rt; CSRF-Token=temporary-csrf", "x-csrf-token": "temporary-csrf", authorization: "Bearer temporary", "user-agent": "test-agent"});
+  });
+  const ops = [
+    ["register", {email: "a@example.com", password: "password-1234"}],
+    ["activate", {token: "token"}], ["resend", {email: "a@example.com"}],
+    ["forgot", {email: "a@example.com"}], ["reset", {token: "token", new_password: "password-1234"}],
+  ] as const;
+  it.each(ops)("%s sends sanitized IP and preserves 429", async (op, body) => {
+    vi.stubEnv("PORTAL_CLIENT_IP_SOURCE", "trusted-kong");
+    const fetch = vi.fn().mockResolvedValue(new Response(JSON.stringify({error: "rate_limit_exceeded"}), {status: 429, headers: {"Retry-After": "900"}})); vi.stubGlobal("fetch", fetch);
+    const res = await customerOperation(edge(body), op);
+    expect(res.status).toBe(429); expect(res.headers.get("retry-after")).toBe("900");
+    expect(await res.json()).toEqual({error: "rate_limit_exceeded"});
+    exact(fetch.mock.calls[0][1].headers, {"content-type": "application/json"});
+  });
+  it("invite and selected context use the shared auth contract", async () => {
+    vi.stubEnv("PORTAL_CLIENT_IP_SOURCE", "trusted-kong");
+    const fetch = vi.fn().mockResolvedValueOnce(reply({code: 200, status: "success", message: "OK", data: {status: "activated"}})).mockResolvedValueOnce(reply([row()])).mockResolvedValueOnce(reply({access_token: "selected"})); vi.stubGlobal("fetch", fetch);
+    expect((await acceptStaffInvite(edge({token: "token", password: "password-1234"}))).status).toBe(200);
+    exact(fetch.mock.calls[0][1].headers, {"content-type": "application/json"});
+    expect((await switchStaffContext(edge({org_id: "org-1", branch_id: "branch-1"}))).status).toBe(200);
+    exact(fetch.mock.calls[2][1].headers, {"content-type": "application/json", authorization: "Bearer existing"});
+  });
+  it.each([undefined, "", "192.0.2.1, 192.0.2.1", "[::1]", "192.0.2.1:80", "fe80::1%eth0"])("invalid ingress %s returns 503 before auth fetch", async ip => {
+    vi.stubEnv("PORTAL_CLIENT_IP_SOURCE", "trusted-kong");
+    const fetch = vi.fn(); vi.stubGlobal("fetch", fetch);
+    const req = edge(); if (ip === undefined) req.headers.delete("X-Real-IP"); else req.headers.set("X-Real-IP", ip);
+    const res = await customer(req); expect(res.status).toBe(503); expect(await res.json()).toMatchObject({error: "INTERNAL_ERROR"}); expect(fetch).not.toHaveBeenCalled();
+  });
+  it("unset mode omits forwarding on real BFF calls and warns once", async () => {
+    vi.stubEnv("PORTAL_CLIENT_IP_SOURCE", undefined);
+    // Fresh process module state, without mocking the resolver or builder.
+    vi.resetModules();
+    const {customerOperation: operation} = await import("./auth-journey-bff");
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const fetch = vi.fn().mockImplementation(async () => reply({status: "accepted"})); vi.stubGlobal("fetch", fetch);
+    await operation(edge({email: "a@example.com"}), "forgot"); await operation(edge({email: "a@example.com"}), "resend");
+    expect(warn).toHaveBeenCalledTimes(1);
+    for (const call of fetch.mock.calls) expect(Object.fromEntries(new Headers(call[1].headers))).toEqual({"content-type": "application/json"});
+  });
+  it("unknown mode returns 503 before fetch", async () => {
+    vi.stubEnv("PORTAL_CLIENT_IP_SOURCE", "invalid"); const fetch = vi.fn(); vi.stubGlobal("fetch", fetch);
+    expect((await customer(edge())).status).toBe(503); expect(fetch).not.toHaveBeenCalled();
   });
 });
