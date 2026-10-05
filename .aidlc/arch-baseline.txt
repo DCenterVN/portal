@@ -1,14 +1,8 @@
 # archcheck baseline: known debt, remove a line when fixed; growth is refused.
-FE-03 app/api/auth/activate/route.ts
 FE-03 app/api/auth/context/route.ts
-FE-03 app/api/auth/forgot/route.ts
-FE-03 app/api/auth/login/route.ts
 FE-03 app/api/auth/logout/route.ts
 FE-03 app/api/auth/me/route.ts
 FE-03 app/api/auth/refresh/route.ts
-FE-03 app/api/auth/register/route.ts
-FE-03 app/api/auth/reset/route.ts
-FE-03 app/api/auth/switch-org/route.ts
 FE-03 app/readyz/route.ts
 FE-03 features/inventory/shelves-view.tsx
 FE-03 features/production/food-plans-view.tsx
@@ -27,7 +21,6 @@ FE-09 features/products/order-detail-view.tsx
 FE-09 features/products/product-detail-loader.tsx
 FE-09 features/products/products-loader.tsx
 FE-09 features/sales/pricing-floor-view.tsx
-FE-10 components/auth/login-form.tsx
 FE-10 components/modals/allergen-warning-modal.tsx
 FE-10 components/modals/cold-chain-violation-modal.tsx
 FE-10 components/modals/confirm-qc-decision-modal.tsx

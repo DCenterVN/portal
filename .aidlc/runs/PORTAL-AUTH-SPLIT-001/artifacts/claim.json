@@ -1,0 +1,9 @@
+{
+  "task": "PORTAL-AUTH-SPLIT-001",
+  "actor": "agent:claude-code(171709704+dawnmoriaty@users.noreply.github.com)",
+  "worker": null,
+  "ts": "2026-10-04T12:25:07+00:00",
+  "by": "codex",
+  "previous": null,
+  "slice": null
+}

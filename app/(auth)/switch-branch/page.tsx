@@ -1,5 +1,2 @@
-import { SwitchBranchPage } from "@/features/auth/switch-branch-page";
-
-export default function Page() {
-  return <SwitchBranchPage />;
-}
+import {redirect} from "next/navigation";
+export default function Page() {redirect("/staff/switch-branch");}

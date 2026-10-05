@@ -1,14 +1,16 @@
+import {cookies} from "next/headers";
+import {getTranslations} from "@/features/customer-auth/form-feedback";
 import { Suspense } from "react";
-import type { Metadata } from "next";
+
 import { AuthHeading } from "@/components/patterns/auth-heading";
-import { ResetForm } from "@/features/auth/reset-form";
+import { ResetForm } from "@/features/customer-auth/reset-form";
 
-export const metadata: Metadata = { title: "Đặt mật khẩu mới" };
+export async function generateMetadata() { const t = getTranslations("customerAuth", (await cookies()).get("NEXT_LOCALE")?.value === "en" ? "en" : "vi"); return {title: t("resetTitle")}; }
 
-export default function Page() {
+export default async function Page() { const t = getTranslations("customerAuth", (await cookies()).get("NEXT_LOCALE")?.value === "en" ? "en" : "vi");
   return (
     <>
-      <AuthHeading title="Đặt mật khẩu mới" subtitle="Dùng cho cả khách hàng và nhân viên vừa được cấp tài khoản." />
+      <AuthHeading title={t("resetTitle")} subtitle={t("resetSubtitle")} />
       <Suspense>
         <ResetForm />
       </Suspense>

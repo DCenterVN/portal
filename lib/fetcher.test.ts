@@ -213,3 +213,32 @@ describe("mutationFetcher", () => {
     });
   });
 });
+
+describe("S15 route-family refresh redirects",()=>{
+ afterEach(()=>vi.unstubAllGlobals());
+ it.each([["/console/orders","/staff/login"],["/staff/switch-org","/staff/login"],["/me","/login"],["/orders","/login"]])("failed refresh from %s goes to %s",async(path,login)=>{const location={pathname:path,href:""};vi.stubGlobal("window",{location});const fetch=vi.fn().mockResolvedValue(new Response("{}",{status:401}));vi.stubGlobal("fetch",fetch);await apiFetch("/api/protected");expect(location.href).toBe(`${login}?redirect=${encodeURIComponent(path)}`);expect(fetch).toHaveBeenCalledTimes(2);});
+ it.each(["/api/auth/staff/login","/api/auth/staff/forgot","/api/auth/staff/reset","/api/auth/staff/invite/accept","/api/auth/activate/resend"])("public auth mutation %s never refreshes or redirects on 401",async path=>{const location={pathname:"/staff/login",href:""};vi.stubGlobal("window",{location});const fetch=vi.fn().mockResolvedValue(new Response("{}",{status:401}));vi.stubGlobal("fetch",fetch);await apiFetch(path,{method:"POST"});expect(fetch).toHaveBeenCalledTimes(1);expect(location.href).toBe("");});
+ it.each(["/api/auth/staff/switch-org","/api/auth/staff/switch-branch","/api/auth/login-evil"])("protected endpoint %s still refreshes",async path=>{vi.stubGlobal("fetch",vi.fn().mockResolvedValueOnce(new Response("{}",{status:401})).mockResolvedValueOnce(new Response("{}")).mockResolvedValueOnce(new Response("{}")));expect((await apiFetch(path)).status).toBe(200);expect(fetch).toHaveBeenCalledTimes(3);});
+ it.each(["/login","/staff/login"])("already at %s never redirects into loop",async path=>{const location={pathname:path,href:""};vi.stubGlobal("window",{location});vi.stubGlobal("fetch",vi.fn().mockResolvedValue(new Response("{}",{status:401})));await apiFetch("/api/protected");expect(location.href).toBe("");});
+});
+
+import {readdirSync} from "node:fs";
+import {join, relative} from "node:path";
+const consoleRoot = join(process.cwd(), "app/(console)");
+function consolePages(dir: string): string[] {
+ return readdirSync(dir,{withFileTypes:true}).flatMap(entry => entry.isDirectory() ? consolePages(join(dir,entry.name)) : entry.name === "page.tsx" ? ["/" + relative(consoleRoot,dir).replaceAll("\\","/")] : []);
+}
+describe("review R3 actual console refresh family", () => {
+ afterEach(()=>vi.unstubAllGlobals());
+ it.each([...consolePages(consoleRoot),"/platform/companies","/platform/staff","/switch-branch","/switch-org"])("R3 failed refresh from %s uses staff login", async path => {
+  const location={pathname:path,href:""};vi.stubGlobal("window",{location});vi.stubGlobal("fetch",vi.fn().mockResolvedValue(new Response("{}",{status:401})));
+  await apiFetch("/api/protected");expect(location.href).toBe("/staff/login?redirect="+encodeURIComponent(path));
+ });
+});
+
+ it.each([[429,"rate_limit_exceeded"],[403,"FORBIDDEN"],[400,"invalid_token"]])("D-142 shared fetcher exposes public status/code %s %s",async(status,code)=>{
+  const original=global.fetch;
+  try {global.fetch=vi.fn().mockResolvedValue(new Response(JSON.stringify({error:code,message:"invalid or expired token"}),{status}));
+   await expect(fetcher("/api/auth/login")).rejects.toMatchObject({status,code});
+  } finally {global.fetch=original;}
+ });

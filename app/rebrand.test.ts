@@ -11,7 +11,9 @@ import { ToastContainer, type ToastVariant } from "../components/ui/toast";
 import { ConfirmQCDecisionModal } from "../components/modals/confirm-qc-decision-modal";
 import { SessionTimeoutModal } from "../components/modals/session-timeout-modal";
 import { buttonVariants } from "../components/ui/button";
-import { LoginForm } from "../components/auth/login-form";
+import { LoginForm } from "../features/customer-auth/login-form";
+import { CustomerAuthShell } from "../components/layout/customer-auth-shell";
+import { EmployeeAuthShell } from "../components/layout/employee-auth-shell";
 import ProfileClient from "./(store)/me/profile-client";
 import { BranchesView } from "../features/branches/branches-view";
 import { MembershipsView, type Employee } from "../features/memberships/memberships-view";
@@ -427,15 +429,15 @@ function expectRoleSurface(html: string) {
 }
 
 describe("S5 rendered auth, profile, branch and membership roles", () => {
-  it("keeps legacy login fields and solid primary branding with semantic security cue", () => {
-    const html = surfaceMarkup(React.createElement(ThemeProvider, null, React.createElement(LoginForm)));
+  it("keeps customer login fields and solid role branding", () => {
+    const html = surfaceMarkup(React.createElement(ThemeProvider, null, React.createElement(CustomerAuthShell, null, React.createElement(LoginForm))));
     expectRoleSurface(html);
-    expect(html).toContain("bg-[var(--color-primary)]");
-    expect(html).toContain("text-[var(--color-leaf)]");
-    expect(html).toContain('for="email"');
-    expect(html).toContain('for="password"');
+    expect(html).toContain("bg-[var(--primary)]");
+    const labels = [...html.matchAll(/<label[^>]*for="([^"]+)"/g)].map(match => match[1]);
+    expect(labels).toHaveLength(2);
+    for (const id of labels) expect(html).toContain(`id="${id}"`);
     expect(html).toContain('type="password"');
-    expect(html).toContain("Vào hệ thống chi nhánh");
+    expect(html).toContain("Đăng ký mua hàng");
     for (const input of html.match(/<input[^>]*type="(?:text|password)"[^>]*>/g)!) {
       expect(input).toContain("h-11");
       expect(input).not.toMatch(/\bh-(?:9|10)\b/);
@@ -916,4 +918,23 @@ describe("S8 rendered product and traceability roles", () => {
       expect(html).toContain("before:bg-[var(--color-line)]");
     }
   });
+});
+
+
+it("S18 retires shared screens and exposes independent shells", () => {
+  for (const file of ["components/auth/login-form.tsx", "components/layout/auth-shell.tsx"]) {
+    expect(() => readFileSync(file), file + ": legacy screen still exists").toThrow();
+  }
+  for (const [Shell, journey] of [[CustomerAuthShell,"customer"],[EmployeeAuthShell,"employee"]] as const) {
+    const html = renderToStaticMarkup(React.createElement(Shell, null, "form"));
+    expect(html.match(/<main/g)).toHaveLength(1);
+    expect(html.match(/data-auth-journey=/g)).toHaveLength(1);
+    expect(html).toContain(`data-auth-journey="${journey}"`);
+    expect(html).toContain("Bếp Tươi");
+  }
+});
+
+vi.mock("next-intl", async original => {
+ const actual = await original<typeof import("next-intl")>();
+ return {...actual, useTranslations: (namespace: string) => actual.createTranslator({locale: "vi", messages: JSON.parse(readFileSync("messages/vi.json", "utf8")), namespace})};
 });

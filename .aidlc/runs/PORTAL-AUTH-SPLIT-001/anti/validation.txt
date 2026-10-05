@@ -1,0 +1,177 @@
+RED regression proof (before fixes; offline only)
+$ rtk proxy python3 anti_runner_selftest.py </dev/null
+FAIL detail phases EOF: AssertionError: start failed
+FAIL runner phases EOF
+FAIL runner BFF 500
+PASS runner existing run
+PASS runner port 3000
+PASS runner port 9222
+PASS runner port 3001
+FAIL detail tracked drift: AssertionError: start failed
+FAIL runner tracked drift
+FAIL detail foreign pid: AssertionError: start failed
+FAIL runner foreign pid
+PASS runner missing build
+RUNNER SELF-TEST: 5/9 (offline synthetic shims only)
+(no stderr)
+exit=1
+
+$ rtk proxy python3 anti_check.py --self-test </dev/null
+PASS self-test good fixture; D3 BLOCKED aggregate exit 2
+PASS self-test reject missing record
+PASS self-test reject duplicate record
+PASS self-test reject duplicate JSON key
+PASS self-test reject replayed runId
+PASS self-test reject old fetchTime
+PASS self-test reject future fetchTime
+PASS self-test reject wrong route
+PASS self-test reject wrong viewport
+PASS self-test reject missing screenshot
+PASS self-test reject duplicate screenshot
+PASS self-test reject wrong PNG size
+PASS self-test reject digest mismatch
+PASS self-test reject missing measurement
+PASS self-test reject contrast 4.49
+PASS self-test reject axe serious 1
+PASS self-test reject keyboard 6
+PASS self-test reject boolean metric
+PASS self-test reject nonfinite metric
+PASS self-test reject FAIL recorded
+PASS self-test reject BLOCKED no reason
+PASS self-test reject D3 false PASS
+PASS self-test reject D3 wrong 200
+PASS self-test reject tracked drift
+PASS self-test reject run incomplete
+PASS self-test reject run exit 2
+FAIL self-test reject CSRF wrong code
+FAIL self-test reject CSRF wrong message
+PASS self-test reject CSRF cookie
+FAIL self-test reject screenshot directory symlink
+SELF-TEST: 27/30 FAIL (synthetic only)
+(no stderr)
+exit=1
+
+GREEN validation proof
+CWD: /mnt/win_d/feature/ticket/portal/.aidlc/runs/PORTAL-AUTH-SPLIT-001/anti
+Invocation: rtk proxy python3 validate_kit.py </dev/null
+Offline synthetic fixtures only. No live acceptance was performed.
+Scope: kit-only plan/cook/test/ship handback. hs-cli --help and hs-run --help inspected read-only.
+Harness receipts were not generated: they write outside the user-authorized anti/ boundary.
+
+$ rtk proxy bash -n anti.sh </dev/null
+(no stdout)
+(no stderr)
+exit=0
+
+$ rtk proxy python3 anti_check.py --self-test </dev/null
+PASS self-test good fixture; D3 BLOCKED aggregate exit 2
+PASS self-test reject missing record
+PASS self-test reject duplicate record
+PASS self-test reject duplicate JSON key
+PASS self-test reject replayed runId
+PASS self-test reject old fetchTime
+PASS self-test reject future fetchTime
+PASS self-test reject wrong route
+PASS self-test reject wrong viewport
+PASS self-test reject missing screenshot
+PASS self-test reject wrong PNG size
+PASS self-test reject digest mismatch
+PASS self-test reject missing measurement
+PASS self-test reject contrast 4.49
+PASS self-test reject axe serious 1
+PASS self-test reject keyboard 6
+PASS self-test reject boolean metric
+PASS self-test reject nonfinite metric
+PASS self-test reject FAIL recorded
+PASS self-test reject BLOCKED no reason
+PASS self-test reject D3 false PASS
+PASS self-test reject D3 wrong 200
+PASS self-test reject tracked drift
+PASS self-test reject run incomplete
+PASS self-test reject run exit 2
+PASS self-test reject CSRF wrong code
+PASS self-test reject CSRF wrong message
+PASS self-test reject CSRF cookie
+PASS self-test reject screenshot directory symlink
+PASS self-test reject pace too fast
+PASS self-test reject no Kong traffic
+PASS self-test reject TOKEN cell without Kong
+PASS self-test reject TOKEN cell only 429
+PASS self-test reject script client at Kong
+SELF-TEST: 34/34 PASS (synthetic only)
+(no stderr)
+exit=0
+
+$ rtk proxy python3 anti_runner_selftest.py </dev/null
+PASS runner phases EOF
+PASS runner BFF 500
+PASS runner existing run
+PASS runner port 3000
+PASS runner port 9222
+PASS runner port 3001
+PASS runner tracked drift
+PASS runner foreign pid
+PASS runner missing build
+RUNNER SELF-TEST: 9/9 (offline synthetic shims only)
+(no stderr)
+exit=0
+
+$ rtk proxy python3 mutation_selftest.py </dev/null
+PASS self-test good fixture; D3 BLOCKED aggregate exit 2
+PASS self-test reject missing record
+PASS self-test reject duplicate record
+PASS self-test reject duplicate JSON key
+PASS self-test reject replayed runId
+PASS self-test reject old fetchTime
+FAIL self-test reject future fetchTime
+PASS self-test reject wrong route
+PASS self-test reject wrong viewport
+PASS self-test reject missing screenshot
+PASS self-test reject wrong PNG size
+PASS self-test reject digest mismatch
+PASS self-test reject missing measurement
+PASS self-test reject contrast 4.49
+PASS self-test reject axe serious 1
+PASS self-test reject keyboard 6
+PASS self-test reject boolean metric
+PASS self-test reject nonfinite metric
+PASS self-test reject FAIL recorded
+PASS self-test reject BLOCKED no reason
+PASS self-test reject D3 false PASS
+PASS self-test reject D3 wrong 200
+PASS self-test reject tracked drift
+PASS self-test reject run incomplete
+PASS self-test reject run exit 2
+PASS self-test reject CSRF wrong code
+PASS self-test reject CSRF wrong message
+PASS self-test reject CSRF cookie
+PASS self-test reject screenshot directory symlink
+PASS self-test reject pace too fast
+PASS self-test reject no Kong traffic
+PASS self-test reject TOKEN cell without Kong
+PASS self-test reject TOKEN cell only 429
+PASS self-test reject script client at Kong
+SELF-TEST: 33/34 FAIL (synthetic only)
+MUTATION: fetchTime-window check removed; self-test exit=1; KILLED
+(no stderr)
+exit=0
+
+$ rtk proxy python3 anti_runner_selftest.py --mutation </dev/null
+PASS runner phases EOF
+FAIL runner BFF 500
+PASS runner existing run
+PASS runner port 3000
+PASS runner port 9222
+PASS runner port 3001
+PASS runner tracked drift
+PASS runner foreign pid
+PASS runner missing build
+RUNNER SELF-TEST: 8/9 (offline synthetic shims only)
+MUTATION: BFF-400 guard removed; self-test exit=1; KILLED
+(no stderr)
+exit=0
+
+Python AST syntax check: PASS (no bytecode writes)
+Checklist consistency: PASS; UI=22/22; legacy=6/6; D3 expected BLOCKED=4
+Checklist cell count: 96
+KIT VALIDATION: PASS

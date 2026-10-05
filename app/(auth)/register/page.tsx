@@ -1,14 +1,16 @@
+import {cookies} from "next/headers";
+import {getTranslations} from "@/features/customer-auth/form-feedback";
 import { Suspense } from "react";
-import type { Metadata } from "next";
+
 import { AuthHeading } from "@/components/patterns/auth-heading";
-import { RegisterForm } from "@/features/auth/register-form";
+import { RegisterForm } from "@/features/customer-auth/register-form";
 
-export const metadata: Metadata = { title: "Tạo tài khoản mua hàng" };
+export async function generateMetadata() { const t = getTranslations("customerAuth", (await cookies()).get("NEXT_LOCALE")?.value === "en" ? "en" : "vi"); return {title: t("registerTitle")}; }
 
-export default function Page() {
+export default async function Page() { const t = getTranslations("customerAuth", (await cookies()).get("NEXT_LOCALE")?.value === "en" ? "en" : "vi");
   return (
     <>
-      <AuthHeading title="Tạo tài khoản mua hàng" subtitle="Mua thực phẩm rõ nguồn gốc, theo dõi đơn và lô hàng của bạn." />
+      <AuthHeading title={t("registerTitle")} subtitle={t("registerSubtitle")} />
       <Suspense>
         <RegisterForm />
       </Suspense>

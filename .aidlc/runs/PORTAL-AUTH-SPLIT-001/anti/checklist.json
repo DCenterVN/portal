@@ -1,0 +1,2083 @@
+{
+  "schema": "portal-auth-anti/1",
+  "cells": [
+    {
+      "id": "UI-01-mobile",
+      "route": "/login",
+      "viewport": "mobile",
+      "size": [
+        390,
+        844
+      ],
+      "steps": "Use provisioned state/token privately. Check correct customer/store or staff/console shell; staff has no hero/glass/register. Tab, Shift+Tab, Enter, skip link, visible unobscured focus, reduced motion; exercise invalid input/loading/error/status; check labels, autocomplete, aria-describedby/invalid, first-error focus. Run axe in this viewport; measure worst normal-text contrast across all visible states.",
+      "criteria": {
+        "mainCount": 1,
+        "horizontalOverflow": 0,
+        "wrongJourneyLinks": 0,
+        "minTargetPx": {
+          "min": 44
+        },
+        "keyboardChecks": 7,
+        "axeSerious": 0,
+        "axeCritical": 0,
+        "minContrast": {
+          "min": 4.5
+        },
+        "shellChecks": 1,
+        "formFeedbackChecks": 7,
+        "maxConcurrentRequests": {
+          "max": 1
+        }
+      },
+      "expected": "PASS",
+      "record": "UI-01-mobile.json",
+      "screenshot": "shots/UI-01-mobile.png"
+    },
+    {
+      "id": "UI-01-desktop",
+      "route": "/login",
+      "viewport": "desktop",
+      "size": [
+        1440,
+        900
+      ],
+      "steps": "Use provisioned state/token privately. Check correct customer/store or staff/console shell; staff has no hero/glass/register. Tab, Shift+Tab, Enter, skip link, visible unobscured focus, reduced motion; exercise invalid input/loading/error/status; check labels, autocomplete, aria-describedby/invalid, first-error focus. Run axe in this viewport; measure worst normal-text contrast across all visible states.",
+      "criteria": {
+        "mainCount": 1,
+        "horizontalOverflow": 0,
+        "wrongJourneyLinks": 0,
+        "minTargetPx": {
+          "min": 44
+        },
+        "keyboardChecks": 7,
+        "axeSerious": 0,
+        "axeCritical": 0,
+        "minContrast": {
+          "min": 4.5
+        },
+        "shellChecks": 1,
+        "formFeedbackChecks": 7,
+        "maxConcurrentRequests": {
+          "max": 1
+        }
+      },
+      "expected": "PASS",
+      "record": "UI-01-desktop.json",
+      "screenshot": "shots/UI-01-desktop.png"
+    },
+    {
+      "id": "UI-02-mobile",
+      "route": "/register",
+      "viewport": "mobile",
+      "size": [
+        390,
+        844
+      ],
+      "steps": "Use provisioned state/token privately. Check correct customer/store or staff/console shell; staff has no hero/glass/register. Tab, Shift+Tab, Enter, skip link, visible unobscured focus, reduced motion; exercise invalid input/loading/error/status; check labels, autocomplete, aria-describedby/invalid, first-error focus. Run axe in this viewport; measure worst normal-text contrast across all visible states.",
+      "criteria": {
+        "mainCount": 1,
+        "horizontalOverflow": 0,
+        "wrongJourneyLinks": 0,
+        "minTargetPx": {
+          "min": 44
+        },
+        "keyboardChecks": 7,
+        "axeSerious": 0,
+        "axeCritical": 0,
+        "minContrast": {
+          "min": 4.5
+        },
+        "shellChecks": 1,
+        "formFeedbackChecks": 7,
+        "maxConcurrentRequests": {
+          "max": 1
+        }
+      },
+      "expected": "PASS",
+      "record": "UI-02-mobile.json",
+      "screenshot": "shots/UI-02-mobile.png"
+    },
+    {
+      "id": "UI-02-desktop",
+      "route": "/register",
+      "viewport": "desktop",
+      "size": [
+        1440,
+        900
+      ],
+      "steps": "Use provisioned state/token privately. Check correct customer/store or staff/console shell; staff has no hero/glass/register. Tab, Shift+Tab, Enter, skip link, visible unobscured focus, reduced motion; exercise invalid input/loading/error/status; check labels, autocomplete, aria-describedby/invalid, first-error focus. Run axe in this viewport; measure worst normal-text contrast across all visible states.",
+      "criteria": {
+        "mainCount": 1,
+        "horizontalOverflow": 0,
+        "wrongJourneyLinks": 0,
+        "minTargetPx": {
+          "min": 44
+        },
+        "keyboardChecks": 7,
+        "axeSerious": 0,
+        "axeCritical": 0,
+        "minContrast": {
+          "min": 4.5
+        },
+        "shellChecks": 1,
+        "formFeedbackChecks": 7,
+        "maxConcurrentRequests": {
+          "max": 1
+        }
+      },
+      "expected": "PASS",
+      "record": "UI-02-desktop.json",
+      "screenshot": "shots/UI-02-desktop.png"
+    },
+    {
+      "id": "UI-03-mobile",
+      "route": "/activate",
+      "viewport": "mobile",
+      "size": [
+        390,
+        844
+      ],
+      "steps": "Use provisioned state/token privately. Check correct customer/store or staff/console shell; staff has no hero/glass/register. Tab, Shift+Tab, Enter, skip link, visible unobscured focus, reduced motion; exercise invalid input/loading/error/status; check labels, autocomplete, aria-describedby/invalid, first-error focus. Run axe in this viewport; measure worst normal-text contrast across all visible states.",
+      "criteria": {
+        "mainCount": 1,
+        "horizontalOverflow": 0,
+        "wrongJourneyLinks": 0,
+        "minTargetPx": {
+          "min": 44
+        },
+        "keyboardChecks": 7,
+        "axeSerious": 0,
+        "axeCritical": 0,
+        "minContrast": {
+          "min": 4.5
+        },
+        "shellChecks": 1,
+        "formFeedbackChecks": 7,
+        "maxConcurrentRequests": {
+          "max": 1
+        }
+      },
+      "expected": "PASS",
+      "record": "UI-03-mobile.json",
+      "screenshot": "shots/UI-03-mobile.png"
+    },
+    {
+      "id": "UI-03-desktop",
+      "route": "/activate",
+      "viewport": "desktop",
+      "size": [
+        1440,
+        900
+      ],
+      "steps": "Use provisioned state/token privately. Check correct customer/store or staff/console shell; staff has no hero/glass/register. Tab, Shift+Tab, Enter, skip link, visible unobscured focus, reduced motion; exercise invalid input/loading/error/status; check labels, autocomplete, aria-describedby/invalid, first-error focus. Run axe in this viewport; measure worst normal-text contrast across all visible states.",
+      "criteria": {
+        "mainCount": 1,
+        "horizontalOverflow": 0,
+        "wrongJourneyLinks": 0,
+        "minTargetPx": {
+          "min": 44
+        },
+        "keyboardChecks": 7,
+        "axeSerious": 0,
+        "axeCritical": 0,
+        "minContrast": {
+          "min": 4.5
+        },
+        "shellChecks": 1,
+        "formFeedbackChecks": 7,
+        "maxConcurrentRequests": {
+          "max": 1
+        }
+      },
+      "expected": "PASS",
+      "record": "UI-03-desktop.json",
+      "screenshot": "shots/UI-03-desktop.png"
+    },
+    {
+      "id": "UI-04-mobile",
+      "route": "/forgot-password",
+      "viewport": "mobile",
+      "size": [
+        390,
+        844
+      ],
+      "steps": "Use provisioned state/token privately. Check correct customer/store or staff/console shell; staff has no hero/glass/register. Tab, Shift+Tab, Enter, skip link, visible unobscured focus, reduced motion; exercise invalid input/loading/error/status; check labels, autocomplete, aria-describedby/invalid, first-error focus. Run axe in this viewport; measure worst normal-text contrast across all visible states.",
+      "criteria": {
+        "mainCount": 1,
+        "horizontalOverflow": 0,
+        "wrongJourneyLinks": 0,
+        "minTargetPx": {
+          "min": 44
+        },
+        "keyboardChecks": 7,
+        "axeSerious": 0,
+        "axeCritical": 0,
+        "minContrast": {
+          "min": 4.5
+        },
+        "shellChecks": 1,
+        "formFeedbackChecks": 7,
+        "maxConcurrentRequests": {
+          "max": 1
+        }
+      },
+      "expected": "PASS",
+      "record": "UI-04-mobile.json",
+      "screenshot": "shots/UI-04-mobile.png"
+    },
+    {
+      "id": "UI-04-desktop",
+      "route": "/forgot-password",
+      "viewport": "desktop",
+      "size": [
+        1440,
+        900
+      ],
+      "steps": "Use provisioned state/token privately. Check correct customer/store or staff/console shell; staff has no hero/glass/register. Tab, Shift+Tab, Enter, skip link, visible unobscured focus, reduced motion; exercise invalid input/loading/error/status; check labels, autocomplete, aria-describedby/invalid, first-error focus. Run axe in this viewport; measure worst normal-text contrast across all visible states.",
+      "criteria": {
+        "mainCount": 1,
+        "horizontalOverflow": 0,
+        "wrongJourneyLinks": 0,
+        "minTargetPx": {
+          "min": 44
+        },
+        "keyboardChecks": 7,
+        "axeSerious": 0,
+        "axeCritical": 0,
+        "minContrast": {
+          "min": 4.5
+        },
+        "shellChecks": 1,
+        "formFeedbackChecks": 7,
+        "maxConcurrentRequests": {
+          "max": 1
+        }
+      },
+      "expected": "PASS",
+      "record": "UI-04-desktop.json",
+      "screenshot": "shots/UI-04-desktop.png"
+    },
+    {
+      "id": "UI-05-mobile",
+      "route": "/reset-password",
+      "viewport": "mobile",
+      "size": [
+        390,
+        844
+      ],
+      "steps": "Use provisioned state/token privately. Check correct customer/store or staff/console shell; staff has no hero/glass/register. Tab, Shift+Tab, Enter, skip link, visible unobscured focus, reduced motion; exercise invalid input/loading/error/status; check labels, autocomplete, aria-describedby/invalid, first-error focus. Run axe in this viewport; measure worst normal-text contrast across all visible states.",
+      "criteria": {
+        "mainCount": 1,
+        "horizontalOverflow": 0,
+        "wrongJourneyLinks": 0,
+        "minTargetPx": {
+          "min": 44
+        },
+        "keyboardChecks": 7,
+        "axeSerious": 0,
+        "axeCritical": 0,
+        "minContrast": {
+          "min": 4.5
+        },
+        "shellChecks": 1,
+        "formFeedbackChecks": 7,
+        "maxConcurrentRequests": {
+          "max": 1
+        }
+      },
+      "expected": "PASS",
+      "record": "UI-05-mobile.json",
+      "screenshot": "shots/UI-05-mobile.png"
+    },
+    {
+      "id": "UI-05-desktop",
+      "route": "/reset-password",
+      "viewport": "desktop",
+      "size": [
+        1440,
+        900
+      ],
+      "steps": "Use provisioned state/token privately. Check correct customer/store or staff/console shell; staff has no hero/glass/register. Tab, Shift+Tab, Enter, skip link, visible unobscured focus, reduced motion; exercise invalid input/loading/error/status; check labels, autocomplete, aria-describedby/invalid, first-error focus. Run axe in this viewport; measure worst normal-text contrast across all visible states.",
+      "criteria": {
+        "mainCount": 1,
+        "horizontalOverflow": 0,
+        "wrongJourneyLinks": 0,
+        "minTargetPx": {
+          "min": 44
+        },
+        "keyboardChecks": 7,
+        "axeSerious": 0,
+        "axeCritical": 0,
+        "minContrast": {
+          "min": 4.5
+        },
+        "shellChecks": 1,
+        "formFeedbackChecks": 7,
+        "maxConcurrentRequests": {
+          "max": 1
+        }
+      },
+      "expected": "PASS",
+      "record": "UI-05-desktop.json",
+      "screenshot": "shots/UI-05-desktop.png"
+    },
+    {
+      "id": "UI-06-mobile",
+      "route": "/staff/login",
+      "viewport": "mobile",
+      "size": [
+        390,
+        844
+      ],
+      "steps": "Use provisioned state/token privately. Check correct customer/store or staff/console shell; staff has no hero/glass/register. Tab, Shift+Tab, Enter, skip link, visible unobscured focus, reduced motion; exercise invalid input/loading/error/status; check labels, autocomplete, aria-describedby/invalid, first-error focus. Run axe in this viewport; measure worst normal-text contrast across all visible states.",
+      "criteria": {
+        "mainCount": 1,
+        "horizontalOverflow": 0,
+        "wrongJourneyLinks": 0,
+        "minTargetPx": {
+          "min": 44
+        },
+        "keyboardChecks": 7,
+        "axeSerious": 0,
+        "axeCritical": 0,
+        "minContrast": {
+          "min": 4.5
+        },
+        "shellChecks": 1,
+        "formFeedbackChecks": 7,
+        "maxConcurrentRequests": {
+          "max": 1
+        }
+      },
+      "expected": "PASS",
+      "record": "UI-06-mobile.json",
+      "screenshot": "shots/UI-06-mobile.png"
+    },
+    {
+      "id": "UI-06-desktop",
+      "route": "/staff/login",
+      "viewport": "desktop",
+      "size": [
+        1440,
+        900
+      ],
+      "steps": "Use provisioned state/token privately. Check correct customer/store or staff/console shell; staff has no hero/glass/register. Tab, Shift+Tab, Enter, skip link, visible unobscured focus, reduced motion; exercise invalid input/loading/error/status; check labels, autocomplete, aria-describedby/invalid, first-error focus. Run axe in this viewport; measure worst normal-text contrast across all visible states.",
+      "criteria": {
+        "mainCount": 1,
+        "horizontalOverflow": 0,
+        "wrongJourneyLinks": 0,
+        "minTargetPx": {
+          "min": 44
+        },
+        "keyboardChecks": 7,
+        "axeSerious": 0,
+        "axeCritical": 0,
+        "minContrast": {
+          "min": 4.5
+        },
+        "shellChecks": 1,
+        "formFeedbackChecks": 7,
+        "maxConcurrentRequests": {
+          "max": 1
+        }
+      },
+      "expected": "PASS",
+      "record": "UI-06-desktop.json",
+      "screenshot": "shots/UI-06-desktop.png"
+    },
+    {
+      "id": "UI-07-mobile",
+      "route": "/staff/forgot-password",
+      "viewport": "mobile",
+      "size": [
+        390,
+        844
+      ],
+      "steps": "Use provisioned state/token privately. Check correct customer/store or staff/console shell; staff has no hero/glass/register. Tab, Shift+Tab, Enter, skip link, visible unobscured focus, reduced motion; exercise invalid input/loading/error/status; check labels, autocomplete, aria-describedby/invalid, first-error focus. Run axe in this viewport; measure worst normal-text contrast across all visible states.",
+      "criteria": {
+        "mainCount": 1,
+        "horizontalOverflow": 0,
+        "wrongJourneyLinks": 0,
+        "minTargetPx": {
+          "min": 44
+        },
+        "keyboardChecks": 7,
+        "axeSerious": 0,
+        "axeCritical": 0,
+        "minContrast": {
+          "min": 4.5
+        },
+        "shellChecks": 1,
+        "formFeedbackChecks": 7,
+        "maxConcurrentRequests": {
+          "max": 1
+        }
+      },
+      "expected": "PASS",
+      "record": "UI-07-mobile.json",
+      "screenshot": "shots/UI-07-mobile.png"
+    },
+    {
+      "id": "UI-07-desktop",
+      "route": "/staff/forgot-password",
+      "viewport": "desktop",
+      "size": [
+        1440,
+        900
+      ],
+      "steps": "Use provisioned state/token privately. Check correct customer/store or staff/console shell; staff has no hero/glass/register. Tab, Shift+Tab, Enter, skip link, visible unobscured focus, reduced motion; exercise invalid input/loading/error/status; check labels, autocomplete, aria-describedby/invalid, first-error focus. Run axe in this viewport; measure worst normal-text contrast across all visible states.",
+      "criteria": {
+        "mainCount": 1,
+        "horizontalOverflow": 0,
+        "wrongJourneyLinks": 0,
+        "minTargetPx": {
+          "min": 44
+        },
+        "keyboardChecks": 7,
+        "axeSerious": 0,
+        "axeCritical": 0,
+        "minContrast": {
+          "min": 4.5
+        },
+        "shellChecks": 1,
+        "formFeedbackChecks": 7,
+        "maxConcurrentRequests": {
+          "max": 1
+        }
+      },
+      "expected": "PASS",
+      "record": "UI-07-desktop.json",
+      "screenshot": "shots/UI-07-desktop.png"
+    },
+    {
+      "id": "UI-08-mobile",
+      "route": "/staff/reset-password",
+      "viewport": "mobile",
+      "size": [
+        390,
+        844
+      ],
+      "steps": "Use provisioned state/token privately. Check correct customer/store or staff/console shell; staff has no hero/glass/register. Tab, Shift+Tab, Enter, skip link, visible unobscured focus, reduced motion; exercise invalid input/loading/error/status; check labels, autocomplete, aria-describedby/invalid, first-error focus. Run axe in this viewport; measure worst normal-text contrast across all visible states.",
+      "criteria": {
+        "mainCount": 1,
+        "horizontalOverflow": 0,
+        "wrongJourneyLinks": 0,
+        "minTargetPx": {
+          "min": 44
+        },
+        "keyboardChecks": 7,
+        "axeSerious": 0,
+        "axeCritical": 0,
+        "minContrast": {
+          "min": 4.5
+        },
+        "shellChecks": 1,
+        "formFeedbackChecks": 7,
+        "maxConcurrentRequests": {
+          "max": 1
+        }
+      },
+      "expected": "PASS",
+      "record": "UI-08-mobile.json",
+      "screenshot": "shots/UI-08-mobile.png"
+    },
+    {
+      "id": "UI-08-desktop",
+      "route": "/staff/reset-password",
+      "viewport": "desktop",
+      "size": [
+        1440,
+        900
+      ],
+      "steps": "Use provisioned state/token privately. Check correct customer/store or staff/console shell; staff has no hero/glass/register. Tab, Shift+Tab, Enter, skip link, visible unobscured focus, reduced motion; exercise invalid input/loading/error/status; check labels, autocomplete, aria-describedby/invalid, first-error focus. Run axe in this viewport; measure worst normal-text contrast across all visible states.",
+      "criteria": {
+        "mainCount": 1,
+        "horizontalOverflow": 0,
+        "wrongJourneyLinks": 0,
+        "minTargetPx": {
+          "min": 44
+        },
+        "keyboardChecks": 7,
+        "axeSerious": 0,
+        "axeCritical": 0,
+        "minContrast": {
+          "min": 4.5
+        },
+        "shellChecks": 1,
+        "formFeedbackChecks": 7,
+        "maxConcurrentRequests": {
+          "max": 1
+        }
+      },
+      "expected": "PASS",
+      "record": "UI-08-desktop.json",
+      "screenshot": "shots/UI-08-desktop.png"
+    },
+    {
+      "id": "UI-09-mobile",
+      "route": "/staff/invite/accept",
+      "viewport": "mobile",
+      "size": [
+        390,
+        844
+      ],
+      "steps": "Use provisioned state/token privately. Check correct customer/store or staff/console shell; staff has no hero/glass/register. Tab, Shift+Tab, Enter, skip link, visible unobscured focus, reduced motion; exercise invalid input/loading/error/status; check labels, autocomplete, aria-describedby/invalid, first-error focus. Run axe in this viewport; measure worst normal-text contrast across all visible states.",
+      "criteria": {
+        "mainCount": 1,
+        "horizontalOverflow": 0,
+        "wrongJourneyLinks": 0,
+        "minTargetPx": {
+          "min": 44
+        },
+        "keyboardChecks": 7,
+        "axeSerious": 0,
+        "axeCritical": 0,
+        "minContrast": {
+          "min": 4.5
+        },
+        "shellChecks": 1,
+        "formFeedbackChecks": 7,
+        "maxConcurrentRequests": {
+          "max": 1
+        }
+      },
+      "expected": "PASS",
+      "record": "UI-09-mobile.json",
+      "screenshot": "shots/UI-09-mobile.png"
+    },
+    {
+      "id": "UI-09-desktop",
+      "route": "/staff/invite/accept",
+      "viewport": "desktop",
+      "size": [
+        1440,
+        900
+      ],
+      "steps": "Use provisioned state/token privately. Check correct customer/store or staff/console shell; staff has no hero/glass/register. Tab, Shift+Tab, Enter, skip link, visible unobscured focus, reduced motion; exercise invalid input/loading/error/status; check labels, autocomplete, aria-describedby/invalid, first-error focus. Run axe in this viewport; measure worst normal-text contrast across all visible states.",
+      "criteria": {
+        "mainCount": 1,
+        "horizontalOverflow": 0,
+        "wrongJourneyLinks": 0,
+        "minTargetPx": {
+          "min": 44
+        },
+        "keyboardChecks": 7,
+        "axeSerious": 0,
+        "axeCritical": 0,
+        "minContrast": {
+          "min": 4.5
+        },
+        "shellChecks": 1,
+        "formFeedbackChecks": 7,
+        "maxConcurrentRequests": {
+          "max": 1
+        }
+      },
+      "expected": "PASS",
+      "record": "UI-09-desktop.json",
+      "screenshot": "shots/UI-09-desktop.png"
+    },
+    {
+      "id": "UI-10-mobile",
+      "route": "/staff/switch-branch",
+      "viewport": "mobile",
+      "size": [
+        390,
+        844
+      ],
+      "steps": "Use provisioned state/token privately. Check correct customer/store or staff/console shell; staff has no hero/glass/register. Tab, Shift+Tab, Enter, skip link, visible unobscured focus, reduced motion; exercise invalid input/loading/error/status; check labels, autocomplete, aria-describedby/invalid, first-error focus. Run axe in this viewport; measure worst normal-text contrast across all visible states.",
+      "criteria": {
+        "mainCount": 1,
+        "horizontalOverflow": 0,
+        "wrongJourneyLinks": 0,
+        "minTargetPx": {
+          "min": 44
+        },
+        "keyboardChecks": 7,
+        "axeSerious": 0,
+        "axeCritical": 0,
+        "minContrast": {
+          "min": 4.5
+        },
+        "shellChecks": 1,
+        "formFeedbackChecks": 7,
+        "maxConcurrentRequests": {
+          "max": 1
+        }
+      },
+      "expected": "PASS",
+      "record": "UI-10-mobile.json",
+      "screenshot": "shots/UI-10-mobile.png"
+    },
+    {
+      "id": "UI-10-desktop",
+      "route": "/staff/switch-branch",
+      "viewport": "desktop",
+      "size": [
+        1440,
+        900
+      ],
+      "steps": "Use provisioned state/token privately. Check correct customer/store or staff/console shell; staff has no hero/glass/register. Tab, Shift+Tab, Enter, skip link, visible unobscured focus, reduced motion; exercise invalid input/loading/error/status; check labels, autocomplete, aria-describedby/invalid, first-error focus. Run axe in this viewport; measure worst normal-text contrast across all visible states.",
+      "criteria": {
+        "mainCount": 1,
+        "horizontalOverflow": 0,
+        "wrongJourneyLinks": 0,
+        "minTargetPx": {
+          "min": 44
+        },
+        "keyboardChecks": 7,
+        "axeSerious": 0,
+        "axeCritical": 0,
+        "minContrast": {
+          "min": 4.5
+        },
+        "shellChecks": 1,
+        "formFeedbackChecks": 7,
+        "maxConcurrentRequests": {
+          "max": 1
+        }
+      },
+      "expected": "PASS",
+      "record": "UI-10-desktop.json",
+      "screenshot": "shots/UI-10-desktop.png"
+    },
+    {
+      "id": "UI-11-mobile",
+      "route": "/staff/switch-org",
+      "viewport": "mobile",
+      "size": [
+        390,
+        844
+      ],
+      "steps": "Use provisioned state/token privately. Check correct customer/store or staff/console shell; staff has no hero/glass/register. Tab, Shift+Tab, Enter, skip link, visible unobscured focus, reduced motion; exercise invalid input/loading/error/status; check labels, autocomplete, aria-describedby/invalid, first-error focus. Run axe in this viewport; measure worst normal-text contrast across all visible states.",
+      "criteria": {
+        "mainCount": 1,
+        "horizontalOverflow": 0,
+        "wrongJourneyLinks": 0,
+        "minTargetPx": {
+          "min": 44
+        },
+        "keyboardChecks": 7,
+        "axeSerious": 0,
+        "axeCritical": 0,
+        "minContrast": {
+          "min": 4.5
+        },
+        "shellChecks": 1,
+        "formFeedbackChecks": 7,
+        "maxConcurrentRequests": {
+          "max": 1
+        }
+      },
+      "expected": "PASS",
+      "record": "UI-11-mobile.json",
+      "screenshot": "shots/UI-11-mobile.png"
+    },
+    {
+      "id": "UI-11-desktop",
+      "route": "/staff/switch-org",
+      "viewport": "desktop",
+      "size": [
+        1440,
+        900
+      ],
+      "steps": "Use provisioned state/token privately. Check correct customer/store or staff/console shell; staff has no hero/glass/register. Tab, Shift+Tab, Enter, skip link, visible unobscured focus, reduced motion; exercise invalid input/loading/error/status; check labels, autocomplete, aria-describedby/invalid, first-error focus. Run axe in this viewport; measure worst normal-text contrast across all visible states.",
+      "criteria": {
+        "mainCount": 1,
+        "horizontalOverflow": 0,
+        "wrongJourneyLinks": 0,
+        "minTargetPx": {
+          "min": 44
+        },
+        "keyboardChecks": 7,
+        "axeSerious": 0,
+        "axeCritical": 0,
+        "minContrast": {
+          "min": 4.5
+        },
+        "shellChecks": 1,
+        "formFeedbackChecks": 7,
+        "maxConcurrentRequests": {
+          "max": 1
+        }
+      },
+      "expected": "PASS",
+      "record": "UI-11-desktop.json",
+      "screenshot": "shots/UI-11-desktop.png"
+    },
+    {
+      "id": "LEGACY-branch-mobile",
+      "route": "/switch-branch",
+      "viewport": "mobile",
+      "size": [
+        390,
+        844
+      ],
+      "steps": "Open legacy URL with required session; invite uses a real token privately. Follow to /staff/switch-branch; compare token privately, redact URL query in evidence.",
+      "criteria": {
+        "redirectCorrect": 1,
+        "redirectLoops": 0,
+        "tokenPreserved": 1
+      },
+      "expected": "PASS",
+      "record": "LEGACY-branch-mobile.json",
+      "screenshot": "shots/LEGACY-branch-mobile.png"
+    },
+    {
+      "id": "LEGACY-branch-desktop",
+      "route": "/switch-branch",
+      "viewport": "desktop",
+      "size": [
+        1440,
+        900
+      ],
+      "steps": "Open legacy URL with required session; invite uses a real token privately. Follow to /staff/switch-branch; compare token privately, redact URL query in evidence.",
+      "criteria": {
+        "redirectCorrect": 1,
+        "redirectLoops": 0,
+        "tokenPreserved": 1
+      },
+      "expected": "PASS",
+      "record": "LEGACY-branch-desktop.json",
+      "screenshot": "shots/LEGACY-branch-desktop.png"
+    },
+    {
+      "id": "LEGACY-org-mobile",
+      "route": "/switch-org",
+      "viewport": "mobile",
+      "size": [
+        390,
+        844
+      ],
+      "steps": "Open legacy URL with required session; invite uses a real token privately. Follow to /staff/switch-org; compare token privately, redact URL query in evidence.",
+      "criteria": {
+        "redirectCorrect": 1,
+        "redirectLoops": 0,
+        "tokenPreserved": 1
+      },
+      "expected": "PASS",
+      "record": "LEGACY-org-mobile.json",
+      "screenshot": "shots/LEGACY-org-mobile.png"
+    },
+    {
+      "id": "LEGACY-org-desktop",
+      "route": "/switch-org",
+      "viewport": "desktop",
+      "size": [
+        1440,
+        900
+      ],
+      "steps": "Open legacy URL with required session; invite uses a real token privately. Follow to /staff/switch-org; compare token privately, redact URL query in evidence.",
+      "criteria": {
+        "redirectCorrect": 1,
+        "redirectLoops": 0,
+        "tokenPreserved": 1
+      },
+      "expected": "PASS",
+      "record": "LEGACY-org-desktop.json",
+      "screenshot": "shots/LEGACY-org-desktop.png"
+    },
+    {
+      "id": "LEGACY-invite-mobile",
+      "route": "/invite/accept",
+      "viewport": "mobile",
+      "size": [
+        390,
+        844
+      ],
+      "steps": "Open legacy URL with required session; invite uses a real token privately. Follow to /staff/invite/accept; compare token privately, redact URL query in evidence.",
+      "criteria": {
+        "redirectCorrect": 1,
+        "redirectLoops": 0,
+        "tokenPreserved": 1
+      },
+      "expected": "PASS",
+      "record": "LEGACY-invite-mobile.json",
+      "screenshot": "shots/LEGACY-invite-mobile.png"
+    },
+    {
+      "id": "LEGACY-invite-desktop",
+      "route": "/invite/accept",
+      "viewport": "desktop",
+      "size": [
+        1440,
+        900
+      ],
+      "steps": "Open legacy URL with required session; invite uses a real token privately. Follow to /staff/invite/accept; compare token privately, redact URL query in evidence.",
+      "criteria": {
+        "redirectCorrect": 1,
+        "redirectLoops": 0,
+        "tokenPreserved": 1
+      },
+      "expected": "PASS",
+      "record": "LEGACY-invite-desktop.json",
+      "screenshot": "shots/LEGACY-invite-desktop.png"
+    },
+    {
+      "id": "JOURNEY-customer-mobile",
+      "route": "/register",
+      "viewport": "mobile",
+      "size": [
+        390,
+        844
+      ],
+      "steps": "Fresh customer: register (202), real email activation, login; land in store. Observe one request per submit.",
+      "criteria": {
+        "registerStatus": 202,
+        "activationSuccess": 1,
+        "loginStatus": 200,
+        "storeLanding": 1,
+        "maxConcurrentRequests": {
+          "max": 1
+        }
+      },
+      "expected": "PASS",
+      "record": "JOURNEY-customer-mobile.json",
+      "screenshot": "shots/JOURNEY-customer-mobile.png"
+    },
+    {
+      "id": "JOURNEY-customer-desktop",
+      "route": "/register",
+      "viewport": "desktop",
+      "size": [
+        1440,
+        900
+      ],
+      "steps": "Fresh customer: register (202), real email activation, login; land in store. Observe one request per submit.",
+      "criteria": {
+        "registerStatus": 202,
+        "activationSuccess": 1,
+        "loginStatus": 200,
+        "storeLanding": 1,
+        "maxConcurrentRequests": {
+          "max": 1
+        }
+      },
+      "expected": "PASS",
+      "record": "JOURNEY-customer-desktop.json",
+      "screenshot": "shots/JOURNEY-customer-desktop.png"
+    },
+    {
+      "id": "JOURNEY-staff-mobile",
+      "route": "/staff/invite/accept",
+      "viewport": "mobile",
+      "size": [
+        390,
+        844
+      ],
+      "steps": "New approved invite: real mail token; submit password; response 200 status activated visible via role=status; then staff login succeeds and lands according to server contexts.",
+      "criteria": {
+        "inviteStatus": 200,
+        "activatedVisible": 1,
+        "loginStatus": 200,
+        "staffLanding": 1,
+        "maxConcurrentRequests": {
+          "max": 1
+        }
+      },
+      "expected": "PASS",
+      "record": "JOURNEY-staff-mobile.json",
+      "screenshot": "shots/JOURNEY-staff-mobile.png"
+    },
+    {
+      "id": "JOURNEY-staff-desktop",
+      "route": "/staff/invite/accept",
+      "viewport": "desktop",
+      "size": [
+        1440,
+        900
+      ],
+      "steps": "New approved invite: real mail token; submit password; response 200 status activated visible via role=status; then staff login succeeds and lands according to server contexts.",
+      "criteria": {
+        "inviteStatus": 200,
+        "activatedVisible": 1,
+        "loginStatus": 200,
+        "staffLanding": 1,
+        "maxConcurrentRequests": {
+          "max": 1
+        }
+      },
+      "expected": "PASS",
+      "record": "JOURNEY-staff-desktop.json",
+      "screenshot": "shots/JOURNEY-staff-desktop.png"
+    },
+    {
+      "id": "RECOVERY-customer-mobile",
+      "route": "/forgot-password",
+      "viewport": "mobile",
+      "size": [
+        390,
+        844
+      ],
+      "steps": "Use real inbox forgot→mail→reset→customer login; neutral forgot response; reset never staff landing.",
+      "criteria": {
+        "forgotSuccess": 1,
+        "neutralMessage": 1,
+        "realMail": 1,
+        "resetSuccess": 1,
+        "customerLoginSuccess": 1
+      },
+      "expected": "PASS",
+      "record": "RECOVERY-customer-mobile.json",
+      "screenshot": "shots/RECOVERY-customer-mobile.png"
+    },
+    {
+      "id": "RECOVERY-customer-desktop",
+      "route": "/forgot-password",
+      "viewport": "desktop",
+      "size": [
+        1440,
+        900
+      ],
+      "steps": "Use real inbox forgot→mail→reset→customer login; neutral forgot response; reset never staff landing.",
+      "criteria": {
+        "forgotSuccess": 1,
+        "neutralMessage": 1,
+        "realMail": 1,
+        "resetSuccess": 1,
+        "customerLoginSuccess": 1
+      },
+      "expected": "PASS",
+      "record": "RECOVERY-customer-desktop.json",
+      "screenshot": "shots/RECOVERY-customer-desktop.png"
+    },
+    {
+      "id": "D3-forgot-mobile",
+      "route": "/staff/forgot-password",
+      "viewport": "mobile",
+      "size": [
+        390,
+        844
+      ],
+      "steps": "Submit staff recovery; observe chưa khả dụng message and BFF 503. D3 dependency unavailable is BLOCKED, never PASS; any other status/message is FAIL.",
+      "criteria": {
+        "httpStatus": 503,
+        "unavailableMessage": 1,
+        "newCookies": 0
+      },
+      "expected": "BLOCKED",
+      "record": "D3-forgot-mobile.json",
+      "screenshot": "shots/D3-forgot-mobile.png"
+    },
+    {
+      "id": "D3-forgot-desktop",
+      "route": "/staff/forgot-password",
+      "viewport": "desktop",
+      "size": [
+        1440,
+        900
+      ],
+      "steps": "Submit staff recovery; observe chưa khả dụng message and BFF 503. D3 dependency unavailable is BLOCKED, never PASS; any other status/message is FAIL.",
+      "criteria": {
+        "httpStatus": 503,
+        "unavailableMessage": 1,
+        "newCookies": 0
+      },
+      "expected": "BLOCKED",
+      "record": "D3-forgot-desktop.json",
+      "screenshot": "shots/D3-forgot-desktop.png"
+    },
+    {
+      "id": "D3-reset-mobile",
+      "route": "/staff/reset-password",
+      "viewport": "mobile",
+      "size": [
+        390,
+        844
+      ],
+      "steps": "Submit staff recovery; observe chưa khả dụng message and BFF 503. D3 dependency unavailable is BLOCKED, never PASS; any other status/message is FAIL.",
+      "criteria": {
+        "httpStatus": 503,
+        "unavailableMessage": 1,
+        "newCookies": 0
+      },
+      "expected": "BLOCKED",
+      "record": "D3-reset-mobile.json",
+      "screenshot": "shots/D3-reset-mobile.png"
+    },
+    {
+      "id": "D3-reset-desktop",
+      "route": "/staff/reset-password",
+      "viewport": "desktop",
+      "size": [
+        1440,
+        900
+      ],
+      "steps": "Submit staff recovery; observe chưa khả dụng message and BFF 503. D3 dependency unavailable is BLOCKED, never PASS; any other status/message is FAIL.",
+      "criteria": {
+        "httpStatus": 503,
+        "unavailableMessage": 1,
+        "newCookies": 0
+      },
+      "expected": "BLOCKED",
+      "record": "D3-reset-desktop.json",
+      "screenshot": "shots/D3-reset-desktop.png"
+    },
+    {
+      "id": "WRONG-customer-only-mobile",
+      "route": "/staff/login",
+      "viewport": "mobile",
+      "size": [
+        390,
+        844
+      ],
+      "steps": "Fresh profile; customer-only submits valid credentials to staff login. Inspect 403 FORBIDDEN and customer/support link, zero new Set-Cookie.",
+      "criteria": {
+        "httpStatus": 403,
+        "forbiddenCode": 1,
+        "newCookies": 0,
+        "clearJourneyLink": 1
+      },
+      "expected": "PASS",
+      "record": "WRONG-customer-only-mobile.json",
+      "screenshot": "shots/WRONG-customer-only-mobile.png"
+    },
+    {
+      "id": "WRONG-customer-only-desktop",
+      "route": "/staff/login",
+      "viewport": "desktop",
+      "size": [
+        1440,
+        900
+      ],
+      "steps": "Fresh profile; customer-only submits valid credentials to staff login. Inspect 403 FORBIDDEN and customer/support link, zero new Set-Cookie.",
+      "criteria": {
+        "httpStatus": 403,
+        "forbiddenCode": 1,
+        "newCookies": 0,
+        "clearJourneyLink": 1
+      },
+      "expected": "PASS",
+      "record": "WRONG-customer-only-desktop.json",
+      "screenshot": "shots/WRONG-customer-only-desktop.png"
+    },
+    {
+      "id": "COOKIE-customer-only-mobile",
+      "route": "/staff/login",
+      "viewport": "mobile",
+      "size": [
+        390,
+        844
+      ],
+      "steps": "Login customer-only through its authorized plane first. With that cookie open staff login and submit; still reject, cannot auto-enter console. Record cookie counts only.",
+      "criteria": {
+        "httpStatus": 403,
+        "newCookies": 0,
+        "consoleBypass": 0,
+        "loginFormVisible": 1
+      },
+      "expected": "PASS",
+      "record": "COOKIE-customer-only-mobile.json",
+      "screenshot": "shots/COOKIE-customer-only-mobile.png"
+    },
+    {
+      "id": "COOKIE-customer-only-desktop",
+      "route": "/staff/login",
+      "viewport": "desktop",
+      "size": [
+        1440,
+        900
+      ],
+      "steps": "Login customer-only through its authorized plane first. With that cookie open staff login and submit; still reject, cannot auto-enter console. Record cookie counts only.",
+      "criteria": {
+        "httpStatus": 403,
+        "newCookies": 0,
+        "consoleBypass": 0,
+        "loginFormVisible": 1
+      },
+      "expected": "PASS",
+      "record": "COOKIE-customer-only-desktop.json",
+      "screenshot": "shots/COOKIE-customer-only-desktop.png"
+    },
+    {
+      "id": "WRONG-platform-only-mobile",
+      "route": "/staff/login",
+      "viewport": "mobile",
+      "size": [
+        390,
+        844
+      ],
+      "steps": "D2 (Dawn 2026-10-05): platform staff signs in at /staff/login and lands on /platform/companies; no separate platform entry yet. Fresh profile; platform-only submits valid credentials at staff login. Expect landing /platform/companies, not /console, and no customer store.",
+      "criteria": {
+        "platformLanding": 1,
+        "consoleLanding": 0,
+        "customerLanding": 0
+      },
+      "expected": "PASS",
+      "record": "WRONG-platform-only-mobile.json",
+      "screenshot": "shots/WRONG-platform-only-mobile.png"
+    },
+    {
+      "id": "WRONG-platform-only-desktop",
+      "route": "/staff/login",
+      "viewport": "desktop",
+      "size": [
+        1440,
+        900
+      ],
+      "steps": "D2 (Dawn 2026-10-05): platform staff signs in at /staff/login and lands on /platform/companies; no separate platform entry yet. Fresh profile; platform-only submits valid credentials at staff login. Expect landing /platform/companies, not /console, and no customer store.",
+      "criteria": {
+        "platformLanding": 1,
+        "consoleLanding": 0,
+        "customerLanding": 0
+      },
+      "expected": "PASS",
+      "record": "WRONG-platform-only-desktop.json",
+      "screenshot": "shots/WRONG-platform-only-desktop.png"
+    },
+    {
+      "id": "COOKIE-platform-only-mobile",
+      "route": "/staff/login",
+      "viewport": "mobile",
+      "size": [
+        390,
+        844
+      ],
+      "steps": "D2 (Dawn 2026-10-05): platform staff signs in at /staff/login and lands on /platform/companies; no separate platform entry yet. Login platform-only at /staff/login first. With that session open /console directly, then /staff/login again; must never enter the employee console. Record counts only.",
+      "criteria": {
+        "consoleBypass": 0,
+        "platformLanding": 1
+      },
+      "expected": "PASS",
+      "record": "COOKIE-platform-only-mobile.json",
+      "screenshot": "shots/COOKIE-platform-only-mobile.png"
+    },
+    {
+      "id": "COOKIE-platform-only-desktop",
+      "route": "/staff/login",
+      "viewport": "desktop",
+      "size": [
+        1440,
+        900
+      ],
+      "steps": "D2 (Dawn 2026-10-05): platform staff signs in at /staff/login and lands on /platform/companies; no separate platform entry yet. Login platform-only at /staff/login first. With that session open /console directly, then /staff/login again; must never enter the employee console. Record counts only.",
+      "criteria": {
+        "consoleBypass": 0,
+        "platformLanding": 1
+      },
+      "expected": "PASS",
+      "record": "COOKIE-platform-only-desktop.json",
+      "screenshot": "shots/COOKIE-platform-only-desktop.png"
+    },
+    {
+      "id": "EMPLOYEE-store-mobile",
+      "route": "/login",
+      "viewport": "mobile",
+      "size": [
+        390,
+        844
+      ],
+      "steps": "Employee uses customer login; D1 store landing at both viewports; no console redirect.",
+      "criteria": {
+        "httpStatus": 200,
+        "storeLanding": 1,
+        "consoleRedirects": 0
+      },
+      "expected": "PASS",
+      "record": "EMPLOYEE-store-mobile.json",
+      "screenshot": "shots/EMPLOYEE-store-mobile.png"
+    },
+    {
+      "id": "EMPLOYEE-store-desktop",
+      "route": "/login",
+      "viewport": "desktop",
+      "size": [
+        1440,
+        900
+      ],
+      "steps": "Employee uses customer login; D1 store landing at both viewports; no console redirect.",
+      "criteria": {
+        "httpStatus": 200,
+        "storeLanding": 1,
+        "consoleRedirects": 0
+      },
+      "expected": "PASS",
+      "record": "EMPLOYEE-store-desktop.json",
+      "screenshot": "shots/EMPLOYEE-store-desktop.png"
+    },
+    {
+      "id": "COOKIE-employee-mobile",
+      "route": "/login",
+      "viewport": "mobile",
+      "size": [
+        390,
+        844
+      ],
+      "steps": "With staff cookie, open customer login; form remains visible and explicit customer submit lands store.",
+      "criteria": {
+        "loginFormVisible": 1,
+        "httpStatus": 200,
+        "storeLanding": 1
+      },
+      "expected": "PASS",
+      "record": "COOKIE-employee-mobile.json",
+      "screenshot": "shots/COOKIE-employee-mobile.png"
+    },
+    {
+      "id": "COOKIE-employee-desktop",
+      "route": "/login",
+      "viewport": "desktop",
+      "size": [
+        1440,
+        900
+      ],
+      "steps": "With staff cookie, open customer login; form remains visible and explicit customer submit lands store.",
+      "criteria": {
+        "loginFormVisible": 1,
+        "httpStatus": 200,
+        "storeLanding": 1
+      },
+      "expected": "PASS",
+      "record": "COOKIE-employee-desktop.json",
+      "screenshot": "shots/COOKIE-employee-desktop.png"
+    },
+    {
+      "id": "PLATFORM-platform-only-mobile",
+      "route": "/platform/companies",
+      "viewport": "mobile",
+      "size": [
+        390,
+        844
+      ],
+      "steps": "D2 (Dawn 2026-10-05): platform staff signs in at /staff/login and lands on /platform/companies; no separate platform entry yet. Fresh profile; open /platform/companies → redirected to /staff/login; login platform-only → back on /platform/companies.",
+      "criteria": {
+        "guardToStaffLogin": 1,
+        "platformLanding": 1,
+        "staffLanding": 0
+      },
+      "expected": "PASS",
+      "record": "PLATFORM-platform-only-mobile.json",
+      "screenshot": "shots/PLATFORM-platform-only-mobile.png"
+    },
+    {
+      "id": "PLATFORM-platform-only-desktop",
+      "route": "/platform/companies",
+      "viewport": "desktop",
+      "size": [
+        1440,
+        900
+      ],
+      "steps": "D2 (Dawn 2026-10-05): platform staff signs in at /staff/login and lands on /platform/companies; no separate platform entry yet. Fresh profile; open /platform/companies → redirected to /staff/login; login platform-only → back on /platform/companies.",
+      "criteria": {
+        "guardToStaffLogin": 1,
+        "platformLanding": 1,
+        "staffLanding": 0
+      },
+      "expected": "PASS",
+      "record": "PLATFORM-platform-only-desktop.json",
+      "screenshot": "shots/PLATFORM-platform-only-desktop.png"
+    },
+    {
+      "id": "PLATFORM-dual-role-mobile",
+      "route": "/platform/companies",
+      "viewport": "mobile",
+      "size": [
+        390,
+        844
+      ],
+      "steps": "D2 (Dawn 2026-10-05): platform staff signs in at /staff/login and lands on /platform/companies; no separate platform entry yet. Fresh profile; login dual-role at /staff/login → /platform/companies; then open /console and complete employee context → console reachable.",
+      "criteria": {
+        "platformLanding": 1,
+        "staffLanding": 1
+      },
+      "expected": "PASS",
+      "record": "PLATFORM-dual-role-mobile.json",
+      "screenshot": "shots/PLATFORM-dual-role-mobile.png"
+    },
+    {
+      "id": "PLATFORM-dual-role-desktop",
+      "route": "/platform/companies",
+      "viewport": "desktop",
+      "size": [
+        1440,
+        900
+      ],
+      "steps": "D2 (Dawn 2026-10-05): platform staff signs in at /staff/login and lands on /platform/companies; no separate platform entry yet. Fresh profile; login dual-role at /staff/login → /platform/companies; then open /console and complete employee context → console reachable.",
+      "criteria": {
+        "platformLanding": 1,
+        "staffLanding": 1
+      },
+      "expected": "PASS",
+      "record": "PLATFORM-dual-role-desktop.json",
+      "screenshot": "shots/PLATFORM-dual-role-desktop.png"
+    },
+    {
+      "id": "EXISTING-invite-mobile",
+      "route": "/staff/login",
+      "viewport": "mobile",
+      "size": [
+        390,
+        844
+      ],
+      "steps": "Approved invitation for ACTIVE customer returns EXISTING. Keep original password and user; no set-password/recreated user. Login staff with unchanged credentials at both viewports.",
+      "criteria": {
+        "existingResponse": 1,
+        "usersCreated": 0,
+        "credentialChanged": 0,
+        "staffLoginStatus": 200,
+        "staffLanding": 1
+      },
+      "expected": "PASS",
+      "record": "EXISTING-invite-mobile.json",
+      "screenshot": "shots/EXISTING-invite-mobile.png"
+    },
+    {
+      "id": "EXISTING-invite-desktop",
+      "route": "/staff/login",
+      "viewport": "desktop",
+      "size": [
+        1440,
+        900
+      ],
+      "steps": "Approved invitation for ACTIVE customer returns EXISTING. Keep original password and user; no set-password/recreated user. Login staff with unchanged credentials at both viewports.",
+      "criteria": {
+        "existingResponse": 1,
+        "usersCreated": 0,
+        "credentialChanged": 0,
+        "staffLoginStatus": 200,
+        "staffLanding": 1
+      },
+      "expected": "PASS",
+      "record": "EXISTING-invite-desktop.json",
+      "screenshot": "shots/EXISTING-invite-desktop.png"
+    },
+    {
+      "id": "TOKEN-activation-invalid-mobile",
+      "route": "/activate",
+      "viewport": "mobile",
+      "size": [
+        390,
+        844
+      ],
+      "steps": "Use invalid activation token. Expired must be genuinely issued then expired; replay must first succeed. Submit, reject without new session; return link stays correct journey; redact query/token.",
+      "criteria": {
+        "rejected": 1,
+        "newSessions": 0,
+        "correctReturnLink": 1
+      },
+      "expected": "PASS",
+      "record": "TOKEN-activation-invalid-mobile.json",
+      "screenshot": "shots/TOKEN-activation-invalid-mobile.png"
+    },
+    {
+      "id": "TOKEN-activation-invalid-desktop",
+      "route": "/activate",
+      "viewport": "desktop",
+      "size": [
+        1440,
+        900
+      ],
+      "steps": "Use invalid activation token. Expired must be genuinely issued then expired; replay must first succeed. Submit, reject without new session; return link stays correct journey; redact query/token.",
+      "criteria": {
+        "rejected": 1,
+        "newSessions": 0,
+        "correctReturnLink": 1
+      },
+      "expected": "PASS",
+      "record": "TOKEN-activation-invalid-desktop.json",
+      "screenshot": "shots/TOKEN-activation-invalid-desktop.png"
+    },
+    {
+      "id": "TOKEN-activation-expired-mobile",
+      "route": "/activate",
+      "viewport": "mobile",
+      "size": [
+        390,
+        844
+      ],
+      "steps": "Use expired activation token. Expired must be genuinely issued then expired; replay must first succeed. Submit, reject without new session; return link stays correct journey; redact query/token.",
+      "criteria": {
+        "rejected": 1,
+        "newSessions": 0,
+        "correctReturnLink": 1
+      },
+      "expected": "PASS",
+      "record": "TOKEN-activation-expired-mobile.json",
+      "screenshot": "shots/TOKEN-activation-expired-mobile.png"
+    },
+    {
+      "id": "TOKEN-activation-expired-desktop",
+      "route": "/activate",
+      "viewport": "desktop",
+      "size": [
+        1440,
+        900
+      ],
+      "steps": "Use expired activation token. Expired must be genuinely issued then expired; replay must first succeed. Submit, reject without new session; return link stays correct journey; redact query/token.",
+      "criteria": {
+        "rejected": 1,
+        "newSessions": 0,
+        "correctReturnLink": 1
+      },
+      "expected": "PASS",
+      "record": "TOKEN-activation-expired-desktop.json",
+      "screenshot": "shots/TOKEN-activation-expired-desktop.png"
+    },
+    {
+      "id": "TOKEN-activation-replay-mobile",
+      "route": "/activate",
+      "viewport": "mobile",
+      "size": [
+        390,
+        844
+      ],
+      "steps": "Use replay activation token. Expired must be genuinely issued then expired; replay must first succeed. Submit, reject without new session; return link stays correct journey; redact query/token.",
+      "criteria": {
+        "rejected": 1,
+        "newSessions": 0,
+        "correctReturnLink": 1
+      },
+      "expected": "PASS",
+      "record": "TOKEN-activation-replay-mobile.json",
+      "screenshot": "shots/TOKEN-activation-replay-mobile.png"
+    },
+    {
+      "id": "TOKEN-activation-replay-desktop",
+      "route": "/activate",
+      "viewport": "desktop",
+      "size": [
+        1440,
+        900
+      ],
+      "steps": "Use replay activation token. Expired must be genuinely issued then expired; replay must first succeed. Submit, reject without new session; return link stays correct journey; redact query/token.",
+      "criteria": {
+        "rejected": 1,
+        "newSessions": 0,
+        "correctReturnLink": 1
+      },
+      "expected": "PASS",
+      "record": "TOKEN-activation-replay-desktop.json",
+      "screenshot": "shots/TOKEN-activation-replay-desktop.png"
+    },
+    {
+      "id": "TOKEN-invite-invalid-mobile",
+      "route": "/staff/invite/accept",
+      "viewport": "mobile",
+      "size": [
+        390,
+        844
+      ],
+      "steps": "Use invalid invite token. Expired must be genuinely issued then expired; replay must first succeed. Submit, reject without new session; return link stays correct journey; redact query/token.",
+      "criteria": {
+        "rejected": 1,
+        "newSessions": 0,
+        "correctReturnLink": 1
+      },
+      "expected": "PASS",
+      "record": "TOKEN-invite-invalid-mobile.json",
+      "screenshot": "shots/TOKEN-invite-invalid-mobile.png"
+    },
+    {
+      "id": "TOKEN-invite-invalid-desktop",
+      "route": "/staff/invite/accept",
+      "viewport": "desktop",
+      "size": [
+        1440,
+        900
+      ],
+      "steps": "Use invalid invite token. Expired must be genuinely issued then expired; replay must first succeed. Submit, reject without new session; return link stays correct journey; redact query/token.",
+      "criteria": {
+        "rejected": 1,
+        "newSessions": 0,
+        "correctReturnLink": 1
+      },
+      "expected": "PASS",
+      "record": "TOKEN-invite-invalid-desktop.json",
+      "screenshot": "shots/TOKEN-invite-invalid-desktop.png"
+    },
+    {
+      "id": "TOKEN-invite-expired-mobile",
+      "route": "/staff/invite/accept",
+      "viewport": "mobile",
+      "size": [
+        390,
+        844
+      ],
+      "steps": "Use expired invite token. Expired must be genuinely issued then expired; replay must first succeed. Submit, reject without new session; return link stays correct journey; redact query/token.",
+      "criteria": {
+        "rejected": 1,
+        "newSessions": 0,
+        "correctReturnLink": 1
+      },
+      "expected": "PASS",
+      "record": "TOKEN-invite-expired-mobile.json",
+      "screenshot": "shots/TOKEN-invite-expired-mobile.png"
+    },
+    {
+      "id": "TOKEN-invite-expired-desktop",
+      "route": "/staff/invite/accept",
+      "viewport": "desktop",
+      "size": [
+        1440,
+        900
+      ],
+      "steps": "Use expired invite token. Expired must be genuinely issued then expired; replay must first succeed. Submit, reject without new session; return link stays correct journey; redact query/token.",
+      "criteria": {
+        "rejected": 1,
+        "newSessions": 0,
+        "correctReturnLink": 1
+      },
+      "expected": "PASS",
+      "record": "TOKEN-invite-expired-desktop.json",
+      "screenshot": "shots/TOKEN-invite-expired-desktop.png"
+    },
+    {
+      "id": "TOKEN-invite-replay-mobile",
+      "route": "/staff/invite/accept",
+      "viewport": "mobile",
+      "size": [
+        390,
+        844
+      ],
+      "steps": "Use replay invite token. Expired must be genuinely issued then expired; replay must first succeed. Submit, reject without new session; return link stays correct journey; redact query/token.",
+      "criteria": {
+        "rejected": 1,
+        "newSessions": 0,
+        "correctReturnLink": 1
+      },
+      "expected": "PASS",
+      "record": "TOKEN-invite-replay-mobile.json",
+      "screenshot": "shots/TOKEN-invite-replay-mobile.png"
+    },
+    {
+      "id": "TOKEN-invite-replay-desktop",
+      "route": "/staff/invite/accept",
+      "viewport": "desktop",
+      "size": [
+        1440,
+        900
+      ],
+      "steps": "Use replay invite token. Expired must be genuinely issued then expired; replay must first succeed. Submit, reject without new session; return link stays correct journey; redact query/token.",
+      "criteria": {
+        "rejected": 1,
+        "newSessions": 0,
+        "correctReturnLink": 1
+      },
+      "expected": "PASS",
+      "record": "TOKEN-invite-replay-desktop.json",
+      "screenshot": "shots/TOKEN-invite-replay-desktop.png"
+    },
+    {
+      "id": "TOKEN-reset-invalid-mobile",
+      "route": "/reset-password",
+      "viewport": "mobile",
+      "size": [
+        390,
+        844
+      ],
+      "steps": "Use invalid reset token. Expired must be genuinely issued then expired; replay must first succeed. Submit, reject without new session; return link stays correct journey; redact query/token.",
+      "criteria": {
+        "rejected": 1,
+        "newSessions": 0,
+        "correctReturnLink": 1
+      },
+      "expected": "PASS",
+      "record": "TOKEN-reset-invalid-mobile.json",
+      "screenshot": "shots/TOKEN-reset-invalid-mobile.png"
+    },
+    {
+      "id": "TOKEN-reset-invalid-desktop",
+      "route": "/reset-password",
+      "viewport": "desktop",
+      "size": [
+        1440,
+        900
+      ],
+      "steps": "Use invalid reset token. Expired must be genuinely issued then expired; replay must first succeed. Submit, reject without new session; return link stays correct journey; redact query/token.",
+      "criteria": {
+        "rejected": 1,
+        "newSessions": 0,
+        "correctReturnLink": 1
+      },
+      "expected": "PASS",
+      "record": "TOKEN-reset-invalid-desktop.json",
+      "screenshot": "shots/TOKEN-reset-invalid-desktop.png"
+    },
+    {
+      "id": "TOKEN-reset-expired-mobile",
+      "route": "/reset-password",
+      "viewport": "mobile",
+      "size": [
+        390,
+        844
+      ],
+      "steps": "Use expired reset token. Expired must be genuinely issued then expired; replay must first succeed. Submit, reject without new session; return link stays correct journey; redact query/token.",
+      "criteria": {
+        "rejected": 1,
+        "newSessions": 0,
+        "correctReturnLink": 1
+      },
+      "expected": "PASS",
+      "record": "TOKEN-reset-expired-mobile.json",
+      "screenshot": "shots/TOKEN-reset-expired-mobile.png"
+    },
+    {
+      "id": "TOKEN-reset-expired-desktop",
+      "route": "/reset-password",
+      "viewport": "desktop",
+      "size": [
+        1440,
+        900
+      ],
+      "steps": "Use expired reset token. Expired must be genuinely issued then expired; replay must first succeed. Submit, reject without new session; return link stays correct journey; redact query/token.",
+      "criteria": {
+        "rejected": 1,
+        "newSessions": 0,
+        "correctReturnLink": 1
+      },
+      "expected": "PASS",
+      "record": "TOKEN-reset-expired-desktop.json",
+      "screenshot": "shots/TOKEN-reset-expired-desktop.png"
+    },
+    {
+      "id": "TOKEN-reset-replay-mobile",
+      "route": "/reset-password",
+      "viewport": "mobile",
+      "size": [
+        390,
+        844
+      ],
+      "steps": "Use replay reset token. Expired must be genuinely issued then expired; replay must first succeed. Submit, reject without new session; return link stays correct journey; redact query/token.",
+      "criteria": {
+        "rejected": 1,
+        "newSessions": 0,
+        "correctReturnLink": 1
+      },
+      "expected": "PASS",
+      "record": "TOKEN-reset-replay-mobile.json",
+      "screenshot": "shots/TOKEN-reset-replay-mobile.png"
+    },
+    {
+      "id": "TOKEN-reset-replay-desktop",
+      "route": "/reset-password",
+      "viewport": "desktop",
+      "size": [
+        1440,
+        900
+      ],
+      "steps": "Use replay reset token. Expired must be genuinely issued then expired; replay must first succeed. Submit, reject without new session; return link stays correct journey; redact query/token.",
+      "criteria": {
+        "rejected": 1,
+        "newSessions": 0,
+        "correctReturnLink": 1
+      },
+      "expected": "PASS",
+      "record": "TOKEN-reset-replay-desktop.json",
+      "screenshot": "shots/TOKEN-reset-replay-desktop.png"
+    },
+    {
+      "id": "CSRF-customer-mobile",
+      "route": "http://127.0.0.1:3001/attacker.html",
+      "viewport": "mobile",
+      "size": [
+        390,
+        844
+      ],
+      "steps": "Open local attacker at port 3001; select customer; press Send. DevTools inspect actual cross-origin POST to port 3000 (CORS error alone is insufficient). Expect HTTP 403, code FORBIDDEN, message “Yêu cầu không hợp lệ”, and zero Set-Cookie. Inspect the response body in DevTools, even if script reports CORS. The simple text/plain request deliberately violates the JSON/origin login guard. Record status, code/message match flags, Origin port and cookie count only.",
+      "criteria": {
+        "httpStatus": 403,
+        "newCookies": 0,
+        "attackerPort": 3001,
+        "targetPort": 3000,
+        "actualPostObserved": 1,
+        "forbiddenCode": 1,
+        "invalidRequestMessage": 1
+      },
+      "expected": "PASS",
+      "record": "CSRF-customer-mobile.json",
+      "screenshot": "shots/CSRF-customer-mobile.png"
+    },
+    {
+      "id": "CSRF-customer-desktop",
+      "route": "http://127.0.0.1:3001/attacker.html",
+      "viewport": "desktop",
+      "size": [
+        1440,
+        900
+      ],
+      "steps": "Open local attacker at port 3001; select customer; press Send. DevTools inspect actual cross-origin POST to port 3000 (CORS error alone is insufficient). Expect HTTP 403, code FORBIDDEN, message “Yêu cầu không hợp lệ”, and zero Set-Cookie. Inspect the response body in DevTools, even if script reports CORS. The simple text/plain request deliberately violates the JSON/origin login guard. Record status, code/message match flags, Origin port and cookie count only.",
+      "criteria": {
+        "httpStatus": 403,
+        "newCookies": 0,
+        "attackerPort": 3001,
+        "targetPort": 3000,
+        "actualPostObserved": 1,
+        "forbiddenCode": 1,
+        "invalidRequestMessage": 1
+      },
+      "expected": "PASS",
+      "record": "CSRF-customer-desktop.json",
+      "screenshot": "shots/CSRF-customer-desktop.png"
+    },
+    {
+      "id": "CSRF-staff-mobile",
+      "route": "http://127.0.0.1:3001/attacker.html",
+      "viewport": "mobile",
+      "size": [
+        390,
+        844
+      ],
+      "steps": "Open local attacker at port 3001; select staff; press Send. DevTools inspect actual cross-origin POST to port 3000 (CORS error alone is insufficient). Expect HTTP 403, code FORBIDDEN, message “Yêu cầu không hợp lệ”, and zero Set-Cookie. Inspect the response body in DevTools, even if script reports CORS. The simple text/plain request deliberately violates the JSON/origin login guard. Record status, code/message match flags, Origin port and cookie count only.",
+      "criteria": {
+        "httpStatus": 403,
+        "newCookies": 0,
+        "attackerPort": 3001,
+        "targetPort": 3000,
+        "actualPostObserved": 1,
+        "forbiddenCode": 1,
+        "invalidRequestMessage": 1
+      },
+      "expected": "PASS",
+      "record": "CSRF-staff-mobile.json",
+      "screenshot": "shots/CSRF-staff-mobile.png"
+    },
+    {
+      "id": "CSRF-staff-desktop",
+      "route": "http://127.0.0.1:3001/attacker.html",
+      "viewport": "desktop",
+      "size": [
+        1440,
+        900
+      ],
+      "steps": "Open local attacker at port 3001; select staff; press Send. DevTools inspect actual cross-origin POST to port 3000 (CORS error alone is insufficient). Expect HTTP 403, code FORBIDDEN, message “Yêu cầu không hợp lệ”, and zero Set-Cookie. Inspect the response body in DevTools, even if script reports CORS. The simple text/plain request deliberately violates the JSON/origin login guard. Record status, code/message match flags, Origin port and cookie count only.",
+      "criteria": {
+        "httpStatus": 403,
+        "newCookies": 0,
+        "attackerPort": 3001,
+        "targetPort": 3000,
+        "actualPostObserved": 1,
+        "forbiddenCode": 1,
+        "invalidRequestMessage": 1
+      },
+      "expected": "PASS",
+      "record": "CSRF-staff-desktop.json",
+      "screenshot": "shots/CSRF-staff-desktop.png"
+    },
+    {
+      "id": "GUARD-shelves-mobile",
+      "route": "/inventory/shelves",
+      "viewport": "mobile",
+      "size": [
+        390,
+        844
+      ],
+      "steps": "Clear all site cookies; navigate protected URL. Expect /staff/login?redirect= original path, no protected content. Record redirect value as path only.",
+      "criteria": {
+        "staffLoginRedirect": 1,
+        "redirectPreserved": 1,
+        "protectedContentVisible": 0
+      },
+      "expected": "PASS",
+      "record": "GUARD-shelves-mobile.json",
+      "screenshot": "shots/GUARD-shelves-mobile.png"
+    },
+    {
+      "id": "GUARD-shelves-desktop",
+      "route": "/inventory/shelves",
+      "viewport": "desktop",
+      "size": [
+        1440,
+        900
+      ],
+      "steps": "Clear all site cookies; navigate protected URL. Expect /staff/login?redirect= original path, no protected content. Record redirect value as path only.",
+      "criteria": {
+        "staffLoginRedirect": 1,
+        "redirectPreserved": 1,
+        "protectedContentVisible": 0
+      },
+      "expected": "PASS",
+      "record": "GUARD-shelves-desktop.json",
+      "screenshot": "shots/GUARD-shelves-desktop.png"
+    },
+    {
+      "id": "GUARD-companies-mobile",
+      "route": "/platform/companies",
+      "viewport": "mobile",
+      "size": [
+        390,
+        844
+      ],
+      "steps": "Clear all site cookies; navigate protected URL. Expect /staff/login?redirect= original path, no protected content. Record redirect value as path only.",
+      "criteria": {
+        "staffLoginRedirect": 1,
+        "redirectPreserved": 1,
+        "protectedContentVisible": 0
+      },
+      "expected": "PASS",
+      "record": "GUARD-companies-mobile.json",
+      "screenshot": "shots/GUARD-companies-mobile.png"
+    },
+    {
+      "id": "GUARD-companies-desktop",
+      "route": "/platform/companies",
+      "viewport": "desktop",
+      "size": [
+        1440,
+        900
+      ],
+      "steps": "Clear all site cookies; navigate protected URL. Expect /staff/login?redirect= original path, no protected content. Record redirect value as path only.",
+      "criteria": {
+        "staffLoginRedirect": 1,
+        "redirectPreserved": 1,
+        "protectedContentVisible": 0
+      },
+      "expected": "PASS",
+      "record": "GUARD-companies-desktop.json",
+      "screenshot": "shots/GUARD-companies-desktop.png"
+    },
+    {
+      "id": "CONTEXT-one-mobile",
+      "route": "/staff/login",
+      "viewport": "mobile",
+      "size": [
+        390,
+        844
+      ],
+      "steps": "One active org/branch selects context on server → console.",
+      "criteria": {
+        "consoleLanding": 1,
+        "serverContextSelected": 1
+      },
+      "expected": "PASS",
+      "record": "CONTEXT-one-mobile.json",
+      "screenshot": "shots/CONTEXT-one-mobile.png"
+    },
+    {
+      "id": "CONTEXT-one-desktop",
+      "route": "/staff/login",
+      "viewport": "desktop",
+      "size": [
+        1440,
+        900
+      ],
+      "steps": "One active org/branch selects context on server → console.",
+      "criteria": {
+        "consoleLanding": 1,
+        "serverContextSelected": 1
+      },
+      "expected": "PASS",
+      "record": "CONTEXT-one-desktop.json",
+      "screenshot": "shots/CONTEXT-one-desktop.png"
+    },
+    {
+      "id": "CONTEXT-many-branches-mobile",
+      "route": "/staff/login",
+      "viewport": "mobile",
+      "size": [
+        390,
+        844
+      ],
+      "steps": "One org/two branches → staff switch-branch; duplicate role rows do not create duplicate branches; choose valid branch → console.",
+      "criteria": {
+        "branchSelector": 1,
+        "duplicateBranches": 0,
+        "consoleLanding": 1
+      },
+      "expected": "PASS",
+      "record": "CONTEXT-many-branches-mobile.json",
+      "screenshot": "shots/CONTEXT-many-branches-mobile.png"
+    },
+    {
+      "id": "CONTEXT-many-branches-desktop",
+      "route": "/staff/login",
+      "viewport": "desktop",
+      "size": [
+        1440,
+        900
+      ],
+      "steps": "One org/two branches → staff switch-branch; duplicate role rows do not create duplicate branches; choose valid branch → console.",
+      "criteria": {
+        "branchSelector": 1,
+        "duplicateBranches": 0,
+        "consoleLanding": 1
+      },
+      "expected": "PASS",
+      "record": "CONTEXT-many-branches-desktop.json",
+      "screenshot": "shots/CONTEXT-many-branches-desktop.png"
+    },
+    {
+      "id": "CONTEXT-many-orgs-mobile",
+      "route": "/staff/login",
+      "viewport": "mobile",
+      "size": [
+        390,
+        844
+      ],
+      "steps": "Two orgs → staff switch-org then verified branches; org-only selection does not mutate incomplete context.",
+      "criteria": {
+        "orgSelector": 1,
+        "incompleteContextMutations": 0,
+        "consoleLanding": 1
+      },
+      "expected": "PASS",
+      "record": "CONTEXT-many-orgs-mobile.json",
+      "screenshot": "shots/CONTEXT-many-orgs-mobile.png"
+    },
+    {
+      "id": "CONTEXT-many-orgs-desktop",
+      "route": "/staff/login",
+      "viewport": "desktop",
+      "size": [
+        1440,
+        900
+      ],
+      "steps": "Two orgs → staff switch-org then verified branches; org-only selection does not mutate incomplete context.",
+      "criteria": {
+        "orgSelector": 1,
+        "incompleteContextMutations": 0,
+        "consoleLanding": 1
+      },
+      "expected": "PASS",
+      "record": "CONTEXT-many-orgs-desktop.json",
+      "screenshot": "shots/CONTEXT-many-orgs-desktop.png"
+    },
+    {
+      "id": "CONTEXT-foreign-tenant-mobile",
+      "route": "/staff/login",
+      "viewport": "mobile",
+      "size": [
+        390,
+        844
+      ],
+      "steps": "Try provisioned foreign tenant context from browser; upstream denies, no cookies/context changed. Missing session switch returns 401.",
+      "criteria": {
+        "denied": 1,
+        "newCookies": 0,
+        "contextChanged": 0,
+        "unauthenticatedStatus": 401
+      },
+      "expected": "PASS",
+      "record": "CONTEXT-foreign-tenant-mobile.json",
+      "screenshot": "shots/CONTEXT-foreign-tenant-mobile.png"
+    },
+    {
+      "id": "CONTEXT-foreign-tenant-desktop",
+      "route": "/staff/login",
+      "viewport": "desktop",
+      "size": [
+        1440,
+        900
+      ],
+      "steps": "Try provisioned foreign tenant context from browser; upstream denies, no cookies/context changed. Missing session switch returns 401.",
+      "criteria": {
+        "denied": 1,
+        "newCookies": 0,
+        "contextChanged": 0,
+        "unauthenticatedStatus": 401
+      },
+      "expected": "PASS",
+      "record": "CONTEXT-foreign-tenant-desktop.json",
+      "screenshot": "shots/CONTEXT-foreign-tenant-desktop.png"
+    },
+    {
+      "id": "NO-register-fresh-mobile",
+      "route": "/staff/register",
+      "viewport": "mobile",
+      "size": [
+        390,
+        844
+      ],
+      "steps": "Open with fresh session state; 404, no staff registration or redirect loop.",
+      "criteria": {
+        "httpStatus": 404,
+        "redirectLoops": 0
+      },
+      "expected": "PASS",
+      "record": "NO-register-fresh-mobile.json",
+      "screenshot": "shots/NO-register-fresh-mobile.png"
+    },
+    {
+      "id": "NO-register-fresh-desktop",
+      "route": "/staff/register",
+      "viewport": "desktop",
+      "size": [
+        1440,
+        900
+      ],
+      "steps": "Open with fresh session state; 404, no staff registration or redirect loop.",
+      "criteria": {
+        "httpStatus": 404,
+        "redirectLoops": 0
+      },
+      "expected": "PASS",
+      "record": "NO-register-fresh-desktop.json",
+      "screenshot": "shots/NO-register-fresh-desktop.png"
+    },
+    {
+      "id": "NO-register-cookie-mobile",
+      "route": "/staff/register",
+      "viewport": "mobile",
+      "size": [
+        390,
+        844
+      ],
+      "steps": "Open with cookie session state; 404, no staff registration or redirect loop.",
+      "criteria": {
+        "httpStatus": 404,
+        "redirectLoops": 0
+      },
+      "expected": "PASS",
+      "record": "NO-register-cookie-mobile.json",
+      "screenshot": "shots/NO-register-cookie-mobile.png"
+    },
+    {
+      "id": "NO-register-cookie-desktop",
+      "route": "/staff/register",
+      "viewport": "desktop",
+      "size": [
+        1440,
+        900
+      ],
+      "steps": "Open with cookie session state; 404, no staff registration or redirect loop.",
+      "criteria": {
+        "httpStatus": 404,
+        "redirectLoops": 0
+      },
+      "expected": "PASS",
+      "record": "NO-register-cookie-desktop.json",
+      "screenshot": "shots/NO-register-cookie-desktop.png"
+    },
+    {
+      "id": "VALIDATION-mobile",
+      "route": "/login",
+      "viewport": "mobile",
+      "size": [
+        390,
+        844
+      ],
+      "steps": "Exercise missing/wrong-type fields in both journey BFFs via browser; forged account_type/roles →400; password 11/12 chars, 256/257 UTF-8 bytes; busy submit and invalid fields focus. Do not export payloads.",
+      "criteria": {
+        "validationChecks": 8,
+        "forgedStatus": 400,
+        "newCookies": 0,
+        "maxConcurrentRequests": {
+          "max": 1
+        }
+      },
+      "expected": "PASS",
+      "record": "VALIDATION-mobile.json",
+      "screenshot": "shots/VALIDATION-mobile.png"
+    },
+    {
+      "id": "VALIDATION-desktop",
+      "route": "/login",
+      "viewport": "desktop",
+      "size": [
+        1440,
+        900
+      ],
+      "steps": "Exercise missing/wrong-type fields in both journey BFFs via browser; forged account_type/roles →400; password 11/12 chars, 256/257 UTF-8 bytes; busy submit and invalid fields focus. Do not export payloads.",
+      "criteria": {
+        "validationChecks": 8,
+        "forgedStatus": 400,
+        "newCookies": 0,
+        "maxConcurrentRequests": {
+          "max": 1
+        }
+      },
+      "expected": "PASS",
+      "record": "VALIDATION-desktop.json",
+      "screenshot": "shots/VALIDATION-desktop.png"
+    }
+  ]
+}

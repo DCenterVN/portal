@@ -1,14 +1,16 @@
+import {cookies} from "next/headers";
+import {getTranslations} from "@/features/customer-auth/form-feedback";
 import { Suspense } from "react";
-import type { Metadata } from "next";
+
 import { AuthHeading } from "@/components/patterns/auth-heading";
-import { ForgotForm } from "@/features/auth/forgot-form";
+import { ForgotForm } from "@/features/customer-auth/forgot-form";
 
-export const metadata: Metadata = { title: "Quên mật khẩu" };
+export async function generateMetadata() { const t = getTranslations("customerAuth", (await cookies()).get("NEXT_LOCALE")?.value === "en" ? "en" : "vi"); return {title: t("forgotTitle")}; }
 
-export default function Page() {
+export default async function Page() { const t = getTranslations("customerAuth", (await cookies()).get("NEXT_LOCALE")?.value === "en" ? "en" : "vi");
   return (
     <>
-      <AuthHeading title="Quên mật khẩu" subtitle="Nhập email, chúng tôi sẽ gửi liên kết đặt lại mật khẩu." />
+      <AuthHeading title={t("forgotTitle")} subtitle={t("forgotSubtitle")} />
       <Suspense>
         <ForgotForm />
       </Suspense>

@@ -26,7 +26,7 @@ function matches(pattern: RegExp): string[] {
 
 function violatesShellBoundary(file: string, source: string): boolean {
   if (/\.test\./.test(file)) return false;
-  if (file.startsWith("app/") && file.endsWith("/page.tsx") && !/^app\/(?:\(store\)|\(console\)|\(auth\)|platform|company)\//.test(file)) return true;
+  if (file.startsWith("app/") && file.endsWith("/page.tsx") && !/^app\/(?:\(store\)|\(console\)|\(auth\)|\(employee-auth\)|platform|company)\//.test(file)) return true;
   if (/from\s*["']@\/components\/navbar["']/.test(source)) return true;
   if (!/from\s*["']@\/components\/layout(?:\/|["'])/.test(source)) return false;
   return !/^app\/.*\/layout\.tsx$/.test(file) && file !== "app/layout.tsx" && file !== "app/not-found.tsx" &&
@@ -68,8 +68,9 @@ describe("layout architecture gate", () => {
   it("keeps main landmarks inside shell components", () => {
     const files = matches(/<main\b/).filter((file) => !/\.test\./.test(file));
     expect(files.sort()).toEqual([
-      "components/layout/auth-shell.tsx",
       "components/layout/console-shell.tsx",
+      "components/layout/customer-auth-shell.tsx",
+      "components/layout/employee-auth-shell.tsx",
       "components/layout/store-shell.tsx",
       "features/platform/workspace.tsx",
     ]);
@@ -213,3 +214,20 @@ it.each(["text", "bg", "border", "ring", "from", "to", "via"])(
     expect(hasButtonOverride(`<Button className="${utility}-[#0284C780]" />`)).toBe(true);
   }
 );
+
+it("S1 layout gate: customer layout owns one customer shell", () => {
+  const file = "app/(auth)/layout.tsx";
+  expect(readFileSync(file, "utf8"), file + ": shared AuthShell must be replaced").toContain("customer-auth-shell");
+});
+
+it.each(["login", "register", "activate"])("S5 %s page belongs to customer journey", route => {
+  const file = `app/(auth)/${route}/page.tsx`; const source = readFileSync(file, "utf8");
+  expect(source, file).toContain("@/features/customer-auth/");
+  expect(source).not.toMatch(/features\/auth\/|employee-auth|Một tài khoản cho khách mua hàng và nhân viên|Việt Sạch/);
+});
+
+it.each(["forgot-password", "reset-password"])("S6 %s page stays in customer journey", route => {
+  const file = `app/(auth)/${route}/page.tsx`; const source = readFileSync(file, "utf8");
+  expect(source, file).toContain("@/features/customer-auth/");
+  expect(source).not.toMatch(/features\/auth\/|employee-auth|Dùng cho cả khách hàng và nhân viên/);
+});
