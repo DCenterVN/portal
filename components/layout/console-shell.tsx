@@ -14,6 +14,8 @@ type Props = {
   nav: ShellNavGroup[];
   context: { label: string; sublabel?: string };
   user: { name: string; detail?: string };
+  accountHref?: string;
+  onLogout?: () => void;
   statusText?: string;
   children: ReactNode;
   actions?: ReactNode;
@@ -38,6 +40,8 @@ export function ConsoleShell({
   nav,
   context,
   user,
+  accountHref,
+  onLogout,
   statusText,
   children,
   actions,
@@ -83,7 +87,6 @@ export function ConsoleShell({
         pathname={pathname}
         nav={nav}
         context={context}
-        user={user}
         logo={<Leaf className="size-5" aria-hidden="true" />}
       />
       <div className="flex min-w-0 flex-col">
@@ -91,9 +94,12 @@ export function ConsoleShell({
           collapsed={collapsed}
           onToggle={toggleCollapsed}
           toggleLabel={toggleLabel}
+          user={user}
+          accountHref={accountHref}
+          onLogout={onLogout}
           actions={actions}
         />
-        <main id="main" className="mx-auto w-full max-w-screen-2xl flex-1 p-4 md:p-6 lg:p-8">
+        <main id="main" className="w-full flex-1 p-6">
           {children}
         </main>
         {statusText && (

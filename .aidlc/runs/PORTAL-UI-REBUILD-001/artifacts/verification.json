@@ -2,9 +2,9 @@
   "task": "PORTAL-UI-REBUILD-001",
   "actor": "agent:claude-code(171709704+dawnmoriaty@users.noreply.github.com)",
   "worker": null,
-  "ts": "2026-10-10T17:56:59+00:00",
+  "ts": "2026-10-10T18:01:23+00:00",
   "cwd": ".",
-  "head": "ab8a8d472d5c8f46ea9c01b2f151b98c2be42858",
+  "head": "ad723e3b6ccbfceb645f5a94ab994d3fb95454a9",
   "dirty": true,
   "checks": [
     {
@@ -12,9 +12,9 @@
       "command": "npm test",
       "exit": 0,
       "status": "PASS",
-      "seconds": 3.9,
+      "seconds": 4.1,
       "log": ".aidlc/runs/PORTAL-UI-REBUILD-001/artifacts/logs/unit.log",
-      "sha256": "87bcd2a5243bd09422553afc4af39080c52b2e4f8e97ecde588d593c1a1ae9e4",
+      "sha256": "4297d3006c517985a25a1fd1b297c4d79ec1aa34fa04762d15352da02181a85c",
       "tail": [
         "stderr | app/api/auth/bff.test.ts > Portal BFF Auth Handlers (9 handlers) > 1. POST /api/auth/login sets cookies and forwards response",
         "PORTAL_CLIENT_IP_SOURCE is unset; auth forwarding is disabled",
@@ -41,7 +41,7 @@
       "command": "npm run typecheck",
       "exit": 0,
       "status": "PASS",
-      "seconds": 1.5,
+      "seconds": 1.6,
       "log": ".aidlc/runs/PORTAL-UI-REBUILD-001/artifacts/logs/integration_typecheck.log",
       "sha256": "c5a440cd52c7fadc3d367658101693af6eb5b85d21dbd518cb3bda67056215e7",
       "tail": [
@@ -50,8 +50,20 @@
       ]
     },
     {
+      "name": "e2e_frame_lock",
+      "command": "node scripts/frame-lock.mjs",
+      "exit": 0,
+      "status": "PASS",
+      "seconds": 0.0,
+      "log": ".aidlc/runs/PORTAL-UI-REBUILD-001/artifacts/logs/e2e_frame_lock.log",
+      "sha256": "48c17a3cc714af879c9b7d473ae3c9b9fb3ff348fe3aef822df772575bc6b24e",
+      "tail": [
+        "frame.lock.json: khớp 53 file"
+      ]
+    },
+    {
       "name": "e2e_regression",
-      "command": "bash -o pipefail -c \"npm test 2>&1 | grep -E '^ +Tests +[0-9]+ passed' | grep -oE '[0-9]+' | head -1 | xargs -I{} test {} -ge 983\"",
+      "command": "bash -o pipefail -c \"npm test 2>&1 | grep -E '^ +Tests +[0-9]+ passed' | grep -oE '[0-9]+' | head -1 | xargs -I{} test {} -ge 989\"",
       "exit": 0,
       "status": "PASS",
       "seconds": 4.2,

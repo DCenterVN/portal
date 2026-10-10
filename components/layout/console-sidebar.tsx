@@ -11,16 +11,17 @@ type Props = {
   pathname: string;
   nav: ShellNavGroup[];
   context: { label: string; sublabel?: string };
-  user: { name: string; detail?: string };
+  // ponytail: ignored (avatar lives in the top bar); kept because app/rebrand.test.ts S3 still passes it. Drop with that test.
+  user?: { name: string; detail?: string };
   logo: ReactNode;
 };
 
-export function ConsoleSidebar({ id, collapsed, pathname, nav, context, user, logo }: Props) {
+export function ConsoleSidebar({ id, collapsed, pathname, nav, context, logo }: Props) {
   return (
     <aside
       id={id}
       className={cn(
-        "flex min-h-screen flex-col overflow-hidden bg-[var(--color-surface)] text-[var(--color-ink)] transition-[width] motion-reduce:transition-none",
+        "flex min-h-screen flex-col overflow-hidden border-r border-line bg-[var(--color-surface)] text-[var(--color-ink)] transition-[width] motion-reduce:transition-none",
         collapsed ? "w-17" : "w-60"
       )}
     >
@@ -40,7 +41,7 @@ export function ConsoleSidebar({ id, collapsed, pathname, nav, context, user, lo
         </div>
       </div>
 
-      <nav aria-label="Điều hướng quản trị" className="flex-1 space-y-5 px-2">
+      <nav aria-label="Điều hướng quản trị" className="flex-1 space-y-5 px-2 pb-4">
         {nav.map((group) => (
           <section key={group.title}>
             <h2 className={cn("px-2 pb-1 text-xs font-semibold uppercase tracking-widest text-[var(--color-muted)]", collapsed && "sr-only")}>
@@ -72,18 +73,6 @@ export function ConsoleSidebar({ id, collapsed, pathname, nav, context, user, lo
           </section>
         ))}
       </nav>
-
-      <div className={cn("mt-4 border-t border-[var(--color-line)]", collapsed ? "flex justify-center px-2 py-3" : "px-4 py-4")}>
-        <div className={cn("flex min-w-0 items-center", collapsed ? "justify-center" : "gap-3")}>
-          <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[var(--color-tint)] text-sm font-semibold text-[var(--color-ink)]">
-            {user.name.slice(0, 1)}
-          </span>
-          <div className={collapsed ? "sr-only" : "min-w-0"}>
-            <p className="truncate text-sm font-semibold text-[var(--color-ink)]">{user.name}</p>
-            {user.detail && <p className="truncate text-xs text-[var(--color-muted)]">{user.detail}</p>}
-          </div>
-        </div>
-      </div>
     </aside>
   );
 }
