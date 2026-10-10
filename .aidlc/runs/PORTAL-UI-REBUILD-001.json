@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 1,
+  "runId": "PORTAL-UI-REBUILD-001",
+  "pipelineId": "sdlc",
+  "context": {
+    "epic": "PORTAL-UI-REBUILD-001",
+    "worker": "unassigned",
+    "story": "US-UI-002",
+    "sprint": "03",
+    "slices": "1/27"
+  },
+  "startedAt": "2026-10-10T14:17:49+00:00",
+  "updatedAt": "2026-10-10T16:57:03+00:00",
+  "currentStepIdx": 3,
+  "status": "running",
+  "steps": [
+    {
+      "stepIdx": 0,
+      "agent": "sdlc-discovery",
+      "revision": 1,
+      "status": "approved",
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-UI-REBUILD-001/plan.md"
+      ]
+    },
+    {
+      "stepIdx": 1,
+      "agent": "sdlc-technical",
+      "revision": 1,
+      "status": "approved",
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-UI-REBUILD-001/plan.md"
+      ]
+    },
+    {
+      "stepIdx": 2,
+      "agent": "sdlc-ux",
+      "revision": 1,
+      "status": "approved",
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-UI-REBUILD-001/plan.md"
+      ]
+    },
+    {
+      "stepIdx": 3,
+      "agent": "sdlc-design",
+      "revision": 1,
+      "status": "awaiting_review",
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-UI-REBUILD-001/plan.md"
+      ]
+    },
+    {
+      "stepIdx": 4,
+      "agent": "sdlc-build",
+      "revision": 1,
+      "status": "pending",
+      "artifactsProduced": []
+    },
+    {
+      "stepIdx": 5,
+      "agent": "sdlc-integration",
+      "revision": 1,
+      "status": "pending",
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-UI-REBUILD-001/artifacts/verification.json"
+      ]
+    },
+    {
+      "stepIdx": 6,
+      "agent": "sdlc-e2e",
+      "revision": 1,
+      "status": "pending",
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-UI-REBUILD-001/artifacts/verification.json"
+      ]
+    },
+    {
+      "stepIdx": 7,
+      "agent": "sdlc-release",
+      "revision": 1,
+      "status": "pending",
+      "artifactsProduced": []
+    }
+  ]
+}

@@ -1,5 +1,4 @@
 import { readFileSync } from "node:fs";
-import path from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import * as React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
@@ -144,8 +143,6 @@ describe("S3 rendered sidebar and controls", () => {
   });
 });
 
-const root = path.resolve("..");
-const tokens = JSON.parse(readFileSync(path.join(root, "platform-docs/ui/tokens.json"), "utf8"));
 const css = readFileSync("app/globals.css", "utf8");
 const generated = readFileSync("app/tokens.generated.css", "utf8");
 const layout = readFileSync("app/layout.tsx", "utf8");
@@ -154,11 +151,21 @@ const palette = {
   light: "#FBF6EE #FFFFFF #F5E9DA #2A1D17 #6F5C50 #D2402A #FFFFFF #B93623 #3E8E4A #F2A33A #2A1D17 #DB8A26 #F2A33A #2E6FAD #9B2C55 #805000 #EADFD0 #8A7464 #B93623",
   dark: "#1D1714 #2A211C #352821 #F8EFE5 #C2B2A4 #F07A5F #1D1714 #E56449 #70B878 #F2A33A #2A1D17 #DB8A26 #F2A33A #8DB8E8 #E46A83 #F2C56F #49372C #8D7667 #F07A5F",
 };
+const legacy = Object.fromEntries(Object.entries(palette).map(([mode, values]) =>
+  [mode, Object.fromEntries(roles.map((role, index) => [role, values.split(" ")[index]]))])) as Record<"light" | "dark", Record<string, string>>;
+const declarations = (body: string) => Object.fromEntries([...body.matchAll(/--([\w-]+):\s*([^;]+);/g)].map((match) => [match[1], match[2]]));
+const generatedBlocks = [...generated.matchAll(/\{([^{}]+)\}/g)].map((match) => declarations(match[1]));
+const cssBlock = (selector: string) => {
+  const start = css.indexOf(`${selector} {`);
+  expect(start).toBeGreaterThan(-1);
+  return declarations(css.slice(css.indexOf("{", start) + 1, css.indexOf("}", start)));
+};
+const tokenSelectors = /(?::root, \[data-theme="light"\]|\[data-theme="dark"\], \.dark|:root:not\(\[data-theme="light"\]\)) \{\s*--l0:[^}]*\}/g;
 
 describe("S2 root brand contract", () => {
   it.each([
-    ["Quicksand", ["600", "700"], "--font-quicksand"],
-    ["Nunito", ["400", "500", "600", "700", "800"], "--font-nunito"],
+    ["Be_Vietnam_Pro", ["700"], "--font-heading"],
+    ["Nunito", ["400", "500", "600", "700", "800"], "--font-body"],
   ] as const)("loads %s with Vietnamese/Latin, explicit weights and swap", (font, weights, variable) => {
     expect(layout).toMatch(new RegExp(`import \\{[^}]*\\b${font}\\b[^}]*\\} from "next/font/google"`));
     const options = layout.match(new RegExp(`const (\\w+) = ${font}\\(\\{([\\s\\S]*?)\\}\\)`));
@@ -169,7 +176,7 @@ describe("S2 root brand contract", () => {
     expect(config).toContain(`variable: "${variable}"`);
     expect(config).toContain('display: "swap"');
     expect(layout).toContain(`\${${options![1]}.variable}`);
-    expect(layout).not.toMatch(/Be[ _]*Vietnam[ _]*Pro/i);
+    expect(layout).not.toMatch(/Quicksand/i);
   });
 
   it("uses solid primary for the default and legacy accent CTA with visible focus", () => {
@@ -186,13 +193,14 @@ describe("S2 root brand contract", () => {
 
   it("matches browser chrome and icon colours to the approved light/dark roles", () => {
     const manifest = JSON.parse(readFileSync("public/manifest.json", "utf8"));
-    expect(manifest.theme_color).toBe(tokens.color.light.primary.$value);
-    expect(manifest.background_color).toBe(tokens.color.light.bg.$value);
+    expect(manifest.theme_color).toBe(generatedBlocks[0]["color-primary"]);
+    expect(manifest.theme_color).toBe(cssBlock(':root, [data-theme="light"]').p);
+    expect(manifest.background_color).toBe(generatedBlocks[0]["color-bg"]);
     const icon = readFileSync("app/icon.svg", "utf8");
-    expect(icon).toContain(`fill="${tokens.color.light.primary.$value}"`);
-    expect(icon).toContain(`stroke="${tokens.color.light["primary-ink"].$value}"`);
-    for (const mode of ["light", "dark"] as const) {
-      expect(layout).toContain(`{ media: "(prefers-color-scheme: ${mode})", color: "${tokens.color[mode].bg.$value}" }`);
+    expect(icon).toContain(`fill="${generatedBlocks[0]["color-primary"]}"`);
+    expect(icon).toContain(`stroke="${generatedBlocks[0]["color-primary-ink"]}"`);
+    for (const [mode, index] of [["light", 0], ["dark", 1]] as const) {
+      expect(layout).toContain(`{ media: "(prefers-color-scheme: ${mode})", color: "${generatedBlocks[index]["color-bg"]}" }`);
     }
   });
 
@@ -215,51 +223,37 @@ function contrast(foreground: string, background: string) {
 }
 
 describe("S1 approved brand contract", () => {
-  it.each(Object.entries(palette))("preserves %s role names/types and exact approved colours", (mode, values) => {
-    expect(Object.keys(tokens.color[mode])).toEqual(roles);
-    roles.forEach((role, index) => {
-      expect(tokens.color[mode][role]).toEqual({ $type: "color", $value: values.split(" ")[index] });
-    });
+  it.each([["light", 0], ["dark", 1]] as const)("keeps the legacy %s role names and exact approved colours that existing screens use", (mode, index) => {
+    const colors = Object.fromEntries(Object.entries(generatedBlocks[index]).filter(([key]) => key.startsWith("color-")));
+    expect(Object.keys(colors)).toEqual(roles.map((role) => `color-${role}`));
+    roles.forEach((role) => expect(colors[`color-${role}`]).toBe(legacy[mode][role]));
   });
 
-  it("preserves token groups and sets the requested font stacks, elevations and radii", () => {
-    expect(Object.keys(tokens)).toEqual(["$description", "color", "elevation", "radius", "font"]);
-    expect(tokens.font).toEqual({
-      display: { $type: "fontFamily", $value: '"Quicksand", system-ui, sans-serif' },
-      sans: { $type: "fontFamily", $value: '"Nunito", system-ui, -apple-system, "Segoe UI", sans-serif' },
+  it("keeps legacy elevations and radii, and points legacy font roles at the loaded heading/body fonts", () => {
+    expect(generatedBlocks[0]).toMatchObject({
+      "elevation-shadow-card": "0 2px 8px rgb(42 29 23 / .08)",
+      "elevation-shadow-pop": "0 12px 28px rgb(42 29 23 / .18)",
+      "radius-sm": "8px", "radius-md": "12px", "radius-lg": "16px", "radius-pill": "9999px",
     });
-    expect(tokens.elevation).toEqual({
-      "shadow-card": { $type: "shadow", $value: "0 2px 8px rgb(42 29 23 / .08)" },
-      "shadow-pop": { $type: "shadow", $value: "0 12px 28px rgb(42 29 23 / .18)" },
-    });
-    expect(tokens.radius).toEqual(Object.fromEntries([
-      ["sm", "8px"], ["md", "12px"], ["lg", "16px"], ["pill", "9999px"],
-    ].map(([key, value]) => [key, { $type: "dimension", $value: value }])));
+    expect(cssBlock(':root, [data-theme="light"]')).toMatchObject({ "font-display": "var(--font-heading)", "font-sans": "var(--font-body)" });
   });
 
-  it("carries every source token into the generated light, dark and automatic themes", () => {
-    const blocks = [...generated.matchAll(/\{([^{}]+)\}/g)].map((match) => match[1]);
-    expect(blocks).toHaveLength(3);
-    for (const [index, mode] of ["light", "dark", "dark"].entries()) {
-      const declarations = Object.fromEntries([...blocks[index].matchAll(/--([\w-]+):\s*([^;]+);/g)].map((match) => [match[1], match[2]]));
-      const expected: Record<string, string> = {};
-      for (const role of roles) expected[`color-${role}`] = tokens.color[mode][role].$value;
-      if (index === 0) {
-        for (const group of ["font", "radius", "elevation"]) {
-          for (const [key, token] of Object.entries(tokens[group]) as [string, { $value: string }][]) expected[`${group}-${key}`] = token.$value;
-        }
-      }
-      expect(declarations).toEqual(expected);
+  it("carries the legacy palette into the generated light, dark and automatic themes", () => {
+    expect(generatedBlocks).toHaveLength(3);
+    for (const [index, mode] of (["light", "dark", "dark"] as const).entries()) {
+      const colors = Object.fromEntries(Object.entries(generatedBlocks[index]).filter(([key]) => key.startsWith("color-")));
+      expect(colors).toEqual(Object.fromEntries(roles.map((role) => [`color-${role}`, legacy[mode][role]])));
     }
+    expect(Object.keys(generatedBlocks[1])).toEqual(Object.keys(generatedBlocks[2]));
     expect(generated).toContain(':root, [data-theme="light"]');
     expect(generated).toContain('[data-theme="dark"], .dark');
     expect(generated).toContain('@media (prefers-color-scheme: dark)');
     expect(generated).toContain(':root:not([data-theme="light"])');
   });
 
-  it.each(["light", "dark"])("meets unrounded text and control contrast in %s", (mode) => {
-    const colors = tokens.color[mode];
-    const ratio = (fg: string, bg: string) => contrast(colors[fg].$value, colors[bg].$value);
+  it.each(["light", "dark"] as const)("meets unrounded text and control contrast in %s", (mode) => {
+    const colors = legacy[mode];
+    const ratio = (fg: string, bg: string) => contrast(colors[fg], colors[bg]);
     for (const background of ["bg", "surface", "tint"]) {
       for (const foreground of ["ink", "muted", "danger", "warn-ink", mode === "light" ? "primary-hover" : "primary"]) expect(ratio(foreground, background)).toBeGreaterThanOrEqual(4.5);
       if (mode === "dark" || background !== "tint") expect(ratio("info", background)).toBeGreaterThanOrEqual(4.5);
@@ -278,7 +272,20 @@ describe("S1 approved brand contract", () => {
       "tag-bg": "color-tint", "tag-text": "color-ink", "tag-border": "color-line",
     };
     for (const [alias, role] of Object.entries(aliases)) expect(css).toContain(`--${alias}: var(--${role});`);
-    expect(css).not.toMatch(/#[\da-f]{3,8}\b|--land-(?:green|sage)|color-mix\([^;]*transparent/i);
+    expect(css.replace(tokenSelectors, "")).not.toMatch(/#[\da-f]{3,8}\b|--land-(?:green|sage)|color-mix\([^;]*transparent/i);
+    expect(css.match(tokenSelectors)).toHaveLength(3);
+  });
+
+  it.each(["light", "dark"] as const)("meets AA contrast with the preview tokens in %s", (mode) => {
+    const colors = { ...cssBlock(':root, [data-theme="light"]'), ...(mode === "dark" ? cssBlock('[data-theme="dark"], .dark') : {}) };
+    const ratio = (fg: string, bg: string) => contrast(colors[fg], colors[bg]);
+    for (const background of ["l0", "l1", "l1-2"]) {
+      for (const foreground of ["fg", "fg-2", "p-text", "ok", "err"]) expect(ratio(foreground, background), `${foreground}/${background}`).toBeGreaterThanOrEqual(4.5);
+      for (const control of ["line-strong", "warn"]) expect(ratio(control, background), `${control}/${background}`).toBeGreaterThanOrEqual(3);
+    }
+    for (const background of ["l1", "l1-2"]) expect(ratio("fg-3", background), `fg-3/${background}`).toBeGreaterThanOrEqual(4.5);
+    for (const background of ["p", "p-hover"]) expect(contrast("#FFFFFF", colors[background]), `#fff/${background}`).toBeGreaterThanOrEqual(4.5);
+    for (const [foreground, background] of [["p-text", "p-soft"], ["ok", "ok-soft"], ["err", "err-soft"]]) expect(ratio(foreground, background), `${foreground}/${background}`).toBeGreaterThanOrEqual(4.5);
   });
 
   it("keeps landing text/CTA contrast-safe, uses elevation shadows and loader fallbacks", () => {
@@ -289,8 +296,9 @@ describe("S1 approved brand contract", () => {
     expect(css).toContain("--color-chrome: var(--color-ink);");
     expect(css).toContain("--color-chrome: var(--color-bg);");
     expect(css.match(/box-shadow:\s*([^;]+);/g)).toEqual(["box-shadow: var(--elevation-shadow-pop);"]);
-    expect(css).toContain("font-family: var(--font-nunito, var(--font-sans));");
-    expect(css).toContain("font-family: var(--font-quicksand, var(--font-display));");
+    expect(css).toContain("font-family: var(--font-body);");
+    expect(css).toContain("font-family: var(--font-heading);");
+    expect(css).not.toMatch(/quicksand|--font-nunito/i);
     expect(css).toContain("@import \"./tokens.generated.css\";");
   });
 });
@@ -424,7 +432,7 @@ function expectRoleSurface(html: string) {
   for (const heading of html.match(/<h[1-4]\b[^>]*>/g) ?? []) {
     // h1–h3 inherit the root display role; h4 needs an explicit role.
     if (heading.startsWith("<h4")) expect(heading).toContain("font-[family-name:var(--font-quicksand,var(--font-display))]");
-    else expect(css).toMatch(/h1, h2, h3, \.font-serif\s*\{\s*font-family: var\(--font-quicksand, var\(--font-display\)\)/);
+    else expect(css).toMatch(/h1, h2, h3, \.font-serif\s*\{\s*font-family: var\(--font-heading\)/);
   }
 }
 

@@ -1,0 +1,107 @@
+{
+  "id": "PORTAL-UI-REBUILD-001",
+  "title": "Dựng lại UI portal Bếp Tươi theo preview đã chốt 10/10 — luật trước, màn sau, nối API + e2e cuối",
+  "description": "worker: unassigned · story: US-UI-002 · sprint: 03 · slices: 1/27 · next: approval: plan.md changed after approval (drift) - re-approve",
+  "pipeline": "sdlc",
+  "agent": null,
+  "agents": [
+    "sdlc-discovery",
+    "sdlc-technical",
+    "sdlc-ux",
+    "sdlc-design",
+    "sdlc-build",
+    "sdlc-integration",
+    "sdlc-e2e",
+    "sdlc-release"
+  ],
+  "currentStep": 3,
+  "status": "in_progress",
+  "createdAt": "2026-10-10T14:17:49+00:00",
+  "updatedAt": "2026-10-10T16:57:03+00:00",
+  "stepStates": [
+    {
+      "agent": "sdlc-discovery",
+      "status": "done",
+      "revision": 1,
+      "runStatus": "approved",
+      "startedAt": null,
+      "finishedAt": null,
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-UI-REBUILD-001/plan.md"
+      ]
+    },
+    {
+      "agent": "sdlc-technical",
+      "status": "done",
+      "revision": 1,
+      "runStatus": "approved",
+      "startedAt": null,
+      "finishedAt": null,
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-UI-REBUILD-001/plan.md"
+      ]
+    },
+    {
+      "agent": "sdlc-ux",
+      "status": "done",
+      "revision": 1,
+      "runStatus": "approved",
+      "startedAt": null,
+      "finishedAt": null,
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-UI-REBUILD-001/plan.md"
+      ]
+    },
+    {
+      "agent": "sdlc-design",
+      "status": "in_progress",
+      "revision": 1,
+      "runStatus": "awaiting_review",
+      "startedAt": null,
+      "finishedAt": null,
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-UI-REBUILD-001/plan.md"
+      ]
+    },
+    {
+      "agent": "sdlc-build",
+      "status": "pending",
+      "revision": 1,
+      "runStatus": "pending",
+      "startedAt": null,
+      "finishedAt": null,
+      "artifactsProduced": []
+    },
+    {
+      "agent": "sdlc-integration",
+      "status": "pending",
+      "revision": 1,
+      "runStatus": "pending",
+      "startedAt": null,
+      "finishedAt": null,
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-UI-REBUILD-001/artifacts/verification.json"
+      ]
+    },
+    {
+      "agent": "sdlc-e2e",
+      "status": "pending",
+      "revision": 1,
+      "runStatus": "pending",
+      "startedAt": null,
+      "finishedAt": null,
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-UI-REBUILD-001/artifacts/verification.json"
+      ]
+    },
+    {
+      "agent": "sdlc-release",
+      "status": "pending",
+      "revision": 1,
+      "runStatus": "pending",
+      "startedAt": null,
+      "finishedAt": null,
+      "artifactsProduced": []
+    }
+  ]
+}

@@ -1,22 +1,26 @@
 import type { Metadata, Viewport } from "next";
-import { Nunito, Quicksand } from "next/font/google";
+import { Be_Vietnam_Pro, Nunito } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ToastProvider } from "@/components/ui/toast";
 
-const quicksand = Quicksand({
+const heading = Be_Vietnam_Pro({
   subsets: ["vietnamese", "latin"],
-  weight: ["600", "700"],
-  variable: "--font-quicksand",
+  weight: ["700"],
+  variable: "--font-heading",
   display: "swap",
+  adjustFontFallback: true,
 });
 
-const nunito = Nunito({
+const body = Nunito({
   subsets: ["vietnamese", "latin"],
   weight: ["400", "500", "600", "700", "800"],
-  variable: "--font-nunito",
+  variable: "--font-body",
   display: "swap",
+  adjustFontFallback: true,
 });
+
+const themeScript = `try{var d=document.documentElement,t=localStorage.getItem("dcenter_theme");if(t==="dark"||t==="light"){d.dataset.theme=t;d.classList.toggle("dark",t==="dark")}else if(matchMedia("(prefers-color-scheme: dark)").matches){d.classList.add("dark")}}catch(e){}`;
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://vietsach.reborn.vn";
 
@@ -97,8 +101,11 @@ export default function RootLayout({
     <html
       lang="vi"
       suppressHydrationWarning
-      className={`${quicksand.variable} ${nunito.variable}`}
+      className={`${heading.variable} ${body.variable}`}
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body className="min-h-screen bg-[var(--background)] text-[var(--foreground)] antialiased transition-colors duration-200">
         <ThemeProvider>
           <ToastProvider>
