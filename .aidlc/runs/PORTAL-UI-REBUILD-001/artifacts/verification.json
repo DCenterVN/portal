@@ -2,9 +2,9 @@
   "task": "PORTAL-UI-REBUILD-001",
   "actor": "agent:claude-code(171709704+dawnmoriaty@users.noreply.github.com)",
   "worker": null,
-  "ts": "2026-10-10T17:05:41+00:00",
+  "ts": "2026-10-10T17:18:10+00:00",
   "cwd": ".",
-  "head": "74fc71c1b42c4f4e82b9d26a8616bd4d4d0a1318",
+  "head": "9cf24e6704e031508b176f2721ede593c032b008",
   "dirty": true,
   "checks": [
     {
@@ -12,11 +12,11 @@
       "command": "npm test",
       "exit": 0,
       "status": "PASS",
-      "seconds": 3.7,
+      "seconds": 3.6,
       "log": ".aidlc/runs/PORTAL-UI-REBUILD-001/artifacts/logs/unit.log",
-      "sha256": "1d26a1a74e88b29cd9c39c92b7edea1718e565fbda2d8e6263c273f8d77e08c4",
+      "sha256": "4ff9abf10bdbccdca890113c6ca1e7fde7682b498b98e465ac94a27f8a1b2e61",
       "tail": [
-        "stderr | app/api/auth/staff/bff.test.ts > S11 staff recovery dependency and invite BFF > accepts exact invite DTO via invite purpose endpoint; never password reset; no credentials/cookies",
+        "stderr | app/api/auth/bff.test.ts > Portal BFF Auth Handlers (9 handlers) > 1. POST /api/auth/login sets cookies and forwards response",
         "PORTAL_CLIENT_IP_SOURCE is unset; auth forwarding is disabled",
         "",
         "stderr | app/rebrand.test.ts > S7 rendered target, cart, orders and product creation roles > keeps target permissions, labelled statuses and sole create/submit emphasis (form=false)",
@@ -28,7 +28,7 @@
       "command": "npm run lint",
       "exit": 0,
       "status": "PASS",
-      "seconds": 2.4,
+      "seconds": 2.3,
       "log": ".aidlc/runs/PORTAL-UI-REBUILD-001/artifacts/logs/lint.log",
       "sha256": "7641747edd98ed1a1fd1ad59bec73c32caac945b1006098310c6c071b528e278",
       "tail": [
@@ -41,7 +41,7 @@
       "command": "rm -rf .next/types .next/dev/types && npm run typecheck",
       "exit": 0,
       "status": "PASS",
-      "seconds": 1.6,
+      "seconds": 1.5,
       "log": ".aidlc/runs/PORTAL-UI-REBUILD-001/artifacts/logs/integration_typecheck.log",
       "sha256": "c5a440cd52c7fadc3d367658101693af6eb5b85d21dbd518cb3bda67056215e7",
       "tail": [
@@ -50,11 +50,27 @@
       ]
     },
     {
+      "name": "e2e_visual",
+      "command": "npm run visual",
+      "exit": 0,
+      "status": "PASS",
+      "seconds": 6.5,
+      "log": ".aidlc/runs/PORTAL-UI-REBUILD-001/artifacts/logs/e2e_visual.log",
+      "sha256": "7b826abb923622cb48ea52a7013bcdf16471099c5f8fad67a26013bdaf79e58a",
+      "tail": [
+        "  -  41 [mobile] › e2e/visual/preview.spec.ts:71:3 › States",
+        "  -  42 [mobile] › e2e/visual/preview.spec.ts:71:3 › StatesMobile",
+        "",
+        "  40 skipped",
+        "  2 passed (6.1s)"
+      ]
+    },
+    {
       "name": "e2e_regression",
       "command": "bash -o pipefail -c \"npm test 2>&1 | grep -E '^ +Tests +[0-9]+ passed' | grep -oE '[0-9]+' | head -1 | xargs -I{} test {} -ge 899\"",
       "exit": 0,
       "status": "PASS",
-      "seconds": 3.8,
+      "seconds": 3.5,
       "log": ".aidlc/runs/PORTAL-UI-REBUILD-001/artifacts/logs/e2e_regression.log",
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "tail": []

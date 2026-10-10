@@ -10,7 +10,9 @@
     "start": "node node_modules/next/dist/bin/next start",
     "typecheck": "node node_modules/typescript/bin/tsc --noEmit",
     "lint": "node node_modules/eslint/bin/eslint.js .",
-    "test": "sh -c 'test -f /tmp/esbuild || cp node_modules/.pnpm/@esbuild+linux-x64@0.21.5/node_modules/@esbuild/linux-x64/bin/esbuild /tmp/esbuild 2>/dev/null || cp node_modules/@esbuild/linux-x64/bin/esbuild /tmp/esbuild 2>/dev/null; chmod +x /tmp/esbuild 2>/dev/null; ESBUILD_BINARY_PATH=${ESBUILD_BINARY_PATH:-/tmp/esbuild} node node_modules/vitest/vitest.mjs run'"
+    "test": "sh -c 'test -f /tmp/esbuild || cp node_modules/.pnpm/@esbuild+linux-x64@0.21.5/node_modules/@esbuild/linux-x64/bin/esbuild /tmp/esbuild 2>/dev/null || cp node_modules/@esbuild/linux-x64/bin/esbuild /tmp/esbuild 2>/dev/null; chmod +x /tmp/esbuild 2>/dev/null; ESBUILD_BINARY_PATH=${ESBUILD_BINARY_PATH:-/tmp/esbuild} node node_modules/vitest/vitest.mjs run --exclude \"e2e/**\"'",
+    "visual": "node node_modules/@playwright/test/cli.js test e2e/visual",
+    "visual:baseline": "VISUAL_BASELINE=1 node node_modules/@playwright/test/cli.js test e2e/visual"
   },
   "dependencies": {
     "@auth/core": "0.41.0",
@@ -25,6 +27,7 @@
   },
   "devDependencies": {
     "@eslint/js": "9.17.0",
+    "@playwright/test": "1.63.0",
     "@tailwindcss/postcss": "^4.3.3",
     "@types/node": "22.10.5",
     "@types/react": "19.0.4",
