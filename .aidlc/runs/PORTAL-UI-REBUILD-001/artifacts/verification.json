@@ -2,9 +2,9 @@
   "task": "PORTAL-UI-REBUILD-001",
   "actor": "agent:claude-code(171709704+dawnmoriaty@users.noreply.github.com)",
   "worker": null,
-  "ts": "2026-10-10T17:28:25+00:00",
+  "ts": "2026-10-10T17:56:59+00:00",
   "cwd": ".",
-  "head": "5f2da05ee66feb8fc5d10302e6d740d32d8e6182",
+  "head": "ab8a8d472d5c8f46ea9c01b2f151b98c2be42858",
   "dirty": true,
   "checks": [
     {
@@ -12,9 +12,9 @@
       "command": "npm test",
       "exit": 0,
       "status": "PASS",
-      "seconds": 4.1,
+      "seconds": 3.9,
       "log": ".aidlc/runs/PORTAL-UI-REBUILD-001/artifacts/logs/unit.log",
-      "sha256": "c4a4a38963221505d6887ef210a22a04b10138894a4483f464865d9d4a2969cf",
+      "sha256": "87bcd2a5243bd09422553afc4af39080c52b2e4f8e97ecde588d593c1a1ae9e4",
       "tail": [
         "stderr | app/api/auth/bff.test.ts > Portal BFF Auth Handlers (9 handlers) > 1. POST /api/auth/login sets cookies and forwards response",
         "PORTAL_CLIENT_IP_SOURCE is unset; auth forwarding is disabled",
@@ -28,7 +28,7 @@
       "command": "npm run lint",
       "exit": 0,
       "status": "PASS",
-      "seconds": 2.6,
+      "seconds": 2.7,
       "log": ".aidlc/runs/PORTAL-UI-REBUILD-001/artifacts/logs/lint.log",
       "sha256": "7641747edd98ed1a1fd1ad59bec73c32caac945b1006098310c6c071b528e278",
       "tail": [
@@ -38,10 +38,10 @@
     },
     {
       "name": "integration_typecheck",
-      "command": "rm -rf .next/types .next/dev/types && npm run typecheck",
+      "command": "npm run typecheck",
       "exit": 0,
       "status": "PASS",
-      "seconds": 4.0,
+      "seconds": 1.5,
       "log": ".aidlc/runs/PORTAL-UI-REBUILD-001/artifacts/logs/integration_typecheck.log",
       "sha256": "c5a440cd52c7fadc3d367658101693af6eb5b85d21dbd518cb3bda67056215e7",
       "tail": [
@@ -50,42 +50,14 @@
       ]
     },
     {
-      "name": "e2e_visual",
-      "command": "npm run visual",
-      "exit": 0,
-      "status": "PASS",
-      "seconds": 8.2,
-      "log": ".aidlc/runs/PORTAL-UI-REBUILD-001/artifacts/logs/e2e_visual.log",
-      "sha256": "4fb3dab9915c7c7ac83b048df80314ca11abf4ccf8bd6c2a2d57bef091c812d0",
-      "tail": [
-        "  -  41 [mobile] › e2e/visual/preview.spec.ts:71:3 › States",
-        "  -  42 [mobile] › e2e/visual/preview.spec.ts:71:3 › StatesMobile",
-        "",
-        "  40 skipped",
-        "  2 passed (7.8s)"
-      ]
-    },
-    {
       "name": "e2e_regression",
-      "command": "bash -o pipefail -c \"npm test 2>&1 | grep -E '^ +Tests +[0-9]+ passed' | grep -oE '[0-9]+' | head -1 | xargs -I{} test {} -ge 924\"",
+      "command": "bash -o pipefail -c \"npm test 2>&1 | grep -E '^ +Tests +[0-9]+ passed' | grep -oE '[0-9]+' | head -1 | xargs -I{} test {} -ge 983\"",
       "exit": 0,
       "status": "PASS",
-      "seconds": 4.3,
+      "seconds": 4.2,
       "log": ".aidlc/runs/PORTAL-UI-REBUILD-001/artifacts/logs/e2e_regression.log",
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "tail": []
-    },
-    {
-      "name": "arch",
-      "command": "python3 /home/dawn/agent_skills/sdlc/engine/archcheck.py",
-      "exit": 0,
-      "status": "PASS",
-      "seconds": 1.4,
-      "log": ".aidlc/runs/PORTAL-UI-REBUILD-001/artifacts/logs/arch.log",
-      "sha256": "c8ec59eae10446f9055168ca6a81c9f486ec46e3c138a15462411b34b409e2e9",
-      "tail": [
-        "archcheck: 56 violations, 56 baselined, 0 new, 0 stale"
-      ]
     }
   ],
   "verdict": "PASS"

@@ -40,5 +40,16 @@ export const STORE_FOOTER = {
   legal: ["© Việt Sạch", "Chính sách bảo mật", "Điều khoản sử dụng"],
 };
 
-// Cart API will replace this placeholder when use-cart is introduced.
-export const STORE_CART_COUNT_PLACEHOLDER = 0;
+// Cart preview, account and favourites for the frame, tests and visual baselines; replace with the cart/wishlist APIs.
+// Add order: oldest first. Five lines so the mini-cart shows the newest three and "+2 món khác".
+export const STORE_CART_ITEMS = [
+  { id: "dau-hu-sot-ca-chua", name: "Đậu hũ sốt cà chua", quantity: 2, priceVnd: 89000 },
+  { id: "ga-xe-phay-rau-ram", name: "Gà xé phay rau răm", quantity: 1, priceVnd: 69000 },
+  { id: "ca-hoi-ap-chao", name: "Cá hồi áp chảo sốt chanh dây", quantity: 1, priceVnd: 159000 },
+  { id: "suon-rim-man-ngot", name: "Sườn rim mặn ngọt", quantity: 3, priceVnd: 199000 },
+  { id: "bo-luc-lac-khoai-tay", name: "Bò lúc lắc khoai tây", quantity: 1, priceVnd: 129000 },
+];
+
+export const STORE_ACCOUNT = { name: "Khách thân thiết" };
+
+export const STORE_FAVORITES_COUNT = 4;

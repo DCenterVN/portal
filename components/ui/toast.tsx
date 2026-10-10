@@ -6,6 +6,8 @@ import { CheckCircle2, AlertCircle, AlertTriangle, Info, X } from "lucide-react"
 import { cn } from "@/lib/utils";
 
 export type ToastVariant = "success" | "error" | "warning" | "info";
+/** store: bottom-center (mobile-first shop), crm: bottom-right (desktop console). */
+export type ToastPlacement = "store" | "crm";
 
 export interface ToastMessage {
   id: string;
@@ -13,7 +15,12 @@ export interface ToastMessage {
   description?: string;
   variant?: ToastVariant;
   duration?: number;
+  /** e.g. { label: "Hoàn tác", onClick: restore } — keeps the toast up for UNDO_MS so the user can react. */
+  action?: { label: string; onClick: () => void };
 }
+
+const DEFAULT_MS = 4000;
+const UNDO_MS = 10_000;
 
 interface ToastContextValue {
   toasts: ToastMessage[];
@@ -30,7 +37,7 @@ interface ToastContextValue {
 
 const ToastContext = React.createContext<ToastContextValue | undefined>(undefined);
 
-export function ToastProvider({ children }: { children: React.ReactNode }) {
+export function ToastProvider({ children, placement = "crm" }: { children: React.ReactNode; placement?: ToastPlacement }) {
   const [toasts, setToasts] = React.useState<ToastMessage[]>([]);
   const timersRef = React.useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
 
@@ -56,7 +63,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   const addToast = React.useCallback(
     (opts: Omit<ToastMessage, "id">) => {
       const id = Math.random().toString(36).substring(2, 9);
-      const duration = opts.duration ?? 4000;
+      const duration = opts.duration ?? (opts.action ? UNDO_MS : DEFAULT_MS);
       const newToast: ToastMessage = {
         id,
         variant: "info",
@@ -102,7 +109,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastContext.Provider value={{ toasts, addToast, removeToast, toast }}>
       {children}
-      <ToastContainer toasts={toasts} onDismiss={removeToast} />
+      <ToastContainer toasts={toasts} onDismiss={removeToast} placement={placement} />
     </ToastContext.Provider>
   );
 }
@@ -118,9 +125,15 @@ export function useToast() {
 interface ToastContainerProps {
   toasts: ToastMessage[];
   onDismiss: (id: string) => void;
+  placement?: ToastPlacement;
 }
 
-export function ToastContainer({ toasts, onDismiss }: ToastContainerProps) {
+const PLACEMENT: Record<ToastPlacement, string> = {
+  store: "inset-x-0 bottom-4 mx-auto",
+  crm: "bottom-4 right-4 sm:px-0",
+};
+
+export function ToastContainer({ toasts, onDismiss, placement = "crm" }: ToastContainerProps) {
   const [mounted, setMounted] = React.useState(false);
 
   React.useEffect(() => {
@@ -133,7 +146,7 @@ export function ToastContainer({ toasts, onDismiss }: ToastContainerProps) {
     <div
       aria-live="polite"
       aria-atomic="true"
-      className="fixed top-4 right-4 z-[100] flex flex-col gap-2.5 max-w-md w-full pointer-events-none px-4 sm:px-0"
+      className={cn("fixed z-(--z-toast) flex w-full max-w-md flex-col gap-2.5 px-4 pointer-events-none", PLACEMENT[placement])}
     >
       {toasts.map((t) => (
         <ToastItem key={t.id} toast={t} onDismiss={() => onDismiss(t.id)} />
@@ -147,32 +160,27 @@ export function ToastContainer({ toasts, onDismiss }: ToastContainerProps) {
 const variantStyles: Record<
   ToastVariant,
   {
-    bg: string;
     border: string;
     iconColor: string;
     icon: typeof CheckCircle2;
   }
 > = {
   success: {
-    bg: "bg-[var(--color-surface)]",
     border: "border-[var(--color-leaf)]",
     iconColor: "text-[var(--color-leaf)]",
     icon: CheckCircle2,
   },
   error: {
-    bg: "bg-[var(--color-surface)]",
     border: "border-[var(--color-danger)]",
     iconColor: "text-[var(--color-danger)]",
     icon: AlertCircle,
   },
   warning: {
-    bg: "bg-[var(--color-surface)]",
     border: "border-[var(--color-sun)]",
     iconColor: "text-[var(--color-sun)]",
     icon: AlertTriangle,
   },
   info: {
-    bg: "bg-[var(--color-surface)]",
     border: "border-[var(--color-info)]",
     iconColor: "text-[var(--color-info)]",
     icon: Info,
@@ -191,12 +199,8 @@ function ToastItem({
 
   return (
     <div
-      role="alert"
-      className={cn(
-        "pointer-events-auto flex items-start gap-3 rounded-[var(--radius-md)] border p-4 shadow-[var(--elevation-shadow-pop)] transition-all duration-200 ease-out animate-in slide-in-from-top-3 fade-in-0 motion-reduce:animate-none motion-reduce:transition-none",
-        style.bg,
-        style.border
-      )}
+      role={toast.variant === "error" ? "alert" : "status"}
+      className={cn("pointer-events-auto flex items-start gap-3 rounded-lg border bg-l1 p-4 shadow-l3", style.border)}
     >
       <Icon className={cn("size-5 shrink-0 mt-0.5", style.iconColor)} />
       <div className="flex-1 space-y-0.5 text-left">
@@ -209,6 +213,18 @@ function ToastItem({
           </p>
         )}
       </div>
+      {toast.action && (
+        <button
+          type="button"
+          onClick={() => {
+            toast.action?.onClick();
+            onDismiss();
+          }}
+          className="shrink-0 rounded-sm px-2 py-1 text-xs font-semibold text-p-text hover:bg-p-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+        >
+          {toast.action.label}
+        </button>
+      )}
       <button
         type="button"
         onClick={onDismiss}

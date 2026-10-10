@@ -34,6 +34,7 @@ function unlockScroll() {
 interface DialogContextValue {
   open: boolean;
   setOpen: (open: boolean) => void;
+  titleId: string;
 }
 
 const DialogContext = React.createContext<DialogContextValue | undefined>(undefined);
@@ -56,6 +57,7 @@ export function Dialog({ open: controlledOpen, onOpenChange, children }: DialogP
   const [uncontrolledOpen, setUncontrolledOpen] = React.useState(false);
   const isControlled = controlledOpen !== undefined;
   const open = isControlled ? controlledOpen : uncontrolledOpen;
+  const titleId = React.useId();
 
   const setOpen = React.useCallback(
     (value: boolean) => {
@@ -68,7 +70,7 @@ export function Dialog({ open: controlledOpen, onOpenChange, children }: DialogP
   );
 
   return (
-    <DialogContext.Provider value={{ open, setOpen }}>
+    <DialogContext.Provider value={{ open, setOpen, titleId }}>
       {children}
     </DialogContext.Provider>
   );
@@ -106,28 +108,13 @@ export function DialogTrigger({
 }
 
 // ---------- Layer definitions ----------
-// L4 = standard modals (z-70), L5 = fail-closed (z-80), L6 = session lock (z-90)
+// L4 = standard modals, L5 = fail-closed (no Esc, no backdrop click), L6 = session lock. Order: --z-* in globals.css.
 export type DialogLayer = "standard" | "critical" | "session";
 
-const LAYER_CONFIG: Record<DialogLayer, { container: string; surface: string; backdrop: string; preventDismiss: boolean }> = {
-  standard: {
-    container: "z-[70]",
-    surface: "z-[71]",
-    backdrop: "bg-[var(--color-chrome)]/60",
-    preventDismiss: false,
-  },
-  critical: {
-    container: "z-[80]",
-    surface: "z-[81]",
-    backdrop: "bg-[var(--color-chrome)]/75",
-    preventDismiss: true, // No Esc, no backdrop click
-  },
-  session: {
-    container: "z-[90]",
-    surface: "z-[91]",
-    backdrop: "bg-[var(--color-chrome)]/85",
-    preventDismiss: true, // Full app lock
-  },
+const LAYER_CONFIG: Record<DialogLayer, { container: string; preventDismiss: boolean }> = {
+  standard: { container: "z-(--z-modal)", preventDismiss: false },
+  critical: { container: "z-(--z-modal-critical)", preventDismiss: true },
+  session: { container: "z-(--z-modal-session)", preventDismiss: true },
 };
 
 const FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
@@ -157,6 +144,8 @@ export interface DialogContentProps extends React.HTMLAttributes<HTMLDivElement>
   showClose?: boolean;
   size?: "sm" | "md" | "lg" | "xl" | "full";
   layer?: DialogLayer;
+  /** sheet: bottom sheet below md, centered modal from md up. */
+  variant?: "modal" | "sheet";
 }
 
 export function DialogContent({
@@ -165,9 +154,11 @@ export function DialogContent({
   showClose = true,
   size = "md",
   layer = "standard",
+  variant = "modal",
   ...props
 }: DialogContentProps) {
-  const { open, setOpen } = useDialog();
+  const { open, setOpen, titleId } = useDialog();
+  const sheet = variant === "sheet";
   const [mounted, setMounted] = React.useState(false);
   const config = LAYER_CONFIG[layer];
   const surfaceRef = React.useRef<HTMLDivElement>(null);
@@ -247,28 +238,21 @@ export function DialogContent({
 
   const content = (
     <div
-      className={cn("fixed inset-0 flex items-center justify-center p-4 sm:p-6 overflow-y-auto", config.container)}
+      className={cn("fixed inset-0 flex items-center justify-center overflow-y-auto p-4 sm:p-6", sheet && "max-md:items-end max-md:p-0", config.container)}
     >
-      {/* Backdrop */}
-      <div
-        className={cn(
-          "fixed inset-0 transition-opacity animate-in fade-in-0 duration-200 ease-out motion-reduce:animate-none motion-reduce:transition-none",
-          config.backdrop
-        )}
-        onClick={handleBackdropClick}
-        aria-hidden="true"
-      />
+      <div className="fixed inset-0 bg-scrim" onClick={handleBackdropClick} aria-hidden="true" />
 
       {/* Modal Surface */}
       <div
         ref={surfaceRef}
         role="dialog"
         aria-modal="true"
+        aria-labelledby={titleId}
         tabIndex={-1}
         className={cn(
-          "relative w-full rounded-[var(--radius-lg)] outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus)] border border-[var(--color-line)] bg-[var(--color-surface)] p-6 text-[var(--color-ink)] shadow-[var(--elevation-shadow-pop)] transition-all animate-in fade-in-0 zoom-in-95 duration-200 ease-out motion-reduce:animate-none motion-reduce:transition-none will-change-transform",
-          config.surface,
+          "relative w-full rounded-xl border border-line bg-l1 p-6 text-fg shadow-l3 outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]",
           sizeClasses[size],
+          sheet && "max-md:max-w-none max-md:rounded-b-none max-md:animate-sheet-in motion-reduce:animate-none",
           className
         )}
         {...props}
@@ -323,8 +307,10 @@ export function DialogTitle({
   className,
   ...props
 }: React.HTMLAttributes<HTMLHeadingElement>) {
+  const titleId = React.useContext(DialogContext)?.titleId;
   return (
     <h2
+      id={titleId}
       className={cn(
         "font-serif text-lg sm:text-xl font-bold tracking-tight text-[var(--color-ink)]",
         className
@@ -393,17 +379,18 @@ export interface ConfirmDialogProps {
 export function ConfirmDialog({ open, onOpenChange, title, description, confirmLabel, danger, busy, confirmDisabled, onConfirm, children }: ConfirmDialogProps) {
   return (
     <Dialog open={open} onOpenChange={(value) => !busy && onOpenChange(value)}>
-      <DialogContent size="sm" aria-labelledby="confirm-dialog-title">
+      <DialogContent size="sm">
         <DialogHeader>
-          <DialogTitle id="confirm-dialog-title">{title}</DialogTitle>
+          <DialogTitle>{title}</DialogTitle>
           {description && <DialogDescription>{description}</DialogDescription>}
         </DialogHeader>
         {children}
         <DialogFooter>
-          <Button variant="outline" size="touch" disabled={busy} onClick={() => onOpenChange(false)}>
+          {/* A destructive confirm never takes first focus: Enter on open must not delete. */}
+          <Button variant="outline" size="touch" disabled={busy} onClick={() => onOpenChange(false)} autoFocus={danger}>
             Huỷ
           </Button>
-          <Button variant={danger ? "destructive" : "default"} size="touch" disabled={busy || confirmDisabled} onClick={onConfirm} autoFocus>
+          <Button variant={danger ? "destructive" : "default"} size="touch" disabled={busy || confirmDisabled} onClick={onConfirm} autoFocus={!danger}>
             {busy ? "Đang xử lý…" : confirmLabel}
           </Button>
         </DialogFooter>

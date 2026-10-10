@@ -7,7 +7,7 @@ import { describe, expect, it } from "vitest";
 const BASELINE = "app/ui-rules-baseline.txt";
 const BLUR_ALLOW = new Set([
   "components/layout/store-header.tsx", "components/layout/console-header.tsx", "components/ui/popover.tsx",
-  "components/ui/drawer.tsx", "components/ui/sheet.tsx",
+  "components/ui/drawer.tsx", "components/ui/sheet.tsx", "components/ui/entity-picker.tsx",
 ]);
 const COLOR = /#[\da-f]{3,8}\b|rgba?\(/gi;
 const RADIUS = /(?:^|:)!?rounded(?:-(?:[trblse]|tl|tr|br|bl|ss|se|es|ee))?(?:-(\S+))?$/;
@@ -34,7 +34,7 @@ function classViolations(file: string, text: string, onButton: boolean): string[
       /-\[(?:#|rgba?\()/.test(token) && hasRawColor(arbitrary) ? "hex" : "",
       radius && radius[1] !== undefined && !RADIUS_OK.test(radius[1]) ? "rounded" : "",
       /(?:^|:)!?rounded-full$/.test(token) && (onButton || file === "components/ui/button.tsx") ? "button-pill" : "",
-      /(?:^|:)!?backdrop-blur/.test(token) && !BLUR_ALLOW.has(file) ? "blur" : "",
+      /(?:^|:)!?(?:backdrop-blur|glass-blur-)/.test(token) && !BLUR_ALLOW.has(file) ? "blur" : "",
       duration && !/^(?:100|150|200|300|400)$/.test(duration[1]) ? "duration" : "",
     ].filter(Boolean).map((rule) => `${rule}\t${file}:${token}`);
   });
@@ -140,6 +140,8 @@ it.each([
   ["button-pill", "components/ui/button.tsx", 'const v = cva("inline-flex", { variants: { size: { pill: "rounded-full" } } });'],
   ["blur", "features/x/a.tsx", '<div className="backdrop-blur-md" />'],
   ["blur", "components/layout/console-shell.tsx", '<div className="supports-[backdrop-filter]:backdrop-blur" />'],
+  ["blur", "features/x/a.tsx", '<div className="bg-glass-l3 glass-blur-l3" />'],
+  ["blur", "components/layout/console-shell.tsx", '<div className="md:glass-blur-l2" />'],
   ["duration", "features/x/a.tsx", '<div className="transition duration-250" />'],
   ["duration", "features/x/a.tsx", '<div className="duration-[350ms]" />'],
   ["emoji", "features/x/a.tsx", "<p>Đã lưu ✅</p>"],
@@ -161,6 +163,8 @@ it.each([
   ["features/x/a.tsx", '<div className="bg-[var(--color-surface)] text-[var(--color-ink)]" />'],
   ["components/layout/store-header.tsx", '<header className="backdrop-blur-md" />'],
   ["components/ui/popover.tsx", '<div className="backdrop-blur" />'],
+  ["components/ui/popover.tsx", '<div className="bg-glass-l3 glass-blur-l3" />'],
+  ["components/layout/console-header.tsx", '<header className="bg-glass-l2 glass-blur-l2" />'],
   ["features/x/a.tsx", '<div className="duration-100 duration-150 duration-200 duration-300 md:duration-400" />'],
   ["features/x/a.tsx", "<p>Mũi tên → và © 2026</p>"],
   ["features/x/a.tsx", 'const label = "✅ not jsx";'],

@@ -127,9 +127,9 @@ describe("S3 rendered sidebar and controls", () => {
       const html = renderToStaticMarkup(React.createElement(Dialog, { open: true },
         React.createElement(DialogContent, { layer, "aria-labelledby": "brand-dialog", size: "sm" }, "Nội dung")));
       const surface = classesFor(html, "div", 'role="dialog"');
-      for (const token of ["bg-[var(--color-surface)]", "text-[var(--color-ink)]", "rounded-[var(--radius-lg)]", "shadow-[var(--elevation-shadow-pop)]", "focus-visible:ring-2", "focus-visible:ring-[var(--color-focus)]"]) expect(surface).toContain(token);
+      for (const token of ["bg-l1", "text-fg", "rounded-xl", "shadow-l3", "focus-visible:ring-2", "focus-visible:ring-[var(--ring)]"]) expect(surface).toContain(token);
       const overlay = classesFor(html, "div", 'aria-hidden="true"');
-      expect(overlay).toContain("bg-[var(--color-chrome)]/");
+      expect(overlay).toContain("bg-scrim");
       expect(html).not.toMatch(/blur|glass|gradient|#[\da-f]{3,8}\b/i);
       expect(html).toContain('aria-modal="true"');
       expect(html).toContain('aria-labelledby="brand-dialog"');
@@ -358,8 +358,9 @@ describe("S4 rendered semantic status and modal content", () => {
     }));
     expect(html).toContain('aria-live="polite"');
     expect(html).toContain('aria-atomic="true"');
-    expect(html).toContain('role="alert"');
-    expect(classesFor(html, "div", 'role="alert"')).toContain("bg-[var(--color-surface)]");
+    const role = variant === "error" ? 'role="alert"' : 'role="status"';
+    expect(html).toContain(role);
+    expect(classesFor(html, "div", role)).toContain("bg-l1");
     const svg = html.match(/<svg\b[^>]*>/g)!;
     expect(svg).toHaveLength(2);
     expect(svg[0]).toContain(icon);

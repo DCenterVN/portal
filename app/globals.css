@@ -33,6 +33,32 @@
   --radius-lg: var(--r-8);
   --radius-xl: var(--r-12);
   --radius-full: var(--r-full);
+  --animate-sheet-in: sheet-in 300ms ease-out;
+}
+
+/* Stacking order of floating layers; utilities read them as z-(--z-*). */
+:root {
+  --z-popover: 50;
+  --z-modal: 70;
+  --z-modal-critical: 80;
+  --z-modal-session: 90;
+  --z-toast: 100;
+}
+
+@keyframes sheet-in {
+  from { transform: translateY(100%); }
+}
+
+/* Glass blur, L2 = sticky header / mobile CTA bar, L3 = menu, popover. FE-11: blur only through these utilities;
+   app/ui-rules-gate.test.ts limits which files may use them. */
+@utility glass-blur-l2 {
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+}
+
+@utility glass-blur-l3 {
+  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(24px);
 }
 
 @custom-variant dark (&:where(.dark, .dark *, [data-theme="dark"], [data-theme="dark"] *));
