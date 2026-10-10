@@ -1,7 +1,7 @@
 {
   "id": "PORTAL-UI-REBUILD-001",
   "title": "Dựng lại UI portal Bếp Tươi theo preview đã chốt 10/10 — luật trước, màn sau, nối API + e2e cuối",
-  "description": "worker: unassigned · story: US-UI-002 · sprint: 03 · slices: 3/27 · next: approval: plan.md changed after approval (drift) - re-approve",
+  "description": "worker: unassigned · story: US-UI-002 · sprint: 03 · slices: 4/27 · next: approval: plan.md changed after approval (drift) - re-approve",
   "pipeline": "sdlc",
   "agent": null,
   "agents": [
@@ -17,7 +17,7 @@
   "currentStep": 3,
   "status": "in_progress",
   "createdAt": "2026-10-10T14:17:49+00:00",
-  "updatedAt": "2026-10-10T17:18:15+00:00",
+  "updatedAt": "2026-10-10T17:28:25+00:00",
   "stepStates": [
     {
       "agent": "sdlc-discovery",

@@ -17,6 +17,7 @@
   --color-p-hover: var(--p-hover);
   --color-p-text: var(--p-text);
   --color-p-soft: var(--p-soft);
+  --color-on-p: var(--on-p);
   --color-ok: var(--ok);
   --color-ok-soft: var(--ok-soft);
   --color-warn: var(--warn);
@@ -49,6 +50,7 @@
   --p-hover: #B3361F;
   --p-text: #B3361F;
   --p-soft: #FCEBE7;
+  --on-p: #FFFFFF;
   --ok: #2F7A3B;
   --ok-soft: #E8F3EA;
   --warn: #A86A12;

@@ -20,7 +20,8 @@ describe("Button", () => {
     const small = renderToStaticMarkup(<Button size="sm">Small</Button>);
 
     expect(base).toContain("min-h-11");
-    expect(small).toContain("min-h-9");
+    expect(small).toContain("h-8");
+    expect(small).toContain("max-md:h-11");
   });
 
   it("styles secondary as an unfilled outlined button", () => {

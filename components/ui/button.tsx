@@ -11,6 +11,8 @@ const buttonVariants = cva(
           "bg-[var(--primary)] text-[var(--primary-foreground)] shadow-[var(--elevation-shadow-card)] hover:bg-[var(--color-primary-hover)]",
         accent:
           "bg-[var(--primary)] text-[var(--primary-foreground)] shadow-[var(--elevation-shadow-card)] hover:bg-[var(--color-primary-hover)]",
+        primary: "rounded-sm bg-p text-on-p duration-100 hover:bg-p-hover",
+        danger: "rounded-sm border border-err bg-transparent text-err duration-100 hover:bg-err-soft",
         destructive: "bg-[var(--destructive)] text-[var(--destructive-foreground)] hover:opacity-90",
         outline:
           "border border-[var(--border)] bg-[var(--card)] text-[var(--foreground)] hover:border-[var(--input)]",
@@ -21,8 +23,9 @@ const buttonVariants = cva(
       },
       size: {
         default: "min-h-11 px-5",
-        sm: "min-h-9 px-3 text-sm",
-        lg: "min-h-11 px-5",
+        sm: "h-8 px-3 text-sm max-md:h-11",
+        md: "h-10 px-4 max-md:h-11",
+        lg: "h-12 px-5",
         icon: "size-11 p-0",
         touch: "min-h-11 px-5",
       },

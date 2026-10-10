@@ -1,3 +1,5 @@
+"use client";
+
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { Input } from "./input";
@@ -11,17 +13,27 @@ export interface FieldProps {
   htmlFor: string;
   hint?: string;
   error?: string;
+  /** Runs on blur only; a falsy result clears the error. A server `error` wins. */
+  validate?: (value: string) => string | undefined;
   children: React.ReactNode;
   className?: string;
 }
 
+type Blur = (event: React.FocusEvent<HTMLInputElement>) => void;
+
 // The control gets aria-invalid and aria-describedby pointing at the visible error or hint.
-export function Field({ label, htmlFor, hint, error, children, className }: FieldProps) {
+export function Field({ label, htmlFor, hint, error: serverError, validate, children, className }: FieldProps) {
+  const [blurError, setBlurError] = React.useState<string>();
+  const error = serverError || blurError;
   const own = error ? `${htmlFor}-error` : hint ? `${htmlFor}-hint` : undefined;
   const wired = React.isValidElement<Record<string, unknown>>(children)
     ? React.cloneElement(children, {
         "aria-describedby": [children.props["aria-describedby"], own].filter(Boolean).join(" ") || undefined,
         "aria-invalid": error ? true : children.props["aria-invalid"],
+        onBlur: (event: React.FocusEvent<HTMLInputElement>) => {
+          (children.props.onBlur as Blur | undefined)?.(event);
+          if (validate) setBlurError(validate(event.currentTarget.value) || undefined);
+        },
       })
     : children;
   return (
