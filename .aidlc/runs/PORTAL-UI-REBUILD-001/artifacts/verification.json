@@ -2,9 +2,9 @@
   "task": "PORTAL-UI-REBUILD-001",
   "actor": "agent:claude-code(171709704+dawnmoriaty@users.noreply.github.com)",
   "worker": null,
-  "ts": "2026-10-10T16:57:03+00:00",
+  "ts": "2026-10-10T17:05:41+00:00",
   "cwd": ".",
-  "head": "3c3d69799e4dece51c8ab4fc89d033a1176d98c2",
+  "head": "74fc71c1b42c4f4e82b9d26a8616bd4d4d0a1318",
   "dirty": true,
   "checks": [
     {
@@ -12,9 +12,9 @@
       "command": "npm test",
       "exit": 0,
       "status": "PASS",
-      "seconds": 3.6,
+      "seconds": 3.7,
       "log": ".aidlc/runs/PORTAL-UI-REBUILD-001/artifacts/logs/unit.log",
-      "sha256": "956ab110ec8da9419e93011d8f227c64d13a0d892ede786e6e341c12bcde1e4c",
+      "sha256": "1d26a1a74e88b29cd9c39c92b7edea1718e565fbda2d8e6263c273f8d77e08c4",
       "tail": [
         "stderr | app/api/auth/staff/bff.test.ts > S11 staff recovery dependency and invite BFF > accepts exact invite DTO via invite purpose endpoint; never password reset; no credentials/cookies",
         "PORTAL_CLIENT_IP_SOURCE is unset; auth forwarding is disabled",
@@ -41,7 +41,7 @@
       "command": "rm -rf .next/types .next/dev/types && npm run typecheck",
       "exit": 0,
       "status": "PASS",
-      "seconds": 3.6,
+      "seconds": 1.6,
       "log": ".aidlc/runs/PORTAL-UI-REBUILD-001/artifacts/logs/integration_typecheck.log",
       "sha256": "c5a440cd52c7fadc3d367658101693af6eb5b85d21dbd518cb3bda67056215e7",
       "tail": [
@@ -51,10 +51,10 @@
     },
     {
       "name": "e2e_regression",
-      "command": "bash -o pipefail -c \"npm test 2>&1 | grep -E '^ +Tests +[0-9]+ passed' | grep -oE '[0-9]+' | head -1 | xargs -I{} test {} -ge 860\"",
+      "command": "bash -o pipefail -c \"npm test 2>&1 | grep -E '^ +Tests +[0-9]+ passed' | grep -oE '[0-9]+' | head -1 | xargs -I{} test {} -ge 899\"",
       "exit": 0,
       "status": "PASS",
-      "seconds": 3.6,
+      "seconds": 3.8,
       "log": ".aidlc/runs/PORTAL-UI-REBUILD-001/artifacts/logs/e2e_regression.log",
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "tail": []

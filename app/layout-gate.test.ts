@@ -76,10 +76,7 @@ describe("layout architecture gate", () => {
     ]);
   });
 
-  it("keeps backdrop blur out of application sources", () => {
-    const files = matches(/backdrop-blur/).filter((file) => !/\.test\./.test(file));
-    expect(files).toEqual([]);
-  });
+  // backdrop-blur allowlist lives in app/ui-rules-gate.test.ts (rule "blur").
 
   it("allows mock imports only in frames and tests", () => {
     const invalid = sourceFiles().filter((file) => hasMockImport(readFileSync(path.join(ROOT, file), "utf8"))).filter((file) =>

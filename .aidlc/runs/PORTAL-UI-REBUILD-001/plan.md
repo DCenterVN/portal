@@ -22,7 +22,7 @@
   - Token hiện sinh từ `platform-docs/ui/tokens.json` → `platform-docs/scripts/uigen.py` → `app/tokens.generated.css` (đang là bộ kem `--color-bg: #FBF6EE`, `tokens.generated.css:3`). Preview dùng bộ khác: `--l0 #F4F4F5`, `--l1 #FFFFFF`, `--p #D2402A`, `--p-text #B3361F`, `--ok #2F7A3B`, `--err #9B2C55`, glass L2/L3, dark đủ bộ (`Main.dc.html` helmet).
   - Font: `app/layout.tsx:2` nạp `Nunito, Quicksand`; chốt mới là **Be Vietnam Pro 700** cho tiêu đề.
   - Gate có sẵn: `app/layout-gate.test.ts` (landmark, cấm `backdrop-blur` ngoài app, mock chỉ ở frame/test, cấm `SAMPLE_`, cấm `<button>` thô, cấm đè class Button) — mở rộng, không viết gate mới song song.
-  - ESLint: `eslint.config.js` chưa có `no-restricted-imports`/`no-restricted-syntax`.
+  - ESLint: `eslint.config.mjs` chưa có `no-restricted-imports`/`no-restricted-syntax`.
   - Đang có: `components/ui/{button,input,field,dialog,toast,tabs,table,state,badge,card,label,page}.tsx`; `components/layout/{store-shell,store-header,console-shell,console-sidebar,console-header,customer-auth-shell,employee-auth-shell,site-footer}.tsx`; `mocks/{store,console}.ts`.
   - Chưa có: checkbox 3 trạng thái, switch, segmented, menu/popover, sheet; Playwright trong portal (không có `playwright.config.*`).
   - BE (kiểm 10/10, chi tiết [api-inventory.md](api-inventory.md)): `sales/` không có wishlist. `/sales/catalog` chỉ có trong spec (`order-lifecycle.md:66-67`), **không** có trong router (`sales/internal/transport/http/router.go:19-28`). Mọi handler sales bắt `BranchID` (`sales.go:70`), trong khi khách không có membership (ADR-024) → store gần như chưa nối được. Đơn chỉ có create/list/get/cancel; confirm/pack/ship/deliver chỉ nằm trong spec.
@@ -61,7 +61,7 @@
 - FR-12 Không bắt người dùng gõ ID: người dùng không biết UUIDv7. Mọi trường `*_id`/`*_ref`/"UUID" người dùng chọn phải qua `EntityPicker` (combobox tìm theo tên/mã/SKU, hiện tên + mã phụ, gửi id ẩn), nguồn là API list của thực thể. Id hệ thống tự sinh (idempotency key, id mới) không bao giờ hiện ra.
   - AC-12a: gate `ui-rules-gate` đỏ khi có `Input`/`TextInput`/`Field` mà `label`/`placeholder` chứa `UUID|ID|ref` hoặc `name` kết thúc `_id|_ref` (trừ `type="hidden"`). Fixture vi phạm làm test đỏ.
   - AC-12b: 7 dòng `SỬA NGAY` ở Bảng B (B2,B4–B9) hết vi phạm, request gửi đi vẫn đúng id như cũ (test bắt payload); dòng `CHỜ BE` giữ ô cũ trong baseline `ui-rules-baseline.txt` (chỉ được giảm), kèm tên API list thiếu.
-- FR-13 Khoá khung: file khung (danh sách trong `frame.lock.json`, sha256 từng file: token, `globals.css`, `layout.tsx`, `components/ui/*`, `components/layout/*`, `components/patterns/*`, `eslint.config.js`, `app/*-gate.test.ts`, `playwright.config.ts`, `e2e/visual/*`, `package.json`, `package-lock.json`) không được đổi trong slice U*/F*/C*.
+- FR-13 Khoá khung: file khung (danh sách trong `frame.lock.json`, sha256 từng file: token, `globals.css`, `layout.tsx`, `components/ui/*`, `components/layout/*`, `components/patterns/*`, `eslint.config.mjs`, `app/*-gate.test.ts`, `playwright.config.ts`, `e2e/visual/*`, `package.json`, `package-lock.json`) không được đổi trong slice U*/F*/C*.
   - AC-13: `app/frame-lock.test.ts` đỏ khi 1 byte file khung đổi mà lock không đổi; `frame.lock.json` thêm vào `protected_paths` của `.aidlc/stage-policy.json` (Dawn chạy, vì file đó protected) → agent không tự cập nhật lock được. Cần đổi khung = Antigravity ghi yêu cầu vào handback, Claude/Sonnet làm slice khung riêng.
 - FR-11 e2e (C4): kịch bản tester-army/e2e (`~/refs/e2e`, locator cứng, không gọi model) cho: khách đăng nhập popup → catalog → thêm giỏ → checkout → đặt hàng; nhân viên đăng nhập → bảng đơn → mở record → đổi trạng thái. Tài khoản khách cố định qua `dev-infra/scripts/manage_qa_account.go`, xoá giỏ qua API mỗi run.
   - AC-11: e2e xanh 3 lần liên tiếp; mỗi request của kịch bản có dòng tương ứng trong log Kong (method + path + status), grep từng ô — receipt Anti không đủ.
@@ -94,7 +94,7 @@
 - app/(console)/
 - app/(employee-auth)/
 - app/(auth)/
-- eslint.config.js
+- eslint.config.mjs
 - package.json
 - package-lock.json
 - playwright.config.ts
@@ -136,7 +136,7 @@
 ## Slices
 <!-- Pha A: Sonnet làm, Claude verify. Pha B: Dawn giao Antigravity bằng file handoff (không Orca), mỗi slice 1 worktree `~/wt/portal-ui-<slice>`, Claude chạy `verify --cwd <worktree> --task PORTAL-UI-REBUILD-001` rồi merge vào portal-ui-rebuild. Mọi slice B/C phải giữ `app/frame-lock.test.ts` xanh. -->
 - [x] K1: token preview + font Be Vietnam Pro/Nunito + toggle Sáng/Tối; viết lại assertion font/hex/heading/palette của hợp đồng REBRAND-001 cũ trong rebrand.test.ts theo FR-1 (files: app/globals.css, app/rebrand.test.ts, app/layout.tsx, components/layout/theme-toggle.tsx, app/theme.test.tsx; test: npm test && npm run lint && python3 ~/agent_skills/sdlc/engine/archcheck.py; slice test count > 0)
-- [ ] K2: luật bằng máy — ESLint restricted imports/syntax + gate fixture đỏ + luật cấm ô gõ ID + baseline (files: eslint.config.js, app/ui-rules-gate.test.ts, app/ui-rules-baseline.txt, app/layout-gate.test.ts; test: npm test && npm run lint; mutation: bỏ 1 luật thì fixture lọt)
+- [x] K2: luật bằng máy — ESLint restricted imports/syntax + gate fixture đỏ + luật cấm ô gõ ID + baseline (files: eslint.config.mjs, app/ui-rules-gate.test.ts, app/ui-rules-baseline.txt, app/layout-gate.test.ts; test: npm test && npm run lint; mutation: bỏ 1 luật thì fixture lọt)
 - [ ] K3: so ảnh Playwright desktop 1440 + mobile 390 với baseline preview (files: package.json, package-lock.json, playwright.config.ts, e2e/visual/preview.spec.ts, e2e/visual/baseline/; test: npx playwright test e2e/visual đỏ khi đổi 1 token, xanh khi đúng)
 - [ ] K4a: ui cơ bản — button, input/field (blur validate, mật khẩu hiện/ẩn), checkbox 3 trạng thái, switch, segmented (files: components/ui/button.tsx, components/ui/field.tsx, components/ui/checkbox.tsx, components/ui/switch.tsx, components/ui/controls.test.tsx; test: npm test && npm run lint; slice test count > 0)
 - [ ] K4b: ui lớp nổi — menu/popover glass L3, modal/sheet đặc fixed, toast (files: components/ui/popover.tsx, components/ui/dialog.tsx, components/ui/toast.tsx, components/ui/overlay.test.tsx; test: npm test && npm run lint)
