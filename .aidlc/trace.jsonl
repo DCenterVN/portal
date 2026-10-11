@@ -366,3 +366,23 @@
 {"ts": "2026-10-11T15:42:20+00:00", "actor": "agent:claude-code(171709704+dawnmoriaty@users.noreply.github.com)", "worker": "claude-sonnet", "event": "receipt:review", "task": "PORTAL-AUTH-UI-FIX-001", "verdict": "PASS_WITH_RISK", "score": null}
 {"ts": "2026-10-11T15:42:20+00:00", "actor": "agent:claude-code(171709704+dawnmoriaty@users.noreply.github.com)", "worker": "claude-sonnet", "event": "receipt:confidence", "task": "PORTAL-AUTH-UI-FIX-001", "verdict": "BELOW_BAR", "score": 0.6358}
 {"ts": "2026-10-11T15:42:20+00:00", "actor": "agent:claude-code(171709704+dawnmoriaty@users.noreply.github.com)", "worker": "claude-sonnet", "event": "gate", "task": "PORTAL-AUTH-UI-FIX-001", "stage": "pr", "missing": ["review: verdict PASS_WITH_RISK != PASS", "confidence: verdict BELOW_BAR != PASS"]}
+{"ts": "2026-10-11T15:56:19+00:00", "actor": "agent:claude-code(171709704+dawnmoriaty@users.noreply.github.com)", "worker": null, "event": "new", "task": "PORTAL-STAFF-PROFILE-001", "mode": "hard"}
+{"ts": "2026-10-11T16:28:06+00:00", "actor": "user:171709704+dawnmoriaty@users.noreply.github.com", "worker": null, "event": "receipt:approval", "task": "PORTAL-STAFF-PROFILE-001", "verdict": "PASS", "score": null}
+{"ts": "2026-10-11T16:30:43+00:00", "actor": "agent:claude", "worker": "claude", "event": "receipt:claim", "task": "PORTAL-STAFF-PROFILE-001", "verdict": null, "score": null}
+{"ts": "2026-10-11T16:32:29+00:00", "actor": "agent:claude", "worker": "claude", "event": "receipt:verification", "task": "PORTAL-STAFF-PROFILE-001", "verdict": "BLOCKED", "score": null}
+{"ts": "2026-10-11T16:36:50+00:00", "actor": "user:171709704+dawnmoriaty@users.noreply.github.com", "worker": "claude", "event": "receipt:approval", "task": "PORTAL-STAFF-PROFILE-001", "verdict": "PASS", "score": null}
+{"ts": "2026-10-11T16:39:58+00:00", "actor": "agent:claude", "worker": "claude", "event": "receipt:verification", "task": "PORTAL-STAFF-PROFILE-001", "verdict": "BLOCKED", "score": null}
+{"ts": "2026-10-11T16:41:29+00:00", "actor": "user:171709704+dawnmoriaty@users.noreply.github.com", "worker": "claude", "event": "receipt:approval", "task": "PORTAL-STAFF-PROFILE-001", "verdict": "PASS", "score": null}
+{"ts": "2026-10-11T16:42:34+00:00", "actor": "agent:claude", "worker": "claude", "event": "receipt:verification", "task": "PORTAL-STAFF-PROFILE-001", "verdict": "PASS", "score": null}
+{"ts": "2026-10-11T16:46:34+00:00", "actor": "agent:claude", "worker": "claude", "event": "receipt:verification", "task": "PORTAL-STAFF-PROFILE-001", "verdict": "PASS", "score": null}
+{"ts": "2026-10-11T16:46:38+00:00", "actor": "agent:claude", "worker": "claude", "event": "slice_done", "task": "PORTAL-STAFF-PROFILE-001", "slice": "S1"}
+{"ts": "2026-10-11T16:46:38+00:00", "actor": "agent:claude", "worker": "claude", "event": "slice_done", "task": "PORTAL-STAFF-PROFILE-001", "slice": "S2"}
+{"ts": "2026-10-11T16:46:38+00:00", "actor": "agent:claude", "worker": "claude", "event": "slice_done", "task": "PORTAL-STAFF-PROFILE-001", "slice": "S3"}
+{"ts": "2026-10-11T16:46:38+00:00", "actor": "agent:claude", "worker": "claude", "event": "slice_done", "task": "PORTAL-STAFF-PROFILE-001", "slice": "S4"}
+{"ts": "2026-10-11T16:46:38+00:00", "actor": "agent:claude", "worker": "claude", "event": "slice_done", "task": "PORTAL-STAFF-PROFILE-001", "slice": "S5"}
+{"ts": "2026-10-11T16:46:58+00:00", "actor": "agent:claude", "worker": "claude", "event": "receipt:handback", "task": "PORTAL-STAFF-PROFILE-001", "verdict": "PASS", "score": null}
+{"ts": "2026-10-11T16:48:58+00:00", "actor": "agent:claude", "worker": "claude", "event": "receipt:verification", "task": "PORTAL-STAFF-PROFILE-001", "verdict": "PASS", "score": null}
+{"ts": "2026-10-11T16:49:07+00:00", "actor": "agent:claude", "worker": "claude", "event": "receipt:review", "task": "PORTAL-STAFF-PROFILE-001", "verdict": "PASS_WITH_RISK", "score": null}
+{"ts": "2026-10-11T16:49:07+00:00", "actor": "agent:claude", "worker": "claude", "event": "gate", "task": "PORTAL-STAFF-PROFILE-001", "stage": "pr", "missing": ["review: verdict PASS_WITH_RISK != PASS", "confidence: confidence.json missing"]}
+{"ts": "2026-10-11T16:49:19+00:00", "actor": "agent:claude", "worker": "claude", "event": "receipt:confidence", "task": "PORTAL-STAFF-PROFILE-001", "verdict": "BELOW_BAR", "score": 0.6885}
+{"ts": "2026-10-11T16:49:19+00:00", "actor": "agent:claude", "worker": "claude", "event": "gate", "task": "PORTAL-STAFF-PROFILE-001", "stage": "pr", "missing": ["review: verdict PASS_WITH_RISK != PASS", "confidence: verdict BELOW_BAR != PASS"]}

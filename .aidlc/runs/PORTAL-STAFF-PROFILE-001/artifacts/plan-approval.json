@@ -1,0 +1,26 @@
+{
+  "task": "PORTAL-STAFF-PROFILE-001",
+  "actor": "user:171709704+dawnmoriaty@users.noreply.github.com",
+  "worker": "claude",
+  "ts": "2026-10-11T16:41:29+00:00",
+  "plan_hash": "86728d0109b1794e71fed07c2a936397b2e2d8aed83b0bedf4caa8deb032050b",
+  "testkit_hash": null,
+  "files": [
+    "features/platform/permission-grid.tsx",
+    "features/platform/role-matrix-view.tsx",
+    "features/console/live-console.tsx",
+    "features/staff-profile/staff-profile-view.tsx",
+    "app/(console)/account/page.tsx",
+    "components/layout/console-header.tsx",
+    "app/platform/account/page.tsx",
+    "app/company/account/page.tsx",
+    "features/platform/workspace.tsx",
+    "app/(store)/me/profile-client.tsx",
+    "lib/fetcher.ts",
+    "frame.lock.json",
+    "app/ui-rules-baseline.txt",
+    "app/rebrand.test.ts",
+    "features/employee-auth/journey.test.tsx"
+  ],
+  "verdict": "PASS"
+}

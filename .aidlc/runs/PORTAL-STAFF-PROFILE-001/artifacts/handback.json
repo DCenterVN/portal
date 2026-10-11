@@ -1,0 +1,26 @@
+{
+  "task": "PORTAL-STAFF-PROFILE-001",
+  "actor": "agent:claude",
+  "worker": "claude",
+  "ts": "2026-10-11T16:46:58+00:00",
+  "by": "claude",
+  "sha256": "e28fb5f4f1553f9f0a9455bdc3d16c348fc909ce101037442ae11edc2ebe0e68",
+  "files_changed": [
+    "app/(console)/account/page.tsx",
+    "app/(store)/me/profile-client.tsx",
+    "app/company/account/page.tsx",
+    "app/platform/account/page.tsx",
+    "app/rebrand.test.ts",
+    "app/ui-rules-baseline.txt",
+    "components/layout/console-header.tsx",
+    "features/console/live-console.tsx",
+    "features/employee-auth/journey.test.tsx",
+    "features/platform/permission-grid.tsx",
+    "features/platform/role-matrix-view.tsx",
+    "features/platform/workspace.tsx",
+    "features/staff-profile/staff-profile-view.tsx",
+    "frame.lock.json",
+    "lib/fetcher.ts"
+  ],
+  "verdict": "PASS"
+}

@@ -1,0 +1,112 @@
+{
+  "id": "PORTAL-STAFF-PROFILE-001",
+  "title": "PORTAL-STAFF-PROFILE-001",
+  "description": "worker: claude · story: US-UI-001 · sprint: 01 · slices: 5/5 · next: review: verdict PASS_WITH_RISK != PASS",
+  "pipeline": "sdlc",
+  "agent": null,
+  "agents": [
+    "sdlc-discovery",
+    "sdlc-technical",
+    "sdlc-ux",
+    "sdlc-design",
+    "sdlc-build",
+    "sdlc-integration",
+    "sdlc-e2e",
+    "sdlc-release"
+  ],
+  "currentStep": 7,
+  "status": "in_progress",
+  "createdAt": "2026-10-11T15:56:19+00:00",
+  "updatedAt": "2026-10-11T16:49:19+00:00",
+  "stepStates": [
+    {
+      "agent": "sdlc-discovery",
+      "status": "done",
+      "revision": 1,
+      "runStatus": "approved",
+      "startedAt": null,
+      "finishedAt": null,
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-STAFF-PROFILE-001/plan.md"
+      ]
+    },
+    {
+      "agent": "sdlc-technical",
+      "status": "done",
+      "revision": 1,
+      "runStatus": "approved",
+      "startedAt": null,
+      "finishedAt": null,
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-STAFF-PROFILE-001/plan.md"
+      ]
+    },
+    {
+      "agent": "sdlc-ux",
+      "status": "done",
+      "revision": 1,
+      "runStatus": "approved",
+      "startedAt": null,
+      "finishedAt": null,
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-STAFF-PROFILE-001/plan.md"
+      ]
+    },
+    {
+      "agent": "sdlc-design",
+      "status": "done",
+      "revision": 1,
+      "runStatus": "approved",
+      "startedAt": null,
+      "finishedAt": null,
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-STAFF-PROFILE-001/plan.md"
+      ]
+    },
+    {
+      "agent": "sdlc-build",
+      "status": "done",
+      "revision": 1,
+      "runStatus": "approved",
+      "startedAt": null,
+      "finishedAt": null,
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-STAFF-PROFILE-001/handback.md"
+      ]
+    },
+    {
+      "agent": "sdlc-integration",
+      "status": "done",
+      "revision": 1,
+      "runStatus": "approved",
+      "startedAt": null,
+      "finishedAt": null,
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-STAFF-PROFILE-001/artifacts/verification.json"
+      ]
+    },
+    {
+      "agent": "sdlc-e2e",
+      "status": "done",
+      "revision": 1,
+      "runStatus": "approved",
+      "startedAt": null,
+      "finishedAt": null,
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-STAFF-PROFILE-001/artifacts/verification.json"
+      ]
+    },
+    {
+      "agent": "sdlc-release",
+      "status": "in_progress",
+      "revision": 1,
+      "runStatus": "awaiting_review",
+      "startedAt": null,
+      "finishedAt": null,
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-STAFF-PROFILE-001/review.md",
+        ".aidlc/runs/PORTAL-STAFF-PROFILE-001/artifacts/review-decision.json"
+      ]
+    }
+  ]
+}
