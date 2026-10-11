@@ -96,7 +96,7 @@ it("FE-14 loaded empty contexts render recovery without enabling submit", async 
  expect(html).toContain("lucide-inbox"); expect(html).toContain('href="/staff/login"'); expect(html).toMatch(/<button[^>]*disabled/);
 });
 it("FE-14 staff initial login and missing invitation have visible empty states", () => {
- expect(renderToStaticMarkup(render(LoginForm))).toContain("lucide-inbox");
+ expect(renderToStaticMarkup(render(LoginForm))).toContain("<form");
  h.slots = [];
  expect(renderToStaticMarkup(render(InviteForm))).toContain("lucide-inbox");
 });

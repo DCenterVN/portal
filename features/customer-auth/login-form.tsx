@@ -3,6 +3,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import Link from "next/link";
 import type { Route } from "next";
+import { AlertCircle } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { FetchError } from "@/lib/fetcher";
@@ -10,7 +11,7 @@ import { login } from "@/lib/api/customer-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { EmptyState, ErrorState } from "@/components/ui/state";
+import { PasswordInput } from "@/components/patterns/password-input";
 import { cn } from "@/lib/utils";
 
 function loginErrorKey(err: unknown): string {
@@ -84,28 +85,33 @@ export function LoginForm() {
     }
   };
 
+  const invalidBorder = error && "border-err focus-visible:ring-err";
+
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: SHAKE_STYLE }} />
+      <div role="tablist" aria-label={t("login")} className="mb-5 grid grid-cols-2 rounded-sm border border-line bg-l1-2 p-0.5 text-sm font-bold">
+        <span role="tab" aria-selected="true" className="flex min-h-10 items-center justify-center rounded-[2px] border border-line bg-l1 text-fg">
+          {t("login")}
+        </span>
+        <Link href="/register" role="tab" aria-selected="false" className="flex min-h-10 items-center justify-center rounded-[2px] border border-transparent text-fg-2 hover:text-fg">
+          {t("tabRegister")}
+        </Link>
+      </div>
       <form onSubmit={onSubmit} noValidate aria-busy={busy} className="space-y-4">
-        {!busy && !error && <EmptyState title={t("loginTitle")} description={t("loginSubtitle")} className="py-4" />}
         {error && (
-          <div id={`${id}-error`} className="animate-shake">
-            <ErrorState
-              title={error}
-              className="py-4 rounded-lg border-solid border-err/40 bg-err-soft/50 text-err"
-              action={
-                errorKey === "notActivated" && (
-                  <Link href="/activate" className="font-semibold text-p-text hover:text-p-hover underline">
-                    {t("resendActivation")}
-                  </Link>
-                )
-              }
-            />
+          <div id={`${id}-error`} role="alert" className="animate-shake flex flex-wrap items-center gap-x-2.5 gap-y-1 rounded-lg border border-err bg-err-soft px-3.5 py-2.5 text-sm font-semibold text-err">
+            <AlertCircle aria-hidden="true" className="size-5 shrink-0" />
+            <span>{error}</span>
+            {errorKey === "notActivated" && (
+              <Link href="/activate" className="underline">
+                {t("resendActivation")}
+              </Link>
+            )}
           </div>
         )}
-        <div className="space-y-1.5">
-          <Label htmlFor={`${id}-identifier`} className="font-semibold text-sm text-fg">
+        <div className="space-y-1">
+          <Label htmlFor={`${id}-identifier`} className="text-sm font-bold text-fg">
             {t("identifier")}
           </Label>
           <Input
@@ -116,50 +122,31 @@ export function LoginForm() {
             disabled={busy}
             aria-invalid={!!error}
             aria-describedby={error ? `${id}-error` : undefined}
-            className={cn("h-11 rounded-sm border-line-strong transition-colors duration-150", error && "border-err focus-visible:ring-err")}
+            className={cn("h-11 rounded-sm border-line-strong shadow-none", invalidBorder)}
           />
         </div>
-        <div className="space-y-1.5">
-          <div className="flex items-center justify-between">
-            <Label htmlFor={`${id}-password`} className="font-semibold text-sm text-fg">
-              {t("password")}
-            </Label>
-            <Link
-              href="/forgot-password"
-              className="flex min-h-11 items-center text-sm font-semibold text-p-text hover:text-p-hover hover:underline"
-            >
-              {t("forgot")}
-            </Link>
-          </div>
-          <Input
+        <div className="space-y-1">
+          <Label htmlFor={`${id}-password`} className="text-sm font-bold text-fg">
+            {t("password")}
+          </Label>
+          <PasswordInput
             id={`${id}-password`}
             name="password"
-            type="password"
             autoComplete="current-password"
             required
             disabled={busy}
             aria-invalid={!!error}
             aria-describedby={error ? `${id}-error` : undefined}
-            className={cn("h-11 rounded-sm border-line-strong transition-colors duration-150", error && "border-err focus-visible:ring-err")}
+            className={cn("h-11 rounded-sm border-line-strong shadow-none", invalidBorder)}
           />
+          <p className="text-xs text-fg-3">{t("passwordRange")}</p>
+          <Link href="/forgot-password" className="inline-flex min-h-8 items-center text-sm font-bold text-p-text hover:text-p-hover hover:underline">
+            {t("forgot")}
+          </Link>
         </div>
-        <Button
-          type="submit"
-          size="touch"
-          disabled={busy || wait > 0}
-          className="w-full text-sm font-bold shadow-sm transition-colors duration-100"
-        >
+        <Button type="submit" size="lg" disabled={busy || wait > 0} className="w-full font-bold">
           {busy ? t("loginPending") : t("login")}
         </Button>
-        <p className="text-center text-sm text-fg-2 pt-1">
-          {t("noAccount")}{" "}
-          <Link
-            href="/register"
-            className="inline-flex min-h-11 items-center font-bold text-p-text hover:text-p-hover hover:underline"
-          >
-            {t("register")}
-          </Link>
-        </p>
       </form>
     </>
   );

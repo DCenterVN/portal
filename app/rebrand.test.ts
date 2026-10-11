@@ -448,7 +448,7 @@ describe("S5 rendered auth, profile, branch and membership roles", () => {
     expect(labels).toHaveLength(2);
     for (const id of labels) expect(html).toContain(`id="${id}"`);
     expect(html).toContain('type="password"');
-    expect(html).toContain("Đăng ký mua hàng");
+    expect(html).toContain("Đăng ký");
     for (const input of html.match(/<input[^>]*type="(?:text|password)"[^>]*>/g)!) {
       expect(input).toContain("h-11");
       expect(input).not.toMatch(/\bh-(?:9|10)\b/);

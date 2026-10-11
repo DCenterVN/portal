@@ -5,13 +5,13 @@ import Link from "next/link";
 import type { Route } from "next";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { AlertCircle, Loader2 } from "lucide-react";
 import { FetchError } from "@/lib/fetcher";
 import { login } from "@/lib/api/employee-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { EmptyState, ErrorState } from "@/components/ui/state";
+import { PasswordInput } from "@/components/patterns/password-input";
 import { cn } from "@/lib/utils";
 
 function loginErrorKey(err: unknown): string {
@@ -45,7 +45,6 @@ export function StaffLogin() {
   const [busy, setBusy] = useState(false);
   const [errorKey, setErrorKey] = useState("");
   const [wait, setWait] = useState(0);
-  const [shown, setShown] = useState(false);
   const redirect = useSearchParams()?.get("redirect") ?? undefined;
 
   useEffect(() => {
@@ -89,29 +88,25 @@ export function StaffLogin() {
 
   const invalid = error ? true : undefined;
   const describedBy = error ? `${id}-error` : undefined;
+  const fieldClass = cn("h-11 rounded-sm border-line-strong shadow-none", error && "border-err focus-visible:ring-err");
 
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: SHAKE_STYLE }} />
       <form noValidate onSubmit={submit} aria-busy={busy} className="space-y-4">
-        {!busy && !error && <EmptyState title={t("loginTitle")} description={t("loginSubtitle")} className="py-4" />}
         {error && (
-          <div id={`${id}-error`} className="animate-shake">
-            <ErrorState
-              title={error}
-              className="py-4 rounded-lg border-solid border-err/40 bg-err-soft/50 text-err"
-              action={
-                errorKey === "notStaff" && (
-                  <Link href="/login" className="font-semibold text-p-text hover:text-p-hover underline">
-                    {t("customerLogin")}
-                  </Link>
-                )
-              }
-            />
+          <div id={`${id}-error`} role="alert" className="animate-shake flex flex-wrap items-center gap-x-2.5 gap-y-1 rounded-lg border border-err bg-err-soft px-3.5 py-2.5 text-sm font-semibold text-err">
+            <AlertCircle aria-hidden="true" className="size-5 shrink-0" />
+            <span>{error}</span>
+            {errorKey === "notStaff" && (
+              <Link href="/login" className="underline">
+                {t("customerLogin")}
+              </Link>
+            )}
           </div>
         )}
-        <div className="space-y-1.5">
-          <Label htmlFor={`${id}-identifier`} className="font-semibold text-sm text-fg">
+        <div className="space-y-1">
+          <Label htmlFor={`${id}-identifier`} className="text-sm font-bold text-fg">
             {t("identifier")}
           </Label>
           <Input
@@ -122,53 +117,32 @@ export function StaffLogin() {
             required
             aria-invalid={invalid}
             aria-describedby={describedBy}
-            className={cn("h-11 rounded-sm border-line-strong transition-colors duration-150", error && "border-err focus-visible:ring-err")}
+            className={fieldClass}
           />
         </div>
-        <div className="space-y-1.5">
-          <Label htmlFor={`${id}-password`} className="font-semibold text-sm text-fg">
+        <div className="space-y-1">
+          <Label htmlFor={`${id}-password`} className="text-sm font-bold text-fg">
             {t("password")}
           </Label>
-          <div className="relative">
-            <Input
-              id={`${id}-password`}
-              name="password"
-              type={shown ? "text" : "password"}
-              autoComplete="current-password"
-              disabled={busy}
-              required
-              aria-invalid={invalid}
-              aria-describedby={describedBy}
-              className={cn("h-11 rounded-sm border-line-strong pr-12 transition-colors duration-150", error && "border-err focus-visible:ring-err")}
-            />
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              aria-label={shown ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
-              aria-pressed={shown}
-              onClick={() => setShown(!shown)}
-              className="absolute top-0 right-0 text-fg-3 hover:text-fg"
-            >
-              {shown ? <EyeOff aria-hidden="true" className="size-4" /> : <Eye aria-hidden="true" className="size-4" />}
-            </Button>
-          </div>
+          <PasswordInput
+            id={`${id}-password`}
+            name="password"
+            autoComplete="current-password"
+            disabled={busy}
+            required
+            aria-invalid={invalid}
+            aria-describedby={describedBy}
+            className={fieldClass}
+          />
+          <p className="text-xs text-fg-3">{t("passwordRange")}</p>
         </div>
-        <Button
-          type="submit"
-          size="touch"
-          disabled={busy || wait > 0}
-          className="w-full text-sm font-bold shadow-sm transition-colors duration-100"
-        >
-          {busy && <Loader2 aria-hidden="true" className="animate-spin mr-2 size-4" />}
-          {busy ? t("loginPending") : t("login")}
-        </Button>
-        <Link
-          href="/staff/forgot-password"
-          className="flex min-h-11 items-center justify-center text-sm font-semibold text-p-text hover:text-p-hover hover:underline pt-1"
-        >
+        <Link href="/staff/forgot-password" className="inline-flex min-h-8 items-center text-sm font-bold text-p-text hover:text-p-hover hover:underline">
           {t("forgot")}
         </Link>
+        <Button type="submit" size="lg" disabled={busy || wait > 0} className="w-full font-bold">
+          {busy && <Loader2 aria-hidden="true" className="mr-2 size-4 animate-spin" />}
+          {busy ? t("loginPending") : t("login")}
+        </Button>
       </form>
     </>
   );

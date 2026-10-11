@@ -94,7 +94,7 @@ it.each([[RegisterForm, "Create account"], [ForgotForm, "Enter your email"], [Re
  localeHarness.locale = "en";
  try {expect(renderToStaticMarkup(render(component))).toContain(copy);} finally {localeHarness.locale = "vi";}
 });
-it.each([LoginForm, RegisterForm, ForgotForm, ResetForm, ActivateView])("FE-14 customer renders a visible actionable empty state (%s)", component => {
+it.each([RegisterForm, ForgotForm, ResetForm, ActivateView])("FE-14 customer renders a visible actionable empty state (%s)", component => {
  const html = renderToStaticMarkup(render(component));
  expect(html).toContain("lucide-inbox");
  expect(html).toContain('role="status"');
