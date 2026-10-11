@@ -8,6 +8,7 @@ import { FetchError } from "@/lib/fetcher";
 import { register, resendActivation } from "@/lib/api/customer-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/patterns/password-input";
 import { Label } from "@/components/ui/label";
 import { EmptyState, ErrorState } from "@/components/ui/state";
 import { authTabHref, FormNotice, passwordError, SHAKE_STYLE } from "./form-feedback";
@@ -158,8 +159,7 @@ export function RegisterForm() {
           <Label htmlFor={`${id}-password`} className="font-semibold text-sm text-fg">
             {t("password")}
           </Label>
-          <Input
-            type="password"
+          <PasswordInput
             id={`${id}-password`}
             name="password"
             placeholder={t("phPassword")}

@@ -10,7 +10,7 @@ import type { Route } from "next";
 import { useSearchParams } from "next/navigation";
 import { resetPassword } from "@/lib/api/customer-auth";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/patterns/password-input";
 import { Label } from "@/components/ui/label";
 import { FormNotice, passwordError } from "./form-feedback";
 
@@ -61,12 +61,12 @@ export function ResetForm() {
       {error && <div id={`${id}-error`}><ErrorState title={error} /></div>}
       <div className="space-y-1.5">
         <Label htmlFor={`${id}-password`}> {t("newPassword")} </Label>
-        <Input type="password" id={`${id}-password`} name="password" autoComplete="new-password" aria-describedby={`${id}-password-hint${error ? ` ${id}-error` : ""}`} disabled={busy || !token} aria-invalid={!!error} />
+        <PasswordInput id={`${id}-password`} name="password" autoComplete="new-password" aria-describedby={`${id}-password-hint${error ? ` ${id}-error` : ""}`} disabled={busy || !token} aria-invalid={!!error} />
         <p id={`${id}-password-hint`} className="text-xs text-[var(--color-muted)]"> {t("passwordHint")} </p>
       </div>
       <div className="space-y-1.5">
         <Label htmlFor={`${id}-confirm`}> {t("confirmPassword")} </Label>
-        <Input type="password" id={`${id}-confirm`} name="confirm" autoComplete="new-password" disabled={busy || !token} aria-invalid={!!error} aria-describedby={error ? `${id}-error` : undefined} />
+        <PasswordInput id={`${id}-confirm`} name="confirm" autoComplete="new-password" disabled={busy || !token} aria-invalid={!!error} aria-describedby={error ? `${id}-error` : undefined} />
       </div>
       <Button type="submit" disabled={busy || !token} className="w-full">{busy ? t("savePending") : t("reset")}</Button>
       <p className="border-t border-[var(--color-line)] pt-4 text-center text-sm text-[var(--color-muted)]">
