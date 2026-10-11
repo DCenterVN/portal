@@ -53,7 +53,7 @@ function AccountMenu({ user, accountHref, onLogout }: Pick<Props, "user" | "onLo
   );
 }
 
-export function ConsoleHeader({ collapsed, onToggle, toggleLabel, user, accountHref = "/me", onLogout, actions }: Props) {
+export function ConsoleHeader({ collapsed, onToggle, toggleLabel, user, accountHref = "/account", onLogout, actions }: Props) {
   return (
     // ponytail: same z as store-header (--z-popover) until globals.css gets --z-sticky.
     <header className="sticky top-0 z-(--z-popover) border-b border-glass-edge">
