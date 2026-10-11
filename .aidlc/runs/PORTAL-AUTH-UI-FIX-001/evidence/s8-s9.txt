@@ -1,0 +1,45 @@
+# S8/S9 live evidence 2026-10-11T22:17:05+07:00 head=d15b52b
+## /login, /register redirect (307 -> popup keeps redirect)
+/login?redirect=/cart -> 307 http://localhost:3000/?auth=login&redirect=%2Fcart
+/register?redirect=/cart -> 307 http://localhost:3000/?auth=register&redirect=%2Fcart
+## Nguon key: GET /api/auth/context (app/api/auth/context/route.ts:58-75 -> org /org/permissions/me -> action_keys)
+### employee.s9@e2e.test
+permissions(30): ['customer:customer:read', 'customer:customer:update', 'customer:customer_pii:read', 'inventory:goods_receipt:create', 'inventory:lot:read', 'inventory:lot:update', 'inventory:lot_qc_decision:create', 'inventory:qc:update', 'inventory:shelf_placement:create', 'inventory:shelf_placement:read', 'inventory:stock:read', 'inventory:supplier:read', 'org:employee:create', 'org:membership:create', 'org:membership:delete', 'org:membership:read', 'org:membership:update', 'production:food_plan:create', 'production:food_plan:read', 'production:food_plan:update', 'production:order:read', 'production:order:update', 'production:qc:update', 'production:target:read', 'sales:order:read', 'sales:order_cancellation:create', 'sales:price_book:create', 'sales:product:create', 'sales:product:read', 'sales:product_listing:update']
+  Tổng quan  /console                   key=-                                  HIỆN
+  Tổ chức    /branches                  key=org:membership:read                HIỆN
+  Tổ chức    /memberships               key=org:membership:read                HIỆN
+  Tổ chức    /roles                     key=org:company:read                   ẨN
+  Kho        /inventory/shelves         key=inventory:shelf_placement:read     HIỆN
+  Sản xuất   /production/targets        key=production:target:read             HIỆN
+  Sản xuất   /production/food-plans     key=production:food_plan:read          HIỆN
+  Sản xuất   /production/orders         key=production:order:read              HIỆN
+  Sản xuất   /production/qc             key=production:qc:update               HIỆN
+  Bán hàng   /sales/pricing             key=sales:price_floor_policy:read      ẨN
+### padmin.44186658@e2e.test
+permissions(0): []
+  Tổng quan  /console                   key=-                                  HIỆN
+  Tổ chức    /branches                  key=org:membership:read                ẨN
+  Tổ chức    /memberships               key=org:membership:read                ẨN
+  Tổ chức    /roles                     key=org:company:read                   ẨN
+  Kho        /inventory/shelves         key=inventory:shelf_placement:read     ẨN
+  Sản xuất   /production/targets        key=production:target:read             ẨN
+  Sản xuất   /production/food-plans     key=production:food_plan:read          ẨN
+  Sản xuất   /production/orders         key=production:order:read              ẨN
+  Sản xuất   /production/qc             key=production:qc:update               ẨN
+  Bán hàng   /sales/pricing             key=sales:price_floor_policy:read      ẨN
+### newowner.44186658@e2e.test
+permissions(69): ['auth:context:create', 'auth:self:delete', 'auth:self:read', 'auth:self:update', 'customer:customer:read', 'customer:customer:update', 'customer:customer_pii:read', 'inventory:goods_receipt:create', 'inventory:goods_receipt:update', 'inventory:lot:read', 'inventory:lot:update', 'inventory:lot_allergen:update', 'inventory:lot_qc_decision:create', 'inventory:qc:update', 'inventory:shelf_placement:create', 'inventory:shelf_placement:read', 'inventory:stock:read', 'inventory:supplier:create', 'inventory:supplier:read', 'inventory:supplier:update', 'org:branch:create', 'org:company:read', 'org:company:update', 'org:employee:create', 'org:employee_approval:create', 'org:membership:create', 'org:membership:delete', 'org:membership:read', 'org:membership:update', 'org:org:update', 'org:support_access_approval:create', 'org:support_access_approval:delete', 'org:tree:read', 'production:fefo_override:create', 'production:food_plan:create', 'production:food_plan:read', 'production:food_plan:update', 'production:order:read', 'production:order:update', 'production:qc:update', 'production:target:create', 'production:target:read', 'production:target_approval:create', 'sales:cart:create', 'sales:cart:delete', 'sales:cart:read', 'sales:cart:update', 'sales:catalog:read', 'sales:order:create', 'sales:order:read', 'sales:order:update', 'sales:order_cancellation:create', 'sales:payment:update', 'sales:price_book:create', 'sales:price_book_approval:create', 'sales:price_floor:read', 'sales:price_floor_policy:create', 'sales:price_floor_policy:read', 'sales:price_floor_policy:update', 'sales:price_floor_policy_approval:create', 'sales:product:create', 'sales:product:delete', 'sales:product:read', 'sales:product:update', 'sales:product_listing:update', 'sales:variant:create', 'sales:variant:delete', 'sales:variant:read', 'sales:variant:update']
+  Tổng quan  /console                   key=-                                  HIỆN
+  Tổ chức    /branches                  key=org:membership:read                HIỆN
+  Tổ chức    /memberships               key=org:membership:read                HIỆN
+  Tổ chức    /roles                     key=org:company:read                   HIỆN
+  Kho        /inventory/shelves         key=inventory:shelf_placement:read     HIỆN
+  Sản xuất   /production/targets        key=production:target:read             HIỆN
+  Sản xuất   /production/food-plans     key=production:food_plan:read          HIỆN
+  Sản xuất   /production/orders         key=production:order:read              HIỆN
+  Sản xuất   /production/qc             key=production:qc:update               HIỆN
+  Bán hàng   /sales/pricing             key=sales:price_floor_policy:read      HIỆN
+## SSR page render with employee cookie
+/console -> 200
+/sales/pricing (no key, guard is client-side) -> 200
+## popup locale: client cookie NEXT_LOCALE=en -> CustomerAuthPopupBody locale=en (unit-level, not curl-able)
