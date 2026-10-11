@@ -10,7 +10,7 @@ set-cookie: portal_plane=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Max-Ag
 
 Ghi chu: dev HTTP dung cookie refresh_token; __Host-refresh_token van duoc xoa voi Secure; Path=/ (khong Domain). Nhanh 429/500 dung chung clearSession (unit test bff.test.ts).
 
-## (b) GET ma tran bang padmin (company )
+## (b) GET ma tran bang padmin (company 1a80b5f2-d649-4df2-8ead-565ea5e4d1eb)
 roles: 10 resources: 39 catalog keys: 69 CRUDIE cells per role: 234 clickable cells (in catalog): 69 disabled: 165
 catalog keys non-CRUDIE: []
 ACCOUNTANT 3

@@ -4,13 +4,13 @@
   "pipelineId": "sdlc",
   "context": {
     "epic": "PORTAL-AUTH-UI-FIX-001",
-    "worker": "unassigned",
+    "worker": "claude-sonnet",
     "story": "US-UI-002",
     "sprint": "04",
     "slices": "8/9"
   },
   "startedAt": "2026-10-11T12:13:24+00:00",
-  "updatedAt": "2026-10-11T15:31:29+00:00",
+  "updatedAt": "2026-10-11T15:41:39+00:00",
   "currentStepIdx": 4,
   "status": "running",
   "steps": [
@@ -55,7 +55,9 @@
       "agent": "sdlc-build",
       "revision": 1,
       "status": "awaiting_work",
-      "artifactsProduced": []
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-AUTH-UI-FIX-001/handback.md"
+      ]
     },
     {
       "stepIdx": 5,
@@ -80,7 +82,9 @@
       "agent": "sdlc-release",
       "revision": 1,
       "status": "pending",
-      "artifactsProduced": []
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-AUTH-UI-FIX-001/review.md"
+      ]
     }
   ]
 }

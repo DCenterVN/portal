@@ -1,10 +1,10 @@
 {
   "task": "PORTAL-AUTH-UI-FIX-001",
   "actor": "agent:claude-code(171709704+dawnmoriaty@users.noreply.github.com)",
-  "worker": null,
-  "ts": "2026-10-11T15:18:32+00:00",
+  "worker": "claude-sonnet",
+  "ts": "2026-10-11T15:41:39+00:00",
   "cwd": ".",
-  "head": "ee7e72f91526f35f40d738ac625777e8c2e6b21d",
+  "head": "4ad13f84d583398cf66bd986d9fd6229ed80d34f",
   "dirty": true,
   "checks": [
     {
@@ -12,9 +12,9 @@
       "command": "npm test",
       "exit": 0,
       "status": "PASS",
-      "seconds": 3.9,
+      "seconds": 4.1,
       "log": ".aidlc/runs/PORTAL-AUTH-UI-FIX-001/artifacts/logs/unit.log",
-      "sha256": "a97337bf3e9ae0676f1dcd7db5cab4b9fa1321115f5636b8fcf4c8614754ccb0",
+      "sha256": "ec441742586b1df7ee1dfe8195bffdd89e3fddcf7a5b8686310078d73bd38d40",
       "tail": [
         "stderr | app/api/auth/bff.test.ts > Portal BFF Auth Handlers (9 handlers) > 1. POST /api/auth/login sets cookies and forwards response",
         "PORTAL_CLIENT_IP_SOURCE is unset; auth forwarding is disabled",
@@ -28,7 +28,7 @@
       "command": "npm run lint",
       "exit": 0,
       "status": "PASS",
-      "seconds": 2.6,
+      "seconds": 2.7,
       "log": ".aidlc/runs/PORTAL-AUTH-UI-FIX-001/artifacts/logs/lint.log",
       "sha256": "7641747edd98ed1a1fd1ad59bec73c32caac945b1006098310c6c071b528e278",
       "tail": [
@@ -54,7 +54,7 @@
       "command": "bash .aidlc/runs/PORTAL-AUTH-UI-FIX-001/evidence/live.sh",
       "exit": 0,
       "status": "PASS",
-      "seconds": 11.4,
+      "seconds": 12.7,
       "log": ".aidlc/runs/PORTAL-AUTH-UI-FIX-001/artifacts/logs/integration.log",
       "sha256": "f0d1d3c94be9f09e54b9d875da13543f4d4be42c2c294d43881c385ed6cf9539",
       "tail": [
@@ -70,7 +70,7 @@
       "command": "bash .aidlc/runs/PORTAL-AUTH-UI-FIX-001/evidence/e2e.sh",
       "exit": 0,
       "status": "PASS",
-      "seconds": 2.2,
+      "seconds": 3.0,
       "log": ".aidlc/runs/PORTAL-AUTH-UI-FIX-001/artifacts/logs/e2e.log",
       "sha256": "b2e782b70f399a2ec854ef9ad61d15e9da730c025a789865dfb08c6a05ef5764",
       "tail": [
