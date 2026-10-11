@@ -1,0 +1,16 @@
+{
+  "task": "PORTAL-AUTH-UI-FIX-001",
+  "actor": "agent:claude-code(171709704+dawnmoriaty@users.noreply.github.com)",
+  "worker": "claude-sonnet",
+  "ts": "2026-10-11T15:42:20+00:00",
+  "verified_head": "4ad13f84d583398cf66bd986d9fd6229ed80d34f",
+  "signals": {
+    "correctness": 0.88,
+    "security": 0.85,
+    "spec_fit": 0.85
+  },
+  "score": 0.6358,
+  "bar": 0.95,
+  "sensitive": false,
+  "verdict": "BELOW_BAR"
+}

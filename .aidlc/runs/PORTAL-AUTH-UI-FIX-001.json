@@ -10,7 +10,7 @@
     "slices": "8/9"
   },
   "startedAt": "2026-10-11T12:13:24+00:00",
-  "updatedAt": "2026-10-11T15:41:39+00:00",
+  "updatedAt": "2026-10-11T15:42:20+00:00",
   "currentStepIdx": 4,
   "status": "running",
   "steps": [
@@ -83,7 +83,8 @@
       "revision": 1,
       "status": "pending",
       "artifactsProduced": [
-        ".aidlc/runs/PORTAL-AUTH-UI-FIX-001/review.md"
+        ".aidlc/runs/PORTAL-AUTH-UI-FIX-001/review.md",
+        ".aidlc/runs/PORTAL-AUTH-UI-FIX-001/artifacts/review-decision.json"
       ]
     }
   ]
