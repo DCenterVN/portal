@@ -207,7 +207,7 @@ export function recordCartResponse(response: SalesCartResponse, knownProduct?: P
   const previous = loadCartItems();
   const next = response.items.map((item) => {
     const known = previous.find((entry) => entry.product_id === item.sku_ref);
-    const product = knownProduct?.id === item.sku_ref ? knownProduct : undefined;
+    const product = (knownProduct?.sku_ref ?? knownProduct?.id) === item.sku_ref ? knownProduct : undefined;
     return { product_id: item.sku_ref, sku_code: product?.sku_code || known?.sku_code || item.sku_ref, name: product?.name || known?.name || `SKU ${item.sku_ref}`, quantity: item.quantity, price_snapshot_vnd: item.price_snapshot_vnd, uom: product?.uom || known?.uom || "—" };
   });
   window.localStorage.setItem(cartItemsKey, JSON.stringify(next));

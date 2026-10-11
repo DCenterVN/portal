@@ -56,7 +56,7 @@ export function ProductDetailView({ initialProduct }: ProductDetailViewProps) {
     setAddingToCart(true);
     try {
       const cart = await addToCart(getOrCreateCartId(), {
-        product_id: product.id,
+        product_id: product.sku_ref ?? product.id,
         quantity,
       });
       recordCartResponse(cart, product);
