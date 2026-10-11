@@ -82,7 +82,9 @@ curl -s -o /dev/null -D $D/rh -b $J $B/roles; RS=$(awk 'NR==1{print $2}' $D/rh);
 [ "$RS" = 307 -o "$RS" = 308 ] && echo "$LOC" | grep -q '/company' && ok "S4 /roles -> $RS $LOC" || bad "S4 /roles $RS $LOC"
 logout_check owner $J
 # S3 pages
-for p in /login /register /staff/login; do
-  c=$(curl -s -o /dev/null -w '%{http_code}' $B$p); [ "$c" = 200 ] && ok "S3 $p 200" || bad "S3 $p $c"
+for t in login register; do
+  o=$(curl -s -o /dev/null -w '%{http_code} %{redirect_url}' "$B/$t?redirect=/cart"); [ "${o%% *}" = 307 ] && [[ "$o" == *"/?auth=$t&redirect=%2Fcart" ]] && ok "S3 /$t -> landing popup (307)" || bad "S3 /$t $o"
+  c=$(curl -s -o /dev/null -w '%{http_code}' "$B/?auth=$t"); [ "$c" = 200 ] && ok "S3 /?auth=$t 200" || bad "S3 /?auth=$t $c"
 done
+c=$(curl -s -o /dev/null -w '%{http_code}' $B/staff/login); [ "$c" = 200 ] && ok "S3 /staff/login 200" || bad "S3 /staff/login $c"
 rm -rf $D; exit $FAIL
