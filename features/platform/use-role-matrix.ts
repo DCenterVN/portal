@@ -9,9 +9,18 @@ export function useRoleMatrix(source: Source, root: string) {
   return useSWR(root ? ["role-matrix", source, root] : null, () => (source === "platform" ? getRoleMatrix(root) : companyRoleMatrix(root)), { revalidateOnFocus: false });
 }
 
-// One action per line or comma; order kept, duplicates dropped.
-export function parseActions(text: string): string[] {
-  return [...new Set(text.split(/[\n,]/).map((item) => item.trim()).filter(Boolean))];
+export const VERBS = ["create", "read", "update", "delete", "import", "export"] as const;
+
+// Key = "module:resource:verb"; resource keeps everything before the last segment.
+export function resourcesOf(matrix: Record<string, string[]>): string[] {
+  const found = new Set<string>();
+  for (const actions of Object.values(matrix)) {
+    for (const action of actions) {
+      const cut = action.lastIndexOf(":");
+      if (cut > 0 && (VERBS as readonly string[]).includes(action.slice(cut + 1))) found.add(action.slice(0, cut));
+    }
+  }
+  return [...found].sort();
 }
 
 export function actionChanges(before: string[], after: string[]) {
