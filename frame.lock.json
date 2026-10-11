@@ -6,7 +6,7 @@
     "app/layout.tsx": "78587c8aec7515c252f30e6056cbd3701265c270ae2bf7fcaf09e74eb4b7f353",
     "app/tokens.generated.css": "fdacb901f789b8bcfa8e7a19eb6b285917c9a7a633216b89268555e0686b6ee8",
     "app/ui-rules-gate.test.ts": "605fcd6b30850c55f5e96d014750f76f2ea1bcc8f8a04916235d8dd0655a60ef",
-    "components/layout/console-header.tsx": "d77e76280cb8f6a81f47956aa49a35521e329ad3be5b01794406ae9403a4685c",
+    "components/layout/console-header.tsx": "419641e6e17e90938f384048da5358c81d0abd025aa6079ff63b555bcf50a420",
     "components/layout/console-shell.test.tsx": "a6fab9039a1ab548fe1c4a99ae84ae1f50d8c8e97973135c8ab08de0859d8de8",
     "components/layout/console-shell.tsx": "171c950f2ab852dd2c3b7cf40288dcb71a0becf431a70e34d56780f5baa6da4c",
     "components/layout/console-sidebar.tsx": "d5f34ed7dbe3e5170a22128e9d32e253b1b0ca42442dc9f871e35ae6c488354f",
