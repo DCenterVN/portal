@@ -1,7 +1,7 @@
-import { Boxes, Factory, LayoutDashboard, ShoppingCart, Warehouse } from "lucide-react";
-import type { ShellNavGroup, ShellNavItem } from "@/components/layout/console-shell";
+import { Boxes, Factory, LayoutDashboard, ShoppingCart, Warehouse, type LucideIcon } from "lucide-react";
 
-type NavRule = ShellNavItem & { action?: string };
+type NavItem = { href: string; label: string; match: string; icon?: LucideIcon };
+type NavRule = NavItem & { action?: string };
 
 export const CONSOLE_NAV: { title: string; items: NavRule[] }[] = [
   { title: "Tổng quan", items: [{ href: "/console", label: "Bảng điều khiển", match: "/console", icon: LayoutDashboard }] },
@@ -26,7 +26,7 @@ export const CONSOLE_NAV: { title: string; items: NavRule[] }[] = [
   { title: "Bán hàng", items: [{ href: "/sales/pricing", label: "Bảng giá", match: "/sales/pricing", icon: ShoppingCart, action: "sales:price_floor_policy:read" }] },
 ];
 
-export function consoleNavFor(actions: ReadonlySet<string>): ShellNavGroup[] {
+export function consoleNavFor(actions: ReadonlySet<string>): { title: string; items: NavItem[] }[] {
   return CONSOLE_NAV
     .map((group) => ({
       title: group.title,
