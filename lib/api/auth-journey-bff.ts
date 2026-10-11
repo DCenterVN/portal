@@ -92,6 +92,7 @@ async function upstreamError(upstream: Response): Promise<NextResponse> {
 }
 async function loginError(upstream: Response): Promise<NextResponse> {
   const res = await upstreamError(upstream);
+  if (upstream.status === 403 && (await res.clone().json().catch(() => null))?.error === "user_not_active") return response({error: "FORBIDDEN", reason: "NOT_ACTIVATED", message: "Tài khoản chưa được kích hoạt"}, 403);
   const seconds = Number(upstream.headers.get("retry-after"));
   if (upstream.status !== 429 || !Number.isFinite(seconds) || seconds < 0) return res;
   const data = await res.json();
