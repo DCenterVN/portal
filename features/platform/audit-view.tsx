@@ -13,6 +13,8 @@ import { errorText, formatTime } from "./access";
 import { RequireAction } from "./access-boundary";
 import type { Source } from "./use-company";
 import { readAuditFilters, useAudit, type AuditFilters, type AuditEntry } from "./use-audit";
+import { useCompanyOptions, usableCompanies } from "./use-support";
+import { EntityPicker } from "@/components/ui/entity-picker";
 
 function Change({ entry }: { entry: AuditEntry }) {
   if (entry.before === undefined && entry.after === undefined) return null;
@@ -31,6 +33,7 @@ export function AuditLog({ source, root = "" }: { source: Source; root?: string 
   const [page, setPage] = useState(1);
   const [invalid, setInvalid] = useState("");
   const { data, error, isLoading, isValidating, mutate } = useAudit(source, root, filters, page);
+  const companies = useCompanyOptions();
 
   function apply(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -47,9 +50,19 @@ export function AuditLog({ source, root = "" }: { source: Source; root?: string 
         <CardContent className="pt-6">
           <form onSubmit={apply} noValidate className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5 lg:items-end">
             {source === "platform" && (
-              <Field label="Công ty (MAIN)" htmlFor={`audit-root-${source}`}>
-                <TextInput id={`audit-root-${source}`} name="root_branch_id" placeholder="UUID" autoComplete="off" />
-              </Field>
+              <EntityPicker
+                label="Công ty"
+                name="root_branch_id"
+                required
+                items={usableCompanies(companies)}
+                status={companies.isLoading ? "loading" : companies.error ? "error" : "ready"}
+                getId={(c) => c.root_branch_id}
+                getLabel={(c) => c.name}
+                getMeta={(c) => c.code}
+                onRetry={() => void companies.mutate()}
+                emptyText="Chưa có công ty nào. Hiện chưa có dữ liệu công ty trên hệ thống."
+                placeholder="Tìm theo tên hoặc mã công ty"
+              />
             )}
             <Field label="Action" htmlFor={`audit-action-${source}`}>
               <TextInput id={`audit-action-${source}`} name="action" placeholder="vd. break_glass" autoComplete="off" />
