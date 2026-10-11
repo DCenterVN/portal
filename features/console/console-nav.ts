@@ -36,3 +36,8 @@ export function consoleNavFor(actions: ReadonlySet<string>): { title: string; it
     }))
     .filter((group) => group.items.length > 0);
 }
+
+export function consoleRouteAllowed(pathname: string, actions: ReadonlySet<string>): boolean {
+  const item = CONSOLE_NAV.flatMap((group) => group.items).find((entry) => pathname === entry.match || pathname.startsWith(`${entry.match}/`));
+  return !item?.action || actions.has(item.action);
+}

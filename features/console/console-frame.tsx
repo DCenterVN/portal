@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { ErrorState } from "@/components/ui/state";
+import { usePathname } from "next/navigation";
+import { ErrorState, Skeleton } from "@/components/ui/state";
 import { ConsoleShell } from "@/components/layout/console-shell";
 import { logoutTo } from "@/lib/auth/client";
-import { consoleNavFor } from "./console-nav";
+import { consoleNavFor, consoleRouteAllowed } from "./console-nav";
 
 type ConsoleSession = {
   error?: string;
@@ -77,11 +78,17 @@ export function ConsoleFrame({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const nav = useMemo(() => consoleNavFor(new Set(session.permissions)), [session.permissions]);
+  const pathname = usePathname() ?? "";
+  const actions = useMemo(() => new Set(session.permissions), [session.permissions]);
+  const nav = useMemo(() => consoleNavFor(actions), [actions]);
+  const body = session.error ? <ErrorState title={session.error} />
+    : !session.permissions ? <Skeleton />
+    : consoleRouteAllowed(pathname, actions) ? children
+    : <ErrorState denied title="Không có quyền truy cập" description="Tài khoản của bạn chưa được cấp quyền xem trang này. Liên hệ quản trị viên để được cấp quyền." />;
 
   return (
     <ConsoleShell nav={nav} context={session.context} user={session.user} onLogout={() => void logoutTo("/staff/login")}>
-      {session.error ? <ErrorState title={session.error} /> : children}
+      {body}
     </ConsoleShell>
   );
 }
