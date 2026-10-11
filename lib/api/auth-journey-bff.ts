@@ -1,6 +1,7 @@
 import "server-only";
 import {authHeaders, resolveClientIP} from "./client-ip";
 import {decodePlatform, platformMeSchema} from "./platform-contract";
+import {CONSOLE_ROUTES} from "../fetcher";
 import { NextRequest, NextResponse } from "next/server";
 
 const authUrl = () => process.env.AUTH_SERVICE_URL || "http://localhost:8080";
@@ -41,7 +42,10 @@ export function safeLanding(target: string, journey: Journey): string {
     const url = new URL(decoded, "https://portal.invalid");
     if (url.origin !== "https://portal.invalid") return fallback;
     const pathname = url.pathname;
-    if (journey === "employee") return ["/console", "/staff/switch-org", "/staff/switch-branch", "/platform/companies"].includes(pathname) && !url.search && !url.hash ? pathname : fallback;
+    if (journey === "employee") {
+      if (["/staff/switch-org", "/staff/switch-branch", "/platform/companies"].includes(pathname)) return !url.search && !url.hash ? pathname : fallback;
+      return CONSOLE_ROUTES.some(path => pathname === path || pathname.startsWith(`${path}/`)) ? `${pathname}${url.search}${url.hash}` : fallback;
+    }
     if (pathname !== "/" && !/^\/(products|cart|checkout|orders|me)(\/|$)/.test(pathname)) return fallback;
     return `${pathname}${url.search}${url.hash}`;
   } catch { return fallback; }
@@ -86,6 +90,13 @@ async function upstreamError(upstream: Response): Promise<NextResponse> {
   const projected = object(data) ? publicError(data) : null;
   return projected ? response(projected, upstream.status, upstream.headers.get("retry-after")) : unavailable();
 }
+async function loginError(upstream: Response): Promise<NextResponse> {
+  const res = await upstreamError(upstream);
+  const seconds = Number(upstream.headers.get("retry-after"));
+  if (upstream.status !== 429 || !Number.isFinite(seconds) || seconds < 0) return res;
+  const data = await res.json();
+  return response({retry_after_ms: seconds * 1000, ...data}, 429, upstream.headers.get("retry-after"));
+}
 interface Context { org_id: string; branch_id: string; member_type: string; roles: string[]; status?: string }
 function contexts(value: unknown): Context[] | null {
   if (!Array.isArray(value) || value.some(row => !object(row) || typeof row.org_id !== "string" || !row.org_id || typeof row.branch_id !== "string" || !row.branch_id || typeof row.member_type !== "string" || !Array.isArray(row.roles) || row.roles.some((role: unknown) => typeof role !== "string") || (row.status !== undefined && typeof row.status !== "string"))) return null;
@@ -127,13 +138,14 @@ export async function loginJourney(req: NextRequest, journey: Journey): Promise<
 }
 
 async function authenticateJourney(req: NextRequest, journey: Journey): Promise<NextResponse> {
-  const body = await readFields(req, ["identifier", "password"], ["identifier", "password"]);
-  if (body instanceof NextResponse) return body;
+  const fields = await readFields(req, ["identifier", "password", "redirect"], ["identifier", "password"]);
+  if (fields instanceof NextResponse) return fields;
+  const {redirect, ...body} = fields;
   let temporaryToken = ""; let cookies: string[] = []; let accepted = false;
   try {
     const clientIP = resolveClientIP(req.headers);
     const upstream = await fetch(`${authUrl()}/auth/web/login`, {method: "POST", cache: "no-store", headers: authHeaders(clientIP, {"Content-Type": "application/json", "User-Agent": req.headers.get("user-agent") || "portal-bff"}), body: JSON.stringify(body)});
-    if (!upstream.ok) return upstreamError(upstream);
+    if (!upstream.ok) return loginError(upstream);
     cookies = sessionCookies(upstream);
     const data: unknown = await upstream.json();
     if (!object(data) || typeof data.access_token !== "string" || !data.access_token) return unavailable();
@@ -141,10 +153,12 @@ async function authenticateJourney(req: NextRequest, journey: Journey): Promise<
     const profile = await fetch(`${authUrl()}/auth/me`, {cache: "no-store", headers: authHeaders(clientIP, {Authorization: `Bearer ${temporaryToken}`})});
     if (!profile.ok) return upstreamError(profile);
     const user: unknown = await profile.json();
-    if (!object(user) || typeof user.id !== "string" || user.status !== "ACTIVE") return response({error: "FORBIDDEN", message: "Tài khoản chưa được kích hoạt"}, 403);
+    if (!object(user) || typeof user.id !== "string" || user.status !== "ACTIVE") return response({error: "FORBIDDEN", reason: "NOT_ACTIVATED", message: "Tài khoản chưa được kích hoạt"}, 403);
     const decision = journey === "customer" ? {next_path: "/", token: temporaryToken, expires_in: undefined, cookies: undefined} : await staffDecision(temporaryToken, clientIP);
     if (decision instanceof NextResponse) return decision;
-    const result = response({user: {id: user.id, email: user.email, phone: user.phone, display_name: user.display_name, status: user.status}, expires_in: decision.expires_in ?? data.expires_in, next_path: safeLanding(decision.next_path, journey)});
+    const requested = typeof redirect === "string" && redirect ? safeLanding(redirect, journey) : "";
+    const landing = requested && requested !== "/staff/switch-branch" && (journey === "customer" || decision.next_path === "/console") ? requested : safeLanding(decision.next_path, journey);
+    const result = response({user: {id: user.id, email: user.email, phone: user.phone, display_name: user.display_name, status: user.status}, expires_in: decision.expires_in ?? data.expires_in, next_path: landing});
     const issuedCookies = decision.cookies?.length ? decision.cookies : cookies;
     result.cookies.set("access_token", decision.token, {path: "/", maxAge: decision.expires_in ?? (typeof data.expires_in === "number" && data.expires_in > 0 ? data.expires_in : 900), sameSite: "strict", httpOnly: true, secure: true});
     setPortalPlane(result, req, journey === "employee" && decision.next_path === "/console", [...issuedCookies, ...cookies]);

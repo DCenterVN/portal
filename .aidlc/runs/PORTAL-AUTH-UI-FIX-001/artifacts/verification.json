@@ -2,9 +2,9 @@
   "task": "PORTAL-AUTH-UI-FIX-001",
   "actor": "agent:claude-code(171709704+dawnmoriaty@users.noreply.github.com)",
   "worker": null,
-  "ts": "2026-10-11T12:38:14+00:00",
+  "ts": "2026-10-11T12:40:08+00:00",
   "cwd": ".",
-  "head": "474f8abcf968c1d96744ac71198622df864e3467",
+  "head": "54e3510f8da3ad0b3c01069ee2dfe35e9f20eaa8",
   "dirty": true,
   "checks": [
     {
@@ -12,11 +12,11 @@
       "command": "npm test",
       "exit": 0,
       "status": "PASS",
-      "seconds": 3.9,
+      "seconds": 3.8,
       "log": ".aidlc/runs/PORTAL-AUTH-UI-FIX-001/artifacts/logs/unit.log",
-      "sha256": "a8203cfcc70b92be5c54ce435ea45b274d7a721430f66210e4af758d367dcb03",
+      "sha256": "3c02aae8ca46b95883a94437d0aa3d4e3c50b9dd4858b5a73fa79f3204c374cf",
       "tail": [
-        "stderr | app/api/auth/staff/bff.test.ts > S11 staff recovery dependency and invite BFF > accepts exact invite DTO via invite purpose endpoint; never password reset; no credentials/cookies",
+        "stderr | app/api/auth/bff.test.ts > Portal BFF Auth Handlers (9 handlers) > 1. POST /api/auth/login sets cookies and forwards response",
         "PORTAL_CLIENT_IP_SOURCE is unset; auth forwarding is disabled",
         "",
         "stderr | app/rebrand.test.ts > S7 rendered target, cart, orders and product creation roles > keeps target permissions, labelled statuses and sole create/submit emphasis (form=false)",
@@ -28,7 +28,7 @@
       "command": "npm run lint",
       "exit": 0,
       "status": "PASS",
-      "seconds": 2.5,
+      "seconds": 2.4,
       "log": ".aidlc/runs/PORTAL-AUTH-UI-FIX-001/artifacts/logs/lint.log",
       "sha256": "7641747edd98ed1a1fd1ad59bec73c32caac945b1006098310c6c071b528e278",
       "tail": [
