@@ -45,7 +45,7 @@ vi.mock("../components/ui/toast", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../components/ui/toast")>();
   return { ...actual, useToast: () => ({ toast: vi.fn() }) };
 });
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }) }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }), useSearchParams: () => new URLSearchParams() }));
 vi.mock("react", async (importOriginal) => {
   const actual = await importOriginal<typeof React>();
   return { ...actual, useState: (initial: unknown) => {

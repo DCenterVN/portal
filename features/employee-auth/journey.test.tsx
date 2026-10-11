@@ -129,7 +129,7 @@ it.each([["login", "Staff sign in"], ["forgot-password", "Staff password recover
 });
 
 import {FetchError} from "@/lib/fetcher";
-it.each([[429,"rate_limit_exceeded",false,"Quá nhiều yêu cầu. Vui lòng thử lại sau."],[403,"FORBIDDEN",true,"Không thể đăng nhập."],[403,"INTERNAL_ERROR",false,"Không thể đăng nhập."],[500,"FORBIDDEN",false,"Không thể đăng nhập."],[401,"UNAUTHORIZED",false,"Không thể đăng nhập."]] as const)("D-141/D-142 staff login %s %s localizes feedback and gates customer link", async (status,code,link,copy) => {
+it.each([[429,"rate_limit_exceeded",false,"Quá nhiều yêu cầu. Vui lòng thử lại sau."],[403,"FORBIDDEN",true,"chưa có quyền nhân viên"],[403,"INTERNAL_ERROR",false,"Không thể đăng nhập."],[500,"FORBIDDEN",false,"Hệ thống đang bận, vui lòng thử lại sau."],[401,"UNAUTHORIZED",false,"Email/số điện thoại hoặc mật khẩu không đúng."]] as const)("D-141/D-142 staff login %s %s localizes feedback and gates customer link", async (status,code,link,copy) => {
  vi.stubGlobal("fetch",vi.fn().mockResolvedValue(new Response(JSON.stringify({error:code,message:"invalid or expired token"}),{status})));
  await submit(render(LoginForm),{identifier:"staff",password:"password-1234"});
  const html=renderToStaticMarkup(render(LoginForm));

@@ -7,7 +7,7 @@ import {FetchError} from "@/lib/fetcher";
 import { useId, useRef, useState } from "react";
 import Link from "next/link";
 import type { Route } from "next";
-import { register } from "@/lib/api/customer-auth";
+import { register, resendActivation } from "@/lib/api/customer-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,6 +26,12 @@ export function RegisterForm() {
   const [error, setError] = useState("");
   const [errorField, setErrorField] = useState("");
   const [sentTo, setSentTo] = useState("");
+  const [sentEmail, setSentEmail] = useState("");
+  const [resend, setResend] = useState<"" | "busy" | "done" | "failed">("");
+  const onResend = async () => {
+    setResend("busy");
+    try {await resendActivation(sentEmail); setResend("done");} catch {setResend("failed");}
+  };
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -45,7 +51,7 @@ export function RegisterForm() {
     setError(""); setErrorField("");
     try {
       await register(email, phone, name, password);
-      setSentTo(email || phone);
+      setSentTo(email || phone); setSentEmail(email);
     } catch (err) {
       setError(t(err instanceof FetchError && err.code === "rate_limit_exceeded" ? "rateLimited" : "registerFailed"));
     } finally {
@@ -58,6 +64,9 @@ export function RegisterForm() {
     return (
       <FormNotice title={t("checkInbox")}>
         <p>{t("activationSent", {destination: sentTo})}</p>
+        {sentEmail && <p><Button type="button" variant="ghost" disabled={resend === "busy"} onClick={onResend}>{t("resendActivation")}</Button></p>}
+        {resend === "done" && <p>{t("resendDone")}</p>}
+        {resend === "failed" && <p role="alert">{t("resendFailed")}</p>}
         <p><Link href={"/login" as Route} className="inline-flex min-h-11 items-center font-semibold text-[var(--color-primary)] hover:underline"> {t("loginReturn")} </Link></p>
       </FormNotice>
     );

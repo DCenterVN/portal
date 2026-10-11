@@ -37,7 +37,7 @@ describe("S3 customer login", () => {
     harness.query = new URLSearchParams("redirect=/console");
     const tree = render(LoginForm); const pending = submit(tree, {identifier: " a@example.com ", password: "password-1234"});
     await submit(tree, {identifier: "a@example.com", password: "password-1234"});
-    expect(login).toHaveBeenCalledTimes(1); expect(login).toHaveBeenCalledWith("a@example.com", "password-1234");
+    expect(login).toHaveBeenCalledTimes(1); expect(login).toHaveBeenCalledWith("a@example.com", "password-1234", "/console");
     expect(renderToStaticMarkup(render(LoginForm))).toContain('aria-busy="true"');
     resolve({next_path: "/"}); await pending; expect(harness.push).toHaveBeenCalledWith("/"); expect(harness.refresh).toHaveBeenCalledOnce();
   });
@@ -128,7 +128,7 @@ it.each([["login", "Sign in"], ["register", "Create a shopping account"], ["acti
  } finally {localeHarness.locale = "vi";}
 });
 
-it.each([[429,"rate_limit_exceeded","Quá nhiều yêu cầu. Vui lòng thử lại sau."],[403,"FORBIDDEN","Đăng nhập không thành công."],[500,"unknown_code","Đăng nhập không thành công."]] as const)("D-141/D-142 customer login %s %s localizes without staff link", async (status,code,copy) => {
+it.each([[429,"rate_limit_exceeded","Quá nhiều yêu cầu. Vui lòng thử lại sau."],[403,"FORBIDDEN","Đăng nhập không thành công."],[500,"unknown_code","Hệ thống đang bận, vui lòng thử lại sau."]] as const)("D-141/D-142 customer login %s %s localizes without staff link", async (status,code,copy) => {
  vi.stubGlobal("fetch",vi.fn().mockResolvedValue(new Response(JSON.stringify({error:code,message:"invalid or expired token"}),{status})));
  await submit(render(LoginForm),{identifier:"customer",password:"password-1234"});
  const html=renderToStaticMarkup(render(LoginForm));expect(html).toContain(copy);expect(html).not.toContain('href="/staff/login"');expect(html).not.toContain("invalid or expired token");
