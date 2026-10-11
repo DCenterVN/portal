@@ -7,10 +7,10 @@
     "worker": "unassigned",
     "story": "US-UI-002",
     "sprint": "04",
-    "slices": "0/7"
+    "slices": "4/7"
   },
   "startedAt": "2026-10-11T12:13:24+00:00",
-  "updatedAt": "2026-10-11T12:44:48+00:00",
+  "updatedAt": "2026-10-11T12:50:08+00:00",
   "currentStepIdx": 4,
   "status": "running",
   "steps": [

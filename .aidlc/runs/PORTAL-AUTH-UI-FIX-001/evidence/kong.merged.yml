@@ -1,0 +1,637 @@
+_format_version: "3.0"
+_transform: true
+
+services:
+- name: auth
+  url: http://auth:8080
+  routes:
+  - name: auth-.well-known-jwks.json
+    paths:
+    - /.well-known/jwks.json
+    strip_path: false
+    methods:
+    - GET
+    - OPTIONS
+  - name: auth-auth-account-email
+    paths:
+    - /auth/account/email
+    strip_path: false
+    methods:
+    - OPTIONS
+    - POST
+  - name: auth-auth-account-email-confirm
+    paths:
+    - /auth/account/email/confirm
+    strip_path: false
+    methods:
+    - OPTIONS
+    - POST
+  - name: auth-auth-activate
+    paths:
+    - /auth/activate
+    strip_path: false
+    methods:
+    - OPTIONS
+    - POST
+  - name: auth-auth-activate-resend
+    paths:
+    - /auth/activate/resend
+    strip_path: false
+    methods:
+    - OPTIONS
+    - POST
+  - name: auth-auth-email-change
+    paths:
+    - /auth/email/change
+    strip_path: false
+    methods:
+    - OPTIONS
+    - POST
+  - name: auth-auth-email-confirm
+    paths:
+    - /auth/email/confirm
+    strip_path: false
+    methods:
+    - OPTIONS
+    - POST
+  - name: auth-auth-invite-accept
+    paths:
+    - /auth/invite/accept
+    strip_path: false
+    methods:
+    - OPTIONS
+    - POST
+  - name: auth-auth-logout-all
+    paths:
+    - /auth/logout-all
+    strip_path: false
+    methods:
+    - OPTIONS
+    - POST
+  - name: auth-auth-me
+    paths:
+    - /auth/me
+    strip_path: false
+    methods:
+    - GET
+    - OPTIONS
+  - name: auth-auth-native-login
+    paths:
+    - /auth/native/login
+    strip_path: false
+    methods:
+    - OPTIONS
+    - POST
+  - name: auth-auth-native-logout
+    paths:
+    - /auth/native/logout
+    strip_path: false
+    methods:
+    - OPTIONS
+    - POST
+  - name: auth-auth-native-refresh
+    paths:
+    - /auth/native/refresh
+    strip_path: false
+    methods:
+    - OPTIONS
+    - POST
+  - name: auth-auth-org-context
+    paths:
+    - /auth/org-context
+    strip_path: false
+    methods:
+    - OPTIONS
+    - POST
+  - name: auth-auth-password-change
+    paths:
+    - /auth/password/change
+    strip_path: false
+    methods:
+    - OPTIONS
+    - POST
+  - name: auth-auth-password-forgot
+    paths:
+    - /auth/password/forgot
+    strip_path: false
+    methods:
+    - OPTIONS
+    - POST
+  - name: auth-auth-password-reset
+    paths:
+    - /auth/password/reset
+    strip_path: false
+    methods:
+    - OPTIONS
+    - POST
+  - name: auth-auth-profile
+    paths:
+    - /auth/profile
+    strip_path: false
+    methods:
+    - OPTIONS
+    - PATCH
+  - name: auth-auth-profile-avatar
+    paths:
+    - /auth/profile/avatar
+    strip_path: false
+    methods:
+    - DELETE
+    - OPTIONS
+  - name: auth-auth-profile-avatar-finalize
+    paths:
+    - /auth/profile/avatar/finalize
+    strip_path: false
+    methods:
+    - OPTIONS
+    - POST
+  - name: auth-auth-profile-avatar-presign
+    paths:
+    - /auth/profile/avatar/presign
+    strip_path: false
+    methods:
+    - OPTIONS
+    - POST
+  - name: auth-auth-register
+    paths:
+    - /auth/register
+    strip_path: false
+    methods:
+    - OPTIONS
+    - POST
+  - name: auth-auth-sessions
+    paths:
+    - /auth/sessions
+    strip_path: false
+    methods:
+    - GET
+    - OPTIONS
+  - name: auth-auth-sessions-sub
+    paths:
+    - /auth/sessions/
+    strip_path: false
+    methods:
+    - DELETE
+    - OPTIONS
+  - name: auth-auth-web-login
+    paths:
+    - /auth/web/login
+    strip_path: false
+    methods:
+    - OPTIONS
+    - POST
+  - name: auth-auth-web-logout
+    paths:
+    - /auth/web/logout
+    strip_path: false
+    methods:
+    - OPTIONS
+    - POST
+  - name: auth-auth-web-refresh
+    paths:
+    - /auth/web/refresh
+    strip_path: false
+    methods:
+    - OPTIONS
+    - POST
+- name: customer
+  url: http://customer:8080
+  routes:
+  - name: customer-customer-admin-customers
+    paths:
+    - /customer/admin/customers
+    strip_path: false
+    methods:
+    - GET
+    - OPTIONS
+  - name: customer-customer-admin-customers-sub
+    paths:
+    - /customer/admin/customers/
+    strip_path: false
+    methods:
+    - GET
+    - OPTIONS
+    - POST
+  - name: customer-customer-me
+    paths:
+    - /customer/me
+    strip_path: false
+    methods:
+    - GET
+    - OPTIONS
+    - PATCH
+  - name: customer-customer-me-addresses
+    paths:
+    - /customer/me/addresses
+    strip_path: false
+    methods:
+    - OPTIONS
+    - POST
+  - name: customer-customer-me-addresses-sub
+    paths:
+    - /customer/me/addresses/
+    strip_path: false
+    methods:
+    - DELETE
+    - OPTIONS
+    - PATCH
+- name: integration
+  url: http://integration:8080
+  routes:
+  - name: integration-locations-vn-communes-sub
+    paths:
+    - /locations/vn/communes/
+    strip_path: false
+    methods:
+    - GET
+    - OPTIONS
+  - name: integration-locations-vn-provinces
+    paths:
+    - /locations/vn/provinces
+    strip_path: false
+    methods:
+    - GET
+    - OPTIONS
+  - name: integration-locations-vn-provinces-sub
+    paths:
+    - /locations/vn/provinces/
+    strip_path: false
+    methods:
+    - GET
+    - OPTIONS
+  - name: integration-locations-vn-search
+    paths:
+    - /locations/vn/search
+    strip_path: false
+    methods:
+    - GET
+    - OPTIONS
+- name: inventory
+  url: http://inventory:8080
+  routes:
+  - name: inventory-inventory-goods-receipts
+    paths:
+    - /inventory/goods-receipts
+    strip_path: false
+    methods:
+    - OPTIONS
+    - POST
+  - name: inventory-inventory-goods-receipts-sub
+    paths:
+    - /inventory/goods-receipts/
+    strip_path: false
+    methods:
+    - OPTIONS
+    - POST
+  - name: inventory-inventory-inbound-qc-inspections-sub
+    paths:
+    - /inventory/inbound-qc-inspections/
+    strip_path: false
+    methods:
+    - OPTIONS
+    - POST
+    - PUT
+  - name: inventory-inventory-inventory-lots
+    paths:
+    - /inventory/inventory-lots
+    strip_path: false
+    methods:
+    - GET
+    - OPTIONS
+  - name: inventory-inventory-inventory-lots-sub
+    paths:
+    - /inventory/inventory-lots/
+    strip_path: false
+    methods:
+    - OPTIONS
+    - POST
+    - PUT
+  - name: inventory-inventory-shelf-placements
+    paths:
+    - /inventory/shelf-placements
+    strip_path: false
+    methods:
+    - GET
+    - OPTIONS
+    - POST
+  - name: inventory-inventory-stock-levels
+    paths:
+    - /inventory/stock-levels
+    strip_path: false
+    methods:
+    - GET
+    - OPTIONS
+  - name: inventory-inventory-suppliers
+    paths:
+    - /inventory/suppliers
+    strip_path: false
+    methods:
+    - OPTIONS
+    - POST
+  - name: inventory-inventory-suppliers-sub
+    paths:
+    - /inventory/suppliers/
+    strip_path: false
+    methods:
+    - GET
+    - OPTIONS
+    - PATCH
+    - POST
+- name: org
+  url: http://org:8080
+  routes:
+  - name: org-org-access-contexts-me
+    paths:
+    - /org/access-contexts/me
+    strip_path: false
+    methods:
+    - GET
+    - OPTIONS
+  - name: org-org-company-audit-logs
+    paths:
+    - /org/company/audit-logs
+    strip_path: false
+    methods:
+    - GET
+    - OPTIONS
+  - name: org-org-company-modules
+    paths:
+    - /org/company/modules
+    strip_path: false
+    methods:
+    - GET
+    - OPTIONS
+  - name: org-org-company-role-matrix
+    paths:
+    - /org/company/role-matrix
+    strip_path: false
+    methods:
+    - GET
+    - OPTIONS
+  - name: org-org-company-settings
+    paths:
+    - /org/company/settings
+    strip_path: false
+    methods:
+    - OPTIONS
+    - PUT
+  - name: org-org-company-support-access
+    paths:
+    - /org/company/support-access
+    strip_path: false
+    methods:
+    - GET
+    - OPTIONS
+  - name: org-org-permissions-me
+    paths:
+    - /org/permissions/me
+    strip_path: false
+    methods:
+    - GET
+    - OPTIONS
+  - name: org-org-support-access-sub
+    paths:
+    - /org/support-access/
+    strip_path: false
+    methods:
+    - OPTIONS
+    - POST
+  - name: org-orgs-sub
+    paths:
+    - /orgs/
+    strip_path: false
+    methods:
+    - GET
+    - OPTIONS
+    - PATCH
+    - POST
+    - PUT
+  - name: org-platform-audit-logs
+    paths:
+    - /platform/audit-logs
+    strip_path: false
+    methods:
+    - GET
+    - OPTIONS
+  - name: org-platform-companies
+    paths:
+    - /platform/companies
+    strip_path: false
+    methods:
+    - GET
+    - OPTIONS
+    - POST
+  - name: org-platform-companies-sub
+    paths:
+    - /platform/companies/
+    strip_path: false
+    methods:
+    - GET
+    - OPTIONS
+    - PUT
+  - name: org-platform-me
+    paths:
+    - /platform/me
+    strip_path: false
+    methods:
+    - GET
+    - OPTIONS
+  - name: org-platform-staff
+    paths:
+    - /platform/staff
+    strip_path: false
+    methods:
+    - GET
+    - OPTIONS
+    - POST
+  - name: org-platform-staff-sub
+    paths:
+    - /platform/staff/
+    strip_path: false
+    methods:
+    - OPTIONS
+    - POST
+  - name: org-platform-support-access
+    paths:
+    - /platform/support-access
+    strip_path: false
+    methods:
+    - GET
+    - OPTIONS
+    - POST
+  - name: org-platform-support-access-break-glass
+    paths:
+    - /platform/support-access/break-glass
+    strip_path: false
+    methods:
+    - OPTIONS
+    - POST
+- name: production
+  url: http://production:8080
+  routes:
+  - name: production-production-finished-goods-qc-inspections-sub
+    paths:
+    - /production/finished-goods-qc-inspections/
+    strip_path: false
+    methods:
+    - OPTIONS
+    - POST
+  - name: production-production-food-plans-sub
+    paths:
+    - /production/food-plans/
+    strip_path: false
+    methods:
+    - GET
+    - OPTIONS
+    - POST
+    - PUT
+  - name: production-production-orders
+    paths:
+    - /production/orders
+    strip_path: false
+    methods:
+    - GET
+    - OPTIONS
+  - name: production-production-orders-sub
+    paths:
+    - /production/orders/
+    strip_path: false
+    methods:
+    - GET
+    - OPTIONS
+    - POST
+  - name: production-production-targets
+    paths:
+    - /production/targets
+    strip_path: false
+    methods:
+    - GET
+    - OPTIONS
+    - POST
+  - name: production-production-targets-sub
+    paths:
+    - /production/targets/
+    strip_path: false
+    methods:
+    - GET
+    - OPTIONS
+    - POST
+  - name: production-public-traceability-sub
+    paths:
+    - /public/traceability/
+    strip_path: false
+    methods:
+    - GET
+    - OPTIONS
+- name: sales
+  url: http://sales:8080
+  routes:
+  - name: sales-sales-carts-sub
+    paths:
+    - /sales/carts/
+    strip_path: false
+    methods:
+    - DELETE
+    - GET
+    - OPTIONS
+    - PATCH
+    - POST
+  - name: sales-sales-catalog
+    paths:
+    - /sales/catalog
+    strip_path: false
+    methods:
+    - GET
+    - OPTIONS
+  - name: sales-sales-catalog-sub
+    paths:
+    - /sales/catalog/
+    strip_path: false
+    methods:
+    - GET
+    - OPTIONS
+  - name: sales-sales-orders
+    paths:
+    - /sales/orders
+    strip_path: false
+    methods:
+    - GET
+    - OPTIONS
+    - POST
+  - name: sales-sales-orders-sub
+    paths:
+    - /sales/orders/
+    strip_path: false
+    methods:
+    - GET
+    - OPTIONS
+    - POST
+  - name: sales-sales-price-books-sub
+    paths:
+    - /sales/price-books/
+    strip_path: false
+    methods:
+    - OPTIONS
+    - POST
+  - name: sales-sales-price-floor-policies
+    paths:
+    - /sales/price-floor-policies
+    strip_path: false
+    methods:
+    - OPTIONS
+    - POST
+  - name: sales-sales-price-floor-policies-sub
+    paths:
+    - /sales/price-floor-policies/
+    strip_path: false
+    methods:
+    - GET
+    - OPTIONS
+    - POST
+  - name: sales-sales-pricing-preview-sub
+    paths:
+    - /sales/pricing-preview/
+    strip_path: false
+    methods:
+    - OPTIONS
+    - POST
+  - name: sales-sales-products
+    paths:
+    - /sales/products
+    strip_path: false
+    methods:
+    - GET
+    - OPTIONS
+    - POST
+  - name: sales-sales-products-sub
+    paths:
+    - /sales/products/
+    strip_path: false
+    methods:
+    - DELETE
+    - GET
+    - OPTIONS
+    - PATCH
+    - POST
+plugins:
+  - name: cors
+    config:
+      origins: ["http://localhost:3000", "http://127.0.0.1:3000"]
+      methods: [GET, POST, PUT, PATCH, DELETE, OPTIONS]
+      headers: [Accept, Authorization, Content-Type, Origin, X-Request-ID, X-CSRF-Token]
+      credentials: true
+  - name: correlation-id
+    config:
+      header_name: X-Request-ID
+      generator: uuid
+      echo_downstream: true
+  - name: request-size-limiting
+    config:
+      allowed_payload_size: 2
+      size_unit: megabytes
+  - name: prometheus
+    config:
+      per_consumer: false
+      status_code_metrics: true
+      latency_metrics: true
+      bandwidth_metrics: true

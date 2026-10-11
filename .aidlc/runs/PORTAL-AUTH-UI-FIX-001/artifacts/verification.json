@@ -2,9 +2,9 @@
   "task": "PORTAL-AUTH-UI-FIX-001",
   "actor": "agent:claude-code(171709704+dawnmoriaty@users.noreply.github.com)",
   "worker": null,
-  "ts": "2026-10-11T12:44:48+00:00",
+  "ts": "2026-10-11T12:50:05+00:00",
   "cwd": ".",
-  "head": "54593ae10c010e3f588a2474d59d422fc607f92a",
+  "head": "eb2ada0f42c31ccc71838100fec24f5fd0cf8138",
   "dirty": true,
   "checks": [
     {
@@ -14,9 +14,9 @@
       "status": "PASS",
       "seconds": 3.9,
       "log": ".aidlc/runs/PORTAL-AUTH-UI-FIX-001/artifacts/logs/unit.log",
-      "sha256": "874139b66d500081599b6a67cc16194262c67ccf2e8fd525a4e3179f6c1be950",
+      "sha256": "5f444ebdb969600dbca47173aaacd08bf7e5532e24e92440940449fe6522fd79",
       "tail": [
-        "stderr | app/api/auth/bff.test.ts > Portal BFF Auth Handlers (9 handlers) > 1. POST /api/auth/login sets cookies and forwards response",
+        "stderr | app/api/auth/staff/bff.test.ts > S11 staff recovery dependency and invite BFF > accepts exact invite DTO via invite purpose endpoint; never password reset; no credentials/cookies",
         "PORTAL_CLIENT_IP_SOURCE is unset; auth forwarding is disabled",
         "",
         "stderr | app/rebrand.test.ts > S7 rendered target, cart, orders and product creation roles > keeps target permissions, labelled statuses and sole create/submit emphasis (form=false)",
@@ -41,12 +41,55 @@
       "command": "npm run typecheck",
       "exit": 0,
       "status": "PASS",
-      "seconds": 1.5,
+      "seconds": 1.6,
       "log": ".aidlc/runs/PORTAL-AUTH-UI-FIX-001/artifacts/logs/typecheck.log",
       "sha256": "c5a440cd52c7fadc3d367658101693af6eb5b85d21dbd518cb3bda67056215e7",
       "tail": [
         "> @dcentervn/portal@0.1.0 typecheck",
         "> node node_modules/typescript/bin/tsc --noEmit"
+      ]
+    },
+    {
+      "name": "integration",
+      "command": "bash .aidlc/runs/PORTAL-AUTH-UI-FIX-001/evidence/live.sh",
+      "exit": 0,
+      "status": "PASS",
+      "seconds": 11.1,
+      "log": ".aidlc/runs/PORTAL-AUTH-UI-FIX-001/artifacts/logs/integration.log",
+      "sha256": "9f4cb7a8fb568f6520f27ee4a5aee8771e525aa0d4b8533944c0f2a8c6255e6a",
+      "tail": [
+        "PASS S4 /roles -> 307 location: /company",
+        "PASS S1 logout owner ->200, cleared 4 cookies",
+        "PASS S3 /login 200",
+        "PASS S3 /register 200",
+        "PASS S3 /staff/login 200"
+      ]
+    },
+    {
+      "name": "e2e",
+      "command": "bash .aidlc/runs/PORTAL-AUTH-UI-FIX-001/evidence/e2e.sh",
+      "exit": 0,
+      "status": "PASS",
+      "seconds": 2.2,
+      "log": ".aidlc/runs/PORTAL-AUTH-UI-FIX-001/artifacts/logs/e2e.log",
+      "sha256": "b2e782b70f399a2ec854ef9ad61d15e9da730c025a789865dfb08c6a05ef5764",
+      "tail": [
+        "PASS customer: /cart 200 -> logout -> 307 location: /login?redirect=%2Fcart",
+        "PASS employee: /console 200 -> logout -> 307 location: /staff/login?redirect=%2Fconsole"
+      ]
+    },
+    {
+      "name": "spec",
+      "command": "cd ../org && python3 /home/dawn/agent_skills/sdlc/engine/speccheck.py .aidlc/specs/role-matrix.md .aidlc/specs/platform-plane.md && cd ../auth && python3 /home/dawn/agent_skills/sdlc/engine/speccheck.py .aidlc/specs/register.md",
+      "exit": 0,
+      "status": "PASS",
+      "seconds": 0.1,
+      "log": ".aidlc/runs/PORTAL-AUTH-UI-FIX-001/artifacts/logs/spec.log",
+      "sha256": "fb230c99dd32d5571d177f72932fc99dd97cf30d98954fc7459273549d970a03",
+      "tail": [
+        "ok   role-matrix.md",
+        "ok   platform-plane.md",
+        "ok   register.md"
       ]
     }
   ],
