@@ -11,7 +11,7 @@ vi.mock("react", async original => {const actual = await original<typeof import(
 };});
 vi.mock("next/navigation", () => ({useRouter: () => ({push:h.push,refresh:h.refresh}), useSearchParams: () => h.query, redirect: (path: string) => {throw Error("REDIRECT:"+path);}}));
 import {EmployeeAuthShell} from "@/components/layout/employee-auth-shell";
-import {LoginForm} from "./login-form";
+import {StaffLogin as LoginForm} from "./staff-login";
 import * as client from "@/lib/api/employee-auth";
 function render(component: () => ReactElement) {h.cursor=0; return component();}
 type Props = {children?: React.ReactNode; onSubmit?: (e: React.FormEvent<HTMLFormElement>) => Promise<void>};
@@ -51,7 +51,7 @@ describe("S9 staff onboarding, blocked recovery and contexts", () => {
 });
 
 describe("S10 staff public pages", () => {
- it.each([["login","login-form"],["forgot-password","forgot-form"],["reset-password","reset-form"],["invite/accept","invite-form"]])("%s route owns its staff module and accessible heading", (route,module) => {const source=readFileSync(`app/(employee-auth)/staff/${route}/page.tsx`,"utf8");expect(source).toContain(`@/features/employee-auth/${module}`);expect(source).toContain("<h1");expect(source).not.toContain("customer-auth");});
+ it.each([["login","staff-login"],["forgot-password","forgot-form"],["reset-password","reset-form"],["invite/accept","invite-form"]])("%s route owns its staff module and accessible heading", (route,module) => {const source=readFileSync(`app/(employee-auth)/staff/${route}/page.tsx`,"utf8");expect(source).toContain(`@/features/employee-auth/${module}`);expect(source).toContain("<h1");expect(source).not.toContain("customer-auth");});
  it("layout owns staff shell only", () => {const source=readFileSync("app/(employee-auth)/layout.tsx","utf8");expect(source).toContain("EmployeeAuthShell");expect(source).not.toContain("CustomerAuthShell");});
 });
 

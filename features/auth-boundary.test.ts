@@ -107,7 +107,7 @@ describe("auth isolation AST oracle", () => {
   });
   it("S1 live gate: no legacy, cross imports, shared screens or missing ownership", () => {
     const sources = liveSources(); const problems = inspect(sources);
-    for (const plane of ["customer", "employee"]) for (const file of [`features/${plane}-auth/login-form.tsx`, `components/layout/${plane}-auth-shell.tsx`, `lib/api/${plane}-auth.ts`]) if (!(file in sources)) problems.push(`${file}: missing journey owner`);
+    for (const plane of ["customer", "employee"]) for (const file of [`features/${plane}-auth/${plane === "employee" ? "staff-login" : "login-form"}.tsx`, `components/layout/${plane}-auth-shell.tsx`, `lib/api/${plane}-auth.ts`]) if (!(file in sources)) problems.push(`${file}: missing journey owner`);
     const routes = ["login", "register", "activate", "forgot-password", "reset-password"].map(r => `app/(auth)/${r}/page.tsx`).concat(["login", "forgot-password", "reset-password", "invite/accept", "switch-branch", "switch-org"].map(r => `app/(employee-auth)/staff/${r}/page.tsx`));
     for (const file of routes) { if (!(file in sources)) problems.push(`${file}: missing journey route`); else {
         const plane = file.includes("/staff/") ? "employee" : "customer";
