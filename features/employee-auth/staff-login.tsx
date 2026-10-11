@@ -112,6 +112,7 @@ export function StaffLogin() {
           <Input
             id={`${id}-identifier`}
             name="identifier"
+            placeholder={t("phIdentifier")}
             autoComplete="username"
             disabled={busy}
             required
@@ -127,6 +128,7 @@ export function StaffLogin() {
           <PasswordInput
             id={`${id}-password`}
             name="password"
+            placeholder={t("phPassword")}
             autoComplete="current-password"
             disabled={busy}
             required

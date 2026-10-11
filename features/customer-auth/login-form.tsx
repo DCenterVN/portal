@@ -117,6 +117,7 @@ export function LoginForm() {
           <Input
             id={`${id}-identifier`}
             name="identifier"
+            placeholder={t("phIdentifier")}
             autoComplete="username"
             required
             disabled={busy}
@@ -132,6 +133,7 @@ export function LoginForm() {
           <PasswordInput
             id={`${id}-password`}
             name="password"
+            placeholder={t("phPassword")}
             autoComplete="current-password"
             required
             disabled={busy}

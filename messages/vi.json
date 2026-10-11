@@ -17,6 +17,11 @@
     "retry": "Thử lại"
   },
   "customerAuth": {
+    "phIdentifier": "email@vidu.com hoặc số điện thoại",
+    "phPassword": "Nhập mật khẩu",
+    "phDisplayName": "Nguyễn Văn A",
+    "phEmail": "email@vidu.com",
+    "phPhone": "0901 234 567",
     "skipContent": "Bỏ qua tới nội dung",
     "password": "Mật khẩu",
     "forgot": "Quên mật khẩu?",
@@ -101,6 +106,8 @@
     "passwordTooLong": "Mật khẩu tối đa 256 byte UTF-8."
   },
   "employeeAuth": {
+    "phIdentifier": "ten@bep-tuoi.vn",
+    "phPassword": "Nhập mật khẩu",
     "skipContent": "Bỏ qua tới nội dung",
     "password": "Mật khẩu",
     "forgot": "Quên mật khẩu?",

@@ -124,6 +124,7 @@ export function RegisterForm() {
           <Input
             id={`${id}-display_name`}
             name="display_name"
+            placeholder={t("phDisplayName")}
             autoComplete="name"
             maxLength={50}
             disabled={busy}
@@ -140,6 +141,7 @@ export function RegisterForm() {
             <Input
               id={`${id}-email`}
               name="email"
+              placeholder={t("phEmail")}
               type="email"
               autoComplete="email"
               disabled={busy}
@@ -155,6 +157,7 @@ export function RegisterForm() {
             <Input
               id={`${id}-phone`}
               name="phone"
+              placeholder={t("phPhone")}
               type="tel"
               autoComplete="tel"
               disabled={busy}
@@ -172,6 +175,7 @@ export function RegisterForm() {
             type="password"
             id={`${id}-password`}
             name="password"
+            placeholder={t("phPassword")}
             autoComplete="new-password"
             aria-describedby={`${id}-password-hint${error ? ` ${id}-error` : ""}`}
             disabled={busy}

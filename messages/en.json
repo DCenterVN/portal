@@ -17,6 +17,11 @@
     "retry": "Retry"
   },
   "customerAuth": {
+    "phIdentifier": "email@example.com or phone number",
+    "phPassword": "Enter your password",
+    "phDisplayName": "Nguyen Van A",
+    "phEmail": "email@example.com",
+    "phPhone": "0901 234 567",
     "skipContent": "Skip to content",
     "password": "Password",
     "forgot": "Forgot password?",
@@ -101,6 +106,8 @@
     "passwordTooLong": "Password must be at most 256 UTF-8 bytes."
   },
   "employeeAuth": {
+    "phIdentifier": "name@bep-tuoi.vn",
+    "phPassword": "Enter your password",
     "skipContent": "Skip to content",
     "password": "Password",
     "forgot": "Forgot password?",

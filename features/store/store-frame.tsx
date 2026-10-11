@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { Suspense, useEffect, useState, type ReactNode } from "react";
+import { AuthPopup, useAuthPopup } from "@/features/customer-auth/auth-popup";
 import { ErrorState } from "@/components/ui/state";
+import { CustomerAuthPopupBody } from "@/components/layout/customer-auth-shell";
 import { StoreShell } from "@/components/layout/store-shell";
 import { logoutTo } from "@/lib/auth/client";
 import { STORE_FOOTER, STORE_NAV } from "@/mocks/store";
@@ -31,6 +33,7 @@ export async function fetchStoreUser(fetcher: typeof fetch = fetch): Promise<Sto
 export function StoreFrame({ children }: { children: ReactNode }) {
   const [error, setError] = useState(false);
   const [user, setUser] = useState<StoreUser | null>(null);
+  const openAuth = useAuthPopup();
 
   useEffect(() => {
     let mounted = true;
@@ -50,10 +53,12 @@ export function StoreFrame({ children }: { children: ReactNode }) {
       user={user}
       cartHref="/cart"
       loginHref="/login"
+      onLoginClick={openAuth}
       footer={STORE_FOOTER}
       onLogout={() => void logoutTo("/login")}
     >
       {error ? <ErrorState title="Không tải được thông tin tài khoản." /> : children}
+      <Suspense><AuthPopup signedIn={!!user} Shell={CustomerAuthPopupBody} /></Suspense>
     </StoreShell>
   );
 }

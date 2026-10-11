@@ -10,7 +10,7 @@ vi.mock("react", async original => { const actual = await original<typeof import
   useRef: (initial: unknown) => {const index = harness.cursor++; if (!(index in harness.slots)) harness.slots[index] = {current: initial}; return harness.slots[index];},
   useEffect: (effect: () => void) => {harness.effects.push(effect);}
 }; });
-vi.mock("next/navigation", () => ({useRouter: () => ({push: harness.push, refresh: harness.refresh}), useSearchParams: () => harness.query}));
+vi.mock("next/navigation", () => ({useRouter: () => ({push: harness.push, refresh: harness.refresh}), useSearchParams: () => harness.query, redirect: (url: string) => {throw new Error(`REDIRECT:${url}`);}}));
 import { CustomerAuthShell } from "@/components/layout/customer-auth-shell";
 import { LoginForm } from "./login-form";
 import * as client from "@/lib/api/customer-auth";
@@ -118,7 +118,12 @@ it("S19 customer English provider drives the real next-intl hook in login", () =
  } finally {localeHarness.real = false;}
 });
 
-it.each([["login", "Sign in"], ["register", "Create a shopping account"], ["activate", "Activate account"], ["forgot-password", "Forgot password"], ["reset-password", "Set a new password"]])("S19 customer server page translates heading and metadata (%s)", async (route, title) => {
+it.each([["login", "/?auth=login&redirect=%2Fcart"], ["register", "/?auth=register&redirect=%2Fcart"]])("customer %s page redirects to the landing popup keeping redirect", async (route, target) => {
+ const page = await import(`../../app/(auth)/${route}/page.tsx`);
+ await expect(page.default({searchParams: Promise.resolve({redirect: "/cart"})})).rejects.toThrow(`REDIRECT:${target}`);
+});
+
+it.each([["activate", "Activate account"], ["forgot-password", "Forgot password"], ["reset-password", "Set a new password"]])("S19 customer server page translates heading and metadata (%s)", async (route, title) => {
  localeHarness.locale = "en";
  try {
   const page = await import(`../../app/(auth)/${route}/page.tsx`);
