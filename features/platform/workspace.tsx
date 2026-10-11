@@ -68,6 +68,7 @@ function Gate({ plane, root, children }: { plane: Plane; root: string; children:
   return (
     <AccessProvider value={{ plane, actions: access.actions, root, role: access.role }}>
       <ConsoleShell
+        accountHref={plane === "platform" ? "/platform/account" : "/company/account"}
         onLogout={() => void logoutTo("/staff/login", toast.error)}
         nav={[{ title: plane === "platform" ? t("title") : t("myCompany"), items: nav }]}
         context={{
