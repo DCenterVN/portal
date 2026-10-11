@@ -60,7 +60,7 @@ export function TargetsView({ initialTargets, initialShowCreate = false }: { ini
   );
 
   const canCreate = permissions.includes("production:target:create");
-  const canApprove = permissions.includes("production:target:approve");
+  const canApprove = permissions.includes("production:target_approval:create");
   const primaryTargetId = !canCreate && !showCreate ? targets.find((target) => (target.status === "DRAFT" && canApprove) || target.status === "APPROVED" || target.status === "IN_PLANNING")?.id : undefined;
   const validLines = lines.every((line) => line.product_ref.trim() && line.target_quantity > 0 && line.uom.trim());
   const updateLine = (index: number, patch: Partial<TargetLine>) => setLines((current) => current.map((line, lineIndex) => lineIndex === index ? { ...line, ...patch } : line));

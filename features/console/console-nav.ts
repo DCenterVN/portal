@@ -8,8 +8,8 @@ export const CONSOLE_NAV: { title: string; items: NavRule[] }[] = [
   {
     title: "Tổ chức",
     items: [
-      { href: "/branches", label: "Chi nhánh", match: "/branches", icon: Warehouse, action: "org:membership:list" },
-      { href: "/memberships", label: "Thành viên", match: "/memberships", icon: LayoutDashboard, action: "org:membership:list" },
+      { href: "/branches", label: "Chi nhánh", match: "/branches", icon: Warehouse, action: "org:membership:read" },
+      { href: "/memberships", label: "Thành viên", match: "/memberships", icon: LayoutDashboard, action: "org:membership:read" },
       { href: "/roles", label: "Vai trò", match: "/roles", icon: LayoutDashboard, action: "org:company:read" },
     ],
   },
@@ -20,7 +20,7 @@ export const CONSOLE_NAV: { title: string; items: NavRule[] }[] = [
       { href: "/production/targets", label: "Chỉ tiêu", match: "/production/targets", icon: Factory, action: "production:target:read" },
       { href: "/production/food-plans", label: "Kế hoạch", match: "/production/food-plans", icon: Boxes, action: "production:food_plan:read" },
       { href: "/production/orders", label: "Lệnh sản xuất", match: "/production/orders", icon: Factory, action: "production:order:read" },
-      { href: "/production/qc", label: "Kiểm định", match: "/production/qc", icon: Boxes, action: "production:qc:decide" },
+      { href: "/production/qc", label: "Kiểm định", match: "/production/qc", icon: Boxes, action: "production:qc:update" },
     ],
   },
   { title: "Bán hàng", items: [{ href: "/sales/pricing", label: "Bảng giá", match: "/sales/pricing", icon: ShoppingCart, action: "sales:price_floor_policy:read" }] },
