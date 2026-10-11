@@ -31,9 +31,12 @@ export function StaffProfileView() {
         badge={<Badge variant="secondary" dot={false}>{data.status === "ACTIVE" ? "Đang hoạt động" : data.status}</Badge>}
         description="Thông tin tài khoản và phạm vi làm việc của bạn"
         actions={
-          <Button variant="outline" size="sm" onClick={() => void logoutTo("/staff/login", toast.error)}>
-            <LogOut className="size-3.5" aria-hidden="true" /> Đăng xuất
-          </Button>
+          <>
+            <Button variant="outline" size="sm" onClick={() => router.push("/staff/forgot-password")}>Đổi mật khẩu</Button>
+            <Button variant="outline" size="sm" onClick={() => void logoutTo("/staff/login", toast.error)}>
+              <LogOut className="size-3.5" aria-hidden="true" /> Đăng xuất
+            </Button>
+          </>
         }
       />
       <Card>
