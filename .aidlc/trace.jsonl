@@ -354,3 +354,5 @@
 {"ts": "2026-10-11T14:32:57+00:00", "actor": "agent:claude-code(171709704+dawnmoriaty@users.noreply.github.com)", "worker": null, "event": "receipt:verification", "task": "PORTAL-AUTH-UI-FIX-001", "verdict": "PASS", "score": null}
 {"ts": "2026-10-11T14:36:53+00:00", "actor": "agent:claude-code(171709704+dawnmoriaty@users.noreply.github.com)", "worker": null, "event": "receipt:verification", "task": "PORTAL-AUTH-UI-FIX-001", "verdict": "PASS", "score": null}
 {"ts": "2026-10-11T14:56:26+00:00", "actor": "agent:claude-code(171709704+dawnmoriaty@users.noreply.github.com)", "worker": null, "event": "receipt:verification", "task": "PORTAL-AUTH-UI-FIX-001", "verdict": "PASS", "score": null}
+{"ts": "2026-10-11T15:17:37+00:00", "actor": "agent:claude-code(171709704+dawnmoriaty@users.noreply.github.com)", "worker": null, "event": "receipt:verification", "task": "PORTAL-AUTH-UI-FIX-001", "verdict": "BLOCKED", "score": null}
+{"ts": "2026-10-11T15:18:32+00:00", "actor": "agent:claude-code(171709704+dawnmoriaty@users.noreply.github.com)", "worker": null, "event": "receipt:verification", "task": "PORTAL-AUTH-UI-FIX-001", "verdict": "PASS", "score": null}

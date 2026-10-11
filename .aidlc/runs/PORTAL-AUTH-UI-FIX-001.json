@@ -7,11 +7,11 @@
     "worker": "unassigned",
     "story": "US-UI-002",
     "sprint": "04",
-    "slices": "6/7"
+    "slices": "6/9"
   },
   "startedAt": "2026-10-11T12:13:24+00:00",
-  "updatedAt": "2026-10-11T14:56:26+00:00",
-  "currentStepIdx": 4,
+  "updatedAt": "2026-10-11T15:18:33+00:00",
+  "currentStepIdx": 3,
   "status": "running",
   "steps": [
     {
@@ -45,7 +45,7 @@
       "stepIdx": 3,
       "agent": "sdlc-design",
       "revision": 1,
-      "status": "approved",
+      "status": "awaiting_review",
       "artifactsProduced": [
         ".aidlc/runs/PORTAL-AUTH-UI-FIX-001/plan.md"
       ]
@@ -54,7 +54,7 @@
       "stepIdx": 4,
       "agent": "sdlc-build",
       "revision": 1,
-      "status": "awaiting_work",
+      "status": "pending",
       "artifactsProduced": []
     },
     {
