@@ -8,6 +8,8 @@ import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/compone
 import { LoginForm } from "./login-form";
 import { RegisterForm } from "./register-form";
 
+const popupLocale = () => (typeof document !== "undefined" && /(?:^|;\s*)NEXT_LOCALE=en(?:;|$)/.test(document.cookie) ? "en" : "vi");
+
 function Body({ register }: { register: boolean }) {
   const t = useTranslations("customerAuth");
   return (
@@ -25,7 +27,7 @@ export function useAuthPopup() {
   return useCallback(() => router.push(`${pathname}?auth=login` as Route), [router, pathname]);
 }
 
-export function AuthPopup({ signedIn, Shell }: { signedIn: boolean; Shell: ComponentType<{ children: ReactNode }> }) {
+export function AuthPopup({ signedIn, Shell }: { signedIn: boolean; Shell: ComponentType<{ children: ReactNode; locale?: "vi" | "en" }> }) {
   const router = useRouter();
   const pathname = usePathname();
   const auth = useSearchParams()?.get("auth");
@@ -33,7 +35,7 @@ export function AuthPopup({ signedIn, Shell }: { signedIn: boolean; Shell: Compo
   return (
     <Dialog open={!!tab && !signedIn} onOpenChange={(open) => !open && router.replace(pathname as Route)}>
       <DialogContent size="xl" variant="sheet" className="max-w-[880px] overflow-hidden p-0 max-md:max-h-[100dvh]">
-        <Shell>
+        <Shell locale={popupLocale()}>
           <Body register={tab === "register"} />
         </Shell>
       </DialogContent>

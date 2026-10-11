@@ -2,7 +2,7 @@
 
 import { useId, useRef, useState } from "react";
 import Link from "next/link";
-import type { Route } from "next";
+import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { FetchError } from "@/lib/fetcher";
 import { register, resendActivation } from "@/lib/api/customer-auth";
@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { EmptyState, ErrorState } from "@/components/ui/state";
-import { FormNotice, passwordError } from "./form-feedback";
+import { authTabHref, FormNotice, passwordError } from "./form-feedback";
 import { cn } from "@/lib/utils";
 
 function validate(email: string, phone: string, name: string, password: string): string {
@@ -37,6 +37,7 @@ export function RegisterForm() {
   const t = useTranslations("customerAuth");
   const id = useId();
   const pending = useRef(false);
+  const redirect = useSearchParams()?.get("redirect") ?? undefined;
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [errorField, setErrorField] = useState("");
@@ -99,7 +100,7 @@ export function RegisterForm() {
         {resend === "done" && <p className="text-sm font-semibold text-ok">{t("resendDone")}</p>}
         {resend === "failed" && <p role="alert" className="text-sm font-semibold text-err">{t("resendFailed")}</p>}
         <p className="pt-2">
-          <Link href={"/login" as Route} className="inline-flex min-h-11 items-center font-bold text-p-text hover:text-p-hover hover:underline">
+          <Link href={authTabHref("login", redirect)} className="inline-flex min-h-11 items-center font-bold text-p-text hover:text-p-hover hover:underline">
             {t("loginReturn")}
           </Link>
         </p>
@@ -199,7 +200,7 @@ export function RegisterForm() {
           <p>
             {t("hasAccount")}{" "}
             <Link
-              href={"/login" as Route}
+              href={authTabHref("login", redirect)}
               className="inline-flex min-h-11 items-center font-bold text-p-text hover:text-p-hover hover:underline"
             >
               {t("login")}

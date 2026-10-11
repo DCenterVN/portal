@@ -11,6 +11,7 @@ import { login } from "@/lib/api/customer-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { authTabHref } from "./form-feedback";
 import { PasswordInput } from "@/components/patterns/password-input";
 import { cn } from "@/lib/utils";
 
@@ -94,7 +95,7 @@ export function LoginForm() {
         <span role="tab" aria-selected="true" className="flex min-h-10 items-center justify-center rounded-[2px] border border-line bg-l1 text-fg">
           {t("login")}
         </span>
-        <Link href="/register" role="tab" aria-selected="false" className="flex min-h-10 items-center justify-center rounded-[2px] border border-transparent text-fg-2 hover:text-fg">
+        <Link href={authTabHref("register", redirect)} role="tab" aria-selected="false" className="flex min-h-10 items-center justify-center rounded-[2px] border border-transparent text-fg-2 hover:text-fg">
           {t("tabRegister")}
         </Link>
       </div>

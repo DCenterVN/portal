@@ -8,11 +8,12 @@ export function getTranslations(namespace: "customerAuth", locale: "vi" | "en" =
 
 import type { ReactNode } from "react";
 import type { Route } from "next";
-export function authPopupUrl(tab: "login" | "register", redirect?: string): Route {
+export function authTabHref(tab: "login" | "register", redirect?: string): Route {
   const q = new URLSearchParams({auth: tab});
   if (redirect) q.set("redirect", redirect);
-  return `/?${q}` as Route;
+  return `?${q}` as Route;
 }
+export const authPopupUrl = (tab: "login" | "register", redirect?: string): Route => `/${authTabHref(tab, redirect)}` as Route;
 
 export function FormAlert({children, id}: {children: ReactNode; id?: string}) {
   return <p id={id} role="alert" className="rounded-[var(--radius-md)] border border-[var(--color-danger)] bg-[var(--color-surface)] p-3 text-sm text-[var(--color-danger)]">{children}</p>;
