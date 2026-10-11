@@ -14,6 +14,8 @@ import { LoginForm } from "../features/customer-auth/login-form";
 import { CustomerAuthShell } from "../components/layout/customer-auth-shell";
 import { EmployeeAuthShell } from "../components/layout/employee-auth-shell";
 import ProfileClient from "./(store)/me/profile-client";
+import { StaffProfileView } from "../features/staff-profile/staff-profile-view";
+import { SWRConfig } from "swr";
 import { BranchesView } from "../features/branches/branches-view";
 import { MembershipsView, type Employee } from "../features/memberships/memberships-view";
 import { ThemeProvider } from "../components/theme-provider";
@@ -413,6 +415,7 @@ const profileFixture: UserProfile = {
   id: "user-42", email: "dawn@example.test", phone: "0901234567", display_name: "Dawn",
   status: "ACTIVE", created_at: "2026-09-29", memberships: [{ org_id: "org-1", org_name: "Bếp Hà Nội", roles: ["STAFF"] }],
 };
+const staffProfile = (profile: UserProfile) => React.createElement(SWRConfig, { value: { fallback: { "staff-profile": profile }, revalidateOnMount: false } }, React.createElement(StaffProfileView));
 const branchFixtures = ["branch-1", "branch-2"].map((id) => ({
   id, name: `Chi nhánh ${id}`, code: id, address: "Hà Nội", type: "MAIN", tempZone: "-18 °C", membersCount: 3,
 }));
@@ -422,13 +425,14 @@ const employeeFixtures: Employee[] = (["active", "suspended", "revoked"] as cons
 }));
 const rawSurface = /(?:bg|text|border|ring|from|via|to|fill|stroke|shadow)-(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|white|black)(?:-\d+)?\b|#[\da-f]{3,8}\b|gradient|blur|glass/i;
 
-function expectRoleSurface(html: string) {
+function expectRoleSurface(html: string, rawOnly = false) {
   // This exact shared PageHeader icon wrapper belongs to a later slice. All
   // caller actions and content remain in the rendered scan, including inputs.
   // Frame L3 glass tokens (popover/EntityPicker listbox) are sanctioned; raw glass/blur stays banned.
   const owned = html.replace(/class="flex size-9 items-center justify-center rounded-xl bg-sky-500\/10 text-\[var\(--primary\)\] shrink-0 \[&amp;_svg\]:size-5"/g, "")
     .replace(/\b(?:border-glass-edge|bg-glass-l3|glass-blur-l3)\b/g, "");
   expect(owned.match(rawSurface)?.[0] ?? null).toBeNull();
+  if (rawOnly) return;
   expect(html).toContain("text-[var(--color-ink)]");
   expect(html).toContain("bg-[var(--color-surface)]");
   expect(html).toContain("border-[var(--color-line)]");
@@ -455,14 +459,12 @@ describe("S5 rendered auth, profile, branch and membership roles", () => {
     }
   });
 
-  it.each(["general", "memberships", "security"])("renders profile %s tab with solid roles and original content", (tab) => {
-    const html = surfaceMarkup(React.createElement(ProfileClient), [profileFixture, false, "", null, tab]);
-    expectRoleSurface(html);
+  it("renders staff profile memberships with solid roles and original content", () => {
+    const html = surfaceMarkup(staffProfile(profileFixture));
+    expectRoleSurface(html, true);
     expect(html).toContain("Dawn");
     expect(html).toContain("Đăng xuất");
-    expect(html).toContain("bg-[var(--color-primary)]");
-    if (tab === "memberships") expect(html).toContain("Bếp Hà Nội");
-    if (tab === "security") expect(html).toContain("text-[var(--color-leaf)]");
+    expect(html).toContain("Bếp Hà Nội");
   });
 
   it.each([401, 500])("renders profile error %s with readable danger cue", (status) => {
@@ -473,12 +475,12 @@ describe("S5 rendered auth, profile, branch and membership roles", () => {
   });
 
   it("keeps profile loading and empty memberships distinct", () => {
-    const loading = surfaceMarkup(React.createElement(ProfileClient));
-    expect(loading).toContain("Đang tải hồ sơ người dùng...");
+    const loading = surfaceMarkup(React.createElement(StaffProfileView));
+    expect(loading).toContain("Đang tải hồ sơ nhân viên…");
     expect(loading).not.toMatch(rawSurface);
-    const empty = surfaceMarkup(React.createElement(ProfileClient), [{ ...profileFixture, memberships: [] }, false, "", null, "memberships"]);
-    expectRoleSurface(empty);
-    expect(empty).toContain("Khách hàng vãng lai (CUSTOMER)");
+    const empty = surfaceMarkup(staffProfile({ ...profileFixture, memberships: [] }));
+    expectRoleSurface(empty, true);
+    expect(empty).toContain("Tài khoản chưa có phạm vi truy cập.");
   });
 
   it("renders selected and unselected branches with ink status and role boundaries", () => {

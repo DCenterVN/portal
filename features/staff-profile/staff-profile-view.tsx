@@ -1,6 +1,7 @@
 "use client";
 
 import useSWR from "swr";
+import { useRouter } from "next/navigation";
 import { Building2, LogOut, UserRound } from "lucide-react";
 import { getProfile, logoutTo } from "@/lib/auth/client";
 import { Badge } from "@/components/ui/badge";
@@ -13,6 +14,7 @@ import { useToast } from "@/components/ui/toast";
 export function StaffProfileView() {
   const { data, error, isLoading, mutate } = useSWR("staff-profile", getProfile, { revalidateOnFocus: false });
   const { toast } = useToast();
+  const router = useRouter();
   if (isLoading) return <PageShell><Skeleton title="Đang tải hồ sơ nhân viên…" /></PageShell>;
   if (error || !data) return <PageShell><ErrorState title={error instanceof Error ? error.message : "Không thể tải hồ sơ."} onRetry={() => void mutate()} /></PageShell>;
   const fields = [
@@ -60,6 +62,9 @@ export function StaffProfileView() {
               </span>
             </div>
           ))}
+          <div className="pt-3">
+            <Button size="sm" variant="outline" onClick={() => router.push("/staff/switch-org")}>Đổi tổ chức</Button>
+          </div>
         </CardContent>
       </Card>
     </PageShell>

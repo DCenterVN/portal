@@ -64,7 +64,7 @@ describe("S13 legacy redirects",()=>{
  it.each([[BranchAlias,"/staff/switch-branch"],[OrgAlias,"/staff/switch-org"]])("switch alias redirects without rendering shared auth",(page,target)=>{expect(()=>page()).toThrow("REDIRECT:"+target);});
  it("invite alias preserves token safely and strips untrusted redirect",async()=>{await expect(InviteAlias({searchParams:Promise.resolve({token:"a&b/+=",redirect:"https://evil.com"})})).rejects.toThrow("REDIRECT:/staff/invite/accept?token=a%26b%2F%2B%3D");});
  it("missing token invite alias goes to staff accept for existing-user instructions",async()=>{await expect(InviteAlias({searchParams:Promise.resolve({})})).rejects.toThrow("REDIRECT:/staff/invite/accept");});
- it("profile context link uses staff selector, never treats profile memberships as proof",()=>{const source=readFileSync("app/(store)/me/profile-client.tsx","utf8");expect(source).toContain('router.push("/staff/switch-org")');expect(source).not.toContain('router.push("/switch-org")');});
+ it("profile context link uses staff selector, never treats profile memberships as proof",()=>{const source=readFileSync("features/staff-profile/staff-profile-view.tsx","utf8");expect(source).toContain('router.push("/staff/switch-org")');expect(source).not.toContain('router.push("/switch-org")');});
 });
 
 const localeHarness = vi.hoisted(() => ({locale: "vi", real: false}));
