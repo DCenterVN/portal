@@ -88,12 +88,12 @@ export function StaffLogin() {
 
   const invalid = error ? true : undefined;
   const describedBy = error ? `${id}-error` : undefined;
-  const fieldClass = cn("h-11 rounded-sm border-line-strong shadow-none", error && "border-err focus-visible:ring-err");
+  const fieldClass = cn("h-10 rounded-sm border-line-strong shadow-none", error && "border-err focus-visible:ring-err");
 
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: SHAKE_STYLE }} />
-      <form noValidate onSubmit={submit} aria-busy={busy} className="space-y-4">
+      <form noValidate onSubmit={submit} aria-busy={busy} className="space-y-3.5">
         {error && (
           <div id={`${id}-error`} role="alert" className="animate-shake flex flex-wrap items-center gap-x-2.5 gap-y-1 rounded-lg border border-err bg-err-soft px-3.5 py-2.5 text-sm font-semibold text-err">
             <AlertCircle aria-hidden="true" className="size-5 shrink-0" />
@@ -139,11 +139,17 @@ export function StaffLogin() {
         <Link href="/staff/forgot-password" className="inline-flex min-h-8 items-center text-sm font-bold text-p-text hover:text-p-hover hover:underline">
           {t("forgot")}
         </Link>
-        <Button type="submit" size="lg" disabled={busy || wait > 0} className="w-full font-bold">
+        <Button type="submit" variant="primary" size="md" disabled={busy || wait > 0} className="w-full font-bold">
           {busy && <Loader2 aria-hidden="true" className="mr-2 size-4 animate-spin" />}
           {busy ? t("loginPending") : t("login")}
         </Button>
       </form>
+      <p className="mt-3.5 text-xs text-fg-3">
+        {t("customerLead")}{" "}
+        <Link href="/login" className="font-bold text-p-text hover:text-p-hover hover:underline">
+          {t("customerLink")}
+        </Link>
+      </p>
     </>
   );
 }

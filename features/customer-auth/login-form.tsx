@@ -122,7 +122,7 @@ export function LoginForm() {
             disabled={busy}
             aria-invalid={!!error}
             aria-describedby={error ? `${id}-error` : undefined}
-            className={cn("h-11 rounded-sm border-line-strong shadow-none", invalidBorder)}
+            className={cn("h-10 rounded-sm border-line-strong shadow-none", invalidBorder)}
           />
         </div>
         <div className="space-y-1">
@@ -137,14 +137,14 @@ export function LoginForm() {
             disabled={busy}
             aria-invalid={!!error}
             aria-describedby={error ? `${id}-error` : undefined}
-            className={cn("h-11 rounded-sm border-line-strong shadow-none", invalidBorder)}
+            className={cn("h-10 rounded-sm border-line-strong shadow-none", invalidBorder)}
           />
           <p className="text-xs text-fg-3">{t("passwordRange")}</p>
           <Link href="/forgot-password" className="inline-flex min-h-8 items-center text-sm font-bold text-p-text hover:text-p-hover hover:underline">
             {t("forgot")}
           </Link>
         </div>
-        <Button type="submit" size="lg" disabled={busy || wait > 0} className="w-full font-bold">
+        <Button type="submit" variant="primary" size="md" disabled={busy || wait > 0} className="w-full font-bold">
           {busy ? t("loginPending") : t("login")}
         </Button>
       </form>

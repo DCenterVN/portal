@@ -443,15 +443,15 @@ describe("S5 rendered auth, profile, branch and membership roles", () => {
   it("keeps customer login fields and solid role branding", () => {
     const html = surfaceMarkup(React.createElement(ThemeProvider, null, React.createElement(CustomerAuthShell, null, React.createElement(LoginForm))));
     expectRoleSurface(html);
-    expect(html).toContain("bg-[var(--primary)]");
+    expect(html).toContain("bg-p ");
     const labels = [...html.matchAll(/<label[^>]*for="([^"]+)"/g)].map(match => match[1]);
     expect(labels).toHaveLength(2);
     for (const id of labels) expect(html).toContain(`id="${id}"`);
     expect(html).toContain('type="password"');
     expect(html).toContain("Đăng ký");
     for (const input of html.match(/<input[^>]*type="(?:text|password)"[^>]*>/g)!) {
-      expect(input).toContain("h-11");
-      expect(input).not.toMatch(/\bh-(?:9|10)\b/);
+      expect(input).toContain("h-10");
+      expect(input).not.toMatch(/\bh-(?:9|11)\b/);
     }
   });
 
