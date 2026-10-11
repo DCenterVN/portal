@@ -3,6 +3,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { ErrorState } from "@/components/ui/state";
 import { StoreShell } from "@/components/layout/store-shell";
+import { logoutTo } from "@/lib/auth/client";
 import { STORE_FOOTER, STORE_NAV } from "@/mocks/store";
 
 export type StoreUser = { name: string };
@@ -50,6 +51,7 @@ export function StoreFrame({ children }: { children: ReactNode }) {
       cartHref="/cart"
       loginHref="/login"
       footer={STORE_FOOTER}
+      onLogout={() => void logoutTo("/login")}
     >
       {error ? <ErrorState title="Không tải được thông tin tài khoản." /> : children}
     </StoreShell>

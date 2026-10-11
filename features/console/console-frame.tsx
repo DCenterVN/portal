@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { ErrorState } from "@/components/ui/state";
 import { ConsoleShell } from "@/components/layout/console-shell";
+import { logoutTo } from "@/lib/auth/client";
 import { consoleNavFor } from "./console-nav";
 
 type ConsoleSession = {
@@ -79,7 +80,7 @@ export function ConsoleFrame({ children }: { children: ReactNode }) {
   const nav = useMemo(() => consoleNavFor(new Set(session.permissions)), [session.permissions]);
 
   return (
-    <ConsoleShell nav={nav} context={session.context} user={session.user}>
+    <ConsoleShell nav={nav} context={session.context} user={session.user} onLogout={() => void logoutTo("/staff/login")}>
       {session.error ? <ErrorState title={session.error} /> : children}
     </ConsoleShell>
   );

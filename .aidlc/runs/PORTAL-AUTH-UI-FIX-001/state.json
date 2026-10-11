@@ -1,0 +1,107 @@
+{
+  "id": "PORTAL-AUTH-UI-FIX-001",
+  "title": "PORTAL-AUTH-UI-FIX-001 — sửa 4 lỗi UI auth/RBAC pha 1 (login sai logic, thiếu đăng xuất, ma trận quyền, lệch design)",
+  "description": "worker: unassigned · story: US-UI-002 · sprint: 04 · slices: 0/7 · next: verification: no 'integration*' check (pipeline stage integration)",
+  "pipeline": "sdlc",
+  "agent": null,
+  "agents": [
+    "sdlc-discovery",
+    "sdlc-technical",
+    "sdlc-ux",
+    "sdlc-design",
+    "sdlc-build",
+    "sdlc-integration",
+    "sdlc-e2e",
+    "sdlc-release"
+  ],
+  "currentStep": 4,
+  "status": "in_progress",
+  "createdAt": "2026-10-11T12:13:24+00:00",
+  "updatedAt": "2026-10-11T12:38:14+00:00",
+  "stepStates": [
+    {
+      "agent": "sdlc-discovery",
+      "status": "done",
+      "revision": 1,
+      "runStatus": "approved",
+      "startedAt": null,
+      "finishedAt": null,
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-AUTH-UI-FIX-001/plan.md"
+      ]
+    },
+    {
+      "agent": "sdlc-technical",
+      "status": "done",
+      "revision": 1,
+      "runStatus": "approved",
+      "startedAt": null,
+      "finishedAt": null,
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-AUTH-UI-FIX-001/plan.md"
+      ]
+    },
+    {
+      "agent": "sdlc-ux",
+      "status": "done",
+      "revision": 1,
+      "runStatus": "approved",
+      "startedAt": null,
+      "finishedAt": null,
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-AUTH-UI-FIX-001/plan.md"
+      ]
+    },
+    {
+      "agent": "sdlc-design",
+      "status": "done",
+      "revision": 1,
+      "runStatus": "approved",
+      "startedAt": null,
+      "finishedAt": null,
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-AUTH-UI-FIX-001/plan.md"
+      ]
+    },
+    {
+      "agent": "sdlc-build",
+      "status": "in_progress",
+      "revision": 1,
+      "runStatus": "awaiting_work",
+      "startedAt": null,
+      "finishedAt": null,
+      "artifactsProduced": []
+    },
+    {
+      "agent": "sdlc-integration",
+      "status": "pending",
+      "revision": 1,
+      "runStatus": "pending",
+      "startedAt": null,
+      "finishedAt": null,
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-AUTH-UI-FIX-001/artifacts/verification.json"
+      ]
+    },
+    {
+      "agent": "sdlc-e2e",
+      "status": "pending",
+      "revision": 1,
+      "runStatus": "pending",
+      "startedAt": null,
+      "finishedAt": null,
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-AUTH-UI-FIX-001/artifacts/verification.json"
+      ]
+    },
+    {
+      "agent": "sdlc-release",
+      "status": "pending",
+      "revision": 1,
+      "runStatus": "pending",
+      "startedAt": null,
+      "finishedAt": null,
+      "artifactsProduced": []
+    }
+  ]
+}

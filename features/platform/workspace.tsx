@@ -6,6 +6,7 @@ import type { Route } from "next";
 import useSWR from "swr";
 import { NextIntlClientProvider, useTranslations } from "next-intl";
 import messages from "@/messages/vi.json";
+import { logoutTo } from "@/lib/auth/client";
 import { fetcher } from "@/lib/fetcher";
 import { ConsoleShell, type ShellNavItem } from "@/components/layout/console-shell";
 import { EmptyState, ErrorState, Skeleton } from "@/components/ui/state";
@@ -65,6 +66,7 @@ function Gate({ plane, root, children }: { plane: Plane; root: string; children:
   return (
     <AccessProvider value={{ plane, actions: access.actions, root, role: access.role }}>
       <ConsoleShell
+        onLogout={() => void logoutTo("/staff/login")}
         nav={[{ title: plane === "platform" ? t("title") : t("myCompany"), items: nav }]}
         context={{
           label: plane === "platform" ? "Nền tảng" : t("myCompany"),

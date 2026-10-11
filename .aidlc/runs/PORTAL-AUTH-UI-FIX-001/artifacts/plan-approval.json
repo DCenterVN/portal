@@ -1,0 +1,31 @@
+{
+  "task": "PORTAL-AUTH-UI-FIX-001",
+  "actor": "user:171709704+dawnmoriaty@users.noreply.github.com",
+  "worker": null,
+  "ts": "2026-10-11T12:18:12+00:00",
+  "plan_hash": "7da6972904fb6be439d1011b5c96c893b6aa8748890cccaa712f5ca401570f58",
+  "testkit_hash": null,
+  "files": [
+    "features/store/store-frame.tsx",
+    "features/console/console-frame.tsx",
+    "features/platform/workspace.tsx",
+    "lib/auth/client.ts",
+    "app/api/auth/logout/route.ts",
+    "lib/api/auth-journey-bff.ts",
+    "lib/api/customer-auth.ts",
+    "lib/api/employee-auth.ts",
+    "lib/api/auth-journey-bff.test.ts",
+    "app/api/auth/bff.test.ts",
+    "features/customer-auth/login-form.tsx",
+    "features/customer-auth/register-form.tsx",
+    "features/employee-auth/staff-login.tsx",
+    "messages/vi.json",
+    "messages/en.json",
+    "features/platform/role-matrix-view.tsx",
+    "features/platform/use-role-matrix.ts",
+    "features/platform/role-matrix.test.ts",
+    "features/console/console-nav.ts",
+    ".aidlc/runs/PORTAL-AUTH-UI-FIX-001/"
+  ],
+  "verdict": "PASS"
+}

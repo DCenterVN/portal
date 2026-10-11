@@ -1,0 +1,54 @@
+{
+  "task": "PORTAL-AUTH-UI-FIX-001",
+  "actor": "agent:claude-code(171709704+dawnmoriaty@users.noreply.github.com)",
+  "worker": null,
+  "ts": "2026-10-11T12:38:14+00:00",
+  "cwd": ".",
+  "head": "474f8abcf968c1d96744ac71198622df864e3467",
+  "dirty": true,
+  "checks": [
+    {
+      "name": "unit",
+      "command": "npm test",
+      "exit": 0,
+      "status": "PASS",
+      "seconds": 3.9,
+      "log": ".aidlc/runs/PORTAL-AUTH-UI-FIX-001/artifacts/logs/unit.log",
+      "sha256": "a8203cfcc70b92be5c54ce435ea45b274d7a721430f66210e4af758d367dcb03",
+      "tail": [
+        "stderr | app/api/auth/staff/bff.test.ts > S11 staff recovery dependency and invite BFF > accepts exact invite DTO via invite purpose endpoint; never password reset; no credentials/cookies",
+        "PORTAL_CLIENT_IP_SOURCE is unset; auth forwarding is disabled",
+        "",
+        "stderr | app/rebrand.test.ts > S7 rendered target, cart, orders and product creation roles > keeps target permissions, labelled statuses and sole create/submit emphasis (form=false)",
+        "React does not recognize the `asChild` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `aschild` instead. If you accidentally passed it from a parent component, remove it from the DOM element."
+      ]
+    },
+    {
+      "name": "lint",
+      "command": "npm run lint",
+      "exit": 0,
+      "status": "PASS",
+      "seconds": 2.5,
+      "log": ".aidlc/runs/PORTAL-AUTH-UI-FIX-001/artifacts/logs/lint.log",
+      "sha256": "7641747edd98ed1a1fd1ad59bec73c32caac945b1006098310c6c071b528e278",
+      "tail": [
+        "> @dcentervn/portal@0.1.0 lint",
+        "> node node_modules/eslint/bin/eslint.js ."
+      ]
+    },
+    {
+      "name": "typecheck",
+      "command": "npm run typecheck",
+      "exit": 0,
+      "status": "PASS",
+      "seconds": 1.6,
+      "log": ".aidlc/runs/PORTAL-AUTH-UI-FIX-001/artifacts/logs/typecheck.log",
+      "sha256": "c5a440cd52c7fadc3d367658101693af6eb5b85d21dbd518cb3bda67056215e7",
+      "tail": [
+        "> @dcentervn/portal@0.1.0 typecheck",
+        "> node node_modules/typescript/bin/tsc --noEmit"
+      ]
+    }
+  ],
+  "verdict": "PASS"
+}

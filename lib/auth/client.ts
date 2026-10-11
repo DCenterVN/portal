@@ -28,6 +28,14 @@ export async function logout(): Promise<void> {
   await apiFetch("/api/auth/logout", { method: "POST" });
 }
 
+export async function logoutTo(loginPath: string): Promise<void> {
+  try {
+    await logout();
+  } finally {
+    window.location.assign(loginPath);
+  }
+}
+
 export async function getProfile(): Promise<UserProfile> {
   const res = await apiFetch("/api/auth/me");
   if (!res.ok) {
