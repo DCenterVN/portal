@@ -1,6 +1,6 @@
 import type { UserProfile } from "@/lib/auth/client";
 import { existsSync } from "node:fs";
-import { CONSOLE_NAV } from "@/mocks/console";
+import { CONSOLE_NAV, consoleNavFor } from "./console-nav";
 import { describe, expect, it, vi } from "vitest";
 import { fetchConsoleSession, resolveConsoleSession } from "./console-frame";
 
@@ -23,6 +23,7 @@ describe("console session", () => {
     )).toEqual({
       user: { name: "Dawn", detail: "dawn@example.com" },
       context: { label: "Chi nhánh 2", sublabel: "Công ty" },
+      permissions: [],
     });
   });
 
@@ -34,6 +35,7 @@ describe("console session", () => {
     await expect(fetchConsoleSession(fetcher)).resolves.toEqual({
       user: { name: "Dawn", detail: profile.email },
       context: { label: "Chưa chọn chi nhánh", sublabel: undefined },
+      permissions: [],
     });
     expect(fetcher).toHaveBeenNthCalledWith(1, "/api/auth/me");
     expect(fetcher).toHaveBeenNthCalledWith(2, "/api/auth/context");
@@ -80,6 +82,12 @@ describe("console failure distinctions and navigation", () => {
     for (const item of CONSOLE_NAV.flatMap((group) => group.items)) {
       expect(existsSync(`app/(console)${item.href}/page.tsx`), item.href).toBe(true);
     }
+  });
+
+  it("filters nav by permissions and drops empty groups", () => {
+    expect(consoleNavFor(new Set()).map((group) => group.title)).toEqual(["Tổng quan"]);
+    const nav = consoleNavFor(new Set(["production:order:read"]));
+    expect(nav.flatMap((group) => group.items.map((item) => item.href))).toEqual(["/console", "/production/orders"]);
   });
 
   it("exposes branches, memberships and roles in console navigation", () => {

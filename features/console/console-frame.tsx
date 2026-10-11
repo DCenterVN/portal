@@ -1,14 +1,15 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { ErrorState } from "@/components/ui/state";
 import { ConsoleShell } from "@/components/layout/console-shell";
-import { CONSOLE_NAV } from "@/mocks/console";
+import { consoleNavFor } from "./console-nav";
 
 type ConsoleSession = {
   error?: string;
   user: { name: string; detail?: string };
   context: { label: string; sublabel?: string };
+  permissions?: string[];
 };
 
 const EMPTY_SESSION: ConsoleSession = {
@@ -36,7 +37,9 @@ export function resolveConsoleSession(profilePayload: unknown, contextPayload: u
     : EMPTY_SESSION.context.label;
   const organization = typeof selected?.org_name === "string" ? selected.org_name : undefined;
 
-  return { user: { name, detail }, context: { label: branch, sublabel: organization } };
+  const permissions = Array.isArray(context?.permissions) ? context.permissions.filter((key): key is string => typeof key === "string") : [];
+
+  return { user: { name, detail }, context: { label: branch, sublabel: organization }, permissions };
 }
 
 export async function fetchConsoleSession(fetcher: typeof fetch = fetch): Promise<ConsoleSession> {
@@ -73,8 +76,10 @@ export function ConsoleFrame({ children }: { children: ReactNode }) {
     };
   }, []);
 
+  const nav = useMemo(() => consoleNavFor(new Set(session.permissions)), [session.permissions]);
+
   return (
-    <ConsoleShell nav={CONSOLE_NAV} context={session.context} user={session.user}>
+    <ConsoleShell nav={nav} context={session.context} user={session.user}>
       {session.error ? <ErrorState title={session.error} /> : children}
     </ConsoleShell>
   );
