@@ -58,7 +58,6 @@ export function TargetsView({ initialTargets, initialShowCreate = false }: { ini
   const availableProducts = products?.data.filter(
     (p) => (p as { sku_kind?: string }).sku_kind !== "RAW_MATERIAL"
   );
-  const isLegacyRebrandTest = initialTargets.length > 0 && initialTargets[0]?.target_code === "TARGET-DRAFT";
 
   const canCreate = permissions.includes("production:target:create");
   const canApprove = permissions.includes("production:target:approve");
@@ -105,26 +104,19 @@ export function TargetsView({ initialTargets, initialShowCreate = false }: { ini
     {showCreate && <Card className="mb-6 border-[var(--color-line)] bg-[var(--color-surface)]"><CardContent className="pt-6"><form onSubmit={handleCreate} className="space-y-4">
       <div className="grid gap-4 md:grid-cols-2">
         <Field label="Tiêu đề" value={title} onChange={setTitle} required />
-        {isLegacyRebrandTest ? (
-          <Field label="Chi nhánh" value={branchName} onChange={() => {}} disabled required />
-        ) : (
-          <div className="block text-sm">
-            <span className="mb-1 block text-[var(--color-muted)]">Chi nhánh</span>
-            <p className="flex h-11 items-center px-1 text-sm font-medium text-[var(--color-ink)]">
-              {branchName || "Chi nhánh hiện tại"}
-            </p>
-          </div>
-        )}
+        <div className="block text-sm">
+          <span className="mb-1 block text-[var(--color-muted)]">Chi nhánh</span>
+          <p className="flex h-11 items-center px-1 text-sm font-medium text-[var(--color-ink)]">
+            {branchName || "Chi nhánh hiện tại"}
+          </p>
+        </div>
         <Field label="Từ ngày" value={periodStart} onChange={setPeriodStart} type="date" required />
         <Field label="Đến ngày" value={periodEnd} onChange={setPeriodEnd} type="date" required />
       </div>
       <div className="space-y-2">
         <div className="flex items-center justify-between"><p className="text-sm font-medium">Các dòng chỉ tiêu A/B/C</p><Button type="button" size="sm" variant="outline" onClick={() => setLines((current) => [...current, { product_ref: "", target_quantity: 1, uom: "EA" }])}>Thêm sản phẩm</Button></div>
         {lines.map((line, index) => <div className="grid gap-2 md:grid-cols-[1fr_160px_120px_40px]" key={index}>
-          {isLegacyRebrandTest ? (
-            <Field label="Sản phẩm" value={line.product_ref} onChange={(value) => updateLine(index, { product_ref: value })} required />
-          ) : (
-            <EntityPicker
+          <EntityPicker
               label="Sản phẩm"
               name="product_ref"
               required
@@ -139,7 +131,6 @@ export function TargetsView({ initialTargets, initialShowCreate = false }: { ini
               emptyText="Chưa có sản phẩm nào."
               placeholder="Tìm theo tên hoặc SKU"
             />
-          )}
           <Field label="Số lượng" value={String(line.target_quantity)} onChange={(value) => updateLine(index, { target_quantity: Number(value) })} type="number" required />
           <Field label="Đơn vị" value={line.uom} onChange={(value) => updateLine(index, { uom: value })} required />
           <Button aria-label="Xóa dòng" className="mt-6" type="button" size="icon" variant="ghost" disabled={lines.length === 1} onClick={() => setLines((current) => current.filter((_, lineIndex) => lineIndex !== index))}><Trash2 className="h-4 w-4" /></Button>

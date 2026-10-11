@@ -122,3 +122,4 @@ describe("B2 AuditView Company Picker", () => {
     expect(filters?.root_branch_id).not.toBe(otherCompanyId);
   });
 });
+

@@ -425,7 +425,9 @@ const rawSurface = /(?:bg|text|border|ring|from|via|to|fill|stroke|shadow)-(?:sl
 function expectRoleSurface(html: string) {
   // This exact shared PageHeader icon wrapper belongs to a later slice. All
   // caller actions and content remain in the rendered scan, including inputs.
-  const owned = html.replace(/class="flex size-9 items-center justify-center rounded-xl bg-sky-500\/10 text-\[var\(--primary\)\] shrink-0 \[&amp;_svg\]:size-5"/g, "");
+  // Frame L3 glass tokens (popover/EntityPicker listbox) are sanctioned; raw glass/blur stays banned.
+  const owned = html.replace(/class="flex size-9 items-center justify-center rounded-xl bg-sky-500\/10 text-\[var\(--primary\)\] shrink-0 \[&amp;_svg\]:size-5"/g, "")
+    .replace(/\b(?:border-glass-edge|bg-glass-l3|glass-blur-l3)\b/g, "");
   expect(owned.match(rawSurface)?.[0] ?? null).toBeNull();
   expect(html).toContain("text-[var(--color-ink)]");
   expect(html).toContain("bg-[var(--color-surface)]");
@@ -667,10 +669,12 @@ function expectS7Roles(html: string, primaryCount: number) {
   // Include asChild anchors as well as ordinary buttons in CTA competition.
   const primary = (html.match(/<(?:button|a)\b[^>]*>/g) ?? []).filter((tag) => /bg-\[var\(--(?:color-)?primary\)\]/.test(tag));
   expect(primary).toHaveLength(primaryCount);
-  for (const tag of html.match(/<(?:input|select)\b[^>]*>/g) ?? []) {
+  for (const tag of (html.match(/<(?:input|select)\b[^>]*>/g) ?? []).filter((tag) => !tag.includes('type="hidden"'))) {
     expect(tag).toContain("h-11");
-    expect(tag).toContain("border-[var(--color-input-border)]");
-    expect(tag).toContain("ring-[var(--color-focus)]");
+    // Legacy Field tokens, or the frame control set (components/ui/field.tsx `control`).
+    const frame = tag.includes("border-[var(--input)]");
+    expect(tag).toContain(frame ? "border-[var(--input)]" : "border-[var(--color-input-border)]");
+    expect(tag).toContain(frame ? "ring-[var(--ring)]" : "ring-[var(--color-focus)]");
   }
 }
 describe("S7 rendered target, cart, orders and product creation roles", () => {
@@ -691,7 +695,8 @@ describe("S7 rendered target, cart, orders and product creation roles", () => {
       expect(classesFor(html, "button", 'type="submit"')).toContain("bg-[var(--primary)]");
       expect(html).toContain("Lưu DRAFT");
       expect(html).toContain('aria-label="Xóa dòng"');
-      expect(html.match(/required=""/g)).toHaveLength(7);
+      expect(html.match(/required=""/g)).toHaveLength(5);
+      expect(html).toContain('aria-required="true"');
     }
   });
   it("keeps target empty and permission-denied actions fail closed", () => {
