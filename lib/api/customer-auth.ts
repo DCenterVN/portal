@@ -1,7 +1,7 @@
 import { mutationFetcher } from "@/lib/fetcher";
 
-export function login(identifier: string, password: string) {
-  return mutationFetcher<{next_path: string}>("/api/auth/login", {arg: {identifier, password}});
+export function login(identifier: string, password: string, redirect?: string) {
+  return mutationFetcher<{next_path: string}>("/api/auth/login", {arg: {identifier, password, ...(redirect ? {redirect} : {})}});
 }
 export function register(email: string, phone: string, displayName: string, password: string) {
   return mutationFetcher("/api/auth/register", {arg: {...(email ? {email} : {}), ...(phone ? {phone} : {}), ...(displayName ? {display_name: displayName} : {}), password}});

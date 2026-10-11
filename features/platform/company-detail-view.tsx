@@ -58,7 +58,7 @@ export function CompanyDetailView({ root }: { root: string }) {
     <RequireAction action="platform:org:read">
       <CompanyHeader root={root} title="Module của công ty" />
       <CompanyTabs root={root} />
-      <CompanyModules source="platform" root={root} editable={can("platform:module:manage")} />
+      <CompanyModules source="platform" root={root} editable={can("platform:module:update")} />
     </RequireAction>
   );
 }

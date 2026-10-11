@@ -1,9 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { usePathname } from "next/navigation";
 import { ErrorState } from "@/components/ui/state";
 import { ConsoleShell } from "@/components/layout/console-shell";
-import { consoleNavFor } from "./console-nav";
+import { logoutTo } from "@/lib/auth/client";
+import { useToast } from "@/components/ui/toast";
+import { consoleNavFor, consoleRouteAllowed } from "./console-nav";
 
 type ConsoleSession = {
   error?: string;
@@ -64,6 +67,7 @@ export async function fetchConsoleSession(fetcher: typeof fetch = fetch): Promis
 }
 
 export function ConsoleFrame({ children }: { children: ReactNode }) {
+  const { toast } = useToast();
   const [session, setSession] = useState<ConsoleSession>(EMPTY_SESSION);
 
   useEffect(() => {
@@ -76,11 +80,16 @@ export function ConsoleFrame({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const nav = useMemo(() => consoleNavFor(new Set(session.permissions)), [session.permissions]);
+  const pathname = usePathname() ?? "";
+  const actions = useMemo(() => new Set(session.permissions), [session.permissions]);
+  const nav = useMemo(() => consoleNavFor(actions), [actions]);
+  const body = session.error ? <ErrorState title={session.error} />
+    : !session.permissions || consoleRouteAllowed(pathname, actions) ? children
+    : <ErrorState denied title="Không có quyền truy cập" description="Tài khoản của bạn chưa được cấp quyền xem trang này. Liên hệ quản trị viên để được cấp quyền." />;
 
   return (
-    <ConsoleShell nav={nav} context={session.context} user={session.user}>
-      {session.error ? <ErrorState title={session.error} /> : children}
+    <ConsoleShell nav={nav} context={session.context} user={session.user} onLogout={() => void logoutTo("/staff/login", toast.error)}>
+      {body}
     </ConsoleShell>
   );
 }

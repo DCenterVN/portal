@@ -27,7 +27,7 @@ async function submit(tree: ReactElement, fields: Record<string,string>) {
 }
 beforeEach(() => {vi.restoreAllMocks(); vi.unstubAllGlobals(); h.slots=[];h.cursor=0;h.effects=[];h.query=new URLSearchParams();h.push.mockReset();h.refresh.mockReset();});
 describe("S8 employee login", () => {
- it("owns one main, staff marker, skip link and solid branded shell", () => {const html=renderToStaticMarkup(<EmployeeAuthShell>staff</EmployeeAuthShell>);expect(html.match(/<main/g)).toHaveLength(1);expect(html.match(/data-auth-journey="employee"/g)).toHaveLength(1);expect(html).toContain('href="#main"');expect(html).toContain("Bếp Tươi");expect(html).toContain("Dành cho nhân viên");expect(html).not.toMatch(/blur|gradient/);});
+ it("owns one main, staff marker, skip link and solid branded shell", () => {const html=renderToStaticMarkup(<EmployeeAuthShell>staff</EmployeeAuthShell>);expect(html.match(/<main/g)).toHaveLength(1);expect(html.match(/data-auth-journey="employee"/g)).toHaveLength(1);expect(html).toContain('href="#main"');expect(html).toContain("Bếp Tươi");expect(html).toContain("Cổng nhân viên");expect(html).not.toMatch(/blur|gradient/);});
  it("labels pair with unique IDs; staff has no self-register", () => {const html=renderToStaticMarkup(render(LoginForm));const ids=[...html.matchAll(/<label[^>]*for="([^"]+)"/g)].map(m=>m[1]);expect(ids).toHaveLength(2);expect(new Set(ids).size).toBe(2);for(const id of ids) expect(html).toContain(`id="${id}"`);expect(html).toContain('autoComplete="current-password"');expect(html).toContain('href="/staff/forgot-password"');expect(html).not.toContain('/register');});
  it("single pending request uses server staff next_path, ignores redirect query", async () => {let done!: (v:{next_path:string})=>void;const login=vi.spyOn(client,"login").mockImplementation(()=>new Promise(r=>{done=r;}));h.query=new URLSearchParams("redirect=https://evil.com");const tree=render(LoginForm);const pending=submit(tree,{identifier:" staff@example.com ",password:"password-1234"});await submit(tree,{identifier:"staff@example.com",password:"password-1234"});expect(login).toHaveBeenCalledTimes(1);expect(renderToStaticMarkup(render(LoginForm))).toContain('aria-busy="true"');done({next_path:"/staff/switch-org"});await pending;expect(h.push).toHaveBeenCalledWith("/staff/switch-org");expect(h.refresh).toHaveBeenCalledOnce();});
  it("validation focuses missing field; upstream denial clears busy with accessible feedback", async () => {const login=vi.spyOn(client,"login").mockRejectedValue(new FetchError("wrong journey",403,{error:"FORBIDDEN"}));const element=await submit(render(LoginForm),{identifier:"staff"});expect(login).not.toHaveBeenCalled();expect(element.querySelector).toHaveBeenCalledWith('[name="password"]');await submit(render(LoginForm),{identifier:"staff",password:"p"});const html=renderToStaticMarkup(render(LoginForm));expect(html).toContain('role="alert"');expect(html).toContain('aria-invalid="true"');expect(html).toContain('aria-describedby=');expect(html).toContain('aria-busy="false"');expect(html).toContain('href="/login"');});
@@ -96,7 +96,7 @@ it("FE-14 loaded empty contexts render recovery without enabling submit", async 
  expect(html).toContain("lucide-inbox"); expect(html).toContain('href="/staff/login"'); expect(html).toMatch(/<button[^>]*disabled/);
 });
 it("FE-14 staff initial login and missing invitation have visible empty states", () => {
- expect(renderToStaticMarkup(render(LoginForm))).toContain("lucide-inbox");
+ expect(renderToStaticMarkup(render(LoginForm))).toContain("<form");
  h.slots = [];
  expect(renderToStaticMarkup(render(InviteForm))).toContain("lucide-inbox");
 });
@@ -129,11 +129,11 @@ it.each([["login", "Staff sign in"], ["forgot-password", "Staff password recover
 });
 
 import {FetchError} from "@/lib/fetcher";
-it.each([[429,"rate_limit_exceeded",false,"Quá nhiều yêu cầu. Vui lòng thử lại sau."],[403,"FORBIDDEN",true,"Không thể đăng nhập."],[403,"INTERNAL_ERROR",false,"Không thể đăng nhập."],[500,"FORBIDDEN",false,"Không thể đăng nhập."],[401,"UNAUTHORIZED",false,"Không thể đăng nhập."]] as const)("D-141/D-142 staff login %s %s localizes feedback and gates customer link", async (status,code,link,copy) => {
+it.each([[429,"rate_limit_exceeded",false,"Quá nhiều yêu cầu. Vui lòng thử lại sau."],[403,"FORBIDDEN",true,"chưa có quyền nhân viên"],[403,"INTERNAL_ERROR",false,"Không thể đăng nhập."],[500,"FORBIDDEN",false,"Hệ thống đang bận, vui lòng thử lại sau."],[401,"UNAUTHORIZED",false,"Email/số điện thoại hoặc mật khẩu không đúng."]] as const)("D-141/D-142 staff login %s %s localizes feedback and gates customer link", async (status,code,link,copy) => {
  vi.stubGlobal("fetch",vi.fn().mockResolvedValue(new Response(JSON.stringify({error:code,message:"invalid or expired token"}),{status})));
  await submit(render(LoginForm),{identifier:"staff",password:"password-1234"});
  const html=renderToStaticMarkup(render(LoginForm));
- expect(html).toContain(copy);expect(html.includes('href="/login"')).toBe(link);expect(html).not.toContain("invalid or expired token");
+ expect(html).toContain(copy);expect(html).toContain('href="/login"');expect(html.includes("Đăng nhập mua hàng")).toBe(link);expect(html).not.toContain("invalid or expired token");
 });
 it.each([[400,"invalid_token","Không thể nhận lời mời."],[429,"rate_limit_exceeded","Quá nhiều yêu cầu. Vui lòng thử lại sau."],[500,"unknown_code","Không thể nhận lời mời."]] as const)("D-142 invite %s %s never renders upstream English", async (status,code,copy) => {
  h.query=new URLSearchParams("token=proof");

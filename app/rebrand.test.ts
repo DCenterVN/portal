@@ -45,7 +45,7 @@ vi.mock("../components/ui/toast", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../components/ui/toast")>();
   return { ...actual, useToast: () => ({ toast: vi.fn() }) };
 });
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }) }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }), useSearchParams: () => new URLSearchParams() }));
 vi.mock("react", async (importOriginal) => {
   const actual = await importOriginal<typeof React>();
   return { ...actual, useState: (initial: unknown) => {
@@ -443,15 +443,15 @@ describe("S5 rendered auth, profile, branch and membership roles", () => {
   it("keeps customer login fields and solid role branding", () => {
     const html = surfaceMarkup(React.createElement(ThemeProvider, null, React.createElement(CustomerAuthShell, null, React.createElement(LoginForm))));
     expectRoleSurface(html);
-    expect(html).toContain("bg-[var(--primary)]");
+    expect(html).toContain("bg-p ");
     const labels = [...html.matchAll(/<label[^>]*for="([^"]+)"/g)].map(match => match[1]);
     expect(labels).toHaveLength(2);
     for (const id of labels) expect(html).toContain(`id="${id}"`);
     expect(html).toContain('type="password"');
-    expect(html).toContain("Đăng ký mua hàng");
+    expect(html).toContain("Đăng ký");
     for (const input of html.match(/<input[^>]*type="(?:text|password)"[^>]*>/g)!) {
-      expect(input).toContain("h-11");
-      expect(input).not.toMatch(/\bh-(?:9|10)\b/);
+      expect(input).toContain("h-10");
+      expect(input).not.toMatch(/\bh-(?:9|11)\b/);
     }
   });
 
@@ -525,7 +525,7 @@ const shelfFixtures: ShelfPlacement[] = (["PLACED", "DEPLETED"] as const).map((s
   id: status, finished_lot_ref: "lot", branch_ref: "branch", shelf_code: `SHELF-${status}`, placed_quantity: 20,
   available_quantity: status === "PLACED" ? 10 : 0, uom: "EA", status, trace_code: `QR-${status}`, placed_at: "2026-09-29",
 }));
-const productionPermissions = ["accept", "allocate", "start", "complete"].map((action) => `production:order:${action}`);
+const productionPermissions = ["production:order:update"];
 
 function expectS6Roles(html: string, primaryCount: number) {
   expectRoleSurface(html);
@@ -680,7 +680,7 @@ function expectS7Roles(html: string, primaryCount: number) {
 describe("S7 rendered target, cart, orders and product creation roles", () => {
   it.each([false, true])("keeps target permissions, labelled statuses and sole create/submit emphasis (form=%s)", (form) => {
     const html = surfaceMarkup(React.createElement(TargetsView, { initialTargets: targetFixtures }), [
-      targetFixtures, ["production:target:create", "production:target:approve"], "branch-1", form,
+      targetFixtures, ["production:target:create", "production:target_approval:create"], "branch-1", form,
       "Chỉ tiêu tháng", "2026-09-29", "2026-10-29", targetFixtures[0].lines, false,
     ]);
     expectS7Roles(html, 1);

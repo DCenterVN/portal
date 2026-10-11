@@ -49,8 +49,8 @@ describe("guard: platform context comes only from org", () => {
   it("PLATFORM_SUPPORT gets read actions only; admin-only calls are 403", async () => {
     const me = await support("/api/platform/me");
     expect(me.status).toBe(200);
-    expect(me.body?.data.actions).toContain("platform:support_access:request");
-    expect(me.body?.data.actions).not.toContain("platform:support_access:break_glass");
+    expect(me.body?.data.actions).toContain("platform:support_access:create");
+    expect(me.body?.data.actions).not.toContain("platform:support_access_break_glass:create");
     expect((await support("/api/platform/staff")).status).toBe(403);
     expect((await support("/api/platform/support-access/break-glass", json({ root_branch_id: "01960000-0000-7000-8000-000000000001", reason: "x" }))).status).toBe(403);
   });

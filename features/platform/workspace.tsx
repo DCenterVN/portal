@@ -6,6 +6,8 @@ import type { Route } from "next";
 import useSWR from "swr";
 import { NextIntlClientProvider, useTranslations } from "next-intl";
 import messages from "@/messages/vi.json";
+import { logoutTo } from "@/lib/auth/client";
+import { useToast } from "@/components/ui/toast";
 import { fetcher } from "@/lib/fetcher";
 import { ConsoleShell, type ShellNavItem } from "@/components/layout/console-shell";
 import { EmptyState, ErrorState, Skeleton } from "@/components/ui/state";
@@ -20,8 +22,8 @@ type AccessContextItem = { org_id?: string; org_name?: string; member_type?: str
 
 const platformNav: NavRule[] = [
   { href: "/platform/companies", label: "companies", action: "platform:org:read" },
-  { href: "/platform/support-access", label: "support", action: "platform:support_access:request" },
-  { href: "/platform/staff", label: "staff", action: "platform:staff:manage" },
+  { href: "/platform/support-access", label: "support", action: "platform:support_access:read" },
+  { href: "/platform/staff", label: "staff", action: "platform:staff:read" },
   { href: "/platform/audit", label: "audit", action: "platform:audit:read" },
 ];
 const companyNav: NavRule[] = [
@@ -50,6 +52,7 @@ function accessKey(plane: Plane, root: string) {
 }
 
 function Gate({ plane, root, children }: { plane: Plane; root: string; children: ReactNode }) {
+  const { toast } = useToast();
   const t = useTranslations("platform");
   const { data, error, isLoading, mutate } = useSWR<unknown>(accessKey(plane, root), fetcher, { revalidateOnFocus: true, shouldRetryOnError: false });
   const frame = (body: ReactNode) => <main id="main" className="mx-auto max-w-2xl px-4 py-16">{body}</main>;
@@ -65,6 +68,7 @@ function Gate({ plane, root, children }: { plane: Plane; root: string; children:
   return (
     <AccessProvider value={{ plane, actions: access.actions, root, role: access.role }}>
       <ConsoleShell
+        onLogout={() => void logoutTo("/staff/login", toast.error)}
         nav={[{ title: plane === "platform" ? t("title") : t("myCompany"), items: nav }]}
         context={{
           label: plane === "platform" ? "Nền tảng" : t("myCompany"),

@@ -59,7 +59,7 @@ describe("B4 & B5 TargetsView Product Picker and Branch Name", () => {
             ok: true,
             json: () =>
               Promise.resolve({
-                permissions: ["production:target:create", "production:target:approve"],
+                permissions: ["production:target:create", "production:target_approval:create"],
                 active_context: {
                   branch_id: branchId,
                   branch_name: branchName,

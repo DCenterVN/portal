@@ -99,10 +99,10 @@ export function OrdersView({ initialOrders }: OrdersViewProps) {
 
   // Visual emphasis only: retain every existing permission-gated row action.
   const primaryOrderId = orders.find((order) =>
-    (order.status === "HANDED_OFF" && permissions.includes("production:order:accept")) ||
-    (order.status === "ACCEPTED" && permissions.includes("production:order:allocate")) ||
-    (order.status === "ALLOCATED" && permissions.includes("production:order:start")) ||
-    (order.status === "IN_PROGRESS" && permissions.includes("production:order:complete"))
+    (order.status === "HANDED_OFF" && permissions.includes("production:order:update")) ||
+    (order.status === "ACCEPTED" && permissions.includes("production:order:update")) ||
+    (order.status === "ALLOCATED" && permissions.includes("production:order:update")) ||
+    (order.status === "IN_PROGRESS" && permissions.includes("production:order:update"))
   )?.id;
 
   return (
@@ -153,7 +153,7 @@ export function OrdersView({ initialOrders }: OrdersViewProps) {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
-                      {o.status === "HANDED_OFF" && permissions.includes("production:order:accept") && (
+                      {o.status === "HANDED_OFF" && permissions.includes("production:order:update") && (
                         <Button
                           size="sm"
                           variant={o.id === primaryOrderId ? "default" : "outline"}
@@ -163,7 +163,7 @@ export function OrdersView({ initialOrders }: OrdersViewProps) {
                           <CheckSquare className="h-4 w-4 mr-1" /> Tiếp nhận (VT-09)
                         </Button>
                       )}
-                      {o.status === "ACCEPTED" && permissions.includes("production:order:allocate") && (
+                      {o.status === "ACCEPTED" && permissions.includes("production:order:update") && (
                         <Button
                           size="sm"
                           variant={o.id === primaryOrderId ? "default" : "outline"}
@@ -173,7 +173,7 @@ export function OrdersView({ initialOrders }: OrdersViewProps) {
                           <Layers className="h-4 w-4 mr-1" /> Phân bổ FEFO
                         </Button>
                       )}
-                      {o.status === "ALLOCATED" && permissions.includes("production:order:start") && (
+                      {o.status === "ALLOCATED" && permissions.includes("production:order:update") && (
                         <Button
                           size="sm"
                           variant={o.id === primaryOrderId ? "default" : "outline"}
@@ -183,7 +183,7 @@ export function OrdersView({ initialOrders }: OrdersViewProps) {
                           <Play className="h-4 w-4 mr-1" /> Bắt đầu nấu (VT-10/11)
                         </Button>
                       )}
-                      {o.status === "IN_PROGRESS" && permissions.includes("production:order:complete") && (
+                      {o.status === "IN_PROGRESS" && permissions.includes("production:order:update") && (
                         <Button
                           size="sm"
                           variant={o.id === primaryOrderId ? "default" : "outline"}

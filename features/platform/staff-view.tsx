@@ -163,7 +163,7 @@ function StaffList() {
 
 export function StaffView() {
   return (
-    <RequireAction action="platform:staff:manage">
+    <RequireAction action="platform:staff:read">
       <StaffList />
     </RequireAction>
   );

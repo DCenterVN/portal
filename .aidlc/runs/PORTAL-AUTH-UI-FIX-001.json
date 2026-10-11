@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 1,
+  "runId": "PORTAL-AUTH-UI-FIX-001",
+  "pipelineId": "sdlc",
+  "context": {
+    "epic": "PORTAL-AUTH-UI-FIX-001",
+    "worker": "claude-sonnet",
+    "story": "US-UI-002",
+    "sprint": "04",
+    "slices": "8/9"
+  },
+  "startedAt": "2026-10-11T12:13:24+00:00",
+  "updatedAt": "2026-10-11T15:42:20+00:00",
+  "currentStepIdx": 4,
+  "status": "running",
+  "steps": [
+    {
+      "stepIdx": 0,
+      "agent": "sdlc-discovery",
+      "revision": 1,
+      "status": "approved",
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-AUTH-UI-FIX-001/plan.md"
+      ]
+    },
+    {
+      "stepIdx": 1,
+      "agent": "sdlc-technical",
+      "revision": 1,
+      "status": "approved",
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-AUTH-UI-FIX-001/plan.md"
+      ]
+    },
+    {
+      "stepIdx": 2,
+      "agent": "sdlc-ux",
+      "revision": 1,
+      "status": "approved",
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-AUTH-UI-FIX-001/plan.md"
+      ]
+    },
+    {
+      "stepIdx": 3,
+      "agent": "sdlc-design",
+      "revision": 1,
+      "status": "approved",
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-AUTH-UI-FIX-001/plan.md"
+      ]
+    },
+    {
+      "stepIdx": 4,
+      "agent": "sdlc-build",
+      "revision": 1,
+      "status": "awaiting_work",
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-AUTH-UI-FIX-001/handback.md"
+      ]
+    },
+    {
+      "stepIdx": 5,
+      "agent": "sdlc-integration",
+      "revision": 1,
+      "status": "pending",
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-AUTH-UI-FIX-001/artifacts/verification.json"
+      ]
+    },
+    {
+      "stepIdx": 6,
+      "agent": "sdlc-e2e",
+      "revision": 1,
+      "status": "pending",
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-AUTH-UI-FIX-001/artifacts/verification.json"
+      ]
+    },
+    {
+      "stepIdx": 7,
+      "agent": "sdlc-release",
+      "revision": 1,
+      "status": "pending",
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-AUTH-UI-FIX-001/review.md",
+        ".aidlc/runs/PORTAL-AUTH-UI-FIX-001/artifacts/review-decision.json"
+      ]
+    }
+  ]
+}

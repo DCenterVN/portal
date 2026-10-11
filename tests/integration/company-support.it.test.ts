@@ -47,7 +47,7 @@ describe("OWNER on MAIN", () => {
   it("reads own company permissions, modules and matrix through MAIN", async () => {
     const perms = await owner(`/api/org/permissions/me?org_id=${rootA}&branch_id=${rootA}`);
     expect(perms.status).toBe(200);
-    expect(perms.body.action_keys).toEqual(expect.arrayContaining(["org:company:read", "org:support_access:approve"]));
+    expect(perms.body.action_keys).toEqual(expect.arrayContaining(["org:company:read", "org:support_access_approval:create"]));
     for (const path of ["company/modules", "company/role-matrix", "company/support-access?page=1&limit=20", "company/audit-logs?page=1&limit=20"]) {
       const reply = await owner(`/api/org/${path}${path.includes("?") ? "&" : "?"}org_id=${rootA}`);
       expect(reply.status, path).toBe(200);

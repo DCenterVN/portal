@@ -36,8 +36,8 @@ export function FoodPlansView({ initialPlans, targetId }: { initialPlans: FoodPr
   }, []);
 
   const canCreate = permissions.includes("production:food_plan:create");
-  const canReview = permissions.includes("production:food_plan:review");
-  const canPublish = permissions.includes("production:food_plan:publish");
+  const canReview = permissions.includes("production:food_plan:update");
+  const canPublish = permissions.includes("production:food_plan:update");
   const validComponents = components.every((component) => component.sku_ref.trim() && component.quantity > 0 && component.uom.trim());
   const updateComponent = (index: number, patch: Partial<ComponentLine>) => setComponents((current) => current.map((component, componentIndex) => componentIndex === index ? { ...component, ...patch } : component));
 

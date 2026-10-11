@@ -1,0 +1,26 @@
+# review-fix live evidence (commit eb4492c) 2026-10-11T22:41:14+07:00
+
+## (a) POST /api/auth/logout sau login customer.s9 (BFF :3000)
+HTTP/1.1 200 OK
+set-cookie: access_token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Max-Age=0
+set-cookie: __Host-refresh_token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Max-Age=0; Secure
+set-cookie: refresh_token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Max-Age=0
+set-cookie: CSRF-Token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Max-Age=0
+set-cookie: portal_plane=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Max-Age=0
+
+Ghi chu: dev HTTP dung cookie refresh_token; __Host-refresh_token van duoc xoa voi Secure; Path=/ (khong Domain). Nhanh 429/500 dung chung clearSession (unit test bff.test.ts).
+
+## (b) GET ma tran bang padmin (company 1a80b5f2-d649-4df2-8ead-565ea5e4d1eb)
+roles: 10 resources: 39 catalog keys: 69 CRUDIE cells per role: 234 clickable cells (in catalog): 69 disabled: 165
+catalog keys non-CRUDIE: []
+ACCOUNTANT 3
+BRANCH_MANAGER 17
+CS_AGENT 4
+CUSTOMER 8
+FOOD_DEV 5
+OWNER 69
+PROCESSING_STAFF 3
+QC_STAFF 4
+SALES 8
+WAREHOUSE 8
+Truoc fix: 234 o bam duoc moi role (39 tai nguyen x 6). Sau fix: 69 o bam duoc = 69 key catalog (165 o disabled).

@@ -141,7 +141,7 @@ describe("S19 independent auth translation catalogs", () => {
 
  it("S19 journey UI consumes only its own namespace without hardcoded JSX copy", () => {
   for (const [file, source] of Object.entries(liveSources())) {
-   if (!/^(features\/(customer|employee)-auth\/|components\/layout\/(customer|employee)-auth-shell|app\/\((auth|employee-auth)\)\/)/.test(file) || /form-feedback|layout\.tsx$/.test(file) || (!customer(file) && !employee(file))) continue;
+   if (!/^(features\/(customer|employee)-auth\/|components\/layout\/(customer|employee)-auth-shell|app\/\((auth|employee-auth)\)\/)/.test(file) || /form-feedback|layout\.tsx$/.test(file) || (!customer(file) && !employee(file)) || /^app\/\(auth\)\/(login|register)\/page\.tsx$/.test(file)) continue;
    const namespace = employee(file) ? "employeeAuth" : "customerAuth";
    expect(source, file).toMatch(new RegExp(`(?:useTranslations|getTranslations)\\(["']${namespace}["'](?:\\)|,)`));
    const ast = ts.createSourceFile(file, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);

@@ -60,7 +60,7 @@ function MyGrants() {
     <>
       <PageHeader icon={<LifeBuoy />} title="Hỗ trợ truy cập" description="Quyền ngang OWNER có thời hạn, luôn ghi audit theo công ty." />
       <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
-        <SupportRequestForm canBreakGlass={can("platform:support_access:break_glass")} onDone={() => void mutate()} />
+        <SupportRequestForm canBreakGlass={can("platform:support_access_break_glass:create")} onDone={() => void mutate()} />
         <section aria-labelledby="my-grants" className="space-y-3">
           <h2 id="my-grants" className="text-sm font-semibold">
             Grant của tôi
@@ -85,7 +85,7 @@ function MyGrants() {
 
 export function SupportView() {
   return (
-    <RequireAction action="platform:support_access:request">
+    <RequireAction action="platform:support_access:create">
       <MyGrants />
     </RequireAction>
   );

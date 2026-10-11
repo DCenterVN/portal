@@ -1,0 +1,8 @@
+$ curl -i -X POST localhost:3000/api/auth/login  identifier=unact.1791727547@e2e.test (chưa kích hoạt)
+HTTP/1.1 403 Forbidden
+{"error":"FORBIDDEN","reason":"NOT_ACTIVATED","message":"Tài khoản chưa được kích hoạt"}
+
+$ curl -i -X POST localhost:3000/api/auth/staff/login  identifier=unact.1791727547@e2e.test (chưa kích hoạt)
+HTTP/1.1 403 Forbidden
+{"error":"FORBIDDEN","reason":"NOT_ACTIVATED","message":"Tài khoản chưa được kích hoạt"}
+
