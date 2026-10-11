@@ -459,6 +459,15 @@ describe("S5 rendered auth, profile, branch and membership roles", () => {
     }
   });
 
+  it.each(["general", "security"])("renders profile %s tab with solid roles and original content", (tab) => {
+    const html = surfaceMarkup(React.createElement(ProfileClient), [profileFixture, false, "", null, tab]);
+    expectRoleSurface(html);
+    expect(html).toContain("Dawn");
+    expect(html).toContain("Đăng xuất");
+    expect(html).toContain("bg-[var(--color-primary)]");
+    if (tab === "security") expect(html).toContain("text-[var(--color-leaf)]");
+  });
+
   it("renders staff profile memberships with solid roles and original content", () => {
     const html = surfaceMarkup(staffProfile(profileFixture));
     expectRoleSurface(html, true);
