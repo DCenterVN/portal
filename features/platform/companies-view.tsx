@@ -27,7 +27,7 @@ function CompanyList() {
         icon={<Building2 />}
         title="Công ty"
         description="Mỗi công ty là một cây chi nhánh, định danh bằng chi nhánh MAIN."
-        actions={can("platform:org:onboard") ? <CompanyOnboardForm onCreated={() => void mutate()} /> : undefined}
+        actions={can("platform:org:create") ? <CompanyOnboardForm onCreated={() => void mutate()} /> : undefined}
       />
       {isLoading ? (
         <Skeleton title="Đang tải danh sách công ty…" />

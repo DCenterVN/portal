@@ -20,8 +20,8 @@ type AccessContextItem = { org_id?: string; org_name?: string; member_type?: str
 
 const platformNav: NavRule[] = [
   { href: "/platform/companies", label: "companies", action: "platform:org:read" },
-  { href: "/platform/support-access", label: "support", action: "platform:support_access:request" },
-  { href: "/platform/staff", label: "staff", action: "platform:staff:manage" },
+  { href: "/platform/support-access", label: "support", action: "platform:support_access:read" },
+  { href: "/platform/staff", label: "staff", action: "platform:staff:read" },
   { href: "/platform/audit", label: "audit", action: "platform:audit:read" },
 ];
 const companyNav: NavRule[] = [
