@@ -2,9 +2,9 @@
   "task": "PORTAL-AUTH-UI-FIX-001",
   "actor": "agent:claude-code(171709704+dawnmoriaty@users.noreply.github.com)",
   "worker": null,
-  "ts": "2026-10-11T12:50:05+00:00",
+  "ts": "2026-10-11T14:07:02+00:00",
   "cwd": ".",
-  "head": "eb2ada0f42c31ccc71838100fec24f5fd0cf8138",
+  "head": "4be1bab108ccebe7a956549756e7a78ad6ad0caf",
   "dirty": true,
   "checks": [
     {
@@ -14,9 +14,9 @@
       "status": "PASS",
       "seconds": 3.9,
       "log": ".aidlc/runs/PORTAL-AUTH-UI-FIX-001/artifacts/logs/unit.log",
-      "sha256": "5f444ebdb969600dbca47173aaacd08bf7e5532e24e92440940449fe6522fd79",
+      "sha256": "bf3f6c0d34fa9fbdb43d1aa04e667835dd6e7a231c90306bdd2c87684d552dd0",
       "tail": [
-        "stderr | app/api/auth/staff/bff.test.ts > S11 staff recovery dependency and invite BFF > accepts exact invite DTO via invite purpose endpoint; never password reset; no credentials/cookies",
+        "stderr | app/api/auth/bff.test.ts > Portal BFF Auth Handlers (9 handlers) > 1. POST /api/auth/login sets cookies and forwards response",
         "PORTAL_CLIENT_IP_SOURCE is unset; auth forwarding is disabled",
         "",
         "stderr | app/rebrand.test.ts > S7 rendered target, cart, orders and product creation roles > keeps target permissions, labelled statuses and sole create/submit emphasis (form=false)",
@@ -28,7 +28,7 @@
       "command": "npm run lint",
       "exit": 0,
       "status": "PASS",
-      "seconds": 2.6,
+      "seconds": 2.8,
       "log": ".aidlc/runs/PORTAL-AUTH-UI-FIX-001/artifacts/logs/lint.log",
       "sha256": "7641747edd98ed1a1fd1ad59bec73c32caac945b1006098310c6c071b528e278",
       "tail": [
@@ -41,7 +41,7 @@
       "command": "npm run typecheck",
       "exit": 0,
       "status": "PASS",
-      "seconds": 1.6,
+      "seconds": 1.7,
       "log": ".aidlc/runs/PORTAL-AUTH-UI-FIX-001/artifacts/logs/typecheck.log",
       "sha256": "c5a440cd52c7fadc3d367658101693af6eb5b85d21dbd518cb3bda67056215e7",
       "tail": [
@@ -54,9 +54,9 @@
       "command": "bash .aidlc/runs/PORTAL-AUTH-UI-FIX-001/evidence/live.sh",
       "exit": 0,
       "status": "PASS",
-      "seconds": 11.1,
+      "seconds": 11.2,
       "log": ".aidlc/runs/PORTAL-AUTH-UI-FIX-001/artifacts/logs/integration.log",
-      "sha256": "9f4cb7a8fb568f6520f27ee4a5aee8771e525aa0d4b8533944c0f2a8c6255e6a",
+      "sha256": "37428de5f93322e94bce8e0e5c1aa81fec2259d8060204f5a81c9ed3f02bed99",
       "tail": [
         "PASS S4 /roles -> 307 location: /company",
         "PASS S1 logout owner ->200, cleared 4 cookies",
@@ -70,7 +70,7 @@
       "command": "bash .aidlc/runs/PORTAL-AUTH-UI-FIX-001/evidence/e2e.sh",
       "exit": 0,
       "status": "PASS",
-      "seconds": 2.2,
+      "seconds": 2.3,
       "log": ".aidlc/runs/PORTAL-AUTH-UI-FIX-001/artifacts/logs/e2e.log",
       "sha256": "b2e782b70f399a2ec854ef9ad61d15e9da730c025a789865dfb08c6a05ef5764",
       "tail": [

@@ -35,7 +35,7 @@ J=$D/c3.jar; login $J /api/auth/login customer.s9@e2e.test "" 'sai-mat-khau-1234
 UE="unact.$RANDOM$$@e2e.test"
 curl -s -o /dev/null "${H[@]}" -d "{\"email\":\"$UE\",\"password\":\"$PW\",\"display_name\":\"Unact\"}" $B/api/auth/register; sleep 1
 J=$D/u.jar; login $J /api/auth/login "$UE"
-[ "$(code)" = 403 ] && grep -q user_not_active $D/body && ok "S2 PROVISIONED login -> 403 user_not_active" || bad "S2 unactivated: $(code)"
+[ "$(code)" = 403 ] && grep -q NOT_ACTIVATED $D/body && ok "S2 PROVISIONED login -> 403 NOT_ACTIVATED" || bad "S2 unactivated: $(code)"
 # staff
 J=$D/s.jar; login $J /api/auth/staff/login employee.s9@e2e.test /sales/pricing
 S1=$(code); NP=$(nextp); echo "INFO employee redirect=/sales/orders -> $S1 next=$NP"
