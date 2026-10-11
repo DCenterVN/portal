@@ -78,6 +78,8 @@
 - features/customer-auth/login-form.tsx
 - features/customer-auth/register-form.tsx
 - features/employee-auth/staff-login.tsx
+- features/customer-auth/auth-popup.tsx
+- features/customer-auth/form-feedback.tsx
 - messages/vi.json
 - messages/en.json
 - features/platform/role-matrix-view.tsx
