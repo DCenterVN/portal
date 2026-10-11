@@ -2,9 +2,9 @@
   "task": "PORTAL-AUTH-UI-FIX-001",
   "actor": "agent:claude-code(171709704+dawnmoriaty@users.noreply.github.com)",
   "worker": null,
-  "ts": "2026-10-11T14:07:02+00:00",
+  "ts": "2026-10-11T14:32:57+00:00",
   "cwd": ".",
-  "head": "4be1bab108ccebe7a956549756e7a78ad6ad0caf",
+  "head": "a4c4ba0571fad2837bb17d9fb052442c71f170f7",
   "dirty": true,
   "checks": [
     {
@@ -12,11 +12,11 @@
       "command": "npm test",
       "exit": 0,
       "status": "PASS",
-      "seconds": 3.9,
+      "seconds": 4.0,
       "log": ".aidlc/runs/PORTAL-AUTH-UI-FIX-001/artifacts/logs/unit.log",
-      "sha256": "bf3f6c0d34fa9fbdb43d1aa04e667835dd6e7a231c90306bdd2c87684d552dd0",
+      "sha256": "83af06d3959e0cc6ec4bfc55b70d1489386145840b94028ce99910f1e765c3f9",
       "tail": [
-        "stderr | app/api/auth/bff.test.ts > Portal BFF Auth Handlers (9 handlers) > 1. POST /api/auth/login sets cookies and forwards response",
+        "stderr | lib/api/auth-journey-bff.test.ts > S2 login policy > customer ACTIVE lands only in store without consulting org, including employee identity",
         "PORTAL_CLIENT_IP_SOURCE is unset; auth forwarding is disabled",
         "",
         "stderr | app/rebrand.test.ts > S7 rendered target, cart, orders and product creation roles > keeps target permissions, labelled statuses and sole create/submit emphasis (form=false)",
@@ -28,7 +28,7 @@
       "command": "npm run lint",
       "exit": 0,
       "status": "PASS",
-      "seconds": 2.8,
+      "seconds": 2.6,
       "log": ".aidlc/runs/PORTAL-AUTH-UI-FIX-001/artifacts/logs/lint.log",
       "sha256": "7641747edd98ed1a1fd1ad59bec73c32caac945b1006098310c6c071b528e278",
       "tail": [
@@ -54,7 +54,7 @@
       "command": "bash .aidlc/runs/PORTAL-AUTH-UI-FIX-001/evidence/live.sh",
       "exit": 0,
       "status": "PASS",
-      "seconds": 11.2,
+      "seconds": 14.3,
       "log": ".aidlc/runs/PORTAL-AUTH-UI-FIX-001/artifacts/logs/integration.log",
       "sha256": "37428de5f93322e94bce8e0e5c1aa81fec2259d8060204f5a81c9ed3f02bed99",
       "tail": [
@@ -70,7 +70,7 @@
       "command": "bash .aidlc/runs/PORTAL-AUTH-UI-FIX-001/evidence/e2e.sh",
       "exit": 0,
       "status": "PASS",
-      "seconds": 2.3,
+      "seconds": 3.3,
       "log": ".aidlc/runs/PORTAL-AUTH-UI-FIX-001/artifacts/logs/e2e.log",
       "sha256": "b2e782b70f399a2ec854ef9ad61d15e9da730c025a789865dfb08c6a05ef5764",
       "tail": [

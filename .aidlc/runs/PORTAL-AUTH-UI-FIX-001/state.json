@@ -1,7 +1,7 @@
 {
   "id": "PORTAL-AUTH-UI-FIX-001",
   "title": "PORTAL-AUTH-UI-FIX-001 — sửa 4 lỗi UI auth/RBAC pha 1 (login sai logic, thiếu đăng xuất, ma trận quyền, lệch design)",
-  "description": "worker: unassigned · story: US-UI-002 · sprint: 04 · slices: 4/7 · next: review: review-decision.json missing",
+  "description": "worker: unassigned · story: US-UI-002 · sprint: 04 · slices: 6/7 · next: review: review-decision.json missing",
   "pipeline": "sdlc",
   "agent": null,
   "agents": [
@@ -17,7 +17,7 @@
   "currentStep": 4,
   "status": "in_progress",
   "createdAt": "2026-10-11T12:13:24+00:00",
-  "updatedAt": "2026-10-11T14:07:02+00:00",
+  "updatedAt": "2026-10-11T14:32:57+00:00",
   "stepStates": [
     {
       "agent": "sdlc-discovery",
