@@ -525,7 +525,7 @@ const shelfFixtures: ShelfPlacement[] = (["PLACED", "DEPLETED"] as const).map((s
   id: status, finished_lot_ref: "lot", branch_ref: "branch", shelf_code: `SHELF-${status}`, placed_quantity: 20,
   available_quantity: status === "PLACED" ? 10 : 0, uom: "EA", status, trace_code: `QR-${status}`, placed_at: "2026-09-29",
 }));
-const productionPermissions = ["accept", "allocate", "start", "complete"].map((action) => `production:order:${action}`);
+const productionPermissions = ["production:order:update"];
 
 function expectS6Roles(html: string, primaryCount: number) {
   expectRoleSurface(html);
@@ -680,7 +680,7 @@ function expectS7Roles(html: string, primaryCount: number) {
 describe("S7 rendered target, cart, orders and product creation roles", () => {
   it.each([false, true])("keeps target permissions, labelled statuses and sole create/submit emphasis (form=%s)", (form) => {
     const html = surfaceMarkup(React.createElement(TargetsView, { initialTargets: targetFixtures }), [
-      targetFixtures, ["production:target:create", "production:target:approve"], "branch-1", form,
+      targetFixtures, ["production:target:create", "production:target_approval:create"], "branch-1", form,
       "Chỉ tiêu tháng", "2026-09-29", "2026-10-29", targetFixtures[0].lines, false,
     ]);
     expectS7Roles(html, 1);

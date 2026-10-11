@@ -5,7 +5,7 @@ describe("authorization access", () => {
   it("allows only explicit action keys from platform response", () => {
     const access = platformAccess(200, me);
     expect(hasAction(access, "platform:org:read")).toBe(true);
-    expect(hasAction(access, "platform:staff:manage")).toBe(false);
+    expect(hasAction(access, "platform:staff:read")).toBe(false);
   });
   it("treats platform 404 as no membership and upstream errors as blocked", () => {
     expect(platformAccess(404, null).status).toBe("denied");
