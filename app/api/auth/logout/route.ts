@@ -6,7 +6,9 @@ const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL || "http://localhost:8080"
 const SESSION_COOKIES = ["access_token", "__Host-refresh_token", "refresh_token", "CSRF-Token", "portal_plane"];
 
 function clearSession(res: NextResponse): NextResponse {
-  for (const name of SESSION_COOKIES) res.cookies.delete(name);
+  for (const name of SESSION_COOKIES) {
+    res.cookies.set(name, "", {path: "/", expires: new Date(0), maxAge: 0, ...(/^__(Host|Secure)-/.test(name) && {secure: true})});
+  }
   return res;
 }
 

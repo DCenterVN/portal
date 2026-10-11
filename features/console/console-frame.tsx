@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { ErrorState } from "@/components/ui/state";
 import { ConsoleShell } from "@/components/layout/console-shell";
 import { logoutTo } from "@/lib/auth/client";
+import { useToast } from "@/components/ui/toast";
 import { consoleNavFor, consoleRouteAllowed } from "./console-nav";
 
 type ConsoleSession = {
@@ -66,6 +67,7 @@ export async function fetchConsoleSession(fetcher: typeof fetch = fetch): Promis
 }
 
 export function ConsoleFrame({ children }: { children: ReactNode }) {
+  const { toast } = useToast();
   const [session, setSession] = useState<ConsoleSession>(EMPTY_SESSION);
 
   useEffect(() => {
@@ -86,7 +88,7 @@ export function ConsoleFrame({ children }: { children: ReactNode }) {
     : <ErrorState denied title="Không có quyền truy cập" description="Tài khoản của bạn chưa được cấp quyền xem trang này. Liên hệ quản trị viên để được cấp quyền." />;
 
   return (
-    <ConsoleShell nav={nav} context={session.context} user={session.user} onLogout={() => void logoutTo("/staff/login")}>
+    <ConsoleShell nav={nav} context={session.context} user={session.user} onLogout={() => void logoutTo("/staff/login", toast.error)}>
       {body}
     </ConsoleShell>
   );

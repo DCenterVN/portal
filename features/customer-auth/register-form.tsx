@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { EmptyState, ErrorState } from "@/components/ui/state";
-import { authTabHref, FormNotice, passwordError } from "./form-feedback";
+import { authTabHref, FormNotice, passwordError, SHAKE_STYLE } from "./form-feedback";
 import { cn } from "@/lib/utils";
 
 function validate(email: string, phone: string, name: string, password: string): string {
@@ -18,20 +18,6 @@ function validate(email: string, phone: string, name: string, password: string):
   if ([...name].length > 50) return "nameTooLong";
   return passwordError(password);
 }
-
-const SHAKE_STYLE = `
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  20%, 60% { transform: translateX(-4px); }
-  40%, 80% { transform: translateX(4px); }
-}
-.animate-shake {
-  animation: shake 300ms cubic-bezier(.2,0,.38,.9);
-}
-@media (prefers-reduced-motion: reduce) {
-  .animate-shake { animation: none !important; }
-}
-`;
 
 export function RegisterForm() {
   const t = useTranslations("customerAuth");

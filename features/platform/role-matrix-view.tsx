@@ -13,7 +13,7 @@ import { errorText } from "./access";
 import { RequireAction, useAccess } from "./access-boundary";
 import { CompanyHeader, CompanyTabs } from "./company-detail-view";
 import type { Source } from "./use-company";
-import { actionChanges, replaceRole, resourcesOf, useRoleMatrix, VERBS } from "./use-role-matrix";
+import { actionChanges, catalogOf, replaceRole, resourcesOf, useRoleMatrix, VERBS } from "./use-role-matrix";
 
 type Props = { source: Source; root: string; editable: boolean };
 
@@ -37,6 +37,7 @@ export function RoleMatrix({ source, root, editable }: Props) {
   const changes = actionChanges(data[current], shown);
   const dirty = changes.added.length > 0 || changes.removed.length > 0;
   const resources = resourcesOf(data);
+  const catalog = catalogOf(data);
 
   function choose(code: string) {
     setRole(code);
@@ -86,13 +87,15 @@ export function RoleMatrix({ source, root, editable }: Props) {
 
       <div className="space-y-1.5">
         <span className="text-xs font-bold uppercase tracking-wider text-fg-3">Role</span>
-        <Segmented
-          label="Chọn role"
-          items={roles.map((code) => ({ id: code, label: code }))}
-          value={current}
-          onChange={(code) => (dirty ? setPending(code) : choose(code))}
-          className="flex flex-wrap gap-1 max-w-full"
-        />
+        <fieldset disabled={busy} className="min-w-0 border-0 p-0 disabled:opacity-60">
+          <Segmented
+            label="Chọn role"
+            items={roles.map((code) => ({ id: code, label: code }))}
+            value={current}
+            onChange={(code) => (dirty ? setPending(code) : choose(code))}
+            className="flex flex-wrap gap-1 max-w-full"
+          />
+        </fieldset>
       </div>
 
       {/* Desktop Table: visible on md and larger */}
@@ -121,7 +124,7 @@ export function RoleMatrix({ source, root, editable }: Props) {
                       <TableCell key={verb} className="text-center">
                         <Checkbox
                           checked={shown.includes(key)}
-                          disabled={!editable || busy}
+                          disabled={!editable || busy || !catalog.has(key)}
                           onCheckedChange={(on) => toggle(key, on)}
                           aria-label={key}
                           className="justify-center transition-colors duration-100"
@@ -192,7 +195,7 @@ export function RoleMatrix({ source, root, editable }: Props) {
                       aria-label={key}
                       variant={checked ? "primary" : "outline"}
                       size="sm"
-                      disabled={!editable || busy}
+                      disabled={!editable || busy || !catalog.has(key)}
                       onClick={() => toggle(key, !checked)}
                       className="font-bold text-xs"
                       title={verb}

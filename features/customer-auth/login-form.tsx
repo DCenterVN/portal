@@ -11,7 +11,7 @@ import { login } from "@/lib/api/customer-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { authTabHref } from "./form-feedback";
+import { authTabHref, SHAKE_STYLE } from "./form-feedback";
 import { PasswordInput } from "@/components/patterns/password-input";
 import { cn } from "@/lib/utils";
 
@@ -22,20 +22,6 @@ function loginErrorKey(err: unknown): string {
   if (err.status === 401) return "invalidLogin";
   return err.status >= 500 ? "serviceBusy" : "loginFailed";
 }
-
-const SHAKE_STYLE = `
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  20%, 60% { transform: translateX(-4px); }
-  40%, 80% { transform: translateX(4px); }
-}
-.animate-shake {
-  animation: shake 300ms cubic-bezier(.2,0,.38,.9);
-}
-@media (prefers-reduced-motion: reduce) {
-  .animate-shake { animation: none !important; }
-}
-`;
 
 export function LoginForm() {
   const t = useTranslations("customerAuth");

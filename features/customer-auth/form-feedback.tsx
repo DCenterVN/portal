@@ -27,3 +27,17 @@ export function passwordError(password: string): string {
   if (new TextEncoder().encode(password).length > 256) return "passwordTooLong";
   return "";
 }
+
+export const SHAKE_STYLE = `
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-4px); }
+  40%, 80% { transform: translateX(4px); }
+}
+.animate-shake {
+  animation: shake 300ms cubic-bezier(.2,0,.38,.9);
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-shake { animation: none !important; }
+}
+`;

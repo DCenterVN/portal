@@ -28,3 +28,8 @@ export function actionChanges(before: string[], after: string[]) {
   const now = new Set(after);
   return { added: after.filter((item) => !was.has(item)), removed: before.filter((item) => !now.has(item)) };
 }
+
+// Catalogue = every action any role holds in this response (OWNER holds the whole company catalogue).
+export function catalogOf(matrix: Record<string, string[]>): Set<string> {
+  return new Set(Object.values(matrix).flat());
+}

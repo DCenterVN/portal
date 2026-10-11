@@ -24,16 +24,17 @@ export interface UserProfile {
   }[];
 }
 
-export async function logout(): Promise<void> {
-  await apiFetch("/api/auth/logout", { method: "POST" });
+export function logout(): Promise<Response> {
+  return apiFetch("/api/auth/logout", { method: "POST" });
 }
 
-export async function logoutTo(loginPath: string): Promise<void> {
-  try {
-    await logout();
-  } finally {
-    window.location.assign(loginPath);
+export async function logoutTo(loginPath: string, onError?: (message: string) => void): Promise<void> {
+  const res = await logout().catch(() => null);
+  if (!res?.ok) {
+    onError?.("Đăng xuất chưa hoàn tất trên máy chủ. Bạn vẫn được chuyển về trang đăng nhập.");
+    await new Promise((resolve) => setTimeout(resolve, 1500));
   }
+  window.location.assign(loginPath);
 }
 
 export async function getProfile(): Promise<UserProfile> {
