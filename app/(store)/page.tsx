@@ -1,18 +1,10 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import { fetchStoreUser, type StoreUser } from "@/features/store/store-frame";
+import { cookies } from "next/headers";
 import { Home } from "@/features/store/home";
 import { Landing } from "@/features/store/landing";
 
-export default function StorePage() {
-  const [user, setUser] = useState<StoreUser | null>(null);
-
-  useEffect(() => {
-    let mounted = true;
-    void fetchStoreUser().then((u) => { if (mounted) setUser(u); }).catch(() => undefined);
-    return () => { mounted = false; };
-  }, []);
-
-  return user ? <Home name={user.name} /> : <Landing />;
+// ponytail: cookie presence like proxy.ts; an expired session still sees Home and the shell sends it to login on the next API call.
+export default async function StorePage() {
+  const jar = await cookies();
+  const signedIn = jar.has("access_token") || jar.has("__Host-refresh_token") || jar.has("refresh_token");
+  return signedIn ? <Home /> : <Landing />;
 }

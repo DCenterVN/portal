@@ -28,8 +28,8 @@ const ROLES = [
 
 const bleed = "-mx-4 md:-mx-10";
 const inner = "px-4 md:px-10";
-const eyebrow = "text-xs font-extrabold uppercase tracking-[.14em] text-p-text";
-const h2 = "mt-2 font-heading text-[32px] font-bold leading-10 text-balance";
+const eyebrow = "text-xs font-extrabold uppercase tracking-widest text-p-text";
+const h2 = "mt-2 font-heading text-3xl font-bold text-balance";
 const cta = `${buttonVariants({ variant: "primary", size: "lg" })} max-md:w-full`;
 const ctaSecondary = `${buttonVariants({ variant: "outline", size: "lg" })} max-md:w-full`;
 
@@ -40,7 +40,7 @@ export function Landing() {
         <div className={`grid items-center gap-10 md:grid-cols-[.9fr_1.1fr] md:gap-16 ${inner}`}>
           <div>
             <p className={`flex items-center gap-2 ${eyebrow}`}><Sprout className="size-4" aria-hidden="true" />Thực phẩm có hành trình rõ ràng</p>
-            <h1 id="hero-title" className="mt-4 font-heading text-[28px] font-bold leading-9 text-balance md:text-[40px] md:leading-12">
+            <h1 id="hero-title" className="mt-4 font-heading text-3xl font-bold text-balance md:text-4xl">
               Tươi là một cảm giác.<br /><span className="text-p-text">Sạch là điều kiểm chứng được.</span>
             </h1>
             <p className="mt-4 max-w-[56ch] text-fg-2">Bếp Tươi kết nối nông trại, kho lạnh và bàn ăn bằng một chuỗi cung ứng minh bạch, để mỗi lựa chọn ngon lành cũng là một lựa chọn an tâm.</p>
@@ -53,7 +53,7 @@ export function Landing() {
           <div role="img" aria-label="Ảnh rau củ tươi được tuyển chọn" className="relative aspect-square rounded-lg bg-l1-2 text-fg-3 md:aspect-[1.2/1]">
             <div className="absolute inset-0 grid place-items-center px-6 text-center text-sm font-bold tracking-wide">[ẢNH HERO: GIAN RAU CỦ TƯƠI ĐẦY MÀU SẮC]</div>
             <div className="absolute -bottom-4 left-3 w-[min(288px,78%)] rounded-lg border border-line bg-l1 px-5 py-4 text-fg shadow-l3 md:-bottom-5 md:-left-9">
-              <span className="flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-[.08em] text-p-text"><BadgeCheck className="size-4" aria-hidden="true" />Lô BT–240831</span>
+              <span className="flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider text-p-text"><BadgeCheck className="size-4" aria-hidden="true" />Lô BT–240831</span>
               <strong className="mt-1.5 block font-heading text-xl leading-7">Đã kiểm định đầu vào</strong>
               <small className="mt-0.5 block text-xs leading-4 text-fg-2">Đà Lạt · Thu hoạch 05:30 hôm nay</small>
             </div>
@@ -107,7 +107,7 @@ export function Landing() {
             {STEPS.map(({ eyebrow: e, title, copy, icon: Icon }) => (
               <li key={title} className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-4 border-b border-line py-5">
                 <span className="grid size-12 place-items-center rounded-sm bg-p-soft text-p-text"><Icon className="size-6" aria-hidden="true" /></span>
-                <div><small className="text-xs font-extrabold uppercase tracking-[.08em] text-p-text">{e}</small><h3 className="mt-1 font-heading text-xl leading-7">{title}</h3><p className="mt-1 max-w-[56ch] text-sm leading-5 text-fg-2">{copy}</p></div>
+                <div><small className="text-xs font-extrabold uppercase tracking-wider text-p-text">{e}</small><h3 className="mt-1 font-heading text-xl leading-7">{title}</h3><p className="mt-1 max-w-[56ch] text-sm leading-5 text-fg-2">{copy}</p></div>
                 <Check className="mt-1 size-5 text-ok" aria-hidden="true" />
               </li>
             ))}

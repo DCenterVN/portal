@@ -23,7 +23,7 @@ export function Home({ name }: { name?: string }) {
         <div className="absolute inset-0 grid place-items-center text-sm font-bold tracking-wide text-fg-3">[ẢNH HERO: MÂM MEAL KIT THẬT, TRÀN VIỀN]</div>
         <div className="absolute inset-x-4 bottom-4 max-w-140 rounded-xl border border-line bg-l1 p-5 shadow-l3 md:bottom-12 md:left-10 md:right-auto md:p-8">
           <span className="inline-flex h-6 items-center rounded-sm border border-line bg-l1 px-2.5 text-xs font-bold text-fg-2">Đặt trước 15h · giao trong ngày</span>
-          <h1 className="mt-3 font-heading text-[28px] font-bold leading-9 md:text-[40px] md:leading-12">{name ? `Chào ${name}, bữa tối 20 phút nhé?` : "Bữa tối 20 phút. Nguyên liệu đã sơ chế sẵn."}</h1>
+          <h1 className="mt-3 font-heading text-3xl font-bold md:text-4xl">{name ? `Chào ${name}, bữa tối 20 phút nhé?` : "Bữa tối 20 phút. Nguyên liệu đã sơ chế sẵn."}</h1>
           <p className="mt-2 text-fg-2">Mỗi hộp có thịt cá, rau củ đã sơ chế, gia vị đã định lượng và công thức từng bước.</p>
           <div className="mt-5 flex flex-wrap gap-2">
             <Link href="/products" className={buttonVariants({ variant: "primary", size: "lg" })}>Chọn meal kit tuần này</Link>
@@ -39,7 +39,7 @@ export function Home({ name }: { name?: string }) {
             {CATEGORIES.map(({ name: n, sub, icon: Icon }) => (
               <Link key={n} href="/products" className="flex min-h-11 items-center gap-3.5 rounded-lg border border-line bg-l1 p-3.5 text-fg transition-colors duration-150 hover:border-line-strong">
                 <span className="grid size-12 flex-none place-items-center rounded-sm bg-p-soft text-p-text"><Icon className="size-6" aria-hidden="true" /></span>
-                <span className="min-w-0"><span className="block font-bold">{n}</span><span className="block text-[13px] leading-[18px] text-fg-3">{sub}</span></span>
+                <span className="min-w-0"><span className="block font-bold">{n}</span><span className="block text-sm text-fg-3">{sub}</span></span>
               </Link>
             ))}
           </div>
@@ -58,7 +58,7 @@ export function Home({ name }: { name?: string }) {
           <ol className="grid gap-3 md:grid-cols-3">
             {STEPS.map(({ title, copy }, i) => (
               <li key={title} className="rounded-lg border border-line bg-l1 p-5">
-                <div className="text-xs font-extrabold tracking-[.06em] text-p-text">BƯỚC {i + 1}</div>
+                <div className="text-xs font-extrabold tracking-wider text-p-text">BƯỚC {i + 1}</div>
                 <div className="mt-1 font-bold">{title}</div>
                 <div className="mt-1 max-w-[40ch] text-sm leading-5 text-fg-2">{copy}</div>
               </li>
