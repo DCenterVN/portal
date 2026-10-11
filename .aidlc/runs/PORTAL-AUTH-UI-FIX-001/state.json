@@ -1,7 +1,7 @@
 {
   "id": "PORTAL-AUTH-UI-FIX-001",
   "title": "PORTAL-AUTH-UI-FIX-001 — sửa 4 lỗi UI auth/RBAC pha 1 (login sai logic, thiếu đăng xuất, ma trận quyền, lệch design)",
-  "description": "worker: unassigned · story: US-UI-002 · sprint: 04 · slices: 6/9 · next: approval: plan.md changed after approval (drift) - re-approve",
+  "description": "worker: unassigned · story: US-UI-002 · sprint: 04 · slices: 8/9 · next: review: review-decision.json missing",
   "pipeline": "sdlc",
   "agent": null,
   "agents": [
@@ -14,10 +14,10 @@
     "sdlc-e2e",
     "sdlc-release"
   ],
-  "currentStep": 3,
+  "currentStep": 4,
   "status": "in_progress",
   "createdAt": "2026-10-11T12:13:24+00:00",
-  "updatedAt": "2026-10-11T15:18:33+00:00",
+  "updatedAt": "2026-10-11T15:31:29+00:00",
   "stepStates": [
     {
       "agent": "sdlc-discovery",
@@ -54,9 +54,9 @@
     },
     {
       "agent": "sdlc-design",
-      "status": "in_progress",
+      "status": "done",
       "revision": 1,
-      "runStatus": "awaiting_review",
+      "runStatus": "approved",
       "startedAt": null,
       "finishedAt": null,
       "artifactsProduced": [
@@ -65,9 +65,9 @@
     },
     {
       "agent": "sdlc-build",
-      "status": "pending",
+      "status": "in_progress",
       "revision": 1,
-      "runStatus": "pending",
+      "runStatus": "awaiting_work",
       "startedAt": null,
       "finishedAt": null,
       "artifactsProduced": []
