@@ -1,6 +1,6 @@
 import { apiFetch } from "@/lib/fetcher";
 
-export interface Product { id: string; sku_code: string; name: string; description?: string; barcode?: string; uom: string; base_price_vnd: number; status: "DRAFT" | "ACTIVE" | "SUSPENDED"; created_at: string; updated_at?: string; }
+export interface Product { id: string; sku_code: string; name: string; description?: string; barcode?: string; uom: string; base_price_vnd: number; status: "DRAFT" | "ACTIVE" | "SUSPENDED"; created_at: string; updated_at?: string; sku_ref?: string; }
 export interface CreateProductInput { sku_code: string; name: string; description?: string; uom: string; base_price_vnd: number; }
 export interface CartItem { product_id: string; sku_code: string; name: string; quantity: number; price_snapshot_vnd: number; uom: string; }
 export interface Cart { id: string; items: CartItem[]; total_amount_vnd: number; }
@@ -53,6 +53,36 @@ export async function getProductById(id: string): Promise<DataResult<Product | n
     if (res.status === 404) return { data: null, source: "api" };
     if (!res.ok) return { data: null, source: "unavailable", error: await errorMessage(res, `Sales API trả về ${res.status}`) };
     return { data: normalizeProduct(await res.json()), source: "api" };
+  } catch (error) {
+    return { data: null, source: "unavailable", error: error instanceof Error ? error.message : "Không kết nối được Sales API" };
+  }
+}
+
+interface CatalogEntry { product: { id: string; name: string; description?: string; created_at: string }; variants: Array<{ id: string; sku_code: string; uom_code: string; unit_price_vnd: number }> }
+function catalogToProduct({ product, variants }: CatalogEntry): Product {
+  const v = variants[0]; // ponytail: first variant stands for the product, variant picker when the store needs it
+  return { id: product.id, sku_ref: v?.id, sku_code: v?.sku_code ?? "", name: product.name, description: product.description, uom: v?.uom_code ?? "", base_price_vnd: v?.unit_price_vnd ?? 0, status: "ACTIVE", created_at: product.created_at };
+}
+
+export async function getCatalog(): Promise<DataResult<Product[]>> {
+  try {
+    const res = await fetch("/api/public/catalog?page_size=100");
+    if (!res.ok) return { data: [], source: "unavailable", error: await errorMessage(res, `Sales API trả về ${res.status}`) };
+    const payload = await res.json();
+    const items: CatalogEntry[] = (payload?.data ?? payload)?.items ?? [];
+    return { data: items.map(catalogToProduct), source: "api" };
+  } catch (error) {
+    return { data: [], source: "unavailable", error: error instanceof Error ? error.message : "Không kết nối được Sales API" };
+  }
+}
+
+export async function getCatalogProduct(id: string): Promise<DataResult<Product | null>> {
+  try {
+    const res = await fetch(`/api/public/catalog/${encodeURIComponent(id)}`);
+    if (res.status === 404) return { data: null, source: "api" };
+    if (!res.ok) return { data: null, source: "unavailable", error: await errorMessage(res, `Sales API trả về ${res.status}`) };
+    const payload = await res.json();
+    return { data: catalogToProduct(payload?.data ?? payload), source: "api" };
   } catch (error) {
     return { data: null, source: "unavailable", error: error instanceof Error ? error.message : "Không kết nối được Sales API" };
   }
@@ -177,7 +207,7 @@ export function recordCartResponse(response: SalesCartResponse, knownProduct?: P
   const previous = loadCartItems();
   const next = response.items.map((item) => {
     const known = previous.find((entry) => entry.product_id === item.sku_ref);
-    const product = knownProduct?.id === item.sku_ref ? knownProduct : undefined;
+    const product = (knownProduct?.sku_ref ?? knownProduct?.id) === item.sku_ref ? knownProduct : undefined;
     return { product_id: item.sku_ref, sku_code: product?.sku_code || known?.sku_code || item.sku_ref, name: product?.name || known?.name || `SKU ${item.sku_ref}`, quantity: item.quantity, price_snapshot_vnd: item.price_snapshot_vnd, uom: product?.uom || known?.uom || "—" };
   });
   window.localStorage.setItem(cartItemsKey, JSON.stringify(next));

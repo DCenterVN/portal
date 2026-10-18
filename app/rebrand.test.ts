@@ -392,7 +392,8 @@ describe("S4 rendered semantic status and modal content", () => {
       expect(html).toContain("Huỷ bỏ");
     } else {
       expect(html).toContain("Dawn");
-      expect(html).toContain('type="password"');
+      expect(html).toContain('aria-pressed="true"');
+      expect(html).toContain("Ẩn mật khẩu");
       expect(html).toContain("Đăng nhập bằng tài khoản khác");
       expect(html).not.toContain('aria-label="Đóng hộp thoại"');
     }
@@ -820,7 +821,8 @@ describe("review fix rendered accessibility and filter selection", () => {
 
   it("finds the session PIN control by its label", () => {
     const html = s7Markup(React.createElement(SessionTimeoutModal, { open: true }), []);
-    expect(getByLabelText(html, "Mật khẩu hoặc mã PIN 6 số")).toContain('type="password"');
+    expect(getByLabelText(html, "Mật khẩu hoặc mã PIN 6 số")).toMatch(/^<input\b/);
+    expect(html).toContain('aria-pressed="true"');
   });
 
   it.each([

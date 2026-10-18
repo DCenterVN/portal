@@ -11,7 +11,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/patterns/password-input";
 import { Label } from "@/components/ui/label";
 
 interface SessionTimeoutModalProps {
@@ -97,9 +97,8 @@ export function SessionTimeoutModal({
               <Label htmlFor={pinId} className="text-xs font-semibold">Mật khẩu hoặc mã PIN 6 số</Label>
               <div className="relative mt-1">
                 <KeyRound className="size-4 text-[var(--color-muted)] absolute left-3 top-2.5" />
-                <Input
+                <PasswordInput
                   id={pinId}
-                  type="password"
                   required
                   autoFocus
                   value={pin}

@@ -86,7 +86,7 @@ export function ProductsView({ initialProducts, dataSource = "api" }: ProductsVi
     setAddingId(product.id);
     try {
       const cart = await addToCart(getOrCreateCartId(), {
-        product_id: product.id,
+        product_id: product.sku_ref ?? product.id,
         quantity: 1,
       });
       recordCartResponse(cart, product);

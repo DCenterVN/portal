@@ -60,7 +60,7 @@ describe("review R3 real route groups", () => {
  it.each([...consolePages,"/platform/companies","/platform/staff","/switch-branch","/switch-org"])("R3 unauthenticated %s uses staff login", path => {
   expect(proxy(request(path)).headers.get("location")).toBe("http://localhost:3000/staff/login?redirect=" + encodeURIComponent(path));
  });
- it.each(["/orders","/me","/products/sku","/checkout"])("R3 customer %s uses customer login", path => {
+ it.each(["/orders","/me","/cart","/checkout"])("R3 customer %s uses customer login", path => {
   expect(proxy(request(path)).headers.get("location")).toBe("http://localhost:3000/login?redirect=" + encodeURIComponent(path));
  });
 });

@@ -11,9 +11,10 @@ export async function forwardSales(
   path: string,
   method: "GET" | "POST",
   bodyPolicy: "none" | "required" = method === "POST" ? "required" : "none",
+  requireAuth: boolean = true,
 ) {
   return forwardService(request, {
-    baseUrl: SALES_SERVICE_URL, path, method, bodyPolicy,
+    baseUrl: SALES_SERVICE_URL, path, method, bodyPolicy, requireAuth,
     unavailableMessage: "Dịch vụ bán hàng hiện không khả dụng",
   });
 }

@@ -8,7 +8,7 @@ import {useSearchParams} from "next/navigation";
 import Link from "next/link";
 import {acceptInvite} from "@/lib/api/employee-auth";
 import {Button} from "@/components/ui/button";
-import {Input} from "@/components/ui/input";
+import { PasswordInput } from "@/components/patterns/password-input";
 import {Label} from "@/components/ui/label";
 
 export function InviteForm() {
@@ -31,8 +31,8 @@ export function InviteForm() {
  return <form onSubmit={submit} noValidate aria-busy={busy} className="space-y-4">
   {error && <div id={`${id}-error`}><ErrorState title={error} /></div>}
   <p className="text-sm text-[var(--color-muted)]"> {t("inviteInstruction")} </p>
-  <div className="space-y-2"><Label htmlFor={`${id}-password`}> {t("newPassword")} </Label><Input id={`${id}-password`} name="password" type="password" autoComplete="new-password" required disabled={busy} aria-invalid={!!error} aria-describedby={error ? `${id}-error` : undefined}/></div>
-  <div className="space-y-2"><Label htmlFor={`${id}-confirm`}> {t("confirmPassword")} </Label><Input id={`${id}-confirm`} name="confirm" type="password" autoComplete="new-password" required disabled={busy} aria-invalid={!!error} aria-describedby={error ? `${id}-error` : undefined}/></div>
+  <div className="space-y-2"><Label htmlFor={`${id}-password`}> {t("newPassword")} </Label><PasswordInput id={`${id}-password`} name="password" autoComplete="new-password" required disabled={busy} aria-invalid={!!error} aria-describedby={error ? `${id}-error` : undefined}/></div>
+  <div className="space-y-2"><Label htmlFor={`${id}-confirm`}> {t("confirmPassword")} </Label><PasswordInput id={`${id}-confirm`} name="confirm" autoComplete="new-password" required disabled={busy} aria-invalid={!!error} aria-describedby={error ? `${id}-error` : undefined}/></div>
   <Button type="submit" disabled={busy} className="w-full">{busy ? t("invitePending") : t("invite")}</Button>{login}
  </form>;
 }
