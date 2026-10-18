@@ -10,7 +10,7 @@ vi.mock("react", async original => { const actual = await original<typeof import
   useRef: (initial: unknown) => {const index = harness.cursor++; if (!(index in harness.slots)) harness.slots[index] = {current: initial}; return harness.slots[index];},
   useEffect: (effect: () => void) => {harness.effects.push(effect);}
 }; });
-vi.mock("next/navigation", () => ({useRouter: () => ({push: harness.push, refresh: harness.refresh}), useSearchParams: () => harness.query}));
+vi.mock("next/navigation", () => ({useRouter: () => ({push: harness.push, refresh: harness.refresh}), useSearchParams: () => harness.query, redirect: (url: string) => {throw new Error(`REDIRECT:${url}`);}}));
 import { CustomerAuthShell } from "@/components/layout/customer-auth-shell";
 import { LoginForm } from "./login-form";
 import * as client from "@/lib/api/customer-auth";
@@ -37,7 +37,7 @@ describe("S3 customer login", () => {
     harness.query = new URLSearchParams("redirect=/console");
     const tree = render(LoginForm); const pending = submit(tree, {identifier: " a@example.com ", password: "password-1234"});
     await submit(tree, {identifier: "a@example.com", password: "password-1234"});
-    expect(login).toHaveBeenCalledTimes(1); expect(login).toHaveBeenCalledWith("a@example.com", "password-1234");
+    expect(login).toHaveBeenCalledTimes(1); expect(login).toHaveBeenCalledWith("a@example.com", "password-1234", "/console");
     expect(renderToStaticMarkup(render(LoginForm))).toContain('aria-busy="true"');
     resolve({next_path: "/"}); await pending; expect(harness.push).toHaveBeenCalledWith("/"); expect(harness.refresh).toHaveBeenCalledOnce();
   });
@@ -94,7 +94,7 @@ it.each([[RegisterForm, "Create account"], [ForgotForm, "Enter your email"], [Re
  localeHarness.locale = "en";
  try {expect(renderToStaticMarkup(render(component))).toContain(copy);} finally {localeHarness.locale = "vi";}
 });
-it.each([LoginForm, RegisterForm, ForgotForm, ResetForm, ActivateView])("FE-14 customer renders a visible actionable empty state (%s)", component => {
+it.each([RegisterForm, ForgotForm, ResetForm, ActivateView])("FE-14 customer renders a visible actionable empty state (%s)", component => {
  const html = renderToStaticMarkup(render(component));
  expect(html).toContain("lucide-inbox");
  expect(html).toContain('role="status"');
@@ -118,7 +118,12 @@ it("S19 customer English provider drives the real next-intl hook in login", () =
  } finally {localeHarness.real = false;}
 });
 
-it.each([["login", "Sign in"], ["register", "Create a shopping account"], ["activate", "Activate account"], ["forgot-password", "Forgot password"], ["reset-password", "Set a new password"]])("S19 customer server page translates heading and metadata (%s)", async (route, title) => {
+it.each([["login", "/?auth=login&redirect=%2Fcart"], ["register", "/?auth=register&redirect=%2Fcart"]])("customer %s page redirects to the landing popup keeping redirect", async (route, target) => {
+ const page = await import(`../../app/(auth)/${route}/page.tsx`);
+ await expect(page.default({searchParams: Promise.resolve({redirect: "/cart"})})).rejects.toThrow(`REDIRECT:${target}`);
+});
+
+it.each([["activate", "Activate account"], ["forgot-password", "Forgot password"], ["reset-password", "Set a new password"]])("S19 customer server page translates heading and metadata (%s)", async (route, title) => {
  localeHarness.locale = "en";
  try {
   const page = await import(`../../app/(auth)/${route}/page.tsx`);
@@ -128,7 +133,7 @@ it.each([["login", "Sign in"], ["register", "Create a shopping account"], ["acti
  } finally {localeHarness.locale = "vi";}
 });
 
-it.each([[429,"rate_limit_exceeded","Quá nhiều yêu cầu. Vui lòng thử lại sau."],[403,"FORBIDDEN","Đăng nhập không thành công."],[500,"unknown_code","Đăng nhập không thành công."]] as const)("D-141/D-142 customer login %s %s localizes without staff link", async (status,code,copy) => {
+it.each([[429,"rate_limit_exceeded","Quá nhiều yêu cầu. Vui lòng thử lại sau."],[403,"FORBIDDEN","Đăng nhập không thành công."],[500,"unknown_code","Hệ thống đang bận, vui lòng thử lại sau."]] as const)("D-141/D-142 customer login %s %s localizes without staff link", async (status,code,copy) => {
  vi.stubGlobal("fetch",vi.fn().mockResolvedValue(new Response(JSON.stringify({error:code,message:"invalid or expired token"}),{status})));
  await submit(render(LoginForm),{identifier:"customer",password:"password-1234"});
  const html=renderToStaticMarkup(render(LoginForm));expect(html).toContain(copy);expect(html).not.toContain('href="/staff/login"');expect(html).not.toContain("invalid or expired token");

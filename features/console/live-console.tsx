@@ -6,6 +6,8 @@ import { fetcher } from "@/lib/fetcher";
 import { PageHeader, PageShell } from "@/components/ui/page";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { PermissionGrid } from "@/features/platform/permission-grid";
+import { resourcesOf } from "@/features/platform/use-role-matrix";
 
 type AccessContext = { org_id: string; org_name: string; branch_id: string; branch_name: string; roles: string[] };
 type ConsoleResponse = { user: { id?: string; display_name?: string; email?: string }; contexts: AccessContext[]; active_context: { org_id: string; branch_id: string }; permissions: string[]; limitations: string[] };
@@ -22,7 +24,7 @@ export function LiveConsole() {
       <Card><CardHeader><CardTitle className="flex items-center gap-2 text-sm"><KeyRound className="size-4" /> Quyền hiệu lực</CardTitle></CardHeader><CardContent><strong>{data.permissions.length}</strong><span className="ml-2 text-xs text-[var(--muted-foreground)]">action key từ Org</span></CardContent></Card>
     </div>
     <Card><CardHeader><CardTitle className="text-base">Tổ chức và chi nhánh</CardTitle></CardHeader><CardContent className="divide-y divide-[var(--border)]">{data.contexts.length === 0 ? <p className="py-4 text-sm text-[var(--muted-foreground)]">Tài khoản chưa có phạm vi truy cập.</p> : data.contexts.map((context) => <div className="grid gap-1 py-4 sm:grid-cols-3" key={`${context.org_id}:${context.branch_id}`}><strong>{context.org_name}</strong><span>{context.branch_name}</span><span className="text-xs text-[var(--muted-foreground)]">{context.roles.join(", ") || "Chưa gán vai trò"}</span></div>)}</CardContent></Card>
-    <Card><CardHeader><CardTitle className="text-base">Quyền đã phân giải</CardTitle></CardHeader><CardContent className="flex flex-wrap gap-2">{data.permissions.length === 0 ? <p className="text-sm text-[var(--muted-foreground)]">Không có action key trong phạm vi đang chọn.</p> : data.permissions.map((permission) => <code className="border border-[var(--border)] bg-[var(--secondary)] px-2 py-1 text-xs" key={permission}>{permission}</code>)}</CardContent></Card>
+    <Card><CardHeader><CardTitle className="text-base">Quyền đã phân giải</CardTitle></CardHeader><CardContent>{data.permissions.length === 0 ? <p className="text-sm text-[var(--muted-foreground)]">Không có action key trong phạm vi đang chọn.</p> : <PermissionGrid actions={data.permissions} resources={resourcesOf({ me: data.permissions })} />}</CardContent></Card>
     <aside className="border-l-4 border-amber-500 bg-amber-500/10 p-4 text-sm"><strong>Giới hạn backend hiện tại</strong><ul className="mt-2 list-disc space-y-1 pl-5">{data.limitations.map((item) => <li key={item}>{item}</li>)}</ul></aside>
   </PageShell>;
 }

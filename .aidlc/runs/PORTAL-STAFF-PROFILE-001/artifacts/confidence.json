@@ -1,0 +1,16 @@
+{
+  "task": "PORTAL-STAFF-PROFILE-001",
+  "actor": "agent:claude",
+  "worker": "claude",
+  "ts": "2026-10-11T16:49:19+00:00",
+  "verified_head": "d93078f80e44c8440156d81094136b31f7bc417c",
+  "signals": {
+    "correctness": 0.9,
+    "security": 0.9,
+    "spec_fit": 0.85
+  },
+  "score": 0.6885,
+  "bar": 0.95,
+  "sensitive": false,
+  "verdict": "BELOW_BAR"
+}

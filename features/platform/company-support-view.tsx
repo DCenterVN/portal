@@ -106,7 +106,7 @@ export function CompanySupportView() {
     <RequireAction action="org:company:read">
       <PageHeader icon={<ShieldCheck />} title="Hỗ trợ từ nền tảng" description="Duyệt hoặc thu hồi quyền hỗ trợ; mọi thao tác của nền tảng trong công ty đều có ở nhật ký." />
       <Tabs label="Hỗ trợ" idPrefix="company-support" items={tabs} value={tab} onChange={setTab}>
-        {tab === "requests" ? <Requests root={root} canDecide={can("org:support_access:approve")} /> : <AuditLog source="company" root={root} />}
+        {tab === "requests" ? <Requests root={root} canDecide={can("org:support_access_approval:create")} /> : <AuditLog source="company" root={root} />}
       </Tabs>
     </RequireAction>
   );

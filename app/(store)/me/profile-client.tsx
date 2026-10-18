@@ -6,7 +6,6 @@ import {
   User,
   Shield,
   KeyRound,
-  Building2,
   Phone,
   Mail,
   Calendar,
@@ -26,7 +25,7 @@ export default function ProfileClient() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [errorStatus, setErrorStatus] = useState<number | null>(null);
-  const [activeTab, setActiveTab] = useState<"general" | "security" | "memberships">("general");
+  const [activeTab, setActiveTab] = useState<"general" | "security">("general");
 
   const fetchUserProfile = () => {
     setLoading(true);
@@ -34,6 +33,10 @@ export default function ProfileClient() {
     setErrorStatus(null);
     getProfile()
       .then((data) => {
+        if (data.memberships?.length > 0) {
+          router.replace("/account");
+          return;
+        }
         setProfile(data);
         setLoading(false);
       })
@@ -141,14 +144,6 @@ export default function ProfileClient() {
               Thông tin chung
             </Button>
             <Button
-              variant={activeTab === "memberships" ? "secondary" : "ghost"}
-              className="w-full justify-start text-xs font-semibold"
-              onClick={() => setActiveTab("memberships")}
-            >
-              <Building2 className="size-4 mr-2" />
-              Tổ chức & Chi nhánh ({profile.memberships?.length || 0})
-            </Button>
-            <Button
               variant={activeTab === "security" ? "secondary" : "ghost"}
               className="w-full justify-start text-xs font-semibold"
               onClick={() => setActiveTab("security")}
@@ -201,46 +196,6 @@ export default function ProfileClient() {
                     {profile.created_at ? new Date(profile.created_at).toLocaleDateString("vi-VN") : "27/08/2026"}
                   </p>
                 </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {activeTab === "memberships" && (
-            <Card className="rounded-2xl border-[var(--color-line)] bg-[var(--color-surface)] p-6">
-              <CardHeader className="p-0 pb-5 border-b border-[var(--color-line)]">
-                <CardTitle className="font-[family-name:var(--font-quicksand,var(--font-display))] text-base font-bold">Danh sách Tổ chức & Phân quyền Chi nhánh</CardTitle>
-                <CardDescription className="text-xs">Các ngữ cảnh làm việc được liên kết với tài khoản này</CardDescription>
-              </CardHeader>
-              <CardContent className="p-0 pt-5 space-y-3">
-                {profile.memberships && profile.memberships.length > 0 ? (
-                  profile.memberships.map((m, idx) => (
-                    <div key={idx} className="p-4 rounded-xl border border-[var(--color-line)] bg-[var(--color-tint)] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <Building2 className="size-4 text-[var(--color-primary)]" />
-                          <h4 className="font-[family-name:var(--font-quicksand,var(--font-display))] text-sm font-bold text-[var(--color-ink)]">{m.org_name || m.org_id}</h4>
-                        </div>
-                        {m.branch_name && (
-                          <p className="text-xs text-[var(--color-muted)] mt-1">Chi nhánh: {m.branch_name}</p>
-                        )}
-                        <div className="flex flex-wrap gap-1.5 mt-2">
-                          {m.roles.map((r) => (
-                            <Badge key={r} variant="secondary" className="text-xs font-bold">
-                              {r}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                      <Button size="sm" variant="outline" onClick={() => router.push("/staff/switch-org")} className="text-xs font-semibold">
-                        Chuyển ngữ cảnh
-                      </Button>
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-center py-8 text-xs text-[var(--color-muted)]">
-                    Bạn đang hoạt động dưới quyền Khách hàng vãng lai (CUSTOMER).
-                  </div>
-                )}
               </CardContent>
             </Card>
           )}

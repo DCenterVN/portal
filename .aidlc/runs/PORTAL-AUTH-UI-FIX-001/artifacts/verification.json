@@ -1,0 +1,97 @@
+{
+  "task": "PORTAL-AUTH-UI-FIX-001",
+  "actor": "agent:claude-code(171709704+dawnmoriaty@users.noreply.github.com)",
+  "worker": "claude-sonnet",
+  "ts": "2026-10-11T15:41:39+00:00",
+  "cwd": ".",
+  "head": "4ad13f84d583398cf66bd986d9fd6229ed80d34f",
+  "dirty": true,
+  "checks": [
+    {
+      "name": "unit",
+      "command": "npm test",
+      "exit": 0,
+      "status": "PASS",
+      "seconds": 4.1,
+      "log": ".aidlc/runs/PORTAL-AUTH-UI-FIX-001/artifacts/logs/unit.log",
+      "sha256": "ec441742586b1df7ee1dfe8195bffdd89e3fddcf7a5b8686310078d73bd38d40",
+      "tail": [
+        "stderr | app/api/auth/bff.test.ts > Portal BFF Auth Handlers (9 handlers) > 1. POST /api/auth/login sets cookies and forwards response",
+        "PORTAL_CLIENT_IP_SOURCE is unset; auth forwarding is disabled",
+        "",
+        "stderr | app/rebrand.test.ts > S7 rendered target, cart, orders and product creation roles > keeps target permissions, labelled statuses and sole create/submit emphasis (form=false)",
+        "React does not recognize the `asChild` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `aschild` instead. If you accidentally passed it from a parent component, remove it from the DOM element."
+      ]
+    },
+    {
+      "name": "lint",
+      "command": "npm run lint",
+      "exit": 0,
+      "status": "PASS",
+      "seconds": 2.7,
+      "log": ".aidlc/runs/PORTAL-AUTH-UI-FIX-001/artifacts/logs/lint.log",
+      "sha256": "7641747edd98ed1a1fd1ad59bec73c32caac945b1006098310c6c071b528e278",
+      "tail": [
+        "> @dcentervn/portal@0.1.0 lint",
+        "> node node_modules/eslint/bin/eslint.js ."
+      ]
+    },
+    {
+      "name": "typecheck",
+      "command": "npm run typecheck",
+      "exit": 0,
+      "status": "PASS",
+      "seconds": 1.6,
+      "log": ".aidlc/runs/PORTAL-AUTH-UI-FIX-001/artifacts/logs/typecheck.log",
+      "sha256": "c5a440cd52c7fadc3d367658101693af6eb5b85d21dbd518cb3bda67056215e7",
+      "tail": [
+        "> @dcentervn/portal@0.1.0 typecheck",
+        "> node node_modules/typescript/bin/tsc --noEmit"
+      ]
+    },
+    {
+      "name": "integration",
+      "command": "bash .aidlc/runs/PORTAL-AUTH-UI-FIX-001/evidence/live.sh",
+      "exit": 0,
+      "status": "PASS",
+      "seconds": 12.7,
+      "log": ".aidlc/runs/PORTAL-AUTH-UI-FIX-001/artifacts/logs/integration.log",
+      "sha256": "f0d1d3c94be9f09e54b9d875da13543f4d4be42c2c294d43881c385ed6cf9539",
+      "tail": [
+        "PASS S3 /login -> landing popup (307)",
+        "PASS S3 /?auth=login 200",
+        "PASS S3 /register -> landing popup (307)",
+        "PASS S3 /?auth=register 200",
+        "PASS S3 /staff/login 200"
+      ]
+    },
+    {
+      "name": "e2e",
+      "command": "bash .aidlc/runs/PORTAL-AUTH-UI-FIX-001/evidence/e2e.sh",
+      "exit": 0,
+      "status": "PASS",
+      "seconds": 3.0,
+      "log": ".aidlc/runs/PORTAL-AUTH-UI-FIX-001/artifacts/logs/e2e.log",
+      "sha256": "b2e782b70f399a2ec854ef9ad61d15e9da730c025a789865dfb08c6a05ef5764",
+      "tail": [
+        "PASS customer: /cart 200 -> logout -> 307 location: /login?redirect=%2Fcart",
+        "PASS employee: /console 200 -> logout -> 307 location: /staff/login?redirect=%2Fconsole"
+      ]
+    },
+    {
+      "name": "spec",
+      "command": "cd ../org && python3 /home/dawn/agent_skills/sdlc/engine/speccheck.py .aidlc/specs/role-matrix.md .aidlc/specs/platform-plane.md && cd ../auth && python3 /home/dawn/agent_skills/sdlc/engine/speccheck.py .aidlc/specs/register.md",
+      "exit": 0,
+      "status": "PASS",
+      "seconds": 0.1,
+      "log": ".aidlc/runs/PORTAL-AUTH-UI-FIX-001/artifacts/logs/spec.log",
+      "sha256": "fb230c99dd32d5571d177f72932fc99dd97cf30d98954fc7459273549d970a03",
+      "tail": [
+        "ok   role-matrix.md",
+        "ok   platform-plane.md",
+        "ok   register.md"
+      ]
+    }
+  ],
+  "verdict": "PASS"
+}

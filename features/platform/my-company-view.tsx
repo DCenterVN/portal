@@ -75,7 +75,7 @@ export function MyCompanyView() {
   return (
     <RequireAction action="org:company:read">
       <PageHeader icon={<Building />} title="Công ty của tôi" description="Module và ma trận quyền do nền tảng quản lý theo hợp đồng. Ở đây chỉ xem." />
-      {can("org:support_access:approve") && <ConsentCard root={root} />}
+      {can("org:company:update") && <ConsentCard root={root} />}
       <section aria-labelledby="my-modules" className="space-y-3">
         <h2 id="my-modules" className="text-sm font-semibold">
           Module

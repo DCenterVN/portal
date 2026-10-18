@@ -44,11 +44,11 @@ export function PricingFloorView() {
 			.catch(() => setPermissions([]));
 	}, []);
 
-	const canPreview = permissions.includes("sales:price_floor:preview");
+	const canPreview = permissions.includes("sales:price_floor:read");
 	const canCreatePolicy = permissions.includes("sales:price_floor_policy:create");
-	const canApprovePolicy = permissions.includes("sales:price_floor_policy:approve");
+	const canApprovePolicy = permissions.includes("sales:price_floor_policy_approval:create");
 	const canPropose = permissions.includes("sales:price_book:create");
-	const canApprovePrice = permissions.includes("sales:price_book:approve");
+	const canApprovePrice = permissions.includes("sales:price_book_approval:create");
 	const belowFloor = preview !== null && proposedPrice < preview.minimum_sale_price_vnd;
 
 	async function run(task: () => Promise<void>) {

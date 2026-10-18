@@ -3,6 +3,15 @@ import {authHeaders, resolveClientIP} from "@/lib/api/client-ip";
 
 const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL || "http://localhost:8080";
 
+const SESSION_COOKIES = ["access_token", "__Host-refresh_token", "refresh_token", "CSRF-Token", "portal_plane"];
+
+function clearSession(res: NextResponse): NextResponse {
+  for (const name of SESSION_COOKIES) {
+    res.cookies.set(name, "", {path: "/", expires: new Date(0), maxAge: 0, ...(/^__(Host|Secure)-/.test(name) && {secure: true})});
+  }
+  return res;
+}
+
 export async function POST(req: NextRequest) {
   let clientIP: string | undefined;
   try { clientIP = resolveClientIP(req.headers); }
@@ -26,15 +35,10 @@ export async function POST(req: NextRequest) {
 
     if (res.status === 429) {
       const retry = res.headers.get("retry-after");
-      return NextResponse.json(await res.json(), {status: 429, headers: retry ? {"Retry-After": retry} : {}});
+      return clearSession(NextResponse.json(await res.json(), {status: 429, headers: retry ? {"Retry-After": retry} : {}}));
     }
-    const nextRes = NextResponse.json({ message: "logged_out" });
-    nextRes.cookies.delete("access_token");
-    nextRes.cookies.delete("__Host-refresh_token");
-    nextRes.cookies.delete("refresh_token");
-    nextRes.cookies.delete("CSRF-Token");
-    return nextRes;
+    return clearSession(NextResponse.json({ message: "logged_out" }));
   } catch (err: unknown) {
-    return NextResponse.json({ error: "internal_error", message: err instanceof Error ? err.message : String(err) }, { status: 500 });
+    return clearSession(NextResponse.json({ error: "internal_error", message: err instanceof Error ? err.message : String(err) }, { status: 500 }));
   }
 }

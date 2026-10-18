@@ -1,0 +1,83 @@
+{
+  "task": "PORTAL-STAFF-PROFILE-001",
+  "actor": "agent:claude",
+  "worker": "claude",
+  "ts": "2026-10-11T16:48:58+00:00",
+  "cwd": ".",
+  "head": "d93078f80e44c8440156d81094136b31f7bc417c",
+  "dirty": true,
+  "checks": [
+    {
+      "name": "lint",
+      "command": "npm run lint",
+      "exit": 0,
+      "status": "PASS",
+      "seconds": 2.4,
+      "log": ".aidlc/runs/PORTAL-STAFF-PROFILE-001/artifacts/logs/lint.log",
+      "sha256": "7641747edd98ed1a1fd1ad59bec73c32caac945b1006098310c6c071b528e278",
+      "tail": [
+        "> @dcentervn/portal@0.1.0 lint",
+        "> node node_modules/eslint/bin/eslint.js ."
+      ]
+    },
+    {
+      "name": "typecheck",
+      "command": "npm run typecheck",
+      "exit": 0,
+      "status": "PASS",
+      "seconds": 1.7,
+      "log": ".aidlc/runs/PORTAL-STAFF-PROFILE-001/artifacts/logs/typecheck.log",
+      "sha256": "c5a440cd52c7fadc3d367658101693af6eb5b85d21dbd518cb3bda67056215e7",
+      "tail": [
+        "> @dcentervn/portal@0.1.0 typecheck",
+        "> node node_modules/typescript/bin/tsc --noEmit"
+      ]
+    },
+    {
+      "name": "unit",
+      "command": "ESBUILD_BINARY_PATH=/home/dawn/.local/share/esbuild/esbuild-0.21.5 npm test",
+      "exit": 0,
+      "status": "PASS",
+      "seconds": 4.1,
+      "log": ".aidlc/runs/PORTAL-STAFF-PROFILE-001/artifacts/logs/unit.log",
+      "sha256": "45bf0484259d7eae201dbf46f699a90195394449240f16cc5546e9c1c07213d6",
+      "tail": [
+        "stderr | app/api/auth/bff.test.ts > Portal BFF Auth Handlers (9 handlers) > 1. POST /api/auth/login sets cookies and forwards response",
+        "PORTAL_CLIENT_IP_SOURCE is unset; auth forwarding is disabled",
+        "",
+        "stderr | app/rebrand.test.ts > S7 rendered target, cart, orders and product creation roles > keeps target permissions, labelled statuses and sole create/submit emphasis (form=false)",
+        "React does not recognize the `asChild` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `aschild` instead. If you accidentally passed it from a parent component, remove it from the DOM element."
+      ]
+    },
+    {
+      "name": "integration",
+      "command": "bash .aidlc/runs/PORTAL-STAFF-PROFILE-001/evidence/live.sh",
+      "exit": 0,
+      "status": "PASS",
+      "seconds": 3.8,
+      "log": ".aidlc/runs/PORTAL-STAFF-PROFILE-001/artifacts/logs/integration.log",
+      "sha256": "2a6f3a18e8653207f582452bf9ae302fd6dff827565f54c2669c9e874f168763",
+      "tail": [
+        "PASS anon /account -> /staff/login?redirect=%2Faccount",
+        "PASS staff /account 200",
+        "PASS staff /console 200",
+        "PASS customer /me 200",
+        "PASS customer /account (same as other console routes, proxy.ts:33) -> /staff/switch-org?redirect=%2Faccount"
+      ]
+    },
+    {
+      "name": "e2e",
+      "command": "bash .aidlc/runs/PORTAL-STAFF-PROFILE-001/evidence/e2e.sh",
+      "exit": 0,
+      "status": "PASS",
+      "seconds": 2.4,
+      "log": ".aidlc/runs/PORTAL-STAFF-PROFILE-001/artifacts/logs/e2e.log",
+      "sha256": "417be73a2cd8c5e95b4d82efd0531043d7d048324c32ae77f4e63dc611e87e2b",
+      "tail": [
+        "PASS staff: /account 200 -> logout -> 307 location: /staff/login?redirect=%2Faccount",
+        "PASS customer: /me 200 -> logout -> 307 location: /login?redirect=%2Fme"
+      ]
+    }
+  ],
+  "verdict": "PASS"
+}

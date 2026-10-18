@@ -1,0 +1,13 @@
+{
+  "task": "PORTAL-STAFF-PROFILE-001",
+  "actor": "agent:claude",
+  "worker": "claude",
+  "ts": "2026-10-11T16:49:07+00:00",
+  "reviewer": "claude-sonnet-independent",
+  "report": "/home/dawn/wt/portal-staff-profile-001/portal/.aidlc/runs/PORTAL-STAFF-PROFILE-001/review.md",
+  "report_sha256": "102891c92306b73c6fa3669fc101a5ed46cfc04ab98a41291cfd6f3b19904658",
+  "risks": [
+    "F2 resourcesOf bỏ key không CRUDIE (có từ trước, D-191); F4 /company/account chỉ Gate client (có từ trước, D-192); F3 test hồ sơ nhân viên chỉ kiểm màu thô"
+  ],
+  "verdict": "PASS_WITH_RISK"
+}
