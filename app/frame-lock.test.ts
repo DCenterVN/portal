@@ -17,7 +17,7 @@ describe("FR-13 frame lock", () => {
 
   it("locks frame files but not screen baselines", () => {
     const files = Object.keys(frameHashes() as Hashes);
-    for (const file of ["app/globals.css", "components/ui/button.tsx", "components/layout/console-header.tsx", "app/frame-lock.test.ts", "package-lock.json"]) {
+    for (const file of ["app/globals.css", "components/ui/button.tsx", "components/layout/console-header.tsx", "app/frame-lock.test.ts", "pnpm-lock.yaml"]) {
       expect(files).toContain(file);
     }
     expect(files.some((file) => file.startsWith("e2e/visual/baseline/screens/"))).toBe(false);

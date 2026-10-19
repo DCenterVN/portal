@@ -1,0 +1,52 @@
+name: Deploy Vercel
+
+on:
+  workflow_call:
+    inputs:
+      production:
+        type: boolean
+        required: true
+    secrets:
+      VERCEL_TOKEN:
+        required: true
+      VERCEL_ORG_ID:
+        required: true
+      VERCEL_PROJECT_ID:
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: vercel-${{ inputs.production && 'production' || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    # Defense in depth: never run fork code with deployment credentials.
+    if: >-
+      (github.event_name == 'push' && github.ref == 'refs/heads/main' && inputs.production) ||
+      (github.event_name == 'pull_request' && !inputs.production &&
+       github.event.pull_request.head.repo.full_name == github.repository &&
+       github.actor != 'dependabot[bot]')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac # v2
+        with:
+          cache: true
+      - name: Deploy verified revision with Vercel CLI 48.0.0
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          PRODUCTION: ${{ inputs.production }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          : "${VERCEL_TOKEN:?Missing VERCEL_TOKEN}" "${VERCEL_ORG_ID:?Missing VERCEL_ORG_ID}" "${VERCEL_PROJECT_ID:?Missing VERCEL_PROJECT_ID}"
+          args=(deploy --yes --token "$VERCEL_TOKEN")
+          if [[ "$PRODUCTION" == true ]]; then args+=(--prod); fi
+          pnpm dlx vercel@48.0.0 "${args[@]}"

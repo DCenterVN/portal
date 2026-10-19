@@ -1,6 +1,6 @@
 {
   "files": {
-    "app/frame-lock.test.ts": "751b503e130c27086f95a438992d23aa9682597f278dbef9fb2ff79255bcf117",
+    "app/frame-lock.test.ts": "a7c96e51446f1bdff57c45a78a3d8639985c345cdd9c962e305e4be67983021d",
     "app/globals.css": "5116a3abe849877d511e830d36e084f2be5db3b4e79571828f34732e59e8b35f",
     "app/layout-gate.test.ts": "5dd992846c3388fc286196fe65a64e91a3f4a98c6588f8a8adbbfe25fd2ebee9",
     "app/layout.tsx": "78587c8aec7515c252f30e6056cbd3701265c270ae2bf7fcaf09e74eb4b7f353",
@@ -49,9 +49,9 @@
     "e2e/visual/baseline/tokens-mobile.png": "b2dfceb4d7784d090c467d8d545428f5997d86a8a9edc7923509c22beec19e41",
     "e2e/visual/preview.spec.ts": "04ff1dc0668347225c960064ae6b3e92633fed6a48e8c125a7b8b12ba657ae1e",
     "eslint.config.mjs": "5070319c8efcb0c5d314f4202704e46d7f030f94b0d2195f6caf28407f8ffe69",
-    "package-lock.json": "cb0735387671e773c1ddc1c6bfd599b9653048211a9b73b6e7f8badabc5a515c",
     "package.json": "3ffe2a55bbb07c52e785013074a71291ddaa9cac0c3f38a54e6424571c71af42",
     "playwright.config.ts": "c32fdbcdd7358cc29302e2c5149361b130772cc965f799e5611b4886d0d468d6",
-    "scripts/frame-lock.mjs": "cb3f8135ff40963fd38e6bbc678324e6af637cd2b8aeb27f1450ac29329d53b1"
+    "pnpm-lock.yaml": "91561666cb296d1708d738be6c5d968fee9c1333fd8af101383ae65fddce20d4",
+    "scripts/frame-lock.mjs": "8fc91a057421cb1bdc9b10aed4e63b6983f1464aee3791b1e08a144a681aa41d"
   }
 }

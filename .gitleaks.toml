@@ -1,0 +1,19 @@
+title = "Portal public repository secret scan"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "jwt"
+[[rules.allowlists]]
+description = "48 audited local CUSTOMER access tokens, TTL 60s, expired 2026-09-28"
+paths = ['''^\.aidlc/runs/PORTAL-PLATFORM-001/(evidence|evidence-T9M2K4)/(audit|companies|company|company-support|matrix|my-company|staff|support)\.lighthouse-run[123]\.json$''']
+
+[[rules]]
+id = "generic-api-key"
+[[rules.allowlists]]
+description = "SHA-256 file digests in frame.lock.json, not credentials"
+condition = "AND"
+paths = ['''^frame\.lock\.json$''']
+regexTarget = "secret"
+regexes = ['''^[a-f0-9]{64}$''']
