@@ -24,7 +24,7 @@ export const FRAME_GLOBS = [
   "e2e/visual/preview.spec.ts",
   "e2e/visual/baseline/tokens-*.png",
   "package.json",
-  "package-lock.json",
+  "pnpm-lock.yaml",
 ];
 
 const sha256 = (file) => createHash("sha256").update(readFileSync(path.join(ROOT, file))).digest("hex");

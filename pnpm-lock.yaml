@@ -19,10 +19,10 @@ importers:
         version: 0.468.0(react@19.0.0)
       next:
         specifier: 16.3.0
-        version: 16.3.0(@types/node@22.10.5)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+        version: 16.3.0(@playwright/test@1.63.0)(@types/node@22.10.5)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       next-intl:
         specifier: 4.13.6
-        version: 4.13.6(next@16.3.0(@types/node@22.10.5)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react@19.0.0)(typescript@5.7.2)
+        version: 4.13.6(next@16.3.0(@playwright/test@1.63.0)(@types/node@22.10.5)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react@19.0.0)(typescript@5.7.2)
       react:
         specifier: 19.0.0
         version: 19.0.0
@@ -39,6 +39,9 @@ importers:
       '@eslint/js':
         specifier: 9.17.0
         version: 9.17.0
+      '@playwright/test':
+        specifier: 1.63.0
+        version: 1.63.0
       '@tailwindcss/postcss':
         specifier: ^4.3.3
         version: 4.3.3
@@ -673,6 +676,11 @@ packages:
   '@parcel/watcher@2.6.0':
     resolution: {integrity: sha512-7FNeNl8NCE7aINx7WXiKQrPYZWC/hvrTsmk6zmxbI7LTXE7hVek/n8AfVgpe2y82zl3w0HvCHN0bVKMBoJcC0w==}
     engines: {node: '>= 10.0.0'}
+
+  '@playwright/test@1.63.0':
+    resolution: {integrity: sha512-oxMK4vllB9RK5NQ2l1pq1IfOf2AvnEuj/vYGDj0H2nMtmtZpKtCwt/l00GEO6xjGfpBNAvjovvYdCm50dRQkpQ==}
+    engines: {node: '>=20'}
+    hasBin: true
 
   '@rollup/rollup-android-arm-eabi@4.62.5':
     resolution: {integrity: sha512-jfkGfTwhQpsiSckPF8r9bU3pn3vyd72NlWaO+TgEO6WPSDnUhXzrNYCHBMOYj0ACaUgjm6eERLF+XV9a6RstoA==}
@@ -1675,6 +1683,16 @@ packages:
     resolution: {integrity: sha512-RvwwcruNjI1ncT5xRakeyS9Lf8lcItv34KD+aif+VH9kduAyfYBipGh12274xtenIPZ119/R9BdTBa8gAwSh0A==}
     engines: {node: '>=12'}
 
+  playwright-core@1.63.0:
+    resolution: {integrity: sha512-rYCsBF/M5HjUch52bbtVONEFjv6Xu8sm8h72dNlR5bzIE1fvC/bxgspzkjSfU+MweEMmPM8KJebG6nnyxo5mCg==}
+    engines: {node: '>=20'}
+    hasBin: true
+
+  playwright@1.63.0:
+    resolution: {integrity: sha512-+7ziBLidS4NaNCdt57SUDT+wYmmd5fmiQejUic/kb+YsYSCPyOOE9sebzMjNmQrsnNpDJqd4WHvV/8lfKfUDUg==}
+    engines: {node: '>=20'}
+    hasBin: true
+
   po-parser@2.2.0:
     resolution: {integrity: sha512-NdTrKgh0oO7+y+RFX8KKhOB438x/j94UGXEFzl/7pHH0JjWSn42iJ9tgmPksIO6n1JKDHmNDcejPJfKspljB9g==}
 
@@ -2450,6 +2468,10 @@ snapshots:
       '@parcel/watcher-linux-x64-musl': 2.6.0
       '@parcel/watcher-win32-arm64': 2.6.0
       '@parcel/watcher-win32-x64': 2.6.0
+
+  '@playwright/test@1.63.0':
+    dependencies:
+      playwright: 1.63.0
 
   '@rollup/rollup-android-arm-eabi@4.62.5':
     optional: true
@@ -3276,14 +3298,14 @@ snapshots:
 
   next-intl-swc-plugin-extractor@4.13.7: {}
 
-  next-intl@4.13.6(next@16.3.0(@types/node@22.10.5)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react@19.0.0)(typescript@5.7.2):
+  next-intl@4.13.6(next@16.3.0(@playwright/test@1.63.0)(@types/node@22.10.5)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react@19.0.0)(typescript@5.7.2):
     dependencies:
       '@formatjs/intl-localematcher': 0.8.13
       '@parcel/watcher': 2.6.0
       '@swc/core': 1.16.1
       icu-minify: 4.13.7
       negotiator: 1.1.0
-      next: 16.3.0(@types/node@22.10.5)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      next: 16.3.0(@playwright/test@1.63.0)(@types/node@22.10.5)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       next-intl-swc-plugin-extractor: 4.13.7
       po-parser: 2.2.0
       react: 19.0.0
@@ -3293,7 +3315,7 @@ snapshots:
     transitivePeerDependencies:
       - '@swc/helpers'
 
-  next@16.3.0(@types/node@22.10.5)(react-dom@19.0.0(react@19.0.0))(react@19.0.0):
+  next@16.3.0(@playwright/test@1.63.0)(@types/node@22.10.5)(react-dom@19.0.0(react@19.0.0))(react@19.0.0):
     dependencies:
       '@next/env': 16.3.0
       '@swc/helpers': 0.5.15
@@ -3312,6 +3334,7 @@ snapshots:
       '@next/swc-linux-x64-musl': 16.3.0
       '@next/swc-win32-arm64-msvc': 16.3.0
       '@next/swc-win32-x64-msvc': 16.3.0
+      '@playwright/test': 1.63.0
       sharp: 0.35.3(@types/node@22.10.5)
     transitivePeerDependencies:
       - '@babel/core'
@@ -3360,6 +3383,12 @@ snapshots:
   picocolors@1.1.1: {}
 
   picomatch@4.0.5: {}
+
+  playwright-core@1.63.0: {}
+
+  playwright@1.63.0:
+    dependencies:
+      playwright-core: 1.63.0
 
   po-parser@2.2.0: {}
 

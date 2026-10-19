@@ -9,6 +9,28 @@ permissions:
   contents: read
 
 jobs:
+  secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Scan full history with Gitleaks 8.21.2
+        shell: bash
+        run: |
+          set -euo pipefail
+          scan_dir="$(mktemp -d)"
+          trap 'rm -rf "$scan_dir"' EXIT
+          release=https://github.com/gitleaks/gitleaks/releases/download/v8.21.2
+          archive=gitleaks_8.21.2_linux_x64.tar.gz
+          curl --fail --silent --show-error --location --retry 3 "$release/$archive" -o "$scan_dir/$archive"
+          curl --fail --silent --show-error --location --retry 3 "$release/gitleaks_8.21.2_checksums.txt" -o "$scan_dir/checksums.txt"
+          grep -E '^[a-f0-9]{64}  gitleaks_8\.21\.2_linux_x64\.tar\.gz$' "$scan_dir/checksums.txt" > "$scan_dir/selected.sha256"
+          (cd "$scan_dir" && sha256sum --check selected.sha256)
+          tar -xzf "$scan_dir/$archive" -C "$scan_dir" gitleaks
+          "$scan_dir/gitleaks" detect --source . --config .gitleaks.toml --log-opts="--all" --redact --exit-code 1
+
   verify:
     runs-on: ubuntu-latest
     steps:
@@ -21,3 +43,19 @@ jobs:
       - run: pnpm run lint
       - run: pnpm run build
       - run: pnpm run test
+
+  deploy:
+    needs: [verify, secrets]
+    if: >-
+      vars.VERCEL_ENABLED == 'true' && (
+      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'pull_request' &&
+       github.event.pull_request.head.repo.full_name == github.repository &&
+       github.actor != 'dependabot[bot]'))
+    uses: ./.github/workflows/deploy.yml
+    with:
+      production: ${{ github.event_name == 'push' }}
+    secrets:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
