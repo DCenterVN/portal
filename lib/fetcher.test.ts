@@ -230,7 +230,7 @@ function consolePages(dir: string): string[] {
 }
 describe("review R3 actual console refresh family", () => {
  afterEach(()=>vi.unstubAllGlobals());
- it.each([...consolePages(consoleRoot),"/platform/companies","/platform/staff","/switch-branch","/switch-org"])("R3 failed refresh from %s uses staff login", async path => {
+ it.each([...consolePages(consoleRoot),"/platform","/platform/role-matrix","/switch-branch","/switch-org"])("R3 failed refresh from %s uses staff login", async path => {
   const location={pathname:path,href:""};vi.stubGlobal("window",{location});vi.stubGlobal("fetch",vi.fn().mockResolvedValue(new Response("{}",{status:401})));
   await apiFetch("/api/protected");expect(location.href).toBe("/staff/login?redirect="+encodeURIComponent(path));
  });

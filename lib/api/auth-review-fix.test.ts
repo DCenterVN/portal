@@ -27,7 +27,6 @@ describe("review R1", () => {
   const fetch=vi.fn(async (url: string) => {
    if (url.endsWith("/auth/web/login")) return json({access_token:"attacker-session",expires_in:900});
    if (url.endsWith("/auth/me")) return json({id:"attacker",status:"ACTIVE"});
-   if (url.endsWith("/platform/me")) return json(error("NOT_FOUND",404),404);
    return json([employee,{...employee,branch_id:"other"}]);
   });vi.stubGlobal("fetch",fetch);
   const res=await loginJourney(request({identifier:"attacker@example.test",password:"attacker-password="},{Origin:"https://attacker.invalid","Content-Type":"text/plain","Sec-Fetch-Site":"cross-site"}),journey);
@@ -50,12 +49,12 @@ describe("review R2", () => {
  });
 });
 describe("review R4", () => {
- it.each(["login","customer","invite","list","org lookup","switch","profile","platform","staff contexts","staff auto switch"])("R4 preserves real error envelope at %s", async endpoint => {
-  const fetch=vi.fn(); const token=json({access_token:"temporary"}); const profile=json({id:"u",status:"ACTIVE"}); const notPlatform=json(error("NOT_FOUND",404),404);
-  if (["profile","platform","staff contexts","staff auto switch"].includes(endpoint)) fetch.mockResolvedValueOnce(token);
-  if (["platform","staff contexts","staff auto switch"].includes(endpoint)) fetch.mockResolvedValueOnce(profile);
-  if (["staff contexts","staff auto switch"].includes(endpoint)) fetch.mockResolvedValueOnce(notPlatform);
-  if (endpoint === "staff auto switch" || endpoint === "switch") fetch.mockResolvedValueOnce(json([employee]));
+ it.each(["login","customer","invite","list","org lookup","switch","profile","permissions","staff contexts","staff auto switch"])("R4 preserves real error envelope at %s", async endpoint => {
+  const fetch=vi.fn(); const token=json({access_token:"temporary"}); const profile=json({id:"u",status:"ACTIVE"});
+  if (["profile","permissions","staff contexts","staff auto switch"].includes(endpoint)) fetch.mockResolvedValueOnce(token);
+  if (["permissions","staff contexts","staff auto switch"].includes(endpoint)) fetch.mockResolvedValueOnce(profile);
+  if (endpoint === "staff auto switch" || endpoint === "switch" || endpoint === "permissions") fetch.mockResolvedValueOnce(json([employee]));
+  if (endpoint === "permissions") fetch.mockResolvedValueOnce(json({access_token:"selected"}));
   fetch.mockResolvedValue(json({...error("FORBIDDEN",403),access_token:"secret",data:{token:"secret"}},403));vi.stubGlobal("fetch",fetch);
   const r=request(endpoint === "invite" ? {token:"proof",password:"password-1234"} : endpoint === "customer" ? {email:"a@example.test"} : ["org lookup","switch"].includes(endpoint) ? {org_id:"o",branch_id:"b"} : {identifier:"a",password:"password-1234"});
   const res= endpoint === "customer" ? await customerOperation(r,"forgot") : endpoint === "invite" ? await acceptStaffInvite(r) : endpoint === "list" ? await listStaffContexts(r) : ["org lookup","switch"].includes(endpoint) ? await switchStaffContext(r) : await loginJourney(r,"employee");

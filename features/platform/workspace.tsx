@@ -18,17 +18,14 @@ import { AccessProvider } from "./access-boundary";
 
 type Plane = "platform" | "company";
 type NavRule = { href: string; label: string; action: string };
-type AccessContextItem = { org_id?: string; org_name?: string; member_type?: string };
+type AccessContextItem = { org_id?: string; org_name?: string; branch_id?: string; member_type?: string; status?: string };
 
 const platformNav: NavRule[] = [
-  { href: "/platform/companies", label: "companies", action: "platform:org:read" },
-  { href: "/platform/support-access", label: "support", action: "platform:support_access:read" },
-  { href: "/platform/staff", label: "staff", action: "platform:staff:read" },
-  { href: "/platform/audit", label: "audit", action: "platform:audit:read" },
+  { href: "/platform/role-matrix", label: "roleMatrix", action: "org:role:update" },
+  { href: "/platform/audit", label: "audit", action: "org:company:read" },
 ];
 const companyNav: NavRule[] = [
   { href: "/company", label: "myCompany", action: "org:company:read" },
-  { href: "/company/support-access", label: "companySupport", action: "org:company:read" },
 ];
 
 export function navFor(plane: Plane, actions: ReadonlySet<string>, root: string): ShellNavItem[] {
@@ -46,22 +43,21 @@ export function companyChoices(contexts: AccessContextItem[] = []) {
   return [...seen].map(([id, name]) => ({ id, name }));
 }
 
-function accessKey(plane: Plane, root: string) {
-  if (plane === "platform") return "/api/platform/me";
-  return root ? `/api/org/permissions/me?org_id=${encodeURIComponent(root)}&branch_id=${encodeURIComponent(root)}` : null;
+function accessKey(root: string, branch: string) {
+  return root && branch ? `/api/org/permissions/me?org_id=${encodeURIComponent(root)}&branch_id=${encodeURIComponent(branch)}` : null;
 }
 
-function Gate({ plane, root, children }: { plane: Plane; root: string; children: ReactNode }) {
+function Gate({ plane, root, branch = root, children }: { plane: Plane; root: string; branch?: string; children: ReactNode }) {
   const { toast } = useToast();
   const t = useTranslations("platform");
-  const { data, error, isLoading, mutate } = useSWR<unknown>(accessKey(plane, root), fetcher, { revalidateOnFocus: true, shouldRetryOnError: false });
+  const { data, error, isLoading, mutate } = useSWR<unknown>(accessKey(root, branch), fetcher, { revalidateOnFocus: true, shouldRetryOnError: false });
   const frame = (body: ReactNode) => <main id="main" className="mx-auto max-w-2xl px-4 py-16">{body}</main>;
   if (isLoading) return frame(<Skeleton title={t("loading")} />);
   const decide = plane === "platform" ? platformAccess : companyAccess;
   const access: AccessState = error ? decide(errorStatus(error), null) : decide(200, data);
   if (access.status !== "ready") {
     if (access.status === "blocked") return frame(<ErrorState title={t("blocked")} onRetry={() => void mutate()} />);
-    const description = plane === "platform" ? "Tài khoản không thuộc nhân sự nền tảng." : "Tài khoản không có quyền ở công ty đã chọn.";
+    const description = plane === "platform" ? "Tài khoản không có quyền quản trị." : "Tài khoản không có quyền ở công ty đã chọn.";
     return frame(<ErrorState denied title={t("denied")} description={description} />);
   }
   const nav = navFor(plane, access.actions, root).map((item) => ({ ...item, label: t(item.label) }));
@@ -75,7 +71,7 @@ function Gate({ plane, root, children }: { plane: Plane; root: string; children:
           label: plane === "platform" ? "Nền tảng" : t("myCompany"),
           sublabel: plane === "company" ? `MAIN ${root}` : undefined,
         }}
-        user={{ name: access.role || (plane === "platform" ? "Nhân sự nền tảng" : "Nhân sự công ty") }}
+        user={{ name: access.role || (plane === "platform" ? "Quản trị viên" : "Nhân sự công ty") }}
       >
         {children}
       </ConsoleShell>
@@ -116,11 +112,16 @@ function CompanyPicker() {
 }
 
 function Inner({ plane, children }: { plane: Plane; children: ReactNode }) {
-  const root = useSearchParams().get("org_id") ?? "";
-  if (plane === "company" && !root) return <CompanyPicker />;
-  // key: switching company remounts the tree so no data from the previous company survives.
+  const selectedRoot = useSearchParams().get("org_id") ?? "";
+  const { data, error, isLoading, mutate } = useSWR<{ contexts?: AccessContextItem[] }>(plane === "platform" ? "/api/auth/context" : null, fetcher, { shouldRetryOnError: false });
+  if (plane === "company" && !selectedRoot) return <CompanyPicker />;
+  if (plane === "platform" && isLoading) return <Skeleton title="Đang xác minh quyền truy cập…" />;
+  if (plane === "platform" && error) return <ErrorState title="Không thể xác minh quyền." onRetry={() => void mutate()} />;
+  const context = data?.contexts?.find((item) => item.member_type === "EMPLOYEE" && (!item.status || item.status === "ACTIVE") && item.org_id && item.branch_id);
+  if (plane === "platform" && !context) return <ErrorState denied title="Tài khoản này không có quyền mở nội dung." />;
+  const root = plane === "platform" ? context?.org_id ?? "" : selectedRoot;
   return (
-    <Gate key={root} plane={plane} root={root}>
+    <Gate key={root} plane={plane} root={root} branch={plane === "platform" ? context?.branch_id : root}>
       {children}
     </Gate>
   );

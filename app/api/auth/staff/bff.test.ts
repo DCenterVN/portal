@@ -15,7 +15,7 @@ describe("S11 staff recovery dependency and invite BFF",()=>{
  it("malformed JSON is canonical BAD_REQUEST",async()=>{vi.stubGlobal("fetch",vi.fn());const res=await invite(new NextRequest("http://localhost",{method:"POST",headers:{"Content-Type":"application/json","Sec-Fetch-Site":"same-origin"},body:"{"}));expect(res.status).toBe(400);expect(await res.json()).toMatchObject({error:"BAD_REQUEST"});expect(fetch).not.toHaveBeenCalled();});
  it.each([[400,"invalid_token"],[429,"rate_limit_exceeded"],[503,"service_busy"]])("expired/replayed/rate/busy preserve %s/%s and retry without cookies",async(status,error)=>{vi.stubGlobal("fetch",vi.fn().mockResolvedValue(json({error,token:"secret"},status,{"Retry-After":"8","set-cookie":"access_token=secret"})));const res=await invite(request({token:"expired",password:"password-1234"}));expect(res.status).toBe(status);expect(await res.json()).toEqual({error});expect(res.headers.get("retry-after")).toBe("8");expect(res.headers.get("set-cookie")).toBeNull();});
  it("transport and malformed upstream fail closed without internal details",async()=>{vi.stubGlobal("fetch",vi.fn().mockRejectedValue(Error("secret")));let res=await invite(request({token:"t",password:"password-1234"}));expect(res.status).toBe(503);expect(await res.json()).toMatchObject({error:"INTERNAL_ERROR"});vi.stubGlobal("fetch",vi.fn().mockResolvedValue(json([])));res=await invite(request({token:"t",password:"password-1234"}));expect(res.status).toBe(503);});
- it("staff login reuses batch A policy and denies customer before publishing session",async()=>{const fetch=vi.fn().mockResolvedValueOnce(json({access_token:"temp"})).mockResolvedValueOnce(json({id:"u",status:"ACTIVE"})).mockResolvedValueOnce(json({error:"NOT_FOUND"},404)).mockResolvedValueOnce(json([{org_id:"o",branch_id:"b",member_type:"CUSTOMER",roles:[]}])).mockResolvedValue(json({}));vi.stubGlobal("fetch",fetch);const res=await login(request({identifier:"customer",password:"p"}));expect(res.status).toBe(403);expect(res.headers.get("set-cookie")).toBeNull();expect(fetch.mock.calls.some(c=>String(c[0]).endsWith("/auth/web/logout"))).toBe(true);});
+ it("staff login reuses batch A policy and denies customer before publishing session",async()=>{const fetch=vi.fn().mockResolvedValueOnce(json({access_token:"temp"})).mockResolvedValueOnce(json({id:"u",status:"ACTIVE"})).mockResolvedValueOnce(json([{org_id:"o",branch_id:"b",member_type:"CUSTOMER",roles:[]}])).mockResolvedValue(json({}));vi.stubGlobal("fetch",fetch);const res=await login(request({identifier:"customer",password:"p"}));expect(res.status).toBe(403);expect(res.headers.get("set-cookie")).toBeNull();expect(fetch.mock.calls.some(c=>String(c[0]).endsWith("/auth/web/logout"))).toBe(true);});
 });
 
 import {POST as branch, GET as branchContexts} from "./switch-branch/route";
@@ -46,17 +46,20 @@ describe("S17 platform entry survives shared resolver removal", () => {
   expect(res.status).toBe(503);expect(res.headers.get("set-cookie")).toBeNull();
   expect(fetch.mock.calls.some(call=>String(call[0]).endsWith("/auth/web/logout"))).toBe(true);
  });
- it("verified platform staff land on /platform/companies with a secure session", async () => {
+ it("verified platform staff land on /platform with a secure session", async () => {
   const fetch = vi.fn().mockResolvedValueOnce(json({access_token:"temporary", expires_in:900}))
    .mockResolvedValueOnce(json({id:"u",status:"ACTIVE"}))
-   .mockResolvedValueOnce(json({code:200,status:"success",message:"OK",data:{user_id:"01960000-0000-7000-8000-000000000001",role:"PLATFORM_SUPPORT",actions:["platform:org:read"]}}));
+   .mockResolvedValueOnce(json([employee]))
+   .mockResolvedValueOnce(json({access_token:"selected",expires_in:900}))
+   .mockResolvedValueOnce(json({action_keys:["org:role:update"]}));
   vi.stubGlobal("fetch",fetch);
   const res=await login(request({identifier:"platform",password:"password-1234"}));
-  expect(res.status).toBe(200);expect(await res.json()).toMatchObject({next_path:"/platform/companies"});
-  expect(res.headers.get("set-cookie")).toMatch(/access_token=temporary/);
+  expect(res.status).toBe(200);expect(await res.json()).toMatchObject({next_path:"/platform"});
+  expect(res.headers.get("set-cookie")).toMatch(/access_token=selected/);
   expect(res.headers.get("set-cookie")).toMatch(/HttpOnly/);
-  expect(fetch).toHaveBeenNthCalledWith(3,expect.stringContaining("/platform/me"),expect.objectContaining({cache:"no-store",headers:{Authorization:"Bearer temporary"}}));
-  expect(fetch).toHaveBeenCalledTimes(3);
+  expect(fetch).toHaveBeenNthCalledWith(4,expect.stringContaining("/auth/org-context"),expect.objectContaining({body:JSON.stringify({org_id:"o",branch_id:"b"})}));
+  expect(fetch).toHaveBeenNthCalledWith(5,expect.stringContaining("/org/permissions/me?org_id=o&branch_id=b"),expect.objectContaining({cache:"no-store",headers:{Authorization:"Bearer selected"}}));
+  expect(fetch).toHaveBeenCalledTimes(5);
  });
 });
 
@@ -65,10 +68,12 @@ describe("R4-1 staff marker issuance", () => {
   vi.stubGlobal("fetch", vi.fn()
    .mockResolvedValueOnce(json({access_token:"temporary",expires_in:900},200,{"set-cookie":"__Host-refresh_token=rt; Path=/; Secure; HttpOnly; Max-Age=86400"}))
    .mockResolvedValueOnce(json({id:"u",status:"ACTIVE"}))
-   .mockResolvedValueOnce(json({code:200,status:"success",message:"OK",data:{user_id:"01960000-0000-7000-8000-000000000001",role:"PLATFORM_SUPPORT",actions:["platform:org:read"]}})));
+   .mockResolvedValueOnce(json([employee]))
+   .mockResolvedValueOnce(json({access_token:"selected",expires_in:900}))
+   .mockResolvedValueOnce(json({action_keys:["org:role:update"]})));
   const res = await login(request({identifier:"platform",password:"password-1234"},"access_token=old; portal_plane=employee"));
   expect(res.status).toBe(200);
-  expect(await res.json()).toMatchObject({next_path:"/platform/companies"});
+  expect(await res.json()).toMatchObject({next_path:"/platform"});
   expect(res.cookies.get("portal_plane")).toMatchObject({value:"",maxAge:0,httpOnly:true,secure:true,path:"/",sameSite:"strict"});
   expect(res.headers.getSetCookie().some(cookie=>cookie.startsWith("portal_plane=employee"))).toBe(false);
  });

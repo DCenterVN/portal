@@ -1,6 +1,6 @@
 import "server-only";
 import {authHeaders, resolveClientIP} from "./client-ip";
-import {decodePlatform, platformMeSchema} from "./platform-contract";
+import {decodePlatform, permissionsSchema} from "./platform-contract";
 import {CONSOLE_ROUTES} from "../fetcher";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -43,7 +43,7 @@ export function safeLanding(target: string, journey: Journey): string {
     if (url.origin !== "https://portal.invalid") return fallback;
     const pathname = url.pathname;
     if (journey === "employee") {
-      if (["/staff/switch-org", "/staff/switch-branch", "/platform/companies"].includes(pathname)) return !url.search && !url.hash ? pathname : fallback;
+      if (["/staff/switch-branch", "/platform"].includes(pathname)) return !url.search && !url.hash ? pathname : fallback;
       return CONSOLE_ROUTES.some(path => pathname === path || pathname.startsWith(`${path}/`)) ? `${pathname}${url.search}${url.hash}` : fallback;
     }
     if (pathname !== "/" && !/^\/(products|cart|checkout|orders|me)(\/|$)/.test(pathname)) return fallback;
@@ -109,26 +109,21 @@ function activeStaffContexts(rows: Context[]): Context[] {
   return [...new Map(employees.map(row => [JSON.stringify([row.org_id, row.branch_id]), row])).values()];
 }
 async function staffDecision(token: string, clientIP: string | undefined): Promise<{next_path: string; token: string; expires_in?: number; cookies?: string[]} | NextResponse> {
-  const platform = await fetch(`${orgUrl()}/platform/me`, {headers: {Authorization: `Bearer ${token}`}, cache: "no-store"});
-  if (platform.ok) {
-    decodePlatform(await platform.json(), platformMeSchema);
-    return {next_path: "/platform/companies", token};
-  }
-  if (platform.status !== 404) return upstreamError(platform);
   const upstream = await fetch(`${orgUrl()}/org/access-contexts/me`, {headers: {Authorization: `Bearer ${token}`}, cache: "no-store"});
   if (!upstream.ok) return upstreamError(upstream);
   const rows = contexts(await upstream.json());
   if (!rows) return unavailable();
   const distinct = activeStaffContexts(rows);
   if (!distinct.length) return forbidden();
-  if (new Set(distinct.map(row => row.org_id)).size > 1) return {next_path: "/staff/switch-org", token};
-  if (distinct.length > 1) return {next_path: "/staff/switch-branch", token};
   const {org_id, branch_id} = distinct[0];
   const switched = await fetch(`${authUrl()}/auth/org-context`, {method: "POST", cache: "no-store", headers: authHeaders(clientIP, {"Content-Type": "application/json", Authorization: `Bearer ${token}`}), body: JSON.stringify({org_id, branch_id})});
   if (!switched.ok) return upstreamError(switched);
   const data: unknown = await switched.json();
   if (!object(data) || typeof data.access_token !== "string" || !data.access_token) return unavailable();
-  return {next_path: "/console", token: data.access_token, expires_in: typeof data.expires_in === "number" ? data.expires_in : undefined, cookies: sessionCookies(switched)};
+  const permissions = await fetch(`${orgUrl()}/org/permissions/me?${new URLSearchParams({org_id, branch_id})}`, {headers: {Authorization: `Bearer ${data.access_token}`}, cache: "no-store"});
+  if (!permissions.ok) return upstreamError(permissions);
+  const {action_keys} = permissionsSchema.parse(await permissions.json());
+  return {next_path: action_keys.includes("org:role:update") ? "/platform" : "/console", token: data.access_token, expires_in: typeof data.expires_in === "number" ? data.expires_in : undefined, cookies: sessionCookies(switched)};
 }
 
 export async function loginJourney(req: NextRequest, journey: Journey): Promise<NextResponse> {
@@ -158,7 +153,7 @@ async function authenticateJourney(req: NextRequest, journey: Journey): Promise<
     const decision = journey === "customer" ? {next_path: "/", token: temporaryToken, expires_in: undefined, cookies: undefined} : await staffDecision(temporaryToken, clientIP);
     if (decision instanceof NextResponse) return decision;
     const requested = typeof redirect === "string" && redirect ? safeLanding(redirect, journey) : "";
-    const landing = requested && requested !== "/staff/switch-branch" && (journey === "customer" || decision.next_path === "/console") ? requested : safeLanding(decision.next_path, journey);
+    const landing = requested && requested !== "/staff/switch-branch" && requested !== "/platform" && (journey === "customer" || decision.next_path === "/console") ? requested : safeLanding(decision.next_path, journey);
     const result = response({user: {id: user.id, email: user.email, phone: user.phone, display_name: user.display_name, status: user.status}, expires_in: decision.expires_in ?? data.expires_in, next_path: landing});
     const issuedCookies = decision.cookies?.length ? decision.cookies : cookies;
     result.cookies.set("access_token", decision.token, {path: "/", maxAge: decision.expires_in ?? (typeof data.expires_in === "number" && data.expires_in > 0 ? data.expires_in : 900), sameSite: "strict", httpOnly: true, secure: true});

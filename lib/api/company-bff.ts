@@ -5,12 +5,11 @@ const ORG_SERVICE_URL = process.env.ORG_INTERNAL_URL || process.env.ORG_SERVICE_
 type Method = "GET" | "POST" | "PUT";
 type Rule = { method: Method; path: RegExp; body: "none" | "required"; query: readonly string[]; requireMain?: boolean };
 const rules: Rule[] = [
+  { method: "PUT", path: /^company\/role-matrix\/roles\/[A-Z][A-Z0-9_]*$/, body: "required", query: ["org_id"], requireMain: true },
   { method: "GET", path: /^permissions\/me$/, body: "none", query: ["org_id", "branch_id"], requireMain: true },
   { method: "GET", path: /^company\/(role-matrix|modules)$/, body: "none", query: ["org_id"], requireMain: true },
-  { method: "GET", path: /^company\/support-access$/, body: "none", query: ["org_id", "page", "limit"], requireMain: true },
   { method: "GET", path: /^company\/audit-logs$/, body: "none", query: ["org_id", "page", "limit", "action", "since", "until"], requireMain: true },
   { method: "PUT", path: /^company\/settings$/, body: "required", query: ["org_id"], requireMain: true },
-  { method: "POST", path: /^support-access\/[0-9a-f-]{36}\/(approve|revoke)$/, body: "none", query: ["org_id"], requireMain: true },
 ];
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 

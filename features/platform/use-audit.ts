@@ -2,14 +2,14 @@
 
 export type { AuditEntry } from "@/lib/api/platform-contract";
 import useSWR from "swr";
-import { companyAudit, platformAudit } from "@/lib/api/platform-client";
-import type { Source } from "./use-company";
+import { companyAudit } from "@/lib/api/platform-client";
+import type { PlaneAccess } from "./access-boundary";
 
 export type AuditFilters = { root_branch_id?: string; action?: string; since?: string; until?: string };
 
-export function useAudit(source: Source, root: string, filters: AuditFilters, page: number) {
-  const key = source === "company" && !root ? null : ["audit", source, root, JSON.stringify(filters), page];
-  return useSWR(key, () => (source === "platform" ? platformAudit(filters, page) : companyAudit(root, filters, page)), { revalidateOnFocus: false });
+export function useAudit(source: PlaneAccess["plane"], root: string, filters: AuditFilters, page: number) {
+  const key = !root ? null : ["audit", source, root, JSON.stringify(filters), page];
+  return useSWR(key, () => companyAudit(root, filters, page), { revalidateOnFocus: false });
 }
 
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

@@ -2,11 +2,10 @@
 
 export { replaceRole } from "@/lib/api/platform-client";
 import useSWR from "swr";
-import { companyRoleMatrix, getRoleMatrix } from "@/lib/api/platform-client";
-import type { Source } from "./use-company";
+import { companyRoleMatrix } from "@/lib/api/platform-client";
 
-export function useRoleMatrix(source: Source, root: string) {
-  return useSWR(root ? ["role-matrix", source, root] : null, () => (source === "platform" ? getRoleMatrix(root) : companyRoleMatrix(root)), { revalidateOnFocus: false });
+export function useRoleMatrix(root: string) {
+  return useSWR(root ? ["role-matrix", root] : null, () => companyRoleMatrix(root), { revalidateOnFocus: false });
 }
 
 export const VERBS = ["create", "read", "update", "delete", "import", "export"] as const;
@@ -29,7 +28,7 @@ export function actionChanges(before: string[], after: string[]) {
   return { added: after.filter((item) => !was.has(item)), removed: before.filter((item) => !now.has(item)) };
 }
 
-// Catalogue = every action any role holds in this response (OWNER holds the whole company catalogue).
+// Catalogue = every action any role holds in this response (ADMIN holds the whole catalogue).
 export function catalogOf(matrix: Record<string, string[]>): Set<string> {
   return new Set(Object.values(matrix).flat());
 }

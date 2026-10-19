@@ -17,7 +17,7 @@ describe("company BFF MAIN allow-list", () => {
     expect((await forwardCompany(request(`company/modules?org_id=${root}`, "GET", ""), ["company", "modules"])).status).toBe(401);
     expect(global.fetch).not.toHaveBeenCalled();
   });
-  it.each([["internal/authorization/check", "POST"], ["company/modules", "PUT"], ["support-access/x/approve", "POST"], ["permissions/me", "PUT"]])("rejects unsupported path or method %s %s", async (path, method) => {
+  it.each([["internal/authorization/check", "POST"], ["company/modules", "PUT"], ["permissions/me", "PUT"]])("rejects unsupported path or method %s %s", async (path, method) => {
     global.fetch = vi.fn();
     expect((await forwardCompany(request(path, method), path.split("/"))).status).toBe(404);
     expect(global.fetch).not.toHaveBeenCalled();
@@ -29,7 +29,7 @@ describe("company BFF MAIN allow-list", () => {
     expect((await forwardCompany(request(`company/modules?org_id=${root}&url=http://attacker`), ["company", "modules"])).status).toBe(400);
     expect(global.fetch).not.toHaveBeenCalled();
   });
-  it.each([["company/modules", "page=1"], ["company/role-matrix", "action=x"], ["company/support-access", "since=2026-01-01T00:00:00Z"]])("rejects %s with %s that only a sibling endpoint takes", async (path, extra) => {
+  it.each([["company/modules", "page=1"], ["company/role-matrix", "action=x"]])("rejects %s with %s that only a sibling endpoint takes", async (path, extra) => {
     global.fetch = vi.fn();
     expect((await forwardCompany(request(`${path}?org_id=${root}&${extra}`), path.split("/"))).status).toBe(400);
     expect(global.fetch).not.toHaveBeenCalled();
@@ -39,13 +39,6 @@ describe("company BFF MAIN allow-list", () => {
     expect((await forwardCompany(request(`permissions/me?org_id=${root}`), ["permissions", "me"])).status).toBe(400);
     expect((await forwardCompany(request(`permissions/me?org_id=${root}&branch_id=bad`), ["permissions", "me"])).status).toBe(400);
     expect(global.fetch).not.toHaveBeenCalled();
-  });
-  it("forwards org_id on OWNER decisions with no fabricated body", async () => {
-    global.fetch = vi.fn().mockResolvedValue(new Response("{}", { status: 200 }));
-    const grant = "01960000-0000-7000-8000-000000000002";
-    const response = await forwardCompany(request(`support-access/${grant}/approve?org_id=${root}`, "POST"), ["support-access", grant, "approve"]);
-    expect(response.status).toBe(200);
-    expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining(`/org/support-access/${grant}/approve?org_id=${root}`), expect.not.objectContaining({ body: expect.anything() }));
   });
   it("preserves org error status and body", async () => {
     global.fetch = vi.fn().mockResolvedValue(new Response(JSON.stringify({ code: 403, errors: { error_code: "forbidden" } }), { status: 403 }));

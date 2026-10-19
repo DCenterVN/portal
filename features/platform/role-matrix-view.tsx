@@ -9,15 +9,14 @@ import { Skeleton, EmptyState, ErrorState, InlineAlert } from "@/components/ui/s
 import { useToast } from "@/components/ui/toast";
 import { errorText } from "./access";
 import { RequireAction, useAccess } from "./access-boundary";
-import { CompanyHeader, CompanyTabs } from "./company-detail-view";
+import { PageHeader } from "@/components/ui/page";
 import { PermissionGrid } from "./permission-grid";
-import type { Source } from "./use-company";
 import { actionChanges, catalogOf, replaceRole, resourcesOf, useRoleMatrix } from "./use-role-matrix";
 
-type Props = { source: Source; root: string; editable: boolean };
+type Props = { root: string; editable: boolean };
 
-export function RoleMatrix({ source, root, editable }: Props) {
-  const { data, error, isLoading, mutate } = useRoleMatrix(source, root);
+export function RoleMatrix({ root, editable }: Props) {
+  const { data, error, isLoading, mutate } = useRoleMatrix(root);
   const { toast } = useToast();
   const [role, setRole] = useState("");
   const [draft, setDraft] = useState<string[]>([]);
@@ -27,9 +26,9 @@ export function RoleMatrix({ source, root, editable }: Props) {
   const [done, setDone] = useState("");
 
   if (isLoading) return <Skeleton title="Đang tải ma trận quyền…" />;
-  if (error || !data) return <ErrorState title={errorText(error, { 404: "Không tìm thấy công ty này." })} onRetry={() => void mutate()} />;
+  if (error || !data) return <ErrorState title={errorText(error, { 404: "Không tìm thấy ma trận quyền." })} onRetry={() => void mutate()} />;
   const roles = Object.keys(data).sort();
-  if (roles.length === 0) return <EmptyState title="Công ty chưa có role nào." />;
+  if (roles.length === 0) return <EmptyState title="Chưa có role nào." />;
 
   const current = role && data[role] ? role : roles[0];
   const shown = current === role ? draft : data[current];
@@ -57,12 +56,12 @@ export function RoleMatrix({ source, root, editable }: Props) {
     setFailure("");
     try {
       await mutate(await replaceRole(root, current, shown), { revalidate: false });
-      const msg = `Đã cập nhật ${current} cho mọi chi nhánh của công ty.`;
+      const msg = `Đã cập nhật quyền của ${current}.`;
       setDone(msg);
       toast.success(msg);
     } catch (failed) {
       const err = errorText(failed, {
-        400: "Có action thuộc module công ty chưa mua, hoặc action không hợp lệ.",
+        400: "Quyền không hợp lệ.",
         404: `Role ${current} không có trong danh mục.`,
       });
       setFailure(err);
@@ -76,7 +75,7 @@ export function RoleMatrix({ source, root, editable }: Props) {
     <div className="space-y-4">
       {done && <InlineAlert tone="success">{done}</InlineAlert>}
       {failure && <InlineAlert>{failure}</InlineAlert>}
-      {!editable && <InlineAlert tone="info">Chỉ xem. Ma trận quyền do quản trị nền tảng thay đổi.</InlineAlert>}
+      {!editable && <InlineAlert tone="info">Chỉ xem. Cần quyền org:role:update để thay đổi ma trận.</InlineAlert>}
 
       <div className="space-y-1.5">
         <span className="text-xs font-bold uppercase tracking-wider text-fg-3">Role</span>
@@ -134,16 +133,15 @@ export function RoleMatrix({ source, root, editable }: Props) {
   );
 }
 
-export function RoleMatrixView({ root }: { root: string }) {
-  const { can } = useAccess();
+export function RoleMatrixView() {
+  const { root, can } = useAccess();
   return (
-    <RequireAction action="platform:role_matrix:read">
-      <CompanyHeader root={root} title="Ma trận quyền" />
-      <CompanyTabs root={root} />
+    <RequireAction action="org:role:update">
+      <PageHeader icon={<KeyRound />} title="Ma trận quyền" description="Quản lý quyền của từng role." />
       <div className="flex items-center gap-2 text-xs text-fg-3">
         <KeyRound className="size-4" aria-hidden="true" /> Quyền chỉ quyết định bằng action trả về từ tổ chức.
       </div>
-      <RoleMatrix source="platform" root={root} editable={can("platform:role_matrix:update")} />
+      <RoleMatrix root={root} editable={can("org:role:update")} />
     </RequireAction>
   );
 }

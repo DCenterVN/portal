@@ -10,11 +10,8 @@ import { PageHeader } from "@/components/ui/page";
 import { Skeleton, EmptyState, ErrorState, InlineAlert } from "@/components/ui/state";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TablePager, TableRow } from "@/components/ui/table";
 import { errorText, formatTime } from "./access";
-import { RequireAction } from "./access-boundary";
-import type { Source } from "./use-company";
+import { RequireAction, useAccess, type PlaneAccess } from "./access-boundary";
 import { readAuditFilters, useAudit, type AuditFilters, type AuditEntry } from "./use-audit";
-import { useCompanyOptions, usableCompanies } from "./use-support";
-import { EntityPicker } from "@/components/ui/entity-picker";
 
 function Change({ entry }: { entry: AuditEntry }) {
   if (entry.before === undefined && entry.after === undefined) return null;
@@ -28,16 +25,15 @@ function Change({ entry }: { entry: AuditEntry }) {
   );
 }
 
-export function AuditLog({ source, root = "" }: { source: Source; root?: string }) {
+export function AuditLog({ source, root = "" }: { source: PlaneAccess["plane"]; root?: string }) {
   const [filters, setFilters] = useState<AuditFilters>({});
   const [page, setPage] = useState(1);
   const [invalid, setInvalid] = useState("");
   const { data, error, isLoading, isValidating, mutate } = useAudit(source, root, filters, page);
-  const companies = useCompanyOptions();
 
   function apply(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const result = readAuditFilters(new FormData(event.currentTarget), source === "platform");
+    const result = readAuditFilters(new FormData(event.currentTarget), false);
     setInvalid(result.error ?? "");
     if (!result.filters) return;
     setFilters(result.filters);
@@ -48,22 +44,7 @@ export function AuditLog({ source, root = "" }: { source: Source; root?: string 
     <div className="space-y-4">
       <Card>
         <CardContent className="pt-6">
-          <form onSubmit={apply} noValidate className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5 lg:items-end">
-            {source === "platform" && (
-              <EntityPicker
-                label="Công ty"
-                name="root_branch_id"
-                required
-                items={usableCompanies(companies)}
-                status={companies.isLoading ? "loading" : companies.error ? "error" : "ready"}
-                getId={(c) => c.root_branch_id}
-                getLabel={(c) => c.name}
-                getMeta={(c) => c.code}
-                onRetry={() => void companies.mutate()}
-                emptyText="Chưa có công ty nào. Hiện chưa có dữ liệu công ty trên hệ thống."
-                placeholder="Tìm theo tên hoặc mã công ty"
-              />
-            )}
+          <form onSubmit={apply} noValidate className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:items-end">
             <Field label="Action" htmlFor={`audit-action-${source}`}>
               <TextInput id={`audit-action-${source}`} name="action" placeholder="vd. break_glass" autoComplete="off" />
             </Field>
@@ -131,10 +112,11 @@ export function AuditLog({ source, root = "" }: { source: Source; root?: string 
 }
 
 export function AuditView() {
+  const { root } = useAccess();
   return (
-    <RequireAction action="platform:audit:read">
-      <PageHeader icon={<ScrollText />} title="Nhật ký kiểm toán" description="Chỉ đọc. Không sửa, không xoá. Nhật ký nền tảng không kèm dữ liệu trước/sau." />
-      <AuditLog source="platform" />
+    <RequireAction action="org:company:read">
+      <PageHeader icon={<ScrollText />} title="Nhật ký kiểm toán" description="Chỉ đọc. Không sửa, không xoá." />
+      <AuditLog source="platform" root={root} />
     </RequireAction>
   );
 }

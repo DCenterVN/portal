@@ -1,16 +1,11 @@
-import { decodePlatform, platformMeSchema, permissionsSchema } from "@/lib/api/platform-contract";
+import { permissionsSchema } from "@/lib/api/platform-contract";
 
 export type AccessState = { status: "ready"; actions: ReadonlySet<string>; role?: string } | { status: "denied" | "blocked" };
 
 export function platformAccess(status: number, body: unknown): AccessState {
-  if (status === 404) return { status: "denied" };
-  if (status !== 200) return { status: "blocked" };
-  try {
-    const me = decodePlatform(body, platformMeSchema);
-    return { status: "ready", actions: new Set(me.actions), role: me.role };
-  } catch {
-    return { status: "blocked" };
-  }
+  const access = companyAccess(status, body);
+  if (access.status !== "ready") return access;
+  return access.actions.has("org:role:update") ? access : { status: "denied" };
 }
 
 export function companyAccess(status: number, body: unknown): AccessState {
