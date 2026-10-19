@@ -25,5 +25,5 @@ Boundary/domain rules: [AI_CONTEXT.md](AI_CONTEXT.md). Workspace map + workflow:
 
 ## Check
 ```bash
-npm test && npm run lint   # pnpm fails on /mnt/win_d NTFS
+npm test && npm run lint
 ```
