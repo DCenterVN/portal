@@ -1,6 +1,6 @@
 import type { UserProfile } from "@/lib/auth/client";
 import { existsSync } from "node:fs";
-import { CONSOLE_NAV, consoleNavFor } from "./console-nav";
+import { CONSOLE_NAV, consoleNavFor, consoleRouteAllowed } from "./console-nav";
 import { describe, expect, it, vi } from "vitest";
 import { fetchConsoleSession, resolveConsoleSession } from "./console-frame";
 
@@ -115,4 +115,30 @@ it.each(["5xx", "network", "bad JSON"])("keeps an unnamed profile and email when
   const session = await fetchConsoleSession(fetcher);
   expect(session.user).toEqual({ name: unnamed.email, detail: unnamed.email });
   expect(session.error).toBe("Không tải được phạm vi chi nhánh.");
+});
+
+
+it("uses org effective permissions instead of auth context role names or cached permissions", async () => {
+  const fetcher = vi.fn()
+    .mockResolvedValueOnce(new Response(JSON.stringify(profile)))
+    .mockResolvedValueOnce(new Response(JSON.stringify({ active_context: { org_id: "org", branch_id: "main" }, contexts: [], permissions: ["*"], roles: ["ADMIN"] })))
+    .mockResolvedValueOnce(new Response(JSON.stringify({ action_keys: ["org:membership:read"] })));
+  const session = await fetchConsoleSession(fetcher);
+  expect(fetcher).toHaveBeenNthCalledWith(3, "/api/org/permissions/me?org_id=org&branch_id=main");
+  expect(session.permissions).toEqual(["org:membership:read"]);
+});
+it.each([403, 503, 200])("fails closed when permission lookup returns %s or malformed data", async (status) => {
+  const fetcher = vi.fn()
+    .mockResolvedValueOnce(new Response(JSON.stringify(profile)))
+    .mockResolvedValueOnce(new Response(JSON.stringify({ active_context: { org_id: "org", branch_id: "main" }, permissions: ["org:membership:read"] })))
+    .mockResolvedValueOnce(new Response(JSON.stringify({ actions: ["org:membership:read"] }), { status }));
+  const session = await fetchConsoleSession(fetcher);
+  expect(session.error).toBeTruthy();
+  expect(session.permissions).toEqual([]);
+});
+it("gates membership routes and SALES menu with effective action keys", () => {
+  expect(consoleRouteAllowed("/memberships", new Set())).toBe(false);
+  expect(consoleRouteAllowed("/memberships/detail", new Set(["org:membership:read"]))).toBe(true);
+  expect(consoleNavFor(new Set(["ADMIN"])).flatMap((group) => group.items).some((item) => item.href === "/memberships")).toBe(false);
+  expect(consoleNavFor(new Set(["sales:price_book:create"])).flatMap((group) => group.items).some((item) => item.href === "/sales/pricing")).toBe(true);
 });

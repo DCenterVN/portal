@@ -15,9 +15,11 @@ import { CustomerAuthShell } from "../components/layout/customer-auth-shell";
 import { EmployeeAuthShell } from "../components/layout/employee-auth-shell";
 import ProfileClient from "./(store)/me/profile-client";
 import { StaffProfileView } from "../features/staff-profile/staff-profile-view";
-import { SWRConfig } from "swr";
+import { SWRConfig, unstable_serialize } from "swr";
+import { AccessProvider } from "../features/platform/access-boundary";
+import type { Membership } from "../lib/api/platform-client";
 import { BranchesView } from "../features/branches/branches-view";
-import { MembershipsView, type Employee } from "../features/memberships/memberships-view";
+import { MembershipsView } from "../features/memberships/memberships-view";
 import { ThemeProvider } from "../components/theme-provider";
 import { ShelvesView } from "../features/inventory/shelves-view";
 import { RolesView } from "../features/roles/roles-view";
@@ -420,10 +422,15 @@ const staffProfile = (profile: UserProfile) => React.createElement(SWRConfig, { 
 const branchFixtures = ["branch-1", "branch-2"].map((id) => ({
   id, name: `Chi nhánh ${id}`, code: id, address: "Hà Nội", type: "MAIN", tempZone: "-18 °C", membersCount: 3,
 }));
-const employeeFixtures: Employee[] = (["active", "suspended", "revoked"] as const).map((status) => ({
-  id: status, userId: "user-42", branchId: "branch-1", name: `Dawn ${status}`, phone: "0901234567",
-  email: "dawn@example.test", departmentId: null, departmentName: "Kho", roles: [{ code: "STAFF", name: "Nhân viên" }], status, joinedAt: "Hôm nay",
+const membershipFixtures: Membership[] = (["ACTIVE", "SUSPENDED"] as const).map((status) => ({
+  id: status, user_id: `user-${status}`, branch_id: "branch-1", role_codes: ["SALES"], status,
 }));
+function memberships(items: Membership[], actions = ["org:membership:read", "org:employee:create", "org:membership:update"]) {
+  return React.createElement(AccessProvider, { value: { plane: "company", root: "", actions: new Set(actions) }, children:
+    React.createElement(SWRConfig, { value: { provider: () => new Map(), revalidateOnMount: false,
+      fallback: { [unstable_serialize(["company-memberships", 1])]: { items, page: 1, limit: 20, total: items.length } },
+    } }, React.createElement(MembershipsView)) });
+}
 const rawSurface = /(?:bg|text|border|ring|from|via|to|fill|stroke|shadow)-(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|white|black)(?:-\d+)?\b|#[\da-f]{3,8}\b|gradient|blur|glass/i;
 
 function expectRoleSurface(html: string, rawOnly = false) {
@@ -503,29 +510,53 @@ describe("S5 rendered auth, profile, branch and membership roles", () => {
     expect(classesFor(html, "input")).toContain("h-11");
   });
 
-  it.each([false, true])("renders membership table and semantic summaries (empty=%s)", (empty) => {
-    const html = surfaceMarkup(React.createElement(MembershipsView, { initialEmployees: empty ? [] : employeeFixtures }));
-    expectRoleSurface(html);
-    for (const role of ["leaf", "sun", "danger"]) expect(html).toContain(`text-[var(--color-${role})]`);
-    expect(html).toContain("Đang hoạt động (Active)");
-    if (empty) expect(html).toContain("Không tìm thấy nhân viên nào phù hợp với bộ lọc.");
-    else expect(html).toContain("Dawn active");
-    expect(classesFor(html, "input")).toContain("h-11");
-    expect(classesFor(html, "select")).toContain("h-11");
+  it.each([false, true])("renders membership table and semantic statuses (empty=%s)", (empty) => {
+    const html = surfaceMarkup(memberships(empty ? [] : membershipFixtures));
+    expectRoleSurface(html, true);
+    expect(html).toContain("bg-[var(--color-surface)]");
+    expect(html).toContain("border-[var(--color-line)]");
+    expect(html).toContain("text-[var(--foreground)]");
+    expect(html).toContain("Thêm nhân viên");
+    expect(html).toContain("Trang 1");
+    if (empty) expect(html).toContain("Chưa có nhân viên");
+    else {
+      for (const member of membershipFixtures) expect(html).toContain(member.user_id);
+      for (const status of ["active", "suspended"]) expect(html).toContain(`var(--badge-${status}-text)`);
+      for (const label of ["Đang hoạt động", "Tạm khoá", "Bán hàng", "Đổi vai trò", "Khoá", "Mở khoá"]) expect(html).toContain(label);
+    }
   });
 
-  it("renders invite form with solid scrim, display title and unchanged required fields", () => {
-    const html = surfaceMarkup(React.createElement(MembershipsView), [employeeFixtures, "", "all", true, "", "", "", "VT-02"]);
-    expectRoleSurface(html);
-    expect(html).toContain("bg-[var(--color-chrome)]/60");
-    expect(html).toContain("Thêm / Mời Thành Viên Mới");
-    expect(html).toContain("Xác nhận thêm");
+  it("renders invite sheet with solid scrim and required name, email and role fields", () => {
+    const html = s7Markup(memberships(membershipFixtures), [1, { kind: "create" }, "", "", ["SALES"], false, ""]);
+    expectRoleSurface(html, true);
+    expect(html).toContain("bg-[var(--color-surface)]");
+    expect(html).toContain("border-[var(--color-line)]");
+    expect(html).toContain("text-[var(--foreground)]");
+    expect(html).toContain('role="dialog"');
+    expect(html).toContain("bg-scrim");
+    for (const label of ["Thêm nhân viên", "Họ và tên", "Email", "Vai trò", "Lưu", "Huỷ"]) expect(html).toContain(label);
     expect(html.match(/required=""/g)).toHaveLength(2);
-    for (const select of html.match(/<select\b[^>]*>/g)!) {
-      expect(select).toContain("h-11");
-      expect(select).toContain("border-[var(--color-input-border)]");
-      expect(select).toContain("focus:ring-[var(--color-focus)]");
+    expect(html).toContain('type="email"');
+    expect(html.match(/type="checkbox"/g)).toHaveLength(5);
+    expect(html).toContain('checked=""');
+    const inputs = html.match(/<input\b[^>]*id="member-(?:name|email)"[^>]*>/g) ?? [];
+    expect(inputs).toHaveLength(2);
+    for (const input of inputs) {
+      expect(input).toContain("min-h-11");
+      expect(input).toContain("border-[var(--input)]");
+      expect(input).toContain("focus-visible:ring-[var(--ring)]");
     }
+    expect(classesFor(html, "button", 'type="submit"')).toContain("bg-[var(--primary)]");
+    expect(html).toMatch(/<button[^>]*type="submit"[^>]*disabled=""/);
+  });
+
+  it("keeps membership mutations hidden for read-only access and denies unverified access", () => {
+    const html = surfaceMarkup(memberships(membershipFixtures, ["org:membership:read"]));
+    expect(html).toContain("user-ACTIVE");
+    for (const label of ["Thêm nhân viên", "Đổi vai trò", "Mở khoá"]) expect(html).not.toMatch(new RegExp(`<button[^>]*>${label}</button>`));
+    const denied = surfaceMarkup(React.createElement(MembershipsView));
+    expect(denied).toContain("Bạn chưa có quyền xem nhân viên.");
+    expect(denied).not.toContain("user-ACTIVE");
   });
 });
 

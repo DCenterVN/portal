@@ -9,3 +9,4 @@ async function handle(request: NextRequest, context: Context) {
 export const GET = handle;
 export const POST = handle;
 export const PUT = handle;
+export const PATCH = handle;

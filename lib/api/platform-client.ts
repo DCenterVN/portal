@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { fetcher } from "@/lib/fetcher";
 import { auditSchema, decodePlatform, pageSchema, roleMatrixSchema, type AuditEntry, type Page, type RoleMatrix } from "./platform-contract";
 
@@ -19,7 +20,32 @@ export async function companyAudit(root: string, filters: Record<string, string 
   const path = `company/audit-logs?${query({ action: filters.action, since: filters.since, until: filters.until, page: String(page), limit: "20" })}`;
   return decodePlatform(await companyCall<unknown>(path, root), pageSchema(auditSchema));
 }
-export async function companyCall<T>(path: string, root: string, init?: RequestInit): Promise<T> {
-  const suffix = query({ org_id: root });
-  return fetcher<T>(`/api/org/${path}${path.includes("?") ? "&" : "?"}${suffix}`, init);
+export async function companyCall<T>(path: string, _root: string, init?: RequestInit): Promise<T> {
+  return fetcher<T>(`/api/org/${path}`, init);
+}
+
+export const employeeRoles = ["ADMIN", "FOOD_DEV", "WAREHOUSE", "PROCESSING_STAFF", "SALES"] as const;
+const membershipSchema = z.object({
+  id: z.string().uuid(), user_id: z.string().uuid(), branch_id: z.string().uuid(),
+  role_codes: z.array(z.enum(employeeRoles)).nullable().transform((roles) => roles ?? []),
+  status: z.enum(["ACTIVE", "SUSPENDED"]),
+});
+export type Membership = z.infer<typeof membershipSchema>;
+export async function companyMemberships(page: number) {
+  return decodePlatform(await companyCall<unknown>(`company/memberships?page=${page}&limit=20`, ""), pageSchema(membershipSchema));
+}
+export async function createMembership(input: { email: string; display_name: string; role_codes: string[] }) {
+  return decodePlatform(await companyCall<unknown>("company/memberships", "", {
+    method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(input),
+  }), membershipSchema);
+}
+export async function replaceMembershipRoles(id: string, role_codes: string[]) {
+  return decodePlatform(await companyCall<unknown>(`company/memberships/${encodeURIComponent(id)}/roles`, "", {
+    method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify({ role_codes }),
+  }), z.object({ membership_id: z.string().uuid(), role_codes: z.array(z.enum(employeeRoles)).nullable() }));
+}
+export async function updateMembershipStatus(id: string, status: Membership["status"]) {
+  return decodePlatform(await companyCall<unknown>(`company/memberships/${encodeURIComponent(id)}`, "", {
+    method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ status }),
+  }), z.object({ membership_id: z.string().uuid(), status: membershipSchema.shape.status }));
 }

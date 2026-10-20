@@ -2,14 +2,18 @@ import { NextRequest, NextResponse } from "next/server";
 import { forwardService } from "@/lib/api/service-bff";
 
 const ORG_SERVICE_URL = process.env.ORG_INTERNAL_URL || process.env.ORG_SERVICE_URL || "http://localhost:8081";
-type Method = "GET" | "POST" | "PUT";
-type Rule = { method: Method; path: RegExp; body: "none" | "required"; query: readonly string[]; requireMain?: boolean };
+type Method = "GET" | "POST" | "PUT" | "PATCH";
+type Rule = { method: Method; path: RegExp; body: "none" | "required"; query: readonly string[] };
 const rules: Rule[] = [
-  { method: "PUT", path: /^company\/role-matrix\/roles\/[A-Z][A-Z0-9_]*$/, body: "required", query: ["org_id"], requireMain: true },
-  { method: "GET", path: /^permissions\/me$/, body: "none", query: ["org_id", "branch_id"], requireMain: true },
-  { method: "GET", path: /^company\/(role-matrix|modules)$/, body: "none", query: ["org_id"], requireMain: true },
-  { method: "GET", path: /^company\/audit-logs$/, body: "none", query: ["org_id", "page", "limit", "action", "since", "until"], requireMain: true },
-  { method: "PUT", path: /^company\/settings$/, body: "required", query: ["org_id"], requireMain: true },
+  { method: "GET", path: /^company\/memberships$/, body: "none", query: ["page", "limit"] },
+  { method: "POST", path: /^company\/memberships$/, body: "required", query: [] },
+  { method: "PUT", path: /^company\/memberships\/[0-9a-f-]{36}\/roles$/i, body: "required", query: [] },
+  { method: "PATCH", path: /^company\/memberships\/[0-9a-f-]{36}$/i, body: "required", query: [] },
+  { method: "PUT", path: /^company\/role-matrix\/roles\/[A-Z][A-Z0-9_]*$/, body: "required", query: [] },
+  { method: "GET", path: /^permissions\/me$/, body: "none", query: ["org_id", "branch_id"] },
+  { method: "GET", path: /^company\/(role-matrix|modules)$/, body: "none", query: [] },
+  { method: "GET", path: /^company\/audit-logs$/, body: "none", query: ["page", "limit", "action", "since", "until"] },
+  { method: "PUT", path: /^company\/settings$/, body: "required", query: [] },
 ];
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -18,8 +22,8 @@ function queryFor(request: NextRequest, rule: Rule): string | null {
   for (const key of params.keys()) {
     if (!rule.query.includes(key) || params.getAll(key).length !== 1) return null;
   }
-  if (rule.requireMain && !uuid.test(params.get("org_id") ?? "")) return null;
-  if (request.nextUrl.pathname.endsWith("/permissions/me") && !uuid.test(params.get("branch_id") ?? "")) return null;
+  if (request.nextUrl.pathname.endsWith("/permissions/me") &&
+    (!uuid.test(params.get("org_id") ?? "") || !uuid.test(params.get("branch_id") ?? ""))) return null;
   return params.toString();
 }
 

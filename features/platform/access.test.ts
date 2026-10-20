@@ -58,3 +58,13 @@ describe("error text", () => {
     expect(errorText(failure(403), { 409: "X" })).toContain("không có quyền");
   });
 });
+
+
+it("keeps membership read, employee create and membership update independent of role names", () => {
+  for (const key of ["org:membership:read", "org:employee:create", "org:membership:update"]) {
+    const access = companyAccess(200, { action_keys: [key], roles: ["CUSTOMER"] });
+    for (const action of ["org:membership:read", "org:employee:create", "org:membership:update"]) expect(hasAction(access, action)).toBe(action === key);
+  }
+  const namedAdmin = companyAccess(200, { action_keys: [], roles: ["ADMIN"] });
+  expect(hasAction(namedAdmin, "org:employee:create")).toBe(false);
+});

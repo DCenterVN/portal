@@ -45,7 +45,7 @@ describe("Portal BFF Operations & Operator Console", () => {
   });
 
   it("3. Guard policy denies operation requiring reason when reason is too short", async () => {
-    const req = new NextRequest("http://localhost:3000/api/operations/org.operator.branch.onboard", {
+    const req = new NextRequest("http://localhost:3000/api/operations/auth.operator.user.security-action", {
       method: "POST",
       body: JSON.stringify({
         environment: "dev",
@@ -54,7 +54,7 @@ describe("Portal BFF Operations & Operator Console", () => {
     });
 
     const res = await operationsHandler(req, {
-      params: Promise.resolve({ operationId: "org.operator.branch.onboard" }),
+      params: Promise.resolve({ operationId: "auth.operator.user.security-action" }),
     });
     expect(res.status).toBe(403);
     const data = await res.json();
@@ -99,75 +99,32 @@ describe("Portal BFF Operations & Operator Console", () => {
     );
   });
 
-  it("5. POST operation (org.operator.branch.onboard) forwards payload and returns real backend response", async () => {
-    const mockBranchResponse = {
-      id: "branch-uuid-123",
-      code: "COLD-MAIN",
-      name: "Kho Lạnh Tân Tạo",
-      status: "ACTIVE",
-    };
-
-    global.fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      status: 200,
-      headers: new Headers({ "content-type": "application/json" }),
-      json: async () => mockBranchResponse,
-    } as unknown as Response);
-
-    const req = new NextRequest("http://localhost:3000/api/operations/org.operator.branch.onboard", {
-      method: "POST",
-      body: JSON.stringify({
-        environment: "dev",
-        reason: "Onboarding new test branch",
-        payload: {
-          code: "COLD-MAIN",
-          name: "Kho Lạnh Tân Tạo",
-        },
-      }),
-    });
-
-    const res = await operationsHandler(req, {
-      params: Promise.resolve({ operationId: "org.operator.branch.onboard" }),
-    });
-
-    expect(res.status).toBe(200);
-    const data = await res.json();
-    expect(data.ok).toBe(true);
-    expect(data.data.response).toEqual(mockBranchResponse);
-    expect(global.fetch).toHaveBeenCalledWith(
-      expect.stringContaining("/internal/branches/onboard"),
-      expect.objectContaining({
-        method: "POST",
-        body: JSON.stringify({ code: "COLD-MAIN", name: "Kho Lạnh Tân Tạo" }),
-      })
-    );
-  });
-
   it("6. Backend error is forwarded with exact status and message", async () => {
     global.fetch = vi.fn().mockResolvedValue({
       ok: false,
       status: 409,
       headers: new Headers({ "content-type": "application/json" }),
-      json: async () => ({ error: "branch_code_already_exists", message: "Code COLD-MAIN already exists" }),
+      json: async () => ({ error: "security_action_conflict", message: "Security action conflicts with current state" }),
     } as unknown as Response);
 
-    const req = new NextRequest("http://localhost:3000/api/operations/org.operator.branch.onboard", {
+    const req = new NextRequest("http://localhost:3000/api/operations/auth.operator.user.security-action", {
       method: "POST",
       body: JSON.stringify({
         environment: "dev",
-        reason: "Duplicate code onboarding test",
-        payload: { code: "COLD-MAIN" },
+        reason: "Conflicting security action test",
+        params: { user_id: "user-target-123" },
+        payload: { action: "SUSPEND" },
       }),
     });
 
     const res = await operationsHandler(req, {
-      params: Promise.resolve({ operationId: "org.operator.branch.onboard" }),
+      params: Promise.resolve({ operationId: "auth.operator.user.security-action" }),
     });
 
     expect(res.status).toBe(409);
     const data = await res.json();
     expect(data.ok).toBe(false);
-    expect(data.data.message).toBe("Code COLD-MAIN already exists");
+    expect(data.data.message).toBe("Security action conflicts with current state");
   });
 
   it("7. Security action path substitution and execution", async () => {

@@ -27,14 +27,6 @@ rounded	features/employee-auth/switch-context.tsx:rounded-[var(--radius-md)]	-
 rounded	features/inventory/shelves-view.tsx:rounded-[var(--radius-md)]	-
 rounded	features/inventory/shelves-view.tsx:rounded-[var(--radius-md)]#2	-
 rounded	features/inventory/shelves-view.tsx:rounded-[var(--radius-md)]#3	-
-rounded	features/memberships/memberships-view.tsx:rounded-2xl	-
-rounded	features/memberships/memberships-view.tsx:rounded-2xl#2	-
-rounded	features/memberships/memberships-view.tsx:rounded-2xl#3	-
-rounded	features/memberships/memberships-view.tsx:rounded-2xl#4	-
-rounded	features/memberships/memberships-view.tsx:rounded-2xl#5	-
-rounded	features/memberships/memberships-view.tsx:rounded-[var(--radius-md)]	-
-rounded	features/memberships/memberships-view.tsx:rounded-[var(--radius-md)]#2	-
-rounded	features/memberships/memberships-view.tsx:rounded-[var(--radius-md)]#3	-
 rounded	features/platform/audit-view.tsx:rounded-md	-
 rounded	features/production/qc-view.tsx:rounded-[var(--radius-md)]	-
 rounded	features/production/qc-view.tsx:rounded-[var(--radius-md)]#2	-

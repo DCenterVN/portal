@@ -59,7 +59,7 @@ describe("S6 operator auth client IP", () => {
     expect(await res.json()).toMatchObject({ok: false, data: {details: {error: "rate_limit_exceeded"}}});
     expect(new Headers(fetch.mock.calls[0][1].headers).get("x-forwarded-for")).toBe("192.0.2.1");
   });
-  it.each(["org.operator.branches.list", "org.operator.branch.onboard", "integration.locations.vn.provinces"])("%s remains unchanged even with invalid ingress configuration", async operationId => {
+  it.each(["integration.locations.vn.provinces"])("%s remains unchanged even with invalid ingress configuration", async operationId => {
     vi.stubEnv("PORTAL_CLIENT_IP_SOURCE", "invalid");
     const fetch = vi.fn().mockResolvedValue(reply()); vi.stubGlobal("fetch", fetch);
     expect((await run(request(null), operationId)).status).toBe(200);
@@ -67,7 +67,7 @@ describe("S6 operator auth client IP", () => {
   });
   it("non-auth execute ignores the server IP in its context", async () => {
     const fetch = vi.fn().mockResolvedValue(reply()); vi.stubGlobal("fetch", fetch);
-    await operations["org.operator.branches.list"].execute({clientIP: "192.0.2.1"});
+    await operations["integration.locations.vn.provinces"].execute({clientIP: "192.0.2.1"});
     expect(Object.fromEntries(new Headers(fetch.mock.calls[0][1].headers))).toEqual({"content-type": "application/json", "user-agent": "portal-bff/operator-console"});
   });
 });

@@ -154,29 +154,6 @@ export const operations: Record<string, OperationDefinition> = {
     execute: (ctx) =>
       callBackend("auth", "POST", "/auth/native/login", ctx?.payload, ctx?.clientIP)
   },
-  "org.operator.branches.list": {
-    id: "org.operator.branches.list",
-    service: "org",
-    method: "GET",
-    pathTemplate: "/internal/operator/branches",
-    audience: "org",
-    risk: "read",
-    requiresReason: false,
-    allowedInProduction: true,
-    execute: () => callBackend("org", "GET", "/internal/operator/branches")
-  },
-  "org.operator.branch.onboard": {
-    id: "org.operator.branch.onboard",
-    service: "org",
-    method: "POST",
-    pathTemplate: "/internal/branches/onboard",
-    audience: "org",
-    risk: "mutation",
-    requiresReason: true,
-    allowedInProduction: false,
-    execute: (ctx) =>
-      callBackend("org", "POST", "/internal/branches/onboard", ctx?.payload)
-  },
   "integration.locations.vn.provinces": {
     id: "integration.locations.vn.provinces",
     service: "integration",

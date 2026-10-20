@@ -23,7 +23,7 @@ export const CONSOLE_NAV: { title: string; items: NavRule[] }[] = [
       { href: "/production/qc", label: "Kiểm định", match: "/production/qc", icon: Boxes, action: "production:qc:update" },
     ],
   },
-  { title: "Bán hàng", items: [{ href: "/sales/pricing", label: "Bảng giá", match: "/sales/pricing", icon: ShoppingCart, action: "sales:price_floor_policy:read" }] },
+  { title: "Bán hàng", items: [{ href: "/sales/pricing", label: "Bảng giá", match: "/sales/pricing", icon: ShoppingCart, action: "sales:price_book:create" }] },
 ];
 
 export function consoleNavFor(actions: ReadonlySet<string>): { title: string; items: NavItem[] }[] {

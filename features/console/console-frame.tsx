@@ -2,7 +2,11 @@
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
-import { ErrorState } from "@/components/ui/state";
+import { NextIntlClientProvider } from "next-intl";
+import messages from "@/messages/vi.json";
+import { permissionsSchema } from "@/lib/api/platform-contract";
+import { AccessProvider } from "@/features/platform/access-boundary";
+import { ErrorState, Skeleton } from "@/components/ui/state";
 import { ConsoleShell } from "@/components/layout/console-shell";
 import { logoutTo } from "@/lib/auth/client";
 import { useToast } from "@/components/ui/toast";
@@ -40,7 +44,7 @@ export function resolveConsoleSession(profilePayload: unknown, contextPayload: u
     : EMPTY_SESSION.context.label;
   const organization = typeof selected?.org_name === "string" ? selected.org_name : undefined;
 
-  const permissions = Array.isArray(context?.permissions) ? context.permissions.filter((key): key is string => typeof key === "string") : [];
+  const permissions: string[] = [];
 
   return { user: { name, detail }, context: { label: branch, sublabel: organization }, permissions };
 }
@@ -63,7 +67,16 @@ export async function fetchConsoleSession(fetcher: typeof fetch = fetch): Promis
   if (context.status === "rejected" || !objectValue(context.value.payload)) {
     return { ...session, error: "Không tải được phạm vi chi nhánh." };
   }
-  return session;
+  const active = objectValue(objectValue(context.value.payload)?.active_context);
+  if (typeof active?.org_id !== "string" || typeof active?.branch_id !== "string") return session;
+  try {
+    const params = new URLSearchParams({ org_id: active.org_id, branch_id: active.branch_id });
+    const response = await fetcher(`/api/org/permissions/me?${params}`);
+    if (!response.ok) throw new Error("Permission request failed");
+    return { ...session, permissions: permissionsSchema.parse(await response.json()).action_keys };
+  } catch {
+    return { ...session, error: messages.memberships.permissionError };
+  }
 }
 
 export function ConsoleFrame({ children }: { children: ReactNode }) {
@@ -84,12 +97,15 @@ export function ConsoleFrame({ children }: { children: ReactNode }) {
   const actions = useMemo(() => new Set(session.permissions), [session.permissions]);
   const nav = useMemo(() => consoleNavFor(actions), [actions]);
   const body = session.error ? <ErrorState title={session.error} />
-    : !session.permissions || consoleRouteAllowed(pathname, actions) ? children
+    : !session.permissions ? <Skeleton title={messages.memberships.loading} />
+    : consoleRouteAllowed(pathname, actions) ? children
     : <ErrorState denied title="Không có quyền truy cập" description="Tài khoản của bạn chưa được cấp quyền xem trang này. Liên hệ quản trị viên để được cấp quyền." />;
 
   return (
     <ConsoleShell nav={nav} context={session.context} user={session.user} onLogout={() => void logoutTo("/staff/login", toast.error)}>
-      {body}
+      <NextIntlClientProvider locale="vi" messages={messages}>
+        <AccessProvider value={{ plane: "company", actions, root: "" }}>{body}</AccessProvider>
+      </NextIntlClientProvider>
     </ConsoleShell>
   );
 }
