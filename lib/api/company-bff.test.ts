@@ -111,11 +111,12 @@ describe("membership routes", () => {
     expect((await PATCH(request(`company/memberships/${member}`, "PATCH", "jwt", "bad"), { params: Promise.resolve({ path: ["company", "memberships", member] }) })).status).toBe(400);
     expect(global.fetch).not.toHaveBeenCalled();
   });
-  it("removes branch operations while keeping native and email auth", () => {
+  it("removes branch operations while keeping web and email auth", () => {
     expect(Object.keys(operations).filter((key) => key.startsWith("org.operator.branch"))).toEqual([]);
-    expect(operations).toHaveProperty("auth.native.login");
+    expect(operations).not.toHaveProperty("auth.native.login");
     expect(Object.values(generatedOperations).some((operation) => operation.service === "auth" && operation.path.includes("/email/"))).toBe(true);
-    expect(generatedOperations.nativeLogin.path).toBe("/auth/native/login");
+    expect(generatedOperations.webLogin.path).toBe("/auth/web/login");
+    expect(Object.values(generatedOperations).some(operation => /native|org-context|account\/email/.test(operation.path))).toBe(false);
     expect(Object.values(generatedOperations).some((operation) => operation.path.includes("/internal/operator/branches") || operation.path.includes("/internal/branches/onboard"))).toBe(false);
   });
 });

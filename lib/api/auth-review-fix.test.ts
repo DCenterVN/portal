@@ -7,6 +7,7 @@ const json = (data: unknown, status = 200) => new Response(JSON.stringify(data),
 const request = (body: unknown, headers: Record<string,string> = {}) => new NextRequest("https://portal.test/api/auth/test", {method:"POST", headers:{"Content-Type":"application/json",Origin:"https://portal.test",cookie:"access_token=caller",...headers}, body:JSON.stringify(body)});
 const error = (code: string, status: number) => ({code:status,status:"error",message:"denied",errors:{error_code:code},retryable:false});
 beforeEach(() => vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://portal.test"));
+const identityToken = "eyJhbGciOiJFUzI1NiJ9.eyJzdWIiOiJ1Iiwib3JnX2lkIjoibWFpbiIsImJyYW5jaF9pZCI6Im1haW4ifQ.signature";
 const employee = {org_id:"o",branch_id:"b",member_type:"EMPLOYEE",roles:["SALES"]};
 afterEach(() => {vi.unstubAllGlobals();vi.unstubAllEnvs();vi.restoreAllMocks();});
 describe("review R1", () => {
@@ -50,13 +51,12 @@ describe("review R2", () => {
 });
 describe("review R4", () => {
  it.each(["login","customer","invite","list","org lookup","switch","profile","permissions","staff contexts","staff auto switch"])("R4 preserves real error envelope at %s", async endpoint => {
-  const fetch=vi.fn(); const token=json({access_token:"temporary"}); const profile=json({id:"u",status:"ACTIVE"});
+  const fetch=vi.fn(); const token=json({access_token:identityToken}); const profile=json({id:"u",status:"ACTIVE"});
   if (["profile","permissions","staff contexts","staff auto switch"].includes(endpoint)) fetch.mockResolvedValueOnce(token);
   if (["permissions","staff contexts","staff auto switch"].includes(endpoint)) fetch.mockResolvedValueOnce(profile);
-  if (endpoint === "staff auto switch" || endpoint === "switch" || endpoint === "permissions") fetch.mockResolvedValueOnce(json([employee]));
-  if (endpoint === "permissions") fetch.mockResolvedValueOnce(json({access_token:"selected"}));
+  if (endpoint === "staff auto switch" || endpoint === "switch" || endpoint === "permissions") fetch.mockResolvedValueOnce(json([{...employee,org_id:"main",branch_id:"main",status:"ACTIVE"}]));
   fetch.mockResolvedValue(json({...error("FORBIDDEN",403),access_token:"secret",data:{token:"secret"}},403));vi.stubGlobal("fetch",fetch);
-  const r=request(endpoint === "invite" ? {token:"proof",password:"password-1234"} : endpoint === "customer" ? {email:"a@example.test"} : ["org lookup","switch"].includes(endpoint) ? {org_id:"o",branch_id:"b"} : {identifier:"a",password:"password-1234"});
+  const r=request(endpoint === "invite" ? {token:"proof",password:"password-1234"} : endpoint === "customer" ? {email:"a@example.test"} : ["org lookup","switch"].includes(endpoint) ? {org_id:"main",branch_id:"main"} : {identifier:"a",password:"password-1234"}, {cookie: `access_token=${identityToken}; refresh_token=refresh`});
   const res= endpoint === "customer" ? await customerOperation(r,"forgot") : endpoint === "invite" ? await acceptStaffInvite(r) : endpoint === "list" ? await listStaffContexts(r) : ["org lookup","switch"].includes(endpoint) ? await switchStaffContext(r) : await loginJourney(r,"employee");
   expect(res.status).toBe(403);const body=await res.json();expect(body).toMatchObject({error:"FORBIDDEN",message:"denied"});expect(res.headers.get("retry-after")).toBe("8");expect(res.headers.get("set-cookie")).toBeNull();expect(JSON.stringify(body)).not.toContain("secret");
  });

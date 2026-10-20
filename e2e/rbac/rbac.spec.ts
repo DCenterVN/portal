@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { randomUUID } from "node:crypto";
 import { test, expect, type APIRequestContext, type BrowserContext, type Page } from "@playwright/test";
+import { decodeJwt } from "jose";
 import { z } from "zod";
 import { decodePlatform, pageSchema, roleMatrixSchema } from "../../lib/api/platform-contract";
 import messages from "../../messages/vi.json" with { type: "json" };
@@ -46,6 +47,12 @@ async function login(page: Page, role: "ADMIN" | "SALES" | "CUSTOMER", email = a
   await form.getByRole("button", { name: customer ? messages.customerAuth.login : messages.employeeAuth.login, exact: true }).click();
   expect((await result).status(), `Đăng nhập ${role}`).toBe(200);
   await page.waitForURL(customer ? /\/$/ : /\/(console|platform(?:\/role-matrix)?)$/);
+  const token = (await page.context().cookies()).find(cookie => cookie.name === "access_token")?.value;
+  expect(Boolean(token), "Login issues an identity session").toBe(true);
+  const claims = decodeJwt(token!);
+  expect(claims.org_id).toBe(accounts.QA_BRANCH_ID);
+  expect(claims.branch_id).toBe(accounts.QA_BRANCH_ID);
+
 }
 
 async function grants(request: APIRequestContext) {

@@ -1,3 +1,4 @@
+const identityToken = "eyJhbGciOiJFUzI1NiJ9.eyJzdWIiOiJ1Iiwib3JnX2lkIjoibWFpbiIsImJyYW5jaF9pZCI6Im1haW4ifQ.signature";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest, NextResponse } from "next/server";
 vi.mock("server-only", () => ({}));
@@ -5,16 +6,15 @@ import { POST as customer } from "../../app/api/auth/login/route";
 import { POST as staff } from "../../app/api/auth/staff/login/route";
 import { customerOperation, acceptStaffInvite, switchStaffContext, safeLanding } from "./auth-journey-bff";
 const reply = (data: unknown, status = 200, cookies: string[] = []) => { const headers = new Headers({"content-type": "application/json"}); cookies.forEach(c => headers.append("set-cookie", c)); return new Response(JSON.stringify(data), {status, headers}); };
-const request = (body: unknown = {identifier: "a@example.com", password: "password-1234"}) => new NextRequest("http://localhost/api/auth/login", { method: "POST", headers: {"Content-Type":"application/json","Sec-Fetch-Site":"same-origin",cookie: "access_token=existing; refresh_token=existing"}, body: JSON.stringify(body) });
-const row = (org_id = "org-1", branch_id = "branch-1", member_type = "EMPLOYEE", status = "ACTIVE") => ({org_id, branch_id, member_type, status, roles: ["SALES"]});
-const login = () => reply({access_token: "temporary", expires_in: 900, user: {id: "u", status: "ACTIVE"}}, 200, ["refresh_token=temporary-rt; Path=/; HttpOnly; Secure; SameSite=Strict", "CSRF-Token=temporary-csrf; Path=/; Secure"]);
+const request = (body: unknown = {identifier: "a@example.com", password: "password-1234"}) => new NextRequest("http://localhost/api/auth/login", { method: "POST", headers: {"Content-Type":"application/json","Sec-Fetch-Site":"same-origin",cookie: `access_token=${identityToken}; refresh_token=${identityToken}`}, body: JSON.stringify(body) });
+const row = (org_id = "main", branch_id = "main", member_type = "EMPLOYEE", status = "ACTIVE") => ({org_id, branch_id, member_type, status, roles: ["SALES"]});
+const login = () => reply({access_token: identityToken, expires_in: 900, user: {id: "u", status: "ACTIVE"}}, 200, [`refresh_token=temporary-rt; Path=/; HttpOnly; Secure; SameSite=Strict`, `CSRF-Token=temporary-csrf; Path=/; Secure`]);
 function upstream(contexts: unknown = [row()], contextStatus = 200, switchStatus = 200, userStatus = "ACTIVE") {
   const fn = vi.fn(async (url: string) => {
     if (url.endsWith("/auth/web/login")) return login();
-    if (url.includes("/org/permissions/me?")) return reply({action_keys: []});
+    if (url.includes("/org/permissions/me?")) return reply(switchStatus === 200 ? {action_keys: []} : {error: "FORBIDDEN"}, switchStatus);
     if (url.endsWith("/auth/me")) return reply({id: "u", status: userStatus});
     if (url.endsWith("/org/access-contexts/me")) return reply(contexts, contextStatus);
-    if (url.endsWith("/auth/org-context")) return reply(switchStatus === 200 ? {access_token: "selected", expires_in: 900} : {error: "FORBIDDEN"}, switchStatus);
     if (url.endsWith("/auth/web/logout")) return reply({});
     throw Error("Unexpected upstream " + url);
   }); vi.stubGlobal("fetch", fn); return fn;
@@ -26,25 +26,25 @@ describe("S2 login policy", () => {
     expect(await res.json()).toMatchObject({next_path: "/", user: {status: "ACTIVE"}});
     expect(fetch.mock.calls.some(([url]) => url.includes("/org/"))).toBe(false);
     expect(res.headers.get("cache-control")).toBe("no-store");
-    expect(res.headers.get("set-cookie")).toContain("access_token=temporary"); expect(res.headers.get("set-cookie")).toMatch(/HttpOnly/i); expect(res.headers.get("set-cookie")).toMatch(/Secure/i);
+    expect(res.headers.get("set-cookie")).toContain(`access_token=${identityToken}`); expect(res.headers.get("set-cookie")).toMatch(/HttpOnly/i); expect(res.headers.get("set-cookie")).toMatch(/Secure/i);
   });
-  it.each([[], [row("o", "b", "CUSTOMER")], [row("o", "b", "PLATFORM")], [row("o", "b", "EMPLOYEE", "SUSPENDED")]].map(contexts => [contexts]))("staff requires EMPLOYEE ACTIVE, revokes temporary session with its cookie/CSRF and emits no new cookie (%j)", async contexts => {
+  it.each([[], [row("main", "main", "CUSTOMER")], [row("main", "main", "PLATFORM")], [row("main", "main", "EMPLOYEE", "SUSPENDED")]].map(contexts => [contexts]))("staff requires EMPLOYEE ACTIVE, revokes temporary session with its cookie/CSRF and emits no new cookie (%j)", async contexts => {
     const fetch = upstream(contexts); const res = await staff(request()); expect(res.status).toBe(403);
     expect(await res.json()).toMatchObject({error: "FORBIDDEN", message: expect.stringContaining("/login")});
     expect(res.headers.get("set-cookie")).toBeNull();
-    expect(fetch).toHaveBeenCalledWith(expect.stringContaining("/auth/web/logout"), expect.objectContaining({headers: expect.objectContaining({Cookie: "refresh_token=temporary-rt; CSRF-Token=temporary-csrf", "X-CSRF-Token": "temporary-csrf", Authorization: "Bearer temporary"})}));
+    expect(fetch).toHaveBeenCalledWith(expect.stringContaining("/auth/web/logout"), expect.objectContaining({headers: expect.objectContaining({Cookie: `refresh_token=temporary-rt; CSRF-Token=temporary-csrf`, "X-CSRF-Token": "temporary-csrf", Authorization: `Bearer ${identityToken}`})}));
   });
   it("inactive auth profile fails closed and revokes", async () => { const fetch = upstream([], 200, 200, "SUSPENDED"); const res = await customer(request()); expect(res.status).toBe(403); expect(res.headers.get("set-cookie")).toBeNull(); expect(fetch.mock.calls.at(-1)?.[0]).toContain("logout"); });
   it.each([{account_type: "EMPLOYEE"}, {roles: ["OWNER"]}, {next_path: "/console"}])("rejects forged fields before creating session %j", async fields => { const fetch = upstream(); const res = await staff(request({identifier: "a", password: "p", ...fields})); expect(res.status).toBe(400); expect(await res.json()).toMatchObject({error: "BAD_REQUEST"}); expect(fetch).not.toHaveBeenCalled(); });
   it.each([null, [], {identifier: [], password: "p"}, {identifier: "a"}, {identifier: "", password: "p"}])("rejects malformed login %j", async body => { const fetch = upstream(); expect((await customer(request(body))).status).toBe(400); expect(fetch).not.toHaveBeenCalled(); });
   it("malformed JSON is BAD_REQUEST", async () => { const fetch = upstream(); const res = await staff(new NextRequest("http://localhost", {method: "POST", headers: {"Content-Type":"application/json", "Sec-Fetch-Site":"same-origin"}, body: "{"})); expect(res.status).toBe(400); expect(fetch).not.toHaveBeenCalled(); });
-  it.each([null, {}, [{org_id: "o", branch_id: "b", member_type: "EMPLOYEE", roles: "OWNER"}], [row(), {garbage: true}]])("malformed org schema fails closed %j", async contexts => { upstream(contexts); const res = await staff(request()); expect(res.status).toBe(503); expect(res.headers.get("set-cookie")).toBeNull(); });
+  it.each([null, {}, [{org_id: "main", branch_id: "main", member_type: "EMPLOYEE", roles: "OWNER"}], [row(), {garbage: true}]])("malformed org schema fails closed %j", async contexts => { upstream(contexts); const res = await staff(request()); expect(res.status).toBe(503); expect(res.headers.get("set-cookie")).toBeNull(); });
   it("org unavailable preserves upstream status/code/Retry-After and revokes", async () => {
     const fn = upstream([], 503); fn.mockImplementationOnce(async () => login()).mockImplementationOnce(async () => reply({id: "u", status: "ACTIVE"})).mockImplementationOnce(async () => new Response(JSON.stringify({error: "INTERNAL_ERROR"}), {status: 503, headers: {"Retry-After": "4"}}));
     const res = await staff(request()); expect(res.status).toBe(503); expect(res.headers.get("retry-after")).toBe("4"); expect(await res.json()).toMatchObject({error: "INTERNAL_ERROR"}); expect(res.headers.get("set-cookie")).toBeNull(); expect(fn.mock.calls.at(-1)?.[0]).toContain("logout");
   });
-  it.each([[ [row("o1", "b1"), row("o2", "b2")], "/console" ], [[row("o", "b1"), row("o", "b2")], "/console"]])("single MAIN context replaces selection %j", async (contexts, landing) => { const fetch = upstream(contexts); const res = await staff(request()); expect(res.status).toBe(200); expect(await res.json()).toMatchObject({next_path: landing}); expect(fetch.mock.calls.some(([url]) => url.includes("switch"))).toBe(false); });
-  it("dedupes role rows and switches the sole verified org/branch before publishing session", async () => { const fetch = upstream([row(), {...row(), roles: ["QC"]}]); const res = await staff(request({identifier: "a@example.com", password: "password-1234", redirect: "/platform"})); expect(await res.json()).toMatchObject({next_path: "/console"}); expect(res.headers.get("set-cookie")).toContain("access_token=selected"); expect(fetch).toHaveBeenCalledWith(expect.stringContaining("/auth/org-context"), expect.objectContaining({body: JSON.stringify({org_id: "org-1", branch_id: "branch-1"})})); });
+  it.each([[row("other", "other")], [row("other", "branch")]])("staff without MAIN membership fails closed %j", async (...rows) => { const fetch = upstream(rows); const res = await staff(request()); expect(res.status).toBe(403); expect(res.headers.get("set-cookie")).toBeNull(); expect(fetch.mock.calls.at(-1)?.[0]).toContain("logout"); });
+  it("dedupes MAIN membership and publishes the login temporary", async () => { const fetch = upstream([row(), {...row(), roles: ["QC"]}]); const res = await staff(request({identifier:"a",password:"password-1234"})); expect(res.status).toBe(200); expect(res.headers.get("set-cookie")).toContain(`access_token=${identityToken}`); expect(fetch.mock.calls.filter(([url]) => url.includes("/auth/")).every(([url]) => /web\/login|auth\/me/.test(url))).toBe(true); });
   it("switch failure never publishes cookie or console landing", async () => { const fetch = upstream([row()], 200, 403); const res = await staff(request()); expect(res.status).toBe(403); expect(res.headers.get("set-cookie")).toBeNull(); expect(await res.json()).not.toHaveProperty("next_path"); expect(fetch.mock.calls.at(-1)?.[0]).toContain("logout"); });
   it("transport failure is canonical INTERNAL_ERROR and does not expose exception", async () => { vi.stubGlobal("fetch", vi.fn().mockRejectedValue(Error("secret"))); const res = await staff(request()); expect(res.status).toBe(503); expect(await res.json()).toEqual({error: "INTERNAL_ERROR", message: "Dịch vụ xác thực hiện không khả dụng"}); });
   it.each(["https://evil.test", "//evil.test", "/\\evil.test", "/%5cevil.test", "/%2f%2fevil.test", "/%63onsole", "/store/../console", "/staff/../console", "/platform", "/console", "/staff/login"])("rejects cross-plane/encoded/external store landing %s", target => { expect(safeLanding(target, "customer")).toBe("/"); });
@@ -77,7 +77,7 @@ describe("R4-1 login employee marker", () => {
     "__Host-refresh_token=rt; Path=/; HttpOnly; Secure; SameSite=None; Max-Age=86400",
   ])("staff console login sets employee marker mirroring refresh flags and lifetime: %s", async refresh => {
     const fetch = upstream();
-    fetch.mockImplementationOnce(async () => reply({access_token: "temporary", expires_in: 900}, 200, [refresh]));
+    fetch.mockImplementationOnce(async () => reply({access_token: identityToken, expires_in: 900}, 200, [refresh]));
     const res = await staff(oldMarkerRequest());
     expect(res.status).toBe(200);
     expect(await res.json()).toMatchObject({next_path: "/console"});
@@ -92,8 +92,8 @@ describe("R4-1 login employee marker", () => {
     expect(res.headers.getSetCookie().some(cookie => cookie.startsWith("portal_plane=employee"))).toBe(false);
   });
   it.each([
-    [row("o1", "b1"), row("o2", "b2")],
-    [row("o", "b1"), row("o", "b2")],
+    [row(), row("other", "other")],
+    [row(), row("other", "branch")],
   ])("staff login uses MAIN and sets an employee marker (%j)", async (...rows) => {
     upstream(rows);
     const res = await staff(oldMarkerRequest());
@@ -131,9 +131,8 @@ describe("S5 auth client IP forwarding", () => {
     expect((await handler(edge())).status).toBe(200);
     for (const [url, init] of calls) {
       if (url.endsWith("/auth/web/login")) exact(init?.headers, {"content-type": "application/json", "user-agent": "test-agent"});
-      else if (url.endsWith("/auth/org-context")) exact(init?.headers, {"content-type": "application/json", authorization: "Bearer temporary"});
-      else if (url.endsWith("/auth/me")) exact(init?.headers, {authorization: "Bearer temporary"});
-      else expect(Object.fromEntries(new Headers(init?.headers))).toEqual({authorization: url.includes("/org/permissions/me?") ? "Bearer selected" : "Bearer temporary"});
+      else if (url.endsWith("/auth/me")) exact(init?.headers, {authorization: `Bearer ${identityToken}`});
+      else expect(Object.fromEntries(new Headers(init?.headers))).toEqual({authorization: `Bearer ${identityToken}`});
     }
   });
   it("rejection revokes with the same sanitized IP", async () => {
@@ -141,7 +140,7 @@ describe("S5 auth client IP forwarding", () => {
     const original = upstream([]); const calls: [string, RequestInit | undefined][] = [];
     vi.stubGlobal("fetch", vi.fn(async (url: string, init?: RequestInit) => {calls.push([url, init]); return original(url);}));
     expect((await staff(edge())).status).toBe(403);
-    exact(calls.at(-1)?.[1]?.headers, {cookie: "refresh_token=temporary-rt; CSRF-Token=temporary-csrf", "x-csrf-token": "temporary-csrf", authorization: "Bearer temporary", "user-agent": "test-agent"});
+    exact(calls.at(-1)?.[1]?.headers, {cookie: `refresh_token=temporary-rt; CSRF-Token=temporary-csrf`, "x-csrf-token": "temporary-csrf", authorization: `Bearer ${identityToken}`, "user-agent": "test-agent"});
   });
   const ops = [
     ["register", {email: "a@example.com", password: "password-1234"}],
@@ -158,11 +157,11 @@ describe("S5 auth client IP forwarding", () => {
   });
   it("invite and selected context use the shared auth contract", async () => {
     vi.stubEnv("PORTAL_CLIENT_IP_SOURCE", "trusted-kong");
-    const fetch = vi.fn().mockResolvedValueOnce(reply({code: 200, status: "success", message: "OK", data: {status: "activated"}})).mockResolvedValueOnce(reply([row()])).mockResolvedValueOnce(reply({access_token: "selected"})); vi.stubGlobal("fetch", fetch);
+    const fetch = vi.fn().mockResolvedValueOnce(reply({code: 200, status: "success", message: "OK", data: {status: "activated"}})).mockResolvedValueOnce(reply([row()])).mockResolvedValueOnce(reply({action_keys: []})); vi.stubGlobal("fetch", fetch);
     expect((await acceptStaffInvite(edge({token: "token", password: "password-1234"}))).status).toBe(200);
     exact(fetch.mock.calls[0][1].headers, {"content-type": "application/json"});
-    expect((await switchStaffContext(edge({org_id: "org-1", branch_id: "branch-1"}))).status).toBe(200);
-    exact(fetch.mock.calls[2][1].headers, {"content-type": "application/json", authorization: "Bearer existing"});
+    expect((await switchStaffContext(edge({org_id: "main", branch_id: "main"}))).status).toBe(200);
+    expect(Object.fromEntries(new Headers(fetch.mock.calls[2][1].headers))).toEqual({authorization: `Bearer ${identityToken}`});
   });
   it.each([undefined, "", "192.0.2.1, 192.0.2.1", "[::1]", "192.0.2.1:80", "fe80::1%eth0"])("invalid ingress %s returns 503 before auth fetch", async ip => {
     vi.stubEnv("PORTAL_CLIENT_IP_SOURCE", "trusted-kong");

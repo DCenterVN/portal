@@ -142,18 +142,6 @@ export const operations: Record<string, OperationDefinition> = {
       );
     }
   },
-  "auth.native.login": {
-    id: "auth.native.login",
-    service: "auth",
-    method: "POST",
-    pathTemplate: "/auth/native/login",
-    audience: "auth",
-    risk: "credential",
-    requiresReason: true,
-    allowedInProduction: false,
-    execute: (ctx) =>
-      callBackend("auth", "POST", "/auth/native/login", ctx?.payload, ctx?.clientIP)
-  },
   "integration.locations.vn.provinces": {
     id: "integration.locations.vn.provinces",
     service: "integration",
