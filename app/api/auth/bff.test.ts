@@ -216,24 +216,29 @@ describe("Portal BFF Auth Handlers (9 handlers)", () => {
     const res401 = await switchOrgHandler(reqNoToken);
     expect(res401.status).toBe(401);
 
+    const identityToken = "eyJhbGciOiJFUzI1NiJ9.eyJzdWIiOiJ1Iiwib3JnX2lkIjoibWFpbiIsImJyYW5jaF9pZCI6Im1haW4ifQ.signature";
     global.fetch = vi.fn()
-      .mockResolvedValueOnce(new Response(JSON.stringify([{org_id:"org-1",branch_id:"branch-2",member_type:"EMPLOYEE",status:"ACTIVE",roles:[]}])) )
-      .mockResolvedValueOnce(new Response(JSON.stringify({access_token:"new-org-token"})));
+      .mockResolvedValueOnce(new Response(JSON.stringify([{org_id:"main",branch_id:"main",member_type:"EMPLOYEE",status:"ACTIVE",roles:[]}])) )
+      .mockResolvedValueOnce(new Response(JSON.stringify({action_keys:["org:company:read"]})));
 
     const reqWithToken = new NextRequest("http://localhost:3000/api/auth/staff/switch-org", {
       method: "POST",
       headers: {
         "Content-Type":"application/json", "Sec-Fetch-Site":"same-origin",
-        cookie: "access_token=valid-jwt",
+        cookie: `access_token=${identityToken}; refresh_token=existing-refresh`,
       },
-      body: JSON.stringify({ org_id: "org-1", branch_id: "branch-2" }),
+      body: JSON.stringify({ org_id: "main", branch_id: "main" }),
     });
 
     const res200 = await switchOrgHandler(reqWithToken);
     expect(res200.status).toBe(200);
     expect((await res200.json()).access_token).toBeUndefined();
-    expect(res200.cookies.get("access_token")?.value).toBe("new-org-token");
-    expectSecureAccessTokenCookie(res200, "new-org-token");
+    expect(res200.cookies.get("access_token")).toBeUndefined();
+    expect(res200.cookies.get("refresh_token")).toBeUndefined();
+    expect(reqWithToken.cookies.get("access_token")?.value).toBe(identityToken);
+    expect(reqWithToken.cookies.get("refresh_token")?.value).toBe("existing-refresh");
+    expect(global.fetch).toHaveBeenCalledTimes(2);
+    expect(global.fetch).toHaveBeenLastCalledWith(expect.stringContaining("/org/permissions/me?org_id=main&branch_id=main"), expect.objectContaining({headers: {Authorization: `Bearer ${identityToken}`}}));
   });
 });
 

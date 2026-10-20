@@ -9,12 +9,12 @@ afterEach(() => {vi.unstubAllEnvs(); vi.unstubAllGlobals(); vi.restoreAllMocks()
 function request(ip: string | null = "::ffff:192.0.2.1", extra: Record<string, unknown> = {}) {
   const headers = new Headers({"Content-Type": "application/json", "X-Forwarded-For": "198.51.100.99", Forwarded: "for=198.51.100.99"});
   if (ip !== null) headers.set("X-Real-IP", ip);
-  return new NextRequest("http://localhost/api/operations/auth.native.login", {method: "POST", headers, body: JSON.stringify({reason: "testing IP forwarding", payload: {identifier: "a", password: "secret"}, ...extra})});
+  return new NextRequest("http://localhost/api/operations/auth.operator.users.list", {method: "POST", headers, body: JSON.stringify({reason: "testing IP forwarding", payload: {identifier: "a", password: "secret"}, ...extra})});
 }
-const run = (req: NextRequest, operationId = "auth.native.login") => POST(req, {params: Promise.resolve({operationId})});
+const run = (req: NextRequest, operationId = "auth.operator.users.list") => POST(req, {params: Promise.resolve({operationId})});
 const reply = (status = 200, retry?: string) => new Response(JSON.stringify(status === 200 ? {result: "ok"} : {error: "rate_limit_exceeded"}), {status, headers: {"Content-Type": "application/json", ...(retry ? {"Retry-After": retry} : {})}});
 describe("S6 operator auth client IP", () => {
-  it.each(["auth.native.login", "auth.operator.users.list", "auth.operator.user.security-action"])("%s forwards exactly the sanitized IP", async operationId => {
+  it.each(["auth.operator.users.list", "auth.operator.user.security-action"])("%s forwards exactly the sanitized IP", async operationId => {
     vi.stubEnv("PORTAL_CLIENT_IP_SOURCE", "trusted-kong");
     const fetch = vi.fn().mockResolvedValue(reply()); vi.stubGlobal("fetch", fetch);
     expect((await run(request(undefined, {params: {user_id: "u"}, clientIP: "198.51.100.99"}), operationId)).status).toBe(200);
@@ -48,7 +48,7 @@ describe("S6 operator auth client IP", () => {
     const {POST: fresh} = await import("../../app/api/operations/[operationId]/route");
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     const fetch = vi.fn().mockImplementation(async () => reply()); vi.stubGlobal("fetch", fetch);
-    for (let n = 0; n < 2; n++) expect((await fresh(request(), {params: Promise.resolve({operationId: "auth.native.login"})})).status).toBe(200);
+    for (let n = 0; n < 2; n++) expect((await fresh(request(), {params: Promise.resolve({operationId: "auth.operator.users.list"})})).status).toBe(200);
     expect(warn).toHaveBeenCalledTimes(1);
     for (const call of fetch.mock.calls) expect(Object.fromEntries(new Headers(call[1].headers))).toEqual({"content-type": "application/json", "user-agent": "portal-bff/operator-console"});
   });

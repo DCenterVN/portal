@@ -1,4 +1,5 @@
 import "server-only";
+import {decodeJwt} from "jose";
 import {authHeaders, resolveClientIP} from "./client-ip";
 import {decodePlatform, permissionsSchema} from "./platform-contract";
 import {CONSOLE_ROUTES} from "../fetcher";
@@ -103,27 +104,29 @@ function contexts(value: unknown): Context[] | null {
   if (!Array.isArray(value) || value.some(row => !object(row) || typeof row.org_id !== "string" || !row.org_id || typeof row.branch_id !== "string" || !row.branch_id || typeof row.member_type !== "string" || !Array.isArray(row.roles) || row.roles.some((role: unknown) => typeof role !== "string") || (row.status !== undefined && typeof row.status !== "string"))) return null;
   return value as Context[];
 }
-function activeStaffContexts(rows: Context[]): Context[] {
+function activeStaffContexts(rows: Context[], token: string): Context[] {
+  const {org_id, branch_id} = decodeJwt(token);
+  if (typeof org_id !== "string" || !org_id || org_id !== branch_id) return [];
   // Org includes ACTIVE memberships/branches only; reject explicit inactive rows too.
-  const employees = rows.filter(row => row.member_type === "EMPLOYEE" && (row.status === undefined || row.status === "ACTIVE"));
+  const employees = rows.filter(row => row.org_id === org_id && row.branch_id === branch_id && row.member_type === "EMPLOYEE" && (row.status === undefined || row.status === "ACTIVE"));
   return [...new Map(employees.map(row => [JSON.stringify([row.org_id, row.branch_id]), row])).values()];
 }
-async function staffDecision(token: string, clientIP: string | undefined): Promise<{next_path: string; token: string; expires_in?: number; cookies?: string[]} | NextResponse> {
-  const upstream = await fetch(`${orgUrl()}/org/access-contexts/me`, {headers: {Authorization: `Bearer ${token}`}, cache: "no-store"});
-  if (!upstream.ok) return upstreamError(upstream);
-  const rows = contexts(await upstream.json());
-  if (!rows) return unavailable();
-  const distinct = activeStaffContexts(rows);
+async function staffDecision(token: string, verified?: Context[]): Promise<{next_path: string; token: string; expires_in?: number; cookies?: string[]} | NextResponse> {
+  let rows = verified;
+  if (!rows) {
+    const upstream = await fetch(`${orgUrl()}/org/access-contexts/me`, {headers: {Authorization: `Bearer ${token}`}, cache: "no-store"});
+    if (!upstream.ok) return upstreamError(upstream);
+    const parsed = contexts(await upstream.json());
+    if (!parsed) return unavailable();
+    rows = parsed;
+  }
+  const distinct = activeStaffContexts(rows, token);
   if (!distinct.length) return forbidden();
   const {org_id, branch_id} = distinct[0];
-  const switched = await fetch(`${authUrl()}/auth/org-context`, {method: "POST", cache: "no-store", headers: authHeaders(clientIP, {"Content-Type": "application/json", Authorization: `Bearer ${token}`}), body: JSON.stringify({org_id, branch_id})});
-  if (!switched.ok) return upstreamError(switched);
-  const data: unknown = await switched.json();
-  if (!object(data) || typeof data.access_token !== "string" || !data.access_token) return unavailable();
-  const permissions = await fetch(`${orgUrl()}/org/permissions/me?${new URLSearchParams({org_id, branch_id})}`, {headers: {Authorization: `Bearer ${data.access_token}`}, cache: "no-store"});
+  const permissions = await fetch(`${orgUrl()}/org/permissions/me?${new URLSearchParams({org_id, branch_id})}`, {headers: {Authorization: `Bearer ${token}`}, cache: "no-store"});
   if (!permissions.ok) return upstreamError(permissions);
   const {action_keys} = permissionsSchema.parse(await permissions.json());
-  return {next_path: action_keys.includes("org:role:update") ? "/platform" : "/console", token: data.access_token, expires_in: typeof data.expires_in === "number" ? data.expires_in : undefined, cookies: sessionCookies(switched)};
+  return {next_path: action_keys.includes("org:role:update") ? "/platform" : "/console", token};
 }
 
 export async function loginJourney(req: NextRequest, journey: Journey): Promise<NextResponse> {
@@ -150,7 +153,7 @@ async function authenticateJourney(req: NextRequest, journey: Journey): Promise<
     if (!profile.ok) return upstreamError(profile);
     const user: unknown = await profile.json();
     if (!object(user) || typeof user.id !== "string" || user.status !== "ACTIVE") return response({error: "FORBIDDEN", reason: "NOT_ACTIVATED", message: "Tài khoản chưa được kích hoạt"}, 403);
-    const decision = journey === "customer" ? {next_path: "/", token: temporaryToken, expires_in: undefined, cookies: undefined} : await staffDecision(temporaryToken, clientIP);
+    const decision = journey === "customer" ? {next_path: "/", token: temporaryToken, expires_in: undefined, cookies: undefined} : await staffDecision(temporaryToken);
     if (decision instanceof NextResponse) return decision;
     const requested = typeof redirect === "string" && redirect ? safeLanding(redirect, journey) : "";
     const landing = requested && requested !== "/staff/switch-branch" && requested !== "/platform" && (journey === "customer" || decision.next_path === "/console") ? requested : safeLanding(decision.next_path, journey);
@@ -216,7 +219,7 @@ async function verifiedContexts(request: NextRequest): Promise<Context[] | NextR
  const rows=await upstream.json();
  const parsed = contexts(rows);
  if (!parsed) return failure();
- const eligible = activeStaffContexts(parsed);
+ const eligible = activeStaffContexts(parsed, token);
  if (!eligible.length) return forbidden();
  return eligible;
 }
@@ -228,18 +231,13 @@ export async function switchStaffContext(request: NextRequest) {
  const fields = await readFields(request, ["org_id", "branch_id"], ["org_id", "branch_id"], true);
  if (fields instanceof NextResponse) return fields;
  try {
-  const clientIP = resolveClientIP(request.headers);
   const rows=await verifiedContexts(request);if(rows instanceof NextResponse) return rows;
-  if(!rows.some(row=>row.org_id===fields.org_id && row.branch_id===fields.branch_id)) return NextResponse.json({error:"FORBIDDEN",message:"Không có quyền nhân viên tại công ty và chi nhánh đã chọn."},{status:403,headers:noStore});
-  const upstream=await fetch(`${process.env.AUTH_SERVICE_URL || "http://localhost:8080"}/auth/org-context`,{method:"POST",cache:"no-store",headers:authHeaders(clientIP, {"Content-Type":"application/json",Authorization:`Bearer ${request.cookies.get("access_token")!.value}`}),body:JSON.stringify({org_id:fields.org_id,branch_id:fields.branch_id})});
-  if (!upstream.ok) return upstreamError(upstream);
-  const data=await upstream.json();
-  if(!object(data)) return failure();
-  if(typeof data.access_token!=="string" || !data.access_token) return failure();
-  const result=NextResponse.json({next_path:safeLanding("/console","employee")},{headers:noStore});
-  result.cookies.set("access_token",data.access_token,{path:"/",maxAge:typeof data.expires_in==="number" && data.expires_in>0 ? data.expires_in : 900,sameSite:"strict",httpOnly:true,secure:true});
-  setPortalPlane(result, request, true, sessionCookies(upstream));
-  for(const cookie of sessionCookies(upstream)) result.headers.append("Set-Cookie",cookie);
+  if(!rows.some(row=>row.org_id===fields.org_id && row.branch_id===fields.branch_id)) return forbidden();
+  const token = request.cookies.get("access_token")!.value;
+  const decision = await staffDecision(token, rows);
+  if (decision instanceof NextResponse) return decision;
+  const result=NextResponse.json({next_path:safeLanding(decision.next_path,"employee")},{headers:noStore});
+  setPortalPlane(result, request, decision.next_path === "/console");
   return result;
  } catch {return failure();}
 }
