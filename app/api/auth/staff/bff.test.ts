@@ -23,6 +23,20 @@ import {POST as branch, GET as branchContexts} from "./switch-branch/route";
 import {POST as org, GET as orgContexts} from "./switch-org/route";
 const employee={org_id:"main",branch_id:"main",member_type:"EMPLOYEE",status:"ACTIVE",roles:["SALES"]};
 describe("S12 server verified staff contexts",()=>{
+ it.each([branch,org])("ADMIN MAIN switch enters employee console and preserves credentials", async handler => {
+  const fetch = vi.fn().mockResolvedValueOnce(json([{...employee,roles:["ADMIN"]}]))
+   .mockResolvedValueOnce(json({action_keys:["org:role:update"]}));
+  vi.stubGlobal("fetch",fetch);
+  const res = await handler(request({org_id:"main",branch_id:"main"},`access_token=${identityToken}; refresh_token=existing-refresh`));
+  expect(res.status).toBe(200);
+  expect(await res.json()).toEqual({next_path:"/console"});
+  expect(res.cookies.get("portal_plane")).toMatchObject({value:"employee",httpOnly:true,path:"/",sameSite:"strict"});
+  expect(res.cookies.get("access_token")).toBeUndefined();
+  expect(res.cookies.get("refresh_token")).toBeUndefined();
+  expect(res.headers.getSetCookie()).toHaveLength(1);
+  expect(fetch).toHaveBeenCalledTimes(2);
+  expect(fetch.mock.calls[1][0]).toContain("/org/permissions/me?org_id=main&branch_id=main");
+ });
  it.each([branch,org])("missing session returns 401 before org/auth",async handler=>{const fetch=vi.fn();vi.stubGlobal("fetch",fetch);const res=await handler(request({org_id:"main",branch_id:"main"}));expect(res.status).toBe(401);expect(await res.json()).toMatchObject({error:"UNAUTHORIZED"});expect(fetch).not.toHaveBeenCalled();});
  it.each([branch,org])("MAIN switch checks permissions and keeps the session",async handler=>{const fetch=vi.fn().mockResolvedValueOnce(json([employee,employee])).mockResolvedValueOnce(json({action_keys:[]}));vi.stubGlobal("fetch",fetch);const res=await handler(request({org_id:"main",branch_id:"main"},`access_token=${identityToken}`));expect(res.status).toBe(200);expect(await res.json()).toEqual({next_path:"/console"});expect(res.cookies.get("access_token")).toBeUndefined();expect(fetch).toHaveBeenCalledTimes(2);expect(fetch.mock.calls[1][0]).toContain("/org/permissions/me?");expect(res.cookies.get("portal_plane")?.value).toBe("employee");});
  it.each([branch,org])("rejects customer/platform/inactive/foreign choices without mutating auth",async handler=>{for(const rows of [[{...employee,member_type:"CUSTOMER"}],[{...employee,member_type:"PLATFORM"}],[{...employee,status:"SUSPENDED"}],[{...employee,org_id:"other"}],[{...employee,branch_id:"other"}],[]]) {const fetch=vi.fn().mockResolvedValueOnce(json(rows)).mockResolvedValueOnce(json({access_token:"must-not-be-issued"}));vi.stubGlobal("fetch",fetch);const res=await handler(request({org_id:"main",branch_id:"main"},`access_token=${identityToken}`));expect(res.status).toBe(403);expect(await res.json()).toMatchObject({error:"FORBIDDEN"});expect(fetch).toHaveBeenCalledTimes(1);expect(res.headers.get("set-cookie")).toBeNull();}});

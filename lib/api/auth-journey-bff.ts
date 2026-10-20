@@ -236,8 +236,8 @@ export async function switchStaffContext(request: NextRequest) {
   const token = request.cookies.get("access_token")!.value;
   const decision = await staffDecision(token, rows);
   if (decision instanceof NextResponse) return decision;
-  const result=NextResponse.json({next_path:safeLanding(decision.next_path,"employee")},{headers:noStore});
-  setPortalPlane(result, request, decision.next_path === "/console");
+  const result=NextResponse.json({next_path:"/console"},{headers:noStore});
+  setPortalPlane(result, request, true);
   return result;
  } catch {return failure();}
 }
