@@ -36,11 +36,25 @@ export async function forwardCompany(request: NextRequest, segments: string[]) {
   if (!rule) return NextResponse.json({ error: "not_found" }, { status: 404 });
   const query = queryFor(request, rule);
   if (query === null) return NextResponse.json({ error: "validation_failed" }, { status: 400 });
-  return forwardService(request, {
+  const creating = rule.method === "POST" && relativePath === "company/memberships";
+  const payload: unknown = creating ? await request.clone().json().catch(() => null) : null;
+  const password = payload && typeof payload === "object" && "password" in payload && typeof payload.password === "string" ? payload.password : "";
+  const response = await forwardService(request, {
     baseUrl: ORG_SERVICE_URL,
     path: `/org/${relativePath}${query ? `?${query}` : ""}`,
     method: rule.method,
     bodyPolicy: rule.body,
     unavailableMessage: "Dịch vụ tổ chức hiện không khả dụng",
   });
+  if (!creating) return response;
+  try {
+    const body: unknown = await response.json();
+    const sanitized = JSON.stringify(body, (key, value: unknown) => {
+      if (key === "password") return undefined;
+      return typeof value === "string" && password ? value.split(password).join("[REDACTED]") : value;
+    });
+    return new NextResponse(sanitized, { status: response.status, headers: response.headers });
+  } catch {
+    return NextResponse.json({ error: "upstream_unavailable" }, { status: 502 });
+  }
 }

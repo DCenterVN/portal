@@ -14,8 +14,6 @@ const memberSchema = z.object({
   id: z.string().uuid(), user_id: z.string().uuid(), branch_id: z.string().uuid(),
   role_codes: z.array(z.string()).nullable(), status: z.enum(["ACTIVE", "SUSPENDED"]),
 });
-const mailListSchema = z.object({ messages: z.array(z.object({ ID: z.string(), To: z.array(z.object({ Address: z.string() })) })) });
-const mailSchema = z.object({ To: z.array(z.object({ Address: z.string() })), Text: z.string(), HTML: z.string() });
 const t = messages.memberships;
 let admin: BrowserContext;
 let adminPage: Page;
@@ -40,11 +38,12 @@ async function login(page: Page, role: "ADMIN" | "SALES" | "CUSTOMER", email = a
   if (!email || !password) throw new Error(`Thiếu tài khoản QA ${role}.`);
   const customer = role === "CUSTOMER";
   await page.goto(customer ? "/login" : "/staff/login");
-  await page.getByLabel(customer ? messages.customerAuth.identifier : messages.employeeAuth.identifier, { exact: true }).fill(email);
-  await page.getByLabel(messages.employeeAuth.password, { exact: true }).fill(password)
+  const form = customer ? page.getByRole("dialog") : page;
+  await form.getByLabel(customer ? messages.customerAuth.identifier : messages.employeeAuth.identifier, { exact: true }).fill(email);
+  await form.getByLabel(messages.employeeAuth.password, { exact: true }).fill(password)
     .catch(() => { throw new Error("Không nhập được mật khẩu đăng nhập."); });
   const result = page.waitForResponse((response) => response.url().endsWith(customer ? "/api/auth/login" : "/api/auth/staff/login") && response.request().method() === "POST");
-  await page.getByRole("button", { name: customer ? messages.customerAuth.login : messages.employeeAuth.login, exact: true }).click();
+  await form.getByRole("button", { name: customer ? messages.customerAuth.login : messages.employeeAuth.login, exact: true }).click();
   expect((await result).status(), `Đăng nhập ${role}`).toBe(200);
   await page.waitForURL(customer ? /\/$/ : /\/(console|platform(?:\/role-matrix)?)$/);
 }
@@ -142,27 +141,6 @@ async function changeStatus(page: Page, suspended: boolean) {
   await expect(row.getByText(suspended ? t.SUSPENDED : t.ACTIVE, { exact: true })).toBeVisible();
 }
 
-async function inviteLink(request: APIRequestContext, email: string) {
-  const mailpit = "http://127.0.0.1:8025/api/v1";
-  let id: string | undefined;
-  await expect.poll(async () => {
-    const response = await request.get(`${mailpit}/search`, { params: { query: `to:${email}` } });
-    expect(response.status(), "Mailpit search").toBe(200);
-    const result = mailListSchema.parse(await response.json());
-    id = result.messages.find((mail) => mail.To.some((recipient) => recipient.Address.toLowerCase() === email))?.ID;
-    return Boolean(id);
-  }, { timeout: 30_000, message: "Mail mời đúng người nhận phải tới Mailpit" }).toBe(true);
-  const response = await request.get(`${mailpit}/message/${encodeURIComponent(id ?? "")}`);
-  expect(response.status()).toBe(200);
-  const mail = mailSchema.parse(await response.json());
-  expect(mail.To.some((recipient) => recipient.Address.toLowerCase() === email)).toBe(true);
-  const match = `${mail.Text}\n${mail.HTML}`.match(/https?:\/\/[^\s<>"']*\/invite\/accept\?token=[^\s<>"']+/);
-  if (!match) throw new Error("Mail không có link nhận lời mời.");
-  const url = new URL(match[0].replace(/&amp;/g, "&"));
-  if (!url.searchParams.get("token")) throw new Error("Link mời thiếu token.");
-  return `${url.pathname}${url.search}`;
-}
-
 test.use({ trace: "off", screenshot: "off", video: "off" });
 
 test.describe("RBAC trên stack thật", () => {
@@ -238,7 +216,7 @@ test.describe("RBAC trên stack thật", () => {
     } finally { await restoreStatus(); }
   });
 
-  test("5. ADMIN mời SALES, nhận mail, đặt mật khẩu và đăng nhập nhân viên", async ({ page }) => {
+  test("5. ADMIN tạo SALES với mật khẩu và nhân viên đăng nhập ngay", async ({ page }) => {
     const email = `s9-${randomUUID()}@dcentervn.local`;
     const password = `S9-${randomUUID()}!`;
     await openMemberships(adminPage);
@@ -246,33 +224,34 @@ test.describe("RBAC trên stack thật", () => {
     const dialog = adminPage.getByRole("dialog");
     await dialog.getByLabel(t.name, { exact: true }).fill("S9 SALES");
     await dialog.getByLabel(t.email, { exact: true }).fill(email);
+    await dialog.getByLabel(t.password, { exact: true }).fill(password)
+      .catch(() => { throw new Error("Không nhập được mật khẩu ban đầu."); });
     await expect(dialog.getByRole("checkbox", { name: t.roleLabels.SALES, exact: true })).toBeChecked();
     const created = adminPage.waitForResponse((response) => response.url().endsWith(membershipsPath) && response.request().method() === "POST");
     await dialog.getByRole("button", { name: t.save, exact: true }).click();
     const response = await created;
     expect(response.status()).toBe(201);
     const member = decodePlatform(await response.json(), memberSchema);
-    expect(member.role_codes).toEqual(["SALES"]);
-    await expect(dialog).toBeHidden();
-    const link = await inviteLink(page.request, email);
-    try { await page.goto(link); }
-    catch { throw new Error("Không mở được link mời từ Mailpit."); }
-    await page.getByLabel(messages.employeeAuth.newPassword, { exact: true }).fill(password)
-      .catch(() => { throw new Error("Không nhập được mật khẩu mới."); });
-    await page.getByLabel(messages.employeeAuth.confirmPassword, { exact: true }).fill(password)
-      .catch(() => { throw new Error("Không nhập được xác nhận mật khẩu."); });
-    const accepted = page.waitForResponse((result) => result.url().endsWith("/api/auth/staff/invite/accept") && result.request().method() === "POST");
-    await page.getByRole("button", { name: messages.employeeAuth.invite, exact: true }).click();
-    expect((await accepted).status()).toBe(200);
-    await expect(page.getByRole("status")).toHaveText(messages.employeeAuth.inviteDone);
-    await login(page, "SALES", email, password);
-    await expect(page.getByRole("link", { name: "Bảng giá", exact: true })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Thành viên", exact: true })).toHaveCount(0);
-    await expect(page.getByRole("link", { name: "Ma trận quyền", exact: true })).toHaveCount(0);
-    expect((await page.request.get(membershipsPath)).status()).toBe(403);
-    expect((await page.request.get(matrixPath)).status()).toBe(403);
-    const persisted = (await members(admin.request)).find((item) => item.id === member.id);
-    expect(persisted).toEqual(member);
-    expect([...new Set(await grants(admin.request))].sort()).toEqual([...new Set(originalGrants)].sort());
+    try {
+      expect(member.role_codes).toEqual(["SALES"]);
+      await expect(dialog).toBeHidden();
+      await login(page, "SALES", email, password);
+      await expect(page.getByRole("link", { name: "Bảng giá", exact: true })).toBeVisible();
+      await expect(page.getByRole("link", { name: "Thành viên", exact: true })).toHaveCount(0);
+      await expect(page.getByRole("link", { name: "Ma trận quyền", exact: true })).toHaveCount(0);
+      expect((await page.request.get(membershipsPath)).status()).toBe(403);
+      expect((await page.request.get(matrixPath)).status()).toBe(403);
+      const persisted = (await members(admin.request)).find((item) => item.id === member.id);
+      expect(persisted).toEqual(member);
+      expect([...new Set(await grants(admin.request))].sort()).toEqual([...new Set(originalGrants)].sort());
+    } finally {
+      let locked = await admin.request.patch(`${membershipsPath}/${member.id}`, { data: { status: "SUSPENDED" } });
+      if (locked.status() === 401) {
+        await login(adminPage, "ADMIN");
+        locked = await admin.request.patch(`${membershipsPath}/${member.id}`, { data: { status: "SUSPENDED" } });
+      }
+      expect(locked.status(), "Khoá membership SALES vừa tạo").toBe(200);
+      expect((await members(admin.request)).find((item) => item.id === member.id)?.status).toBe("SUSPENDED");
+    }
   });
 });

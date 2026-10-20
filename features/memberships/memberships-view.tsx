@@ -38,14 +38,21 @@ export function MembershipsView() {
     setEditor(next);
   };
 
-  const save = async (event: React.FormEvent) => {
+  const save = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!editor || busy) return;
     if (!can(editor.kind === "create" ? "org:employee:create" : "org:membership:update")) return;
     setBusy(true);
     setFailure("");
     try {
-      if (editor.kind === "create") await createMembership({ email: email.trim(), display_name: name.trim(), role_codes: roles });
+      if (editor.kind === "create") {
+        const form = event.currentTarget;
+        const input = { email: email.trim(), display_name: name.trim(), password: String(new FormData(form).get("password") ?? ""), role_codes: roles };
+        const pending = createMembership(input);
+        input.password = "";
+        form.reset();
+        await pending;
+      }
       else await replaceMembershipRoles(editor.member.id, roles);
       await mutate();
       setEditor(null);
@@ -114,12 +121,13 @@ export function MembershipsView() {
       <Dialog open={editor !== null} onOpenChange={(open) => { if (!open && !busy) setEditor(null); }}>
         <DialogContent variant="sheet" showClose={false} className="md:fixed md:inset-y-0 md:right-0 md:max-w-md md:rounded-none overflow-y-auto">
           <DialogHeader><DialogTitle>{t(editor?.kind === "roles" ? "editRoles" : "add")}</DialogTitle>
-            <DialogDescription>{t(editor?.kind === "roles" ? "rolesHint" : "inviteHint")}</DialogDescription>
+            <DialogDescription>{t(editor?.kind === "roles" ? "rolesHint" : "createHint")}</DialogDescription>
           </DialogHeader>
           <form onSubmit={(event) => void save(event)} className="space-y-4">
             {editor?.kind === "create" && <>
               <Field label={t("name")} htmlFor="member-name"><TextInput id="member-name" value={name} onChange={(event) => setName(event.target.value)} required disabled={busy} autoFocus /></Field>
               <Field label={t("email")} htmlFor="member-email"><TextInput id="member-email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} required disabled={busy} /></Field>
+              <Field label={t("password")} htmlFor="member-password"><TextInput id="member-password" name="password" type="password" autoComplete="new-password" required disabled={busy} /></Field>
             </>}
             <fieldset disabled={busy} className="space-y-2"><legend className="mb-2 text-sm font-medium">{t("roles")}</legend>
               {employeeRoles.map((role) => <Checkbox key={role} label={t(`roleLabels.${role}`)} checked={roles.includes(role)} onChange={(event) => setRoles(event.target.checked ? [...roles, role] : roles.filter((value) => value !== role))} />)}

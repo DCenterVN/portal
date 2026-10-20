@@ -56,7 +56,7 @@ import { companyMemberships, createMembership, replaceMembershipRoles, updateMem
 const member = "01960000-0000-7000-8000-000000000002";
 const routes = [
   [GET, "GET", "company/memberships?page=2&limit=20", undefined],
-  [POST, "POST", "company/memberships", { email: "staff@example.test", display_name: "Staff", role_codes: ["SALES"] }],
+  [POST, "POST", "company/memberships", { email: "staff@example.test", display_name: "Staff", password: "test-only-initial-password", role_codes: ["SALES"] }],
   [PUT, "PUT", `company/memberships/${member}/roles`, { role_codes: ["WAREHOUSE"] }],
   [PATCH, "PATCH", `company/memberships/${member}`, { status: "SUSPENDED" }],
 ] as const;
@@ -79,6 +79,30 @@ describe("membership routes", () => {
     const response = await PATCH(request(`company/memberships/${member}`, "PATCH", "jwt", '{"status":"SUSPENDED"}'), { params: Promise.resolve({ path: ["company", "memberships", member] }) });
     expect(response.status).toBe(status);
     expect(await response.json()).toEqual(payload);
+  });
+  it.each([201, 409, 503])("does not return the submitted password on POST %s", async (status) => {
+    const password = 'test-only-"secret\\value';
+    const body = { email: "staff@example.test", display_name: "Staff", password, role_codes: ["SALES"] };
+    const payload = status === 201 ? { data: { id: member, password } } : { errors: { error_code: status === 409 ? "CONFLICT" : "UNAVAILABLE", message: `Rejected ${password}` } };
+    const upstream = vi.fn().mockResolvedValue(new Response(JSON.stringify(payload), { status }));
+    global.fetch = upstream;
+    const response = await forwardCompany(request("company/memberships", "POST", "jwt", JSON.stringify(body)), ["company", "memberships"]);
+    expect(response.status).toBe(status);
+    expect(JSON.parse(upstream.mock.calls[0][1].body)).toEqual(body);
+    const result = await response.json();
+    expect(JSON.stringify(result).includes(JSON.stringify(password).slice(1, -1))).toBe(false);
+    expect(result.data?.password).toBeUndefined();
+    if (status === 409) expect(result.errors.error_code).toBe("CONFLICT");
+  });
+  it("exposes an upstream create conflict to the UI client without the password", async () => {
+    const input = { email: "staff@example.test", display_name: "Staff", password: "test-only-conflict-secret", role_codes: ["SALES"] };
+    global.fetch = vi.fn(async (url, init) => {
+      if (new URL(String(url)).pathname === "/org/company/memberships") {
+        return new Response(JSON.stringify({ errors: { error_code: "CONFLICT", message: input.password } }), { status: 409 });
+      }
+      return forwardCompany(request("company/memberships", "POST", "jwt", String(init?.body)), ["company", "memberships"]);
+    });
+    await expect(createMembership(input)).rejects.toMatchObject({ status: 409, info: { errors: { error_code: "CONFLICT", message: "[REDACTED]" } } });
   });
   it("rejects customer paths, unknown queries and malformed JSON", async () => {
     global.fetch = vi.fn();
@@ -104,7 +128,9 @@ describe("company client contracts", () => {
     for (const data of values) fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ code: 200, status: "success", message: "OK", data })));
     global.fetch = fetchMock;
     expect((await companyMemberships(1)).items).toEqual([row]);
-    await createMembership({ email: "staff@example.test", display_name: "Staff", role_codes: ["SALES"] });
+    const input = { email: "staff@example.test", display_name: "Staff", password: "test-only-initial-password", role_codes: ["SALES"] };
+    await createMembership(input);
+    expect(JSON.parse(fetchMock.mock.calls[1][1].body)).toEqual(input);
     await replaceMembershipRoles(member, ["SALES"]);
     await updateMembershipStatus(member, "SUSPENDED");
     await companyRoleMatrix(root);

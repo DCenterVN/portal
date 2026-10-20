@@ -526,7 +526,7 @@ describe("S5 rendered auth, profile, branch and membership roles", () => {
     }
   });
 
-  it("renders invite sheet with solid scrim and required name, email and role fields", () => {
+  it("renders add employee sheet with solid scrim and required name, email, password and role fields", () => {
     const html = s7Markup(memberships(membershipFixtures), [1, { kind: "create" }, "", "", ["SALES"], false, ""]);
     expectRoleSurface(html, true);
     expect(html).toContain("bg-[var(--color-surface)]");
@@ -535,12 +535,15 @@ describe("S5 rendered auth, profile, branch and membership roles", () => {
     expect(html).toContain('role="dialog"');
     expect(html).toContain("bg-scrim");
     for (const label of ["Thêm nhân viên", "Họ và tên", "Email", "Vai trò", "Lưu", "Huỷ"]) expect(html).toContain(label);
-    expect(html.match(/required=""/g)).toHaveLength(2);
+    expect(html.match(/required=""/g)).toHaveLength(3);
     expect(html).toContain('type="email"');
+    const passwordInput = html.match(/<input\b[^>]*id="member-password"[^>]*>/)?.[0];
+    expect(passwordInput).toContain('type="password"');
+    expect(passwordInput).toContain('autoComplete="new-password"');
     expect(html.match(/type="checkbox"/g)).toHaveLength(5);
     expect(html).toContain('checked=""');
-    const inputs = html.match(/<input\b[^>]*id="member-(?:name|email)"[^>]*>/g) ?? [];
-    expect(inputs).toHaveLength(2);
+    const inputs = html.match(/<input\b[^>]*id="member-(?:name|email|password)"[^>]*>/g) ?? [];
+    expect(inputs).toHaveLength(3);
     for (const input of inputs) {
       expect(input).toContain("min-h-11");
       expect(input).toContain("border-[var(--input)]");
