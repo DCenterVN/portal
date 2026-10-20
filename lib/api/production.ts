@@ -8,7 +8,7 @@ export interface ProductionTarget {
   period_end: string;
   title: string;
   status: "DRAFT" | "APPROVED" | "IN_PLANNING" | "HANDED_OFF" | "COMPLETED" | "REJECTED";
-  lines: Array<{ product_ref: string; target_quantity: number; uom: string }>;
+  lines: Array<{ product_ref: string; target_quantity: string | number; uom: string }>;
   created_by: string;
   approved_by?: string;
   approved_at?: string;
@@ -21,10 +21,13 @@ export interface FoodProductPlan {
   target_ref: string;
   product_ref: string;
   variant_sku_code: string;
-  planned_quantity: number;
+  planned_quantity: string | number;
+  purpose?: "PREPARATION" | "PRODUCTION";
+  revision?: number;
+  servings_per_set?: number;
   uom: string;
   serving_size: string;
-  components: Array<{ sku_ref: string; quantity: number; uom: string }>;
+  components: Array<{ sku_ref: string; quantity: string | number; uom: string }>;
   status: "DRAFT" | "REVIEWED" | "PUBLISHING" | "WAITING_PRICE_APPROVAL" | "READY_FOR_HANDOFF" | "PUBLISHED" | "REJECTED";
   nutrition_snapshot: Record<string, unknown>;
   created_by: string;
@@ -108,12 +111,12 @@ function mutationHeaders() {
 
 export async function getTargets(): Promise<ProductionTarget[]> {
   const res = await apiFetch("/api/production/targets");
-  if (!res.ok) return [];
+  if (!res.ok) throw new Error(await errorMessage(res, `Không tải được chỉ tiêu (${res.status})`));
   const payload = await responseData<{ items?: ProductionTarget[] }>(res);
   return payload.items || [];
 }
 
-export async function createTarget(input: { branch_ref: string; period_start: string; period_end: string; title: string; lines: Array<{ product_ref: string; target_quantity: number; uom: string }> }): Promise<ProductionTarget> {
+export async function createTarget(input: { branch_ref: string; period_start: string; period_end: string; title: string; lines: Array<{ product_ref: string; target_quantity: string | number; uom: string }> }): Promise<ProductionTarget> {
   const res = await apiFetch("/api/production/targets", {
     method: "POST",
     headers: mutationHeaders(),
@@ -135,7 +138,7 @@ export async function approveTarget(targetId: string, decision: "APPROVE" | "REJ
 
 // ---------------- Food Product Plans (VT-21) ----------------
 
-export async function createFoodPlan(targetId: string, input: { product_ref: string; variant_sku_code: string; planned_quantity: number; uom: string; serving_size: string; components: Array<{ sku_ref: string; quantity: number; uom: string }> }): Promise<FoodProductPlan> {
+export async function createFoodPlan(targetId: string, input: PreparationPlanInput): Promise<FoodProductPlan> {
   const res = await apiFetch(`/api/production/targets/${encodeURIComponent(targetId)}/food-plans`, {
     method: "POST",
     headers: mutationHeaders(),
@@ -147,7 +150,7 @@ export async function createFoodPlan(targetId: string, input: { product_ref: str
 
 export async function getFoodPlans(targetId: string): Promise<FoodProductPlan[]> {
   const res = await apiFetch(`/api/production/targets/${encodeURIComponent(targetId)}/food-plans`);
-  if (!res.ok) return [];
+  if (!res.ok) throw new Error(await errorMessage(res, `Không tải được kế hoạch (${res.status})`));
   const payload = await responseData<{ items?: FoodProductPlan[] }>(res);
   return payload.items ?? [];
 }
@@ -268,4 +271,37 @@ export async function getPublicTraceability(traceCode: string): Promise<PublicTr
   const res = await apiFetch(`/api/public/traceability/${encodeURIComponent(traceCode)}`);
   if (!res.ok) throw new Error(await errorMessage(res, "Không tìm thấy xuất xứ sản phẩm"));
   return responseData<PublicTraceability>(res);
+}
+
+export interface PreparationPlanInput {
+  product_ref: string; variant_sku_code: string; planned_quantity: string;
+  uom: string; serving_size: string; servings_per_set: number;
+  components: Array<{ sku_ref: string; quantity: string; uom: string }>;
+  nutrition_snapshot?: Record<string, unknown>;
+}
+export async function getFoodPlan(id: string): Promise<FoodProductPlan> {
+  const res = await apiFetch(`/api/production/food-plans/${encodeURIComponent(id)}`);
+  if (!res.ok) throw new Error(await errorMessage(res, `Không tải được set (${res.status})`));
+  return responseData<FoodProductPlan>(res);
+}
+export async function updateFoodPlan(id: string, input: PreparationPlanInput & { expected_revision: number }): Promise<FoodProductPlan> {
+  const res = await apiFetch(`/api/production/food-plans/${encodeURIComponent(id)}`, { method: "PUT", headers: mutationHeaders(), body: JSON.stringify(input) });
+  if (!res.ok) throw new Error(await errorMessage(res, `Không lưu được set (${res.status})`));
+  return responseData<FoodProductPlan>(res);
+}
+export interface MaterialRequirements {
+  target_id: string; food_plan_id?: string; plan_revision?: number; plan_revisions: Record<string, number>;
+  computed_at: string; lines: MaterialRequirement[]; all_lines: MaterialRequirement[];
+  total: number; hidden_count: number; season_message: string;
+}
+export type MaterialRequirement = import("./sales").Material & { sku_ref: string; quantity: string; uom: string };
+export async function getMaterialRequirements(scope: "targets" | "food-plans", id: string, query = ""): Promise<MaterialRequirements> {
+  const res = await apiFetch(`/api/production/${scope}/${encodeURIComponent(id)}/material-requirements?${query}`);
+  if (!res.ok) throw new Error(await errorMessage(res, `Không tải được nhu cầu (${res.status})`));
+  return responseData<MaterialRequirements>(res);
+}
+export async function getProductionContext(): Promise<{ permissions?: string[]; active_context?: { branch_id?: string; branch_name?: string } }> {
+  const res = await apiFetch("/api/auth/context");
+  if (!res.ok) throw new Error("Không tải được quyền");
+  return res.json();
 }

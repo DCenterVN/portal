@@ -219,3 +219,39 @@ export function clearCart(): void {
 }
 const vndFormatter = new Intl.NumberFormat("vi-VN");
 export function formatVND(amount: number): string { return vndFormatter.format(amount) + " ₫"; }
+
+export interface Material {
+  id: string; sku_code: string; name: string; category_ref?: string;
+  uom_code: string; selectable: boolean; season_months: number[] | null;
+  season_note: string | null; reference_price_vnd: number | null;
+  reference_pack_quantity: string | null; reference_pack_uom: string | null;
+  reference_observed_at: string | null; normalized_unit_price: string | null;
+  price_source: string;
+}
+export interface MaterialPage {
+  items: Material[]; categories: Array<{ id: string; slug: string; name: string; parent_ref: string }>;
+  next_cursor: string; season_message: string;
+}
+export async function getMaterials(query = ""): Promise<MaterialPage> {
+  const res = await apiFetch(`/api/sales/skus?kind=RAW_MATERIAL&limit=20&${query}`);
+  if (!res.ok) throw new Error(await errorMessage(res, `Không tải được nguyên liệu (${res.status})`));
+  return responseData<MaterialPage>(res);
+}
+export interface DraftProduct { id: string; name: string; status: string; }
+export async function getDraftProducts(): Promise<DraftProduct[]> {
+  const products: DraftProduct[] = [];
+  let cursor = "";
+  do {
+    const res = await apiFetch(`/api/sales/products?page_size=100&cursor=${encodeURIComponent(cursor)}`);
+    if (!res.ok) throw new Error(await errorMessage(res, `Không tải được sản phẩm (${res.status})`));
+    const page = await responseData<{ items: Array<{ product: DraftProduct }>; next_cursor?: string }>(res);
+    products.push(...page.items.map(item => item.product));
+    cursor = page.next_cursor ?? "";
+  } while (cursor);
+  return products;
+}
+export async function createDraftProduct(input: { name: string; slug: string }): Promise<DraftProduct> {
+  const res = await apiFetch("/api/sales/products", { method: "POST", headers: mutationHeaders(), body: JSON.stringify(input) });
+  if (!res.ok) throw new Error(await errorMessage(res, "Không tạo được sản phẩm nháp"));
+  return (await responseData<{ product: DraftProduct }>(res)).product;
+}

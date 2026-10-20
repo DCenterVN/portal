@@ -1,8 +1,6 @@
 # ui-rules-gate debt (FR-2/FR-12). <rule>\t<file>:<key>\t<B# | - >. Shrink-only: a fixed line must be deleted here.
 # raw-id lines map to inventory table B; user-known codes are in RAW_ID_ALLOW (ui-rules-gate.test.ts).
 raw-id	features/inventory/shelves-view.tsx:placeholder=UUID lô thành phẩm	B1
-raw-id	features/production/food-plans-view.tsx:label=Material SKU UUID	B7
-raw-id	features/production/food-plans-view.tsx:label=Product UUID thuộc target	B6
 raw-id	features/sales/pricing-floor-view.tsx:label=BOM UUID	B11
 raw-id	features/sales/pricing-floor-view.tsx:label=Price book UUID	B12
 raw-id	features/sales/pricing-floor-view.tsx:label=Product UUID	B9

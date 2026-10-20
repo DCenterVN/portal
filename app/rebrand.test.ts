@@ -739,7 +739,7 @@ describe("S7 rendered target, cart, orders and product creation roles", () => {
     expect(html).toContain('href="/production/food-plans?target_id=APPROVED"');
     if (form) {
       expect(classesFor(html, "button", 'type="submit"')).toContain("bg-[var(--primary)]");
-      expect(html).toContain("Lưu DRAFT");
+      expect(html).toContain("Lưu chỉ tiêu");
       expect(html).toContain('aria-label="Xóa dòng"');
       expect(html.match(/required=""/g)).toHaveLength(5);
       expect(html).toContain('aria-required="true"');

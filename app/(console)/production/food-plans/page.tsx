@@ -10,6 +10,6 @@ export const metadata = {
 
 export default async function FoodPlansPage({ searchParams }: { searchParams: Promise<{ target_id?: string }> }) {
   const { target_id: targetId } = await searchParams;
-  const initialPlans = targetId ? await getFoodPlans(targetId).catch(() => []) : [];
+  const initialPlans = targetId ? await getFoodPlans(targetId) : [];
   return <FoodPlansView initialPlans={initialPlans} targetId={targetId} />;
 }

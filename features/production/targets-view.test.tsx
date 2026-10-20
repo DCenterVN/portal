@@ -5,11 +5,19 @@ import { TargetsView } from "./targets-view";
 import { ToastProvider } from "@/components/ui/toast";
 import * as salesApi from "@/lib/api/sales";
 
+const targetRender = vi.hoisted(() => ({ states: [] as unknown[] }));
+vi.mock("react", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("react")>();
+  return { ...actual, useState: (initial: unknown) =>
+    actual.useState(targetRender.states.length ? targetRender.states.shift() : initial),
+  };
+});
+
 vi.mock("@/lib/api/sales", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/api/sales")>();
   return {
     ...actual,
-    getProducts: vi.fn(),
+    getDraftProducts: vi.fn(),
   };
 });
 
@@ -51,6 +59,7 @@ describe("B4 & B5 TargetsView Product Picker and Branch Name", () => {
 
   beforeEach(() => {
     vi.restoreAllMocks();
+    targetRender.states = [[], [], ["production:target:create"], branchId];
     vi.stubGlobal(
       "fetch",
       vi.fn().mockImplementation((url: string) => {
@@ -70,10 +79,9 @@ describe("B4 & B5 TargetsView Product Picker and Branch Name", () => {
         return Promise.reject(new Error("Unknown URL: " + url));
       })
     );
-    vi.mocked(salesApi.getProducts).mockResolvedValue({
-      data: sampleProducts,
-      source: "api",
-    });
+    vi.mocked(salesApi.getDraftProducts).mockResolvedValue(
+      sampleProducts.slice(0, 1).map(({ id, name }) => ({ id, name, status: "DRAFT" }))
+    );
   });
 
   it("renders EntityPicker for products with name, sku_code and does not show Product UUID label (B4)", () => {
@@ -92,6 +100,11 @@ describe("B4 & B5 TargetsView Product Picker and Branch Name", () => {
     // Must not show Product UUID label
     expect(html).not.toContain("Product UUID");
     expect(html).toContain("Sản phẩm");
+
+    targetRender.states = [[], [], [], branchId];
+    const deniedHtml = renderToStaticMarkup(tree);
+    expect(deniedHtml).not.toContain('name="product_ref"');
+    expect(deniedHtml).not.toContain("Lưu chỉ tiêu");
   });
 
   it("does not render branch UUID in locked input; displays read-only branch name (B5)", () => {
