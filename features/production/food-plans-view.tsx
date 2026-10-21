@@ -9,6 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { PageHeader, PageShell } from "@/components/ui/page";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { EntityPicker } from "@/components/ui/entity-picker";
+import { EmptyState, Skeleton } from "@/components/ui/state";
 import { MaterialPicker } from "./material-picker";
 import { getDraftProducts, type DraftProduct } from "@/lib/api/sales";
 import { createFoodPlan, getFoodPlan, getFoodPlans, getTargets, getMaterialRequirements, getProductionContext, updateFoodPlan, publishFoodPlan, resumeFoodPlanHandoff, reviewFoodPlan, type FoodProductPlan, type ProductionTarget, type PreparationPlanInput } from "@/lib/api/production";
@@ -30,7 +31,7 @@ export function FoodPlansView({ initialPlans, targetId }: { initialPlans: FoodPr
   const [kits, setKits] = useState("1");
   const [servings, setServings] = useState("4");
   const [components, setComponents] = useState<ComponentLine[]>([]);
-  const [busy, setBusy] = useState(false);
+  const [busy, setBusy] = useState(true);
   const [error, setError] = useState("");
   const [ready, setReady] = useState(false);
   const [notice, setNotice] = useState("");
@@ -94,7 +95,7 @@ export function FoodPlansView({ initialPlans, targetId }: { initialPlans: FoodPr
       actions={canCreate && targetId ? <Button disabled={busy} onClick={() => void begin()}>Tạo set</Button> : undefined} />
     {error && <div role="alert">{error} <Button variant="outline" onClick={() => void load()}>Thử lại</Button></div>}
     {notice && <p role="status">{notice}</p>}
-    {busy && <p role="status">Đang tải hoặc lưu set…</p>}
+    {busy && (!targetId || plans.length > 0) && <Skeleton title="Đang tải hoặc lưu set…" />}
     {!targetId && <Card><CardContent><p>Chọn chỉ tiêu để xem và lập set.</p><ul>{targets.map(t => <li key={t.id}><Link href={`/production/food-plans?target_id=${encodeURIComponent(t.id)}`}>{t.title}</Link></li>)}</ul><Link href="/production/targets">Danh sách chỉ tiêu</Link></CardContent></Card>}
     {showForm && (editing ? canUpdate : canCreate) && <Card><CardContent className="space-y-4 pt-6">
       <form onSubmit={save} className="space-y-4" aria-label={editing ? "Sửa set" : "Tạo set"}>
@@ -117,7 +118,7 @@ export function FoodPlansView({ initialPlans, targetId }: { initialPlans: FoodPr
       <MaterialPicker onSelect={m => setComponents(current => current.some(c => c.sku_ref === m.id) ? current : [...current, { sku_ref: m.id, name: m.name, quantity: "0.200", uom: m.uom_code }])} />
     </CardContent></Card>}
     {targetId && <Card><CardContent aria-busy={busy} className="p-0"><Table><TableHeader><TableRow><TableHead>Mã kế hoạch</TableHead><TableHead>Set</TableHead><TableHead>Tổng suất</TableHead><TableHead>Revision</TableHead><TableHead>Thao tác</TableHead></TableRow></TableHeader><TableBody>
-      {!plans.length && <TableRow><TableCell colSpan={5}>Chưa có set trong chỉ tiêu này.</TableCell></TableRow>}
+      {!plans.length && <TableRow><TableCell colSpan={5}>{busy ? <Skeleton title="Đang tải set…" /> : ready && !error ? <EmptyState title="Chưa có set trong chỉ tiêu này" description="Tạo set để xác định khẩu phần và định mức nguyên liệu cho chỉ tiêu." action={canCreate ? <Button onClick={() => void begin()}>Tạo set</Button> : undefined} /> : null}</TableCell></TableRow>}
       {plans.map(plan => <TableRow key={plan.id}><TableCell>{plan.plan_code}</TableCell><TableCell>{plan.variant_sku_code}</TableCell><TableCell>{plan.planned_quantity} {plan.uom}</TableCell><TableCell>{plan.revision ?? ""}</TableCell><TableCell>
         {plan.purpose === "PREPARATION" && canUpdate && <Button variant="outline" disabled={busy} onClick={() => void begin(plan)}>Sửa set</Button>}
         {plan.purpose !== "PREPARATION" && canUpdate && ["DRAFT", "REVIEWED", "WAITING_PRICE_APPROVAL"].includes(plan.status) && <Button disabled={busy} variant="outline" onClick={() => void legacyAction(plan)}>{plan.status === "DRAFT" ? "Thẩm định" : plan.status === "REVIEWED" ? "Publish BOM" : "Kiểm tra & handoff"}</Button>}

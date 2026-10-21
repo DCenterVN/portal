@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, Checkbox } from "@/components/ui/field";
+import { EmptyState, Skeleton } from "@/components/ui/state";
 import { getMaterials, type Material, type MaterialPage } from "@/lib/api/sales";
 
 export function MaterialFilters({ categories = [], onApply, busy = false, showSearch = true }: {
@@ -42,7 +43,7 @@ export function MaterialPicker({ onSelect }: { onSelect: (material: Material) =>
   const [page, setPage] = useState<MaterialPage | null>(null);
   const [query, setQuery] = useState("");
   const [error, setError] = useState("");
-  const [busy, setBusy] = useState(false);
+  const [busy, setBusy] = useState(true);
   const load = async (filter: string, cursor = "") => {
     setBusy(true); setError("");
     try { setPage(await getMaterials(`${filter}&cursor=${encodeURIComponent(cursor)}`)); }
@@ -53,9 +54,9 @@ export function MaterialPicker({ onSelect }: { onSelect: (material: Material) =>
   return <section className="space-y-3 rounded-xl border border-line p-4" aria-label="Chọn nguyên liệu" aria-busy={busy}>
     <MaterialFilters categories={page?.categories} busy={busy} onApply={filter => { setQuery(filter); void load(filter); }} />
     {error && <div role="alert">{error} <Button variant="outline" onClick={() => void load(query)}>Thử lại</Button></div>}
-    {busy && <p role="status">Đang tải nguyên liệu…</p>}
+    {busy && <Skeleton title="Đang tải nguyên liệu…" />}
     {page?.season_message && <p>{page.season_message}</p>}
-    {page && !page.items.length && <p>Không có nguyên liệu phù hợp. Hãy đổi bộ lọc.</p>}
+    {!busy && !error && page && !page.items.length && <EmptyState title="Không có nguyên liệu phù hợp" description="Hãy đổi bộ lọc để tìm nguyên liệu cần chuẩn bị." />}
     <ul className="space-y-2">{page?.items.map(material => <li key={material.id} className="flex items-center justify-between gap-3 border-b border-line py-2">
       <div>{material.name} · {material.uom_code}<p className="text-sm text-muted-foreground">{material.normalized_unit_price ?? "Chưa có giá"} {material.reference_pack_uom} · giá bán seed tham khảo</p></div>
       <Button type="button" variant="outline" disabled={!material.selectable || busy} onClick={() => onSelect(material)}>Chọn {material.name}</Button>

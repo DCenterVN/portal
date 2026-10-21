@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 import { CheckCircle2, Plus, Trash2, XCircle } from "lucide-react";
+import { EmptyState, Skeleton } from "@/components/ui/state";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -154,8 +155,8 @@ export function TargetsView({ initialTargets, initialShowCreate = false }: { ini
       <div className="flex gap-2"><Button type="submit" disabled={loading || !branchRef || !validLines || !title.trim() || periodEnd < periodStart}>Lưu chỉ tiêu</Button><Button type="button" variant="outline" onClick={() => setShowCreate(false)}>Hủy</Button></div>
     </form></CardContent></Card>}
 
-    <Card className="border-[var(--color-line)] bg-[var(--color-surface)]"><CardContent className="p-0"><Table><TableHeader><TableRow><TableHead>Mã</TableHead><TableHead>Tiêu đề</TableHead><TableHead>Chi nhánh</TableHead><TableHead>Kỳ</TableHead><TableHead>Trạng thái</TableHead><TableHead className="text-right">Thao tác</TableHead></TableRow></TableHeader><TableBody>
-      {targets.length === 0 ? <TableRow><TableCell colSpan={6} className="py-6 text-center text-[var(--color-muted)]">Chưa có chỉ tiêu sản xuất</TableCell></TableRow> : targets.map((target) => <TableRow key={target.id}>
+    <Card className="border-[var(--color-line)] bg-[var(--color-surface)]"><CardContent aria-busy={loading} className="p-0"><Table><TableHeader><TableRow><TableHead>Mã</TableHead><TableHead>Tiêu đề</TableHead><TableHead>Chi nhánh</TableHead><TableHead>Kỳ</TableHead><TableHead>Trạng thái</TableHead><TableHead className="text-right">Thao tác</TableHead></TableRow></TableHeader><TableBody>
+      {loading && targets.length === 0 ? <TableRow><TableCell colSpan={6}><Skeleton title="Đang tải chỉ tiêu sản xuất…" /></TableCell></TableRow> : targets.length === 0 ? <TableRow><TableCell colSpan={6}><EmptyState title="Chưa có chỉ tiêu sản xuất" description="Chỉ tiêu xác định sản phẩm và tổng suất cần chuẩn bị cho chi nhánh." action={canCreate ? <Button onClick={() => setShowCreate(true)}>Tạo chỉ tiêu</Button> : undefined} /></TableCell></TableRow> : targets.map((target) => <TableRow key={target.id}>
         <TableCell className="font-mono font-medium">{target.target_code}</TableCell><TableCell>{target.title}</TableCell><TableCell className="font-mono text-xs">{target.branch_ref}</TableCell>
         <TableCell>{new Date(target.period_start).toLocaleDateString("vi-VN")} – {new Date(target.period_end).toLocaleDateString("vi-VN")}</TableCell>
         <TableCell><Badge variant={target.status === "APPROVED" ? "active" : target.status === "REJECTED" ? "revoked" : "outline"}>{target.status}</Badge></TableCell>

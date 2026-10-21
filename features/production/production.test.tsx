@@ -156,6 +156,7 @@ vi.mock("@/components/ui/toast", () => ({ useToast: () => ({ toast: vi.fn() }) }
 
 import { NextRequest } from "next/server";
 import { MaterialRequirementsView } from "./material-requirements-view";
+import { Checkbox, Select } from "@/components/ui/field";
 import { MaterialPicker, MaterialFilters } from "./material-picker";
 import { EntityPicker } from "@/components/ui/entity-picker";
 import { GET as planRequirementsBff } from "@/app/api/production/food-plans/[id]/material-requirements/route";
@@ -216,6 +217,106 @@ beforeEach(() => { fooddevHarness.slots = []; fooddevHarness.cursor = 0; fooddev
 afterEach(() => { vi.unstubAllGlobals(); });
 
 describe("FOODDEV forms and warehouse", () => {
+  it.each([true, false])("shows set loading then an empty state with create permission %s", async canCreate => {
+    const { fetcher } = api(canCreate ? fooddevPermissions : ["production:material_requirement:read"]);
+    const fallback = fetcher.getMockImplementation()!;
+    let resolvePlans: (value: Response) => void = () => {};
+    fetcher.mockImplementation((url, init) => String(url).endsWith("/food-plans")
+      ? new Promise<Response>(resolve => { resolvePlans = resolve; }) : fallback(url, init));
+    const props = { initialPlans: [], targetId: target.id };
+    let tree = render(FoodPlansView, props);
+    expect(node(tree, n => n.type === Skeleton)).toBeDefined();
+    await effects();
+    tree = render(FoodPlansView, props);
+    expect(renderToStaticMarkup(tree)).toContain('aria-busy="true"');
+    expect(nodes(tree, n => n.type === EmptyState)).toHaveLength(0);
+    resolvePlans(json({ items: [] }));
+    await new Promise(resolve => setImmediate(resolve));
+    tree = render(FoodPlansView, props);
+    expect(nodes(tree, n => n.type === Skeleton)).toHaveLength(0);
+    const empty = node(tree, n => n.type === EmptyState);
+    expect(renderToStaticMarkup(tree)).toContain("Chưa có set trong chỉ tiêu này");
+    if (!canCreate) { expect(empty.props.action).toBeUndefined(); return; }
+    await invoke(node(empty.props.action as React.ReactNode, named("Tạo set")), "onClick");
+    expect(node(render(FoodPlansView, props), n => n.type === "form").props["aria-label"]).toBe("Tạo set");
+  });
+  it("shows material loading then filtered empty results while retaining season information", async () => {
+    let resolveMaterials: (value: Response) => void = () => {};
+    vi.stubGlobal("fetch", vi.fn(() => new Promise<Response>(resolve => { resolveMaterials = resolve; })));
+    const props = { onSelect: vi.fn() };
+    let tree = render(MaterialPicker, props);
+    expect(node(tree, n => n.type === Skeleton)).toBeDefined();
+    await effects();
+    expect(nodes(render(MaterialPicker, props), n => n.type === EmptyState)).toHaveLength(0);
+    resolveMaterials(json({ items: [], categories: [], next_cursor: "", season_message: "chưa có dữ liệu mùa" }));
+    await new Promise(resolve => setImmediate(resolve));
+    tree = render(MaterialPicker, props);
+    expect(nodes(tree, n => n.type === Skeleton)).toHaveLength(0);
+    expect(node(tree, n => n.type === EmptyState)).toBeDefined();
+    const html = renderToStaticMarkup(tree);
+    expect(html).toContain("Không có nguyên liệu phù hợp");
+    expect(html).toContain("Hãy đổi bộ lọc");
+    expect(html).toContain("chưa có dữ liệu mùa");
+    expect(props.onSelect).not.toHaveBeenCalled();
+  });
+  it.each(["plans", "materials"])("shows %s API failures without an empty state", async view => {
+    const { fetcher } = api();
+    const fallback = fetcher.getMockImplementation()!;
+    fetcher.mockImplementation((url, init) => String(url).includes(view === "plans" ? "/food-plans" : "/sales/skus")
+      ? Promise.resolve(Response.json({ error: "dependency_unavailable", message: "Sales unavailable" }, { status: 503 })) : fallback(url, init));
+    const renderView = () => view === "plans" ? render(FoodPlansView, { initialPlans: [], targetId: target.id }) : render(MaterialPicker, { onSelect: vi.fn() });
+    renderView(); await effects();
+    const tree = renderView();
+    expect(nodes(tree, n => n.type === EmptyState || n.type === Skeleton)).toHaveLength(0);
+    expect(renderToStaticMarkup(tree)).toContain("Sales unavailable");
+    expect(node(tree, named("Thử lại"))).toBeDefined();
+  });
+  it("shows an actionable empty target state and loading while saving the first target", async () => {
+    const { fetcher } = api();
+    const props = { initialTargets: [] };
+    render(TargetsView, props); await effects();
+    let tree = render(TargetsView, props);
+    const empty = node(tree, n => n.type === EmptyState);
+    expect(renderToStaticMarkup(tree)).toContain("Chưa có chỉ tiêu sản xuất");
+    await invoke(node(empty.props.action as React.ReactNode, named("Tạo chỉ tiêu")), "onClick");
+    tree = render(TargetsView, props);
+    await invoke(node(tree, n => n.props.label === "Tiêu đề"), "onChange", "Set bữa trưa");
+    await invoke(node(tree, n => n.type === EntityPicker), "onChange", product.id);
+    tree = render(TargetsView, props);
+    let resolveTarget: (value: Response) => void = () => {};
+    fetcher.mockImplementationOnce(() => new Promise<Response>(resolve => { resolveTarget = resolve; }));
+    const saving = invoke(node(tree, n => n.type === "form"), "onSubmit", { preventDefault() {} });
+    tree = render(TargetsView, props);
+    expect(node(tree, n => n.type === Skeleton)).toBeDefined();
+    let html = renderToStaticMarkup(tree);
+    expect(html).toContain('aria-busy="true"');
+    expect(html).not.toContain("Chưa có chỉ tiêu sản xuất");
+    resolveTarget(json(target)); await saving;
+    html = renderToStaticMarkup(render(TargetsView, props));
+    expect(html).not.toContain('aria-busy="true"');
+    expect(html).toContain(target.title);
+    expect(html).not.toContain("Chưa có chỉ tiêu sản xuất");
+  });
+  it("shows requirements loading, then empty results with revision and totals", async () => {
+    let resolveRequirements: (value: Response) => void = () => {};
+    vi.stubGlobal("fetch", vi.fn(() => new Promise<Response>(resolve => { resolveRequirements = resolve; })));
+    const props = { foodPlanId: plan.id };
+    render(MaterialRequirementsView, props); await effects();
+    const pending = render(MaterialRequirementsView, props);
+    expect(node(pending, n => n.type === Skeleton)).toBeDefined();
+    let html = renderToStaticMarkup(pending);
+    expect(html).toContain('aria-busy="true"');
+    expect(html).toContain("Đang tính nhu cầu nguyên liệu");
+    expect(html).not.toContain("Không có dòng phù hợp");
+    resolveRequirements(json({ ...requirements, lines: [], all_lines: [], total: 0 }));
+    await new Promise(resolve => setImmediate(resolve));
+    html = renderToStaticMarkup(render(MaterialRequirementsView, props));
+    expect(html).not.toContain('aria-busy="true"');
+    expect(html).toContain("Không có dòng phù hợp");
+    expect(html).toContain("Hãy đổi bộ lọc");
+    expect(html).toContain("Revision:");
+    expect(html).toContain("Tổng 0 dòng");
+  });
   it("FOOD_DEV creates a draft product and uses its real product ID in an APPROVED target", async () => {
     const { requests } = api(); const props = { initialTargets: [] };
     let tree = render(TargetsView, props); await effects(); tree = render(TargetsView, props);
@@ -279,6 +380,47 @@ describe("FOODDEV forms and warehouse", () => {
     const html = renderToStaticMarkup(render(MaterialRequirementsView, props));
     expect(html).toContain("chưa có dữ liệu mùa"); expect(html).toContain("Đang ẩn 1 dòng"); expect(html).toContain("0.999 KG");
   });
+  it.each(["targets", "food-plans"])("filters %s requirements by month and price without writing the recipe", async scope => {
+    const fetcher = vi.fn<typeof fetch>(async () => json({ ...requirements, lines: [], hidden_count: 1 }));
+    vi.stubGlobal("fetch", fetcher);
+    const props = scope === "targets" ? { targetId: target.id } : { foodPlanId: plan.id };
+    render(MaterialRequirementsView, props); await effects();
+    let tree = render(MaterialRequirementsView, props);
+    expect(node(tree, n => n.type === Checkbox).props.checked).toBe(true);
+    await invoke(node(tree, n => n.type === Select && n.props.name === "month"), "onChange", { target: { value: "1" } });
+    await invoke(node(tree, n => n.type === Checkbox), "onChange", { target: { checked: false } });
+    await invoke(node(tree, n => n.type === Input && n.props.name === "price_min"), "onChange", { target: { value: "1" } });
+    tree = render(MaterialRequirementsView, props);
+    await invoke(node(tree, n => n.type === "form"), "onSubmit", { preventDefault() {} });
+    render(MaterialRequirementsView, props); await effects();
+    const urls = fetcher.mock.calls.map(([url]) => new URL(String(url), "http://portal.test"));
+    expect(urls.map(url => url.pathname + url.search)).toContain(
+      `/api/production/${scope}/${scope === "targets" ? target.id : plan.id}/material-requirements?month=1&include_unknown=false&price_min=1&price_uom=KG`,
+    );
+    const html = renderToStaticMarkup(render(MaterialRequirementsView, props));
+    expect(html).toContain("Đã ẩn 1 / 1 nguyên liệu");
+    expect(html).toContain("Không có dòng phù hợp");
+    expect(html).toContain("0.999 KG");
+    expect(fetcher.mock.calls.every(([, init]) => (init?.method ?? "GET") === "GET")).toBe(true);
+  });
+  it.each(["", "0"])("omits blank filters and sends a KG price basis only for a supplied maximum %s", async priceMax => {
+    const { fetcher } = api();
+    const props = { foodPlanId: plan.id };
+    render(MaterialRequirementsView, props); await effects();
+    let tree = render(MaterialRequirementsView, props);
+    const html = renderToStaticMarkup(tree);
+    expect(node(tree, n => n.type === "option" && n.props.value === "").props.children).toBe("Tất cả");
+    expect(html).not.toContain("Đã ẩn");
+    const maximum = node(tree, n => n.type === Input && n.props.name === "price_max");
+    expect(maximum.props.type).toBe("number");
+    expect(node(tree, n => n.type === Input && n.props.name === "price_min").props.type).toBe("number");
+    await invoke(maximum, "onChange", { target: { value: priceMax } });
+    tree = render(MaterialRequirementsView, props);
+    await invoke(node(tree, n => n.type === "form"), "onSubmit", { preventDefault() {} });
+    render(MaterialRequirementsView, props); await effects();
+    const urls = fetcher.mock.calls.map(([url]) => new URL(String(url), "http://portal.test"));
+    expect(urls.at(-1)?.search).toBe(`?include_unknown=true${priceMax ? "&price_max=0&price_uom=KG" : ""}`);
+  });
   it("shows requirements errors explicitly and discards stale rows", async () => {
     vi.stubGlobal("fetch", vi.fn(async () => Response.json({ error: "dependency_unavailable", message: "Sales unavailable" }, { status: 503 })));
     const props = { foodPlanId: plan.id }; render(MaterialRequirementsView, props); await effects();
@@ -301,6 +443,7 @@ describe("FOODDEV forms and warehouse", () => {
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { EmptyState, Skeleton } from "@/components/ui/state";
 
 describe("FOODDEV BFF wire contract", () => {
   it.each([403, 409, 422, 503])("preserves upstream status %s and code on both requirements endpoints", async status => {
