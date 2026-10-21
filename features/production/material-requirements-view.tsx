@@ -1,30 +1,37 @@
 "use client";
 
+import { z } from "zod";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { EmptyState, Skeleton } from "@/components/ui/state";
+import { EmptyState, ErrorState, Skeleton } from "@/components/ui/state";
 import { Checkbox, Field, Select } from "@/components/ui/field";
 import { Card, CardContent } from "@/components/ui/card";
 import { PageHeader, PageShell } from "@/components/ui/page";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { getTargets, getMaterialRequirements, type ProductionTarget, type MaterialRequirements, type MaterialRequirement } from "@/lib/api/production";
+import { listPackages } from "@/lib/api/sales";
+import { getTargets, getMaterialRequirements, getFoodPlan, type ProductionTarget, type MaterialRequirements, type MaterialRequirement } from "@/lib/api/production";
+
+const quoteSchema = z.object({ price: z.object({ unit_price_vnd: z.number().int().nonnegative(), uom: z.enum(["KG", "L", "EA"]), source: z.enum(["SEED_RETAIL_REFERENCE", "CONTRACT"]), observed_at: z.string().nullable() }).strict().nullable().optional() });
+const pinsSchema = z.object({ pack_plan: z.object({ recipe_versions: z.array(z.object({ sku_ref: z.string(), bom_ref: z.string(), version: z.number().int().positive() }).strict()) }).nullable().optional() });
 
 function RequirementsTable({ lines }: { lines: MaterialRequirement[] }) {
-  return <Table><TableHeader><TableRow>{["Nguyên liệu", "Nhu cầu", "Mùa", "Giá bán seed tham khảo", "Cơ sở giá", "Nguồn", "Ngày nguồn"].map(label => <TableHead key={label}>{label}</TableHead>)}</TableRow></TableHeader><TableBody>
+  return <Table><TableHeader><TableRow>{["Nguyên liệu", "Nhu cầu", "Mùa", "Giá bán seed tham khảo / giá hợp đồng", "Đơn vị giá", "Nguồn", "Ngày nguồn"].map(label => <TableHead key={label}>{label}</TableHead>)}</TableRow></TableHeader><TableBody>
     {lines.length === 0 && <TableRow><TableCell colSpan={7}><EmptyState title="Không có dòng phù hợp" description="Hãy đổi bộ lọc để xem nhu cầu nguyên liệu." /></TableCell></TableRow>}
-    {lines.map(line => <TableRow key={`${line.sku_ref}-${line.uom}`}><TableCell>{line.name}<p className="text-sm text-muted-foreground">{line.sku_code}</p></TableCell>
+    {lines.map(line => { const quote = quoteSchema.parse(line).price; return <TableRow key={`${line.sku_ref}-${line.uom}`}><TableCell>{line.name}</TableCell>
       <TableCell className="tabular-nums">{line.quantity} {line.uom}</TableCell>
       <TableCell>{line.season_months?.length ? `Tháng ${line.season_months.join(", ")}` : "Chưa biết mùa"}</TableCell>
-      <TableCell>{line.normalized_unit_price ?? "Chưa có giá"}{line.normalized_unit_price && ` VND/${line.reference_pack_uom}`}</TableCell>
-      <TableCell>{line.reference_price_vnd == null ? "Chưa có quy cách" : `${line.reference_price_vnd} VND / ${line.reference_pack_quantity ?? "?"} ${line.reference_pack_uom ?? ""}`}</TableCell>
-      <TableCell>{line.price_source}</TableCell><TableCell>{line.reference_observed_at ?? "Chưa biết ngày nguồn"}</TableCell>
-    </TableRow>)}
+      <TableCell>{quote === undefined ? line.normalized_unit_price ?? "Chưa có giá" : quote ? `${quote.unit_price_vnd} VND/${quote.uom}` : "Chưa có giá"}</TableCell>
+      <TableCell>{quote === undefined ? line.reference_pack_uom ?? "Chưa có quy cách" : quote?.uom ?? "Chưa có giá"}</TableCell>
+      <TableCell>{quote === undefined ? line.price_source : quote?.source ?? "Chưa có nguồn giá"}</TableCell><TableCell>{(quote === undefined ? line.reference_observed_at : quote?.observed_at) ?? "Chưa biết ngày nguồn"}</TableCell>
+    </TableRow>; })}
   </TableBody></Table>;
 }
 
 export function MaterialRequirementsView({ targetId, foodPlanId }: { targetId?: string; foodPlanId?: string }) {
+  const [packNames, setPackNames] = useState<Record<string, string>>({});
+  const [pins, setPins] = useState<z.infer<typeof pinsSchema>["pack_plan"][]>([]);
   const [targets, setTargets] = useState<ProductionTarget[]>([]);
   const [selected, setSelected] = useState(targetId ?? "");
   const [data, setData] = useState<MaterialRequirements | null>(null);
@@ -37,10 +44,17 @@ export function MaterialRequirementsView({ targetId, foodPlanId }: { targetId?: 
   const [error, setError] = useState("");
   const scope = foodPlanId ? "food-plans" : "targets";
   const id = foodPlanId || selected;
+  const loadData = async () => {
+    const value = await getMaterialRequirements(scope, id, query);
+    value.lines.forEach(line => quoteSchema.parse(line)); value.all_lines.forEach(line => quoteSchema.parse(line));
+    const ids = foodPlanId ? [foodPlanId] : Object.keys(value.plan_revisions);
+    const pinned = await Promise.all(ids.map(async planId => pinsSchema.parse(await getFoodPlan(planId)).pack_plan));
+    return { value, pinned };
+  };
   const load = async () => {
     setBusy(true); setData(null); setError("");
     try {
-      if (id) setData(await getMaterialRequirements(scope, id, query));
+      if (id) { const result = await loadData(); setData(result.value); setPins(result.pinned); }
       else setTargets(await getTargets());
     }
     catch (e) { setError(e instanceof Error ? e.message : "Không tải được nhu cầu"); }
@@ -50,7 +64,7 @@ export function MaterialRequirementsView({ targetId, foodPlanId }: { targetId?: 
     let active = true;
     if (!id) { setData(null); return; }
     setBusy(true); setData(null); setError("");
-    getMaterialRequirements(scope, id, query).then(value => { if (active) setData(value); })
+    loadData().then(({ value, pinned }) => { if (active) { setData(value); setPins(pinned); } })
       .catch(e => { if (active) setError(e instanceof Error ? e.message : "Không tải được nhu cầu"); })
       .finally(() => { if (active) setBusy(false); });
     return () => { active = false; };
@@ -58,6 +72,29 @@ export function MaterialRequirementsView({ targetId, foodPlanId }: { targetId?: 
   useEffect(() => {
     if (!foodPlanId) getTargets().then(setTargets).catch(e => setError(e instanceof Error ? e.message : "Không tải được chỉ tiêu"));
   }, [foodPlanId]);
+  useEffect(() => {
+    const remaining = new Set(pins.flatMap(pin => pin?.recipe_versions.map(item => item.sku_ref) ?? []));
+    setPackNames({});
+    if (!remaining.size) return;
+    let active = true;
+    const loadNames = async () => {
+      let cursor: string | undefined;
+      try {
+        do {
+          const page = await listPackages({ cursor, limit: 100 });
+          if (!active) return;
+          const found = page.items.filter(item => remaining.has(item.id));
+          setPackNames(current => ({ ...current, ...Object.fromEntries(found.map(item => [item.id, item.name])) }));
+          found.forEach(item => remaining.delete(item.id));
+          cursor = page.next_cursor ?? undefined;
+        } while (cursor && remaining.size);
+      } catch {
+        // Names are optional; requirements and pinned versions remain usable.
+      }
+    };
+    void loadNames();
+    return () => { active = false; };
+  }, [pins]);
   return <PageShell>
     <PageHeader title="Nhu cầu nguyên liệu" description="Nhu cầu theo định mức hiện tại, chưa trừ tồn kho. Giá bán seed chỉ để tham khảo." />
     {!foodPlanId && <label>Chỉ tiêu<Select value={selected} onChange={e => setSelected(e.target.value)}><option value="">Chọn chỉ tiêu</option>{targets.map(t => <option key={t.id} value={t.id}>{t.title}</option>)}</Select></label>}
@@ -80,11 +117,12 @@ export function MaterialRequirementsView({ targetId, foodPlanId }: { targetId?: 
       <Checkbox name="include_unknown" label="Bao gồm nguyên liệu chưa biết mùa" checked={includeUnknown} onChange={event => setIncludeUnknown(event.target.checked)} />
       <Button type="submit" variant="outline" disabled={busy}>Lọc nguyên liệu</Button>
     </form>}
-    {error && <div role="alert">{error} <Button variant="outline" onClick={() => void load()}>Thử lại</Button></div>}
+    {error && <ErrorState title="Không tải được nhu cầu" description={error} onRetry={() => void load()} />}
     <Card><CardContent aria-busy={busy} className="space-y-4 pt-6">
       {busy && <Skeleton title="Đang tính nhu cầu nguyên liệu…" />}
-      {data && <>
-        <p>Revision: {Object.entries(data.plan_revisions).map(([plan, revision]) => `${plan}: ${revision}`).join(" · ")}</p>
+      {data && !error && <>
+        <p>Revision: {Object.values(data.plan_revisions).map((revision, index) => `Thực đơn ${index + 1}: ${revision}`).join(" · ")}</p>
+        <div><p>Phiên bản công thức đã pin</p>{pins.flatMap((pin, i) => pin?.recipe_versions.map(item => <p key={`${i}-${item.bom_ref}`}>{packNames[item.sku_ref] || "Gói đã pin"} · công thức v{item.version}</p>) ?? [])}{!pins.some(pin => pin?.recipe_versions.length) && <p>Định mức nguyên liệu trực tiếp, không pin công thức gói.</p>}</div>
         <p>Tính lúc {data.computed_at}. Tổng {data.total} dòng · Đang ẩn {data.hidden_count} dòng.</p>
         {data.season_message && <p>{data.season_message}</p>}
         <RequirementsTable lines={data.lines} />

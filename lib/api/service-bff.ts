@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-type ServiceMethod = "GET" | "POST" | "PUT" | "PATCH";
+type ServiceMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
 interface ForwardServiceOptions {
   baseUrl: string;
@@ -12,7 +12,7 @@ interface ForwardServiceOptions {
 }
 
 export async function forwardService(request: NextRequest, options: ForwardServiceOptions) {
-  const bodyPolicy = options.bodyPolicy ?? (options.method === "GET" ? "none" : "required");
+  const bodyPolicy = options.bodyPolicy ?? ((options.method === "GET" || options.method === "DELETE") ? "none" : "required");
   const requireAuth = options.requireAuth ?? true;
   const headers: Record<string, string> = { Accept: "application/json" };
 
@@ -46,7 +46,7 @@ export async function forwardService(request: NextRequest, options: ForwardServi
     });
     const responseBody = await upstream.text();
     const requestId = upstream.headers.get("x-request-id");
-    return new NextResponse(responseBody || null, {
+    return new NextResponse(upstream.status === 204 ? null : responseBody || null, {
       status: upstream.status,
       headers: {
         "Content-Type": upstream.headers.get("content-type") || "application/json",
