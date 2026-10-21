@@ -171,6 +171,21 @@ export async function createOrder(cartRef: string): Promise<Order> {
   if (!res.ok) throw new Error(await errorMessage(res, "Không thể tạo đơn hàng"));
   return res.json();
 }
+const orderDisplaySchema = z.object({
+  id: z.string(), cart_ref: z.string(), status: z.string(),
+  subtotal_vnd: z.number(), total_vnd: z.number(), branch_ref: z.string().optional(), created_at: z.string(),
+});
+
+export async function getOrderDisplay(): Promise<z.infer<typeof orderDisplaySchema>[]>;
+export async function getOrderDisplay(id: string): Promise<z.infer<typeof orderDisplaySchema>>;
+export async function getOrderDisplay(id?: string) {
+  const path = id ? `/api/sales/orders/${encodeURIComponent(id)}` : "/api/sales/orders?page_size=50";
+  const res = await apiFetch(path);
+  if (!res.ok) throw new Error("Không thể tải đơn hàng. Thử tải lại.");
+  const body: unknown = await res.json();
+  return id ? decodePlatform(body, orderDisplaySchema) : decodePlatform(body, z.object({ items: z.array(orderDisplaySchema).nullish() })).items ?? [];
+}
+
 export async function getOrders(pageSize = 50): Promise<Order[]> {
   const res = await apiFetch(`/api/sales/orders?page_size=${pageSize}`);
   if (!res.ok) throw new Error(await errorMessage(res, "Không thể tải đơn hàng"));

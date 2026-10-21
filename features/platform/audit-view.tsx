@@ -19,7 +19,11 @@ function Change({ entry }: { entry: AuditEntry }) {
     <details className="mt-1 text-xs">
       <summary className="inline-flex min-h-11 cursor-pointer items-center text-[var(--primary)]">Xem thay đổi</summary>
       <pre className="max-h-48 overflow-auto rounded-md bg-[var(--secondary)] p-2 font-mono text-xs">
-        {JSON.stringify({ before: entry.before ?? null, after: entry.after ?? null }, null, 2)}
+        {JSON.stringify({ before: entry.before ?? null, after: entry.after ?? null }, (key, value: unknown) => {
+          if (/^(?:id|.*_id|.*_ref)$/.test(key)) return undefined;
+          if (typeof value === "string" && /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-/i.test(value)) return undefined;
+          return value;
+        }, 2)}
       </pre>
     </details>
   );
@@ -76,7 +80,7 @@ export function AuditLog({ source, root = "" }: { source: PlaneAccess["plane"]; 
                 <TableHead>Action</TableHead>
                 <TableHead className="hidden md:table-cell">Người làm</TableHead>
                 <TableHead className="hidden lg:table-cell">Đối tượng</TableHead>
-                <TableHead className="hidden md:table-cell">Lý do / hợp đồng</TableHead>
+                <TableHead className="hidden md:table-cell">Lý do</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -91,14 +95,12 @@ export function AuditLog({ source, root = "" }: { source: PlaneAccess["plane"]; 
                     </div>
                     {source === "company" && <Change entry={entry} />}
                   </TableCell>
-                  <TableCell className="hidden font-mono text-xs md:table-cell">{entry.actor_user_id ?? entry.actor_service ?? "—"}</TableCell>
+                  <TableCell className="hidden font-mono text-xs md:table-cell">{entry.actor_service ?? "—"}</TableCell>
                   <TableCell className="hidden text-xs lg:table-cell">
                     {entry.target_type}
-                    {entry.target_id && <span className="block font-mono text-xs text-[var(--muted-foreground)]">{entry.target_id}</span>}
                   </TableCell>
                   <TableCell className="hidden max-w-xs text-xs md:table-cell">
                     {entry.reason || "—"}
-                    {entry.contract_ref && <span className="block font-mono text-xs text-[var(--muted-foreground)]">{entry.contract_ref}</span>}
                   </TableCell>
                 </TableRow>
               ))}

@@ -147,3 +147,23 @@ describe("B4 & B5 TargetsView Product Picker and Branch Name", () => {
     expect(payload.lines[0].product_ref).not.toBe(wrongProductRef);
   });
 });
+
+it("targets_no_uuid", () => {
+  targetRender.states = [];
+  const uuid = "0192f3a4-5b6c-7d8e-9f00-112233445566";
+  const html = renderToStaticMarkup(<ToastProvider><TargetsView initialTargets={[{
+    id: uuid, branch_ref: uuid, target_code: "CT-THANG-10", title: "Chỉ tiêu tháng 10",
+    period_start: "2026-10-01", period_end: "2026-10-31", status: "DRAFT", lines: [], created_by: uuid, created_at: "2026-10-01",
+  }]} /></ToastProvider>);
+  expect(html).toContain("CT-THANG-10");
+  expect(userFacingContent(html)).not.toMatch(/[0-9a-f]{8}-[0-9a-f]{4}-/);
+});
+
+function userFacingContent(html: string): string {
+  const text = html.replace(/<[^>]*>/g, " ");
+  const labels = html.match(/\s(?:label|placeholder|title|aria-[\w-]+)="[^"]*"/g) ?? [];
+  const values = (html.match(/<input\b[^>]*>/g) ?? [])
+    .filter((input) => !input.includes('type="hidden"'))
+    .flatMap((input) => input.match(/\svalue="[^"]*"/g) ?? []);
+  return [text, ...labels, ...values].join(" ");
+}

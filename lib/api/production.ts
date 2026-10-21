@@ -189,9 +189,12 @@ export async function resumeFoodPlanHandoff(planId: string): Promise<{ food_plan
 
 // ---------------- Production Orders (VT-09..VT-12) ----------------
 
-export async function getOrders(): Promise<ProductionOrder[]> {
-  const res = await apiFetch("/api/production/orders");
-  if (!res.ok) return [];
+export async function getOrders({ forPicker = false } = {}): Promise<ProductionOrder[]> {
+  const res = await apiFetch(forPicker ? "/api/production/orders?status=QC_PASSED" : "/api/production/orders");
+  if (!res.ok) {
+    if (forPicker) throw new Error("Không thể tải danh sách lô thành phẩm. Thử lại sau.");
+    return [];
+  }
   const payload = await responseData<{ items?: ProductionOrder[] }>(res);
   return payload.items || [];
 }

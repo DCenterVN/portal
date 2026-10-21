@@ -11,6 +11,9 @@ export interface EntityPickerProps<T> {
   label: string;
   /** Form field that carries the picked id; it rides in a hidden input, never on screen. */
   name: string;
+  /** Keep controlled selections in state when IDs must stay out of the DOM. */
+  serializeValue?: boolean;
+  maxOptions?: number;
   items: T[] | undefined;
   status: "loading" | "ready" | "error";
   getId: (item: T) => string;
@@ -35,7 +38,7 @@ const LIST_KEYS: Record<string, string> = { ArrowDown: "ArrowRight", ArrowUp: "A
 
 // ARIA 1.2 combobox with list autocomplete. Only status "ready" offers options (fail closed on loading/error).
 export function EntityPicker<T>({
-  label, name, items, status, getId, getLabel, getMeta, filter, value, onChange, required, error,
+  label, name, serializeValue = true, maxOptions = Infinity, items, status, getId, getLabel, getMeta, filter, value, onChange, required, error,
   emptyText = "Chưa có mục nào để chọn.", onRetry, placeholder, className,
 }: EntityPickerProps<T>) {
   const [own, setOwn] = React.useState<string | null>(null);
@@ -48,7 +51,7 @@ export function EntityPicker<T>({
   const picked = value !== undefined ? value : own;
   const list = status === "ready" ? items ?? [] : [];
   const matches = filter ?? ((item: T, q: string) => fold(`${getLabel(item)} ${getMeta?.(item) ?? ""}`).includes(fold(q.trim())));
-  const options = open ? list.filter((item) => matches(item, query ?? "")) : [];
+  const options = open ? list.filter((item) => matches(item, query ?? "")).slice(0, maxOptions) : [];
   const expanded = options.length > 0;
   const current = Math.min(active, options.length - 1);
   const selected = items?.find((item) => getId(item) === picked);
@@ -105,7 +108,7 @@ export function EntityPicker<T>({
           onInvalid={() => setTouched(true)}
         />
       </Field>
-      <input type="hidden" name={name} value={picked ?? ""} />
+      {serializeValue && <input type="hidden" name={name} value={picked ?? ""} />}
       {status === "loading" && (
         <p role="status" className="flex items-center gap-1.5 text-xs text-fg-3">
           <Loader2 aria-hidden="true" className="size-3.5 animate-spin" />

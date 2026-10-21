@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import React from "react";
 import { clearCart, Product, formatVND, loadCartItems, recordCartResponse } from "@/lib/api/sales";
 import { ProductsView } from "./products-view";
@@ -95,3 +95,59 @@ describe("Sales & Products UI Feature", () => {
     Reflect.deleteProperty(globalThis, "window");
   });
 });
+
+
+const orderHarness = vi.hoisted(() => ({ slots: [] as unknown[], cursor: 0, effects: [] as (() => unknown)[], mounted: false }));
+vi.mock("react", async (original) => ({
+  ...await original<typeof import("react")>(),
+  useState(initial: unknown) {
+    const index = orderHarness.cursor++;
+    if (!(index in orderHarness.slots)) orderHarness.slots[index] = initial;
+    return [orderHarness.slots[index], (next: unknown) => { orderHarness.slots[index] = typeof next === "function" ? next(orderHarness.slots[index]) : next; }];
+  },
+  useCallback: (callback: unknown) => callback,
+  useEffect: (effect: () => unknown) => { if (!orderHarness.mounted) orderHarness.effects.push(effect); },
+}));
+vi.mock("@/components/ui/toast", () => ({ useToast: () => ({ toast: { error: vi.fn(), success: vi.fn() } }) }));
+import { renderToStaticMarkup } from "react-dom/server";
+import { OrdersView, orderStatusLabels } from "./orders-view";
+import { OrderDetailView } from "./order-detail-view";
+
+it("orders_no_uuid", async () => {
+  const uuid = "0192f3a4-5b6c-7d8e-9f00-112233445566";
+  const createdAt = "2026-10-21T07:05:00Z";
+  const fetchMock = vi.fn<typeof fetch>();
+  vi.stubGlobal("fetch", fetchMock);
+  try {
+    for (const [status, label] of Object.entries(orderStatusLabels)) {
+      const order = { id: uuid, cart_ref: uuid, branch_ref: uuid, status, total_vnd: 120000, subtotal_vnd: 120000, created_at: createdAt };
+      for (const component of [OrdersView, () => OrderDetailView({ id: uuid })]) {
+        orderHarness.slots = []; orderHarness.cursor = 0; orderHarness.effects = []; orderHarness.mounted = false;
+        fetchMock.mockReset().mockImplementation(async (input) => Response.json({ code: 200, status: "success", message: "Success", data: String(input).includes("page_size") ? { items: [order] } : order }));
+        const view = () => { orderHarness.cursor = 0; return component(); };
+        view(); orderHarness.mounted = true;
+        orderHarness.effects.forEach((effect) => effect());
+        await vi.waitFor(() => {
+          const html = renderToStaticMarkup(view());
+          expect(html).toContain(label);
+          expect(html).toContain(new Date(createdAt).toLocaleString("vi-VN"));
+          expect(html).toContain(formatVND(120000));
+          expect(html).not.toContain("Giỏ");
+          if (component === OrdersView) expect(html).toContain(`href="/orders/${uuid}"`);
+          expect(userFacingContent(html)).not.toMatch(/[0-9a-f]{8}-[0-9a-f]{4}-/);
+          expect(html).not.toContain(status);
+        });
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+      }
+    }
+  } finally { vi.unstubAllGlobals(); }
+});
+
+function userFacingContent(html: string): string {
+  const text = html.replace(/<[^>]*>/g, " ");
+  const labels = html.match(/\s(?:label|placeholder|title|aria-[\w-]+)="[^"]*"/g) ?? [];
+  const values = (html.match(/<input\b[^>]*>/g) ?? [])
+    .filter((input) => !input.includes('type="hidden"'))
+    .flatMap((input) => input.match(/\svalue="[^"]*"/g) ?? []);
+  return [text, ...labels, ...values].join(" ");
+}

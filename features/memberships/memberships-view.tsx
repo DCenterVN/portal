@@ -89,20 +89,20 @@ export function MembershipsView() {
       <div className="overflow-x-auto rounded-xl border border-[var(--color-line)] bg-[var(--color-surface)]">
         <Table>
           <TableHeader><TableRow>
-            <TableHead>{t("user")}</TableHead><TableHead>{t("roles")}</TableHead>
+            <TableHead>{t("roles")}</TableHead>
             <TableHead>{t("status")}</TableHead><TableHead>{t("actions")}</TableHead>
           </TableRow></TableHeader>
           <TableBody>
-            {isLoading ? <TableRow><TableCell colSpan={4}>
+            {isLoading ? <TableRow><TableCell colSpan={3}>
               <div role="status" aria-label={t("loading")} className="space-y-4 py-4 motion-safe:animate-pulse">
                 {[1, 2, 3].map((row) => <div key={row} className="h-11 rounded-lg bg-[var(--color-tint)]" />)}
               </div>
-            </TableCell></TableRow> : error ? <TableRow><TableCell colSpan={4}>
+            </TableCell></TableRow> : error ? <TableRow><TableCell colSpan={3}>
               <ErrorState title={t("requestError")} action={<Button variant="outline" onClick={() => void mutate()}>{t("retry")}</Button>} />
-            </TableCell></TableRow> : data?.items.length === 0 ? <TableRow><TableCell colSpan={4}>
+            </TableCell></TableRow> : data?.items.length === 0 ? <TableRow><TableCell colSpan={3}>
               <EmptyState title={t("empty")} description={t("emptyHint")} action={add} />
             </TableCell></TableRow> : data?.items.map((member) => <TableRow key={member.id}>
-              <TableCell><span className="font-mono text-xs">{member.user_id}</span></TableCell>
+
               <TableCell>{member.role_codes.map((role) => <Badge key={role} variant="secondary">{t(`roleLabels.${role}`)}</Badge>)}</TableCell>
               <TableCell><Badge variant={member.status === "ACTIVE" ? "active" : "suspended"}>{t(member.status)}</Badge></TableCell>
               <TableCell>{can("org:membership:update") && <div className="flex flex-wrap gap-2">

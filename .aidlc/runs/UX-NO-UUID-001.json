@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 1,
+  "runId": "UX-NO-UUID-001",
+  "pipelineId": "sdlc",
+  "context": {
+    "epic": "UX-NO-UUID-001",
+    "worker": "unassigned",
+    "story": "US-001",
+    "sprint": "01",
+    "slices": "0/4"
+  },
+  "startedAt": "2026-10-21T12:02:51+00:00",
+  "updatedAt": "2026-10-21T15:30:02+00:00",
+  "currentStepIdx": 4,
+  "status": "running",
+  "steps": [
+    {
+      "stepIdx": 0,
+      "agent": "sdlc-discovery",
+      "revision": 1,
+      "status": "approved",
+      "artifactsProduced": [
+        ".aidlc/runs/UX-NO-UUID-001/plan.md"
+      ]
+    },
+    {
+      "stepIdx": 1,
+      "agent": "sdlc-technical",
+      "revision": 1,
+      "status": "approved",
+      "artifactsProduced": [
+        ".aidlc/runs/UX-NO-UUID-001/plan.md"
+      ]
+    },
+    {
+      "stepIdx": 2,
+      "agent": "sdlc-ux",
+      "revision": 1,
+      "status": "approved",
+      "artifactsProduced": [
+        ".aidlc/runs/UX-NO-UUID-001/plan.md"
+      ]
+    },
+    {
+      "stepIdx": 3,
+      "agent": "sdlc-design",
+      "revision": 1,
+      "status": "approved",
+      "artifactsProduced": [
+        ".aidlc/runs/UX-NO-UUID-001/plan.md"
+      ]
+    },
+    {
+      "stepIdx": 4,
+      "agent": "sdlc-build",
+      "revision": 1,
+      "status": "awaiting_work",
+      "artifactsProduced": []
+    },
+    {
+      "stepIdx": 5,
+      "agent": "sdlc-integration",
+      "revision": 1,
+      "status": "pending",
+      "artifactsProduced": [
+        ".aidlc/runs/UX-NO-UUID-001/artifacts/verification.json"
+      ]
+    },
+    {
+      "stepIdx": 6,
+      "agent": "sdlc-e2e",
+      "revision": 1,
+      "status": "pending",
+      "artifactsProduced": [
+        ".aidlc/runs/UX-NO-UUID-001/artifacts/verification.json"
+      ]
+    },
+    {
+      "stepIdx": 7,
+      "agent": "sdlc-release",
+      "revision": 1,
+      "status": "pending",
+      "artifactsProduced": []
+    }
+  ]
+}

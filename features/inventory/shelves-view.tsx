@@ -16,7 +16,8 @@ import {
 } from "@/components/ui/table";
 import { useToast } from "@/components/ui/toast";
 import { PageShell, PageHeader } from "@/components/ui/page";
-import { ShelfPlacement, placeOnShelf } from "@/lib/api/production";
+import { EntityPicker } from "@/components/ui/entity-picker";
+import { ShelfPlacement, ProductionOrder, getOrders, placeOnShelf } from "@/lib/api/production";
 
 interface ShelvesViewProps {
   initialPlacements: ShelfPlacement[];
@@ -46,10 +47,26 @@ export function ShelvesView({ initialPlacements }: ShelvesViewProps) {
       });
   }, []);
 
+  const [lots, setLots] = useState<ProductionOrder[]>([]);
+  const [lotStatus, setLotStatus] = useState<"loading" | "ready" | "error">("loading");
+
+  useEffect(() => {
+    let active = true;
+    getOrders({ forPicker: true }).then((orders) => {
+      if (!active) return;
+      const eligible = orders.filter((order) => order.status === "QC_PASSED" && order.finished_lot_ref).slice(0, 100);
+      setLots(eligible);
+      if (eligible.length === 1) setFinishedLotRef(eligible[0].finished_lot_ref ?? "");
+      setLotStatus("ready");
+    }).catch(() => { if (active) setLotStatus("error"); });
+    return () => { active = false; };
+  }, []);
+
   const canPlace = permissions.includes("inventory:shelf_placement:create");
 
   const handlePlace = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!canPlace || !branchRef || lotStatus !== "ready" || !lots.some((lot) => lot.finished_lot_ref === finishedLotRef)) return;
     setLoading(true);
     try {
       const created = await placeOnShelf({
@@ -78,7 +95,7 @@ export function ShelvesView({ initialPlacements }: ShelvesViewProps) {
     <PageShell className="bg-[var(--color-bg)] text-[var(--color-ink)]">
       <PageHeader
         title="Quản lý Kệ hàng & Tem Truy xuất QR (VT-08 / VT-16)"
-        description="Đưa các lô thành phẩm đã APPROVED sau QC lên kệ chi nhánh và quản lý mã QR truy vết"
+        description="Đưa các lô thành phẩm đã QC đạt lên kệ chi nhánh và quản lý mã QR truy vết"
         actions={
           <Button variant={showCreate ? "outline" : "default"} onClick={() => setShowCreate(true)} disabled={!canPlace || !branchRef}>
             <Plus className="mr-2 h-4 w-4" /> Đưa lô thành phẩm lên kệ
@@ -91,18 +108,22 @@ export function ShelvesView({ initialPlacements }: ShelvesViewProps) {
           <CardContent className="pt-6">
             <form onSubmit={handlePlace} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium">Mã lô thành phẩm đã QC đạt</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="UUID lô thành phẩm"
-                    style={{ borderWidth: "1.5px" }}
-                    className="w-full mt-1 px-3 h-11 border bg-[var(--color-surface)] text-[var(--color-ink)] border-[var(--color-input-border)] rounded-[var(--radius-md)] focus:outline-none focus:ring-2 focus:ring-[var(--color-focus)] font-mono"
-                    value={finishedLotRef}
-                    onChange={(e) => setFinishedLotRef(e.target.value)}
-                  />
-                </div>
+                <EntityPicker
+                  label="Lô thành phẩm đã QC đạt"
+                  name="finished-lot"
+                  serializeValue={false}
+                  maxOptions={20}
+                  required
+                  items={lots}
+                  status={lotStatus}
+                  value={finishedLotRef || null}
+                  onChange={(id) => setFinishedLotRef(id ?? "")}
+                  getId={(order) => order.finished_lot_ref ?? ""}
+                  getLabel={(order) => order.order_code}
+                  getMeta={(order) => order.finished_lot_expires_at ? `Hạn dùng ${new Date(order.finished_lot_expires_at).toLocaleDateString("vi-VN")}` : "Chưa có hạn dùng"}
+                  placeholder="Tìm theo mã lệnh sản xuất"
+                  emptyText="Chưa có lô thành phẩm đã QC đạt để chọn"
+                />
                 <div>
                   <label className="text-sm font-medium">Vị trí Kệ hàng</label>
                   <input
@@ -129,7 +150,7 @@ export function ShelvesView({ initialPlacements }: ShelvesViewProps) {
                 </div>
               </div>
               <div className="flex gap-2">
-                <Button type="submit" disabled={loading}>
+                <Button type="submit" disabled={loading || !canPlace || !branchRef || lotStatus !== "ready" || !finishedLotRef}>
                   Xác nhận lên kệ & Sinh mã QR
                 </Button>
                 <Button type="button" variant="outline" onClick={() => setShowCreate(false)}>Hủy</Button>

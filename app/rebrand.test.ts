@@ -520,7 +520,8 @@ describe("S5 rendered auth, profile, branch and membership roles", () => {
     expect(html).toContain("Trang 1");
     if (empty) expect(html).toContain("Chưa có nhân viên");
     else {
-      for (const member of membershipFixtures) expect(html).toContain(member.user_id);
+      for (const member of membershipFixtures) expect(html).not.toContain(member.user_id);
+      expect(html.match(/<tr\b/g)).toHaveLength(membershipFixtures.length + 1);
       for (const status of ["active", "suspended"]) expect(html).toContain(`var(--badge-${status}-text)`);
       for (const label of ["Đang hoạt động", "Tạm khoá", "Bán hàng", "Đổi vai trò", "Khoá", "Mở khoá"]) expect(html).toContain(label);
     }
@@ -555,7 +556,8 @@ describe("S5 rendered auth, profile, branch and membership roles", () => {
 
   it("keeps membership mutations hidden for read-only access and denies unverified access", () => {
     const html = surfaceMarkup(memberships(membershipFixtures, ["org:membership:read"]));
-    expect(html).toContain("user-ACTIVE");
+    expect(html).toContain("Đang hoạt động");
+    expect(html).not.toContain("user-ACTIVE");
     for (const label of ["Thêm nhân viên", "Đổi vai trò", "Mở khoá"]) expect(html).not.toMatch(new RegExp(`<button[^>]*>${label}</button>`));
     const denied = surfaceMarkup(React.createElement(MembershipsView));
     expect(denied).toContain("Bạn chưa có quyền xem nhân viên.");
@@ -579,9 +581,15 @@ function expectS6Roles(html: string, primaryCount: number) {
   const primaryButtons = (html.match(/<button\b[^>]*>/g) ?? []).filter((button) => button.includes("bg-[var(--primary)]"));
   expect(primaryButtons).toHaveLength(primaryCount);
   for (const control of html.match(/<(?:input|textarea)\b[^>]*>/g) ?? []) {
-    expect(control).toContain("border-[var(--color-input-border)]");
-    expect(control).toContain("ring-[var(--color-focus)]");
-    if (!control.includes('type="radio"') && !control.startsWith("<textarea")) expect(control).toContain("h-11");
+    if (control.includes('role="combobox"')) {
+      expect(control).toContain("border-[var(--input)]");
+      expect(control).toContain("ring-[var(--ring)]");
+      expect(control).toContain("min-h-11");
+    } else {
+      expect(control).toContain("border-[var(--color-input-border)]");
+      expect(control).toContain("ring-[var(--color-focus)]");
+      if (!control.includes('type="radio"') && !control.startsWith("<textarea")) expect(control).toContain("h-11");
+    }
   }
 }
 
@@ -602,12 +610,22 @@ describe("S6 rendered inventory, permission and production state roles", () => {
     }
   });
 
-  it("gives shelf submit sole primary emphasis with original fields and permission guard", () => {
+  it("gives shelf submit sole primary emphasis with EntityPicker and permission guard", () => {
     const html = surfaceMarkup(React.createElement(ShelvesView, { initialPlacements: shelfFixtures }), [shelfFixtures, true, "KE-MAT-01", "lot", "branch", ["inventory:shelf_placement:create"], 20, false]);
     expectS6Roles(html, 1);
     expect(classesFor(html, "button")).not.toContain("bg-[var(--primary)]");
     expect(classesFor(html, "button", 'type="submit"')).toContain("bg-[var(--primary)]");
-    expect(html.match(/required=""/g)).toHaveLength(3);
+    expect(html.match(/required=""/g)).toHaveLength(2);
+    const comboboxes = (html.match(/<input\b[^>]*>/g) ?? []).filter((input) => input.includes('role="combobox"'));
+    expect(comboboxes).toHaveLength(1);
+    expect(comboboxes[0]).toContain('aria-required="true"');
+    expect(comboboxes[0]).toContain('id="finished-lot-picker"');
+    expect(html).toContain('for="finished-lot-picker"');
+    expect(html).toContain("Lô thành phẩm đã QC đạt");
+    expect(html).toContain('placeholder="Tìm theo mã lệnh sản xuất"');
+    expect(html).not.toContain('placeholder="UUID');
+    expect(html).not.toContain('type="hidden"');
+    expect(html.match(/<button[^>]*type="submit"[^>]*>/)?.[0]).toContain('disabled=""');
     expect(html).toContain("Xác nhận lên kệ &amp; Sinh mã QR");
   });
 
@@ -777,11 +795,13 @@ describe("S7 rendered target, cart, orders and product creation roles", () => {
     expectS7Roles(html, 0);
     for (const order of salesOrderFixtures) {
       const link = (html.match(/<a\b[\s\S]*?<\/a>/g) ?? []).find((tag) => tag.includes(`/orders/${order.id}`))!;
-      expect(link).toContain(`>${order.status}</span>`);
+      expect(link).toContain(`>${order.status === "CANCELLED" ? "Đã hủy" : "Đã đặt"}</span>`);
       expect(link).toContain("text-[var(--color-ink)]");
       expect(link).toContain(order.status === "CANCELLED" ? "badge-revoked-dot" : "badge-active-dot");
       expect(link).toContain("660.000");
-      expect(link).toContain("cart-1");
+      expect(link).toContain(new Date(order.created_at).toLocaleString("vi-VN"));
+      expect(link).not.toContain(order.cart_ref);
+      expect(link).not.toContain("Giỏ");
     }
   });
   it.each(["loading", "empty", "error"])("preserves orders %s feedback", (state) => {
