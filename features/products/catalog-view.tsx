@@ -83,10 +83,10 @@ export function CatalogView({ products, loading, error, nextCursor, onLoadMore, 
         </aside>
         <section aria-label={t("list")} className="min-w-0 flex-1 space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <Button variant="outline" className="min-h-11 lg:hidden" aria-haspopup="dialog" aria-expanded={filterOpen} onClick={() => setFilterOpen(true)}>{t("filters")}</Button>
+            <Button variant="outline" className="lg:hidden" aria-haspopup="dialog" aria-expanded={filterOpen} onClick={() => setFilterOpen(true)}>{t("filters")}</Button>
             <label className="ml-auto flex min-w-0 flex-wrap items-center gap-2 text-sm">
               <span>{t("sort")}</span>
-              <select className="min-h-11 max-w-full rounded-md border border-line bg-l1 px-3 text-fg" value={filters.sort ?? ""} onChange={e => {
+              <select className="min-h-11 max-w-full rounded-lg border border-line bg-l1 px-3 text-fg" value={filters.sort ?? ""} onChange={e => {
                 const sort = e.target.value;
                 setFilters({ ...filters, sort: sort === "price-asc" || sort === "price-desc" ? sort : undefined });
               }}>
@@ -109,20 +109,20 @@ export function CatalogView({ products, loading, error, nextCursor, onLoadMore, 
                   {product.uom && <p className="text-xs text-[var(--color-muted)]">{product.uom}</p>}
                   <p className="mt-auto text-sm font-bold">{product.base_price_vnd === undefined ? t("noPrice") : formatVND(product.base_price_vnd)}</p>
                   {product.sku_ref && product.branch_ref && product.base_price_vnd !== undefined && <Button
-                    className="min-h-11 w-full whitespace-normal px-2 text-xs"
+                    className="w-full whitespace-normal text-xs"
                     disabled={adding !== null || product.available_quantity === undefined || product.available_quantity <= 0}
                     onClick={() => void add(product)}
                   >{adding === product.id ? t("adding") : product.available_quantity === undefined ? t("unknownStock") : product.available_quantity <= 0 ? t("outOfStock") : t("add")}</Button>}
                 </div>
               </Card>)}
             </div>}
-          {nextCursor && <div className="text-center"><Button variant="outline" className="min-h-11" disabled={loadingMore} onClick={onLoadMore}>{loadingMore ? t("loading") : t("more")}</Button></div>}
+          {nextCursor && <div className="text-center"><Button variant="outline" disabled={loadingMore} onClick={onLoadMore}>{loadingMore ? t("loading") : t("more")}</Button></div>}
         </section>
         <Dialog open={filterOpen} onOpenChange={setFilterOpen}>
           <DialogContent variant="sheet">
             <DialogTitle>{t("filters")}</DialogTitle>
             <div className="mt-5"><CatalogFilters value={filters} onChange={setFilters} /></div>
-            <Button className="mt-5 min-h-11 w-full" onClick={() => setFilterOpen(false)}>{t("showResults")}</Button>
+            <Button className="mt-5 w-full" onClick={() => setFilterOpen(false)}>{t("showResults")}</Button>
           </DialogContent>
         </Dialog>
       </div>}

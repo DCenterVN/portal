@@ -263,7 +263,7 @@ export function DialogContent({
           <button
             type="button"
             onClick={() => setOpen(false)}
-            className="absolute right-2 top-2 inline-flex size-11 items-center justify-center rounded-xl text-[var(--color-muted)] hover:bg-[var(--color-tint)] hover:text-[var(--color-ink)] transition-colors duration-150 ease-out motion-reduce:transition-none focus:outline-none focus:ring-2 focus:ring-[var(--color-focus)]"
+            className="absolute right-2 top-2 inline-flex size-11 items-center justify-center rounded-xl bg-transparent text-[var(--color-muted)] hover:text-[var(--color-ink)] transition-colors duration-150 ease-out motion-reduce:transition-none focus-visible:outline-none after:absolute after:left-1/2 after:top-1/2 after:size-5 after:-translate-x-1/2 after:-translate-y-1/2 after:rounded-sm after:content-[''] focus-visible:after:outline focus-visible:after:outline-1 focus-visible:after:outline-[var(--color-focus)]"
             aria-label="Đóng hộp thoại"
           >
             <X className="size-4" />

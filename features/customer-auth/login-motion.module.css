@@ -1,0 +1,21 @@
+/* Lucian UX/UI Prompt #062 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#062 */
+.error {
+  animation: shake 500ms cubic-bezier(.36,.07,.19,.97);
+}
+
+.submit {
+  transition: opacity 200ms ease;
+}
+
+@keyframes shake {
+  15% { transform: translateX(-9px) rotate(-.6deg); }
+  30% { transform: translateX(8px) rotate(.5deg); }
+  45% { transform: translateX(-6px); }
+  60% { transform: translateX(4px); }
+  75% { transform: translateX(-2px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .error { animation: none; }
+  .submit { transition: none; }
+}

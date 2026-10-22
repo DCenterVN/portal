@@ -44,6 +44,6 @@ export function CatalogFilters({ value, onChange }: { value: CatalogFilterValues
         </label>)}
       </div>
     </fieldset>
-    <Button variant="outline" className="min-h-11 w-full" onClick={() => onChange({})}>{t("clear")}</Button>
+    <Button variant="outline" className="w-full" onClick={() => onChange({})}>{t("clear")}</Button>
   </div>;
 }

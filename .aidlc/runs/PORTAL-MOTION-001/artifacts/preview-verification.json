@@ -1,0 +1,129 @@
+{
+  "scope": "Static HTML preview only; not app production receipts",
+  "matrix": [
+    {
+      "width": 375,
+      "theme": "light",
+      "reducedMotion": "no-preference",
+      "checks": "grid/filter/quantity/cart/Escape/focus/version/reduced PASS",
+      "clsWithoutRecentInput": 0.006419049228395063
+    },
+    {
+      "width": 375,
+      "theme": "light",
+      "reducedMotion": "reduce",
+      "checks": "grid/filter/quantity/cart/Escape/focus/version/reduced PASS",
+      "clsWithoutRecentInput": 0
+    },
+    {
+      "width": 375,
+      "theme": "dark",
+      "reducedMotion": "no-preference",
+      "checks": "grid/filter/quantity/cart/Escape/focus/version/reduced PASS",
+      "clsWithoutRecentInput": 0
+    },
+    {
+      "width": 375,
+      "theme": "dark",
+      "reducedMotion": "reduce",
+      "checks": "grid/filter/quantity/cart/Escape/focus/version/reduced PASS",
+      "clsWithoutRecentInput": 0
+    },
+    {
+      "width": 768,
+      "theme": "light",
+      "reducedMotion": "no-preference",
+      "checks": "grid/filter/quantity/cart/Escape/focus/version/reduced PASS",
+      "clsWithoutRecentInput": 0
+    },
+    {
+      "width": 768,
+      "theme": "light",
+      "reducedMotion": "reduce",
+      "checks": "grid/filter/quantity/cart/Escape/focus/version/reduced PASS",
+      "clsWithoutRecentInput": 0
+    },
+    {
+      "width": 768,
+      "theme": "dark",
+      "reducedMotion": "no-preference",
+      "checks": "grid/filter/quantity/cart/Escape/focus/version/reduced PASS",
+      "clsWithoutRecentInput": 0
+    },
+    {
+      "width": 768,
+      "theme": "dark",
+      "reducedMotion": "reduce",
+      "checks": "grid/filter/quantity/cart/Escape/focus/version/reduced PASS",
+      "clsWithoutRecentInput": 0
+    },
+    {
+      "width": 1024,
+      "theme": "light",
+      "reducedMotion": "no-preference",
+      "checks": "grid/filter/quantity/cart/Escape/focus/version/reduced PASS",
+      "clsWithoutRecentInput": 0
+    },
+    {
+      "width": 1024,
+      "theme": "light",
+      "reducedMotion": "reduce",
+      "checks": "grid/filter/quantity/cart/Escape/focus/version/reduced PASS",
+      "clsWithoutRecentInput": 0.000913582593202591
+    },
+    {
+      "width": 1024,
+      "theme": "dark",
+      "reducedMotion": "no-preference",
+      "checks": "grid/filter/quantity/cart/Escape/focus/version/reduced PASS",
+      "clsWithoutRecentInput": 0
+    },
+    {
+      "width": 1024,
+      "theme": "dark",
+      "reducedMotion": "reduce",
+      "checks": "grid/filter/quantity/cart/Escape/focus/version/reduced PASS",
+      "clsWithoutRecentInput": 0.000913582593202591
+    },
+    {
+      "width": 1440,
+      "theme": "light",
+      "reducedMotion": "no-preference",
+      "checks": "grid/filter/quantity/cart/Escape/focus/version/reduced PASS",
+      "clsWithoutRecentInput": 0
+    },
+    {
+      "width": 1440,
+      "theme": "light",
+      "reducedMotion": "reduce",
+      "checks": "grid/filter/quantity/cart/Escape/focus/version/reduced PASS",
+      "clsWithoutRecentInput": 0.0007746692798755787
+    },
+    {
+      "width": 1440,
+      "theme": "dark",
+      "reducedMotion": "no-preference",
+      "checks": "grid/filter/quantity/cart/Escape/focus/version/reduced PASS",
+      "clsWithoutRecentInput": 0
+    },
+    {
+      "width": 1440,
+      "theme": "dark",
+      "reducedMotion": "reduce",
+      "checks": "grid/filter/quantity/cart/Escape/focus/version/reduced PASS",
+      "clsWithoutRecentInput": 0.0007746692798755787
+    }
+  ],
+  "login": "loading/error/password visibility/preserved input/reduced PASS",
+  "keyboard": "focus trap/Escape/restore PASS",
+  "pageErrors": [],
+  "apiRequests": [],
+  "screenshots": [
+    "desktop.png",
+    "mobile.png",
+    "desktop-dark.png",
+    "drawer.png",
+    "login-loading.png",
+    "login-error.png"
+  ]
+}

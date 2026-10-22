@@ -1,0 +1,304 @@
+{
+  "phase": "after",
+  "records": [
+    {
+      "label": "V-01-normal",
+      "width": 1440,
+      "theme": "light",
+      "file": "after-V-01-normal-1440-light.png",
+      "beforeFile": "/home/dawn/work/ticket/plans/261022-ui-motion/audit/retry-02/before-V-01-normal-1440-light.png"
+    },
+    {
+      "label": "V-01-hover",
+      "width": 1440,
+      "theme": "light",
+      "file": "after-V-01-hover-1440-light.png",
+      "beforeFile": "/home/dawn/work/ticket/plans/261022-ui-motion/audit/retry-02/before-V-01-hover-1440-light.png"
+    },
+    {
+      "label": "V-01-focus",
+      "width": 1440,
+      "theme": "light",
+      "file": "after-V-01-focus-1440-light.png",
+      "beforeFile": "/home/dawn/work/ticket/plans/261022-ui-motion/audit/retry-02/before-V-01-focus-1440-light.png"
+    },
+    {
+      "label": "V-06-normal",
+      "width": 1440,
+      "theme": "light",
+      "file": "after-V-06-normal-1440-light.png",
+      "beforeFile": "/home/dawn/work/ticket/plans/261022-ui-motion/audit/retry-02/before-V-06-1440-light.png"
+    },
+    {
+      "label": "V-06-hover",
+      "width": 1440,
+      "theme": "light",
+      "file": "after-V-06-hover-1440-light.png",
+      "beforeFile": "/home/dawn/work/ticket/plans/261022-ui-motion/audit/retry-02/before-V-06-hover-1440-light.png"
+    },
+    {
+      "label": "V-02",
+      "width": 1440,
+      "theme": "light",
+      "file": "after-V-02-1440-light.png",
+      "beforeFile": "/home/dawn/work/ticket/plans/261022-ui-motion/audit/retry-02/before-V-02-1440-light.png"
+    },
+    {
+      "label": "V-04",
+      "width": 1440,
+      "theme": "light",
+      "file": "after-V-04-1440-light.png",
+      "beforeFile": "/home/dawn/work/ticket/plans/261022-ui-motion/audit/retry-02/before-V-04-1440-light.png"
+    },
+    {
+      "label": "V-07",
+      "width": 1440,
+      "theme": "light",
+      "file": "after-V-07-1440-light.png",
+      "beforeFile": "/home/dawn/work/ticket/plans/261022-ui-motion/audit/retry-02/before-V-07-1440-light.png"
+    },
+    {
+      "label": "V-10",
+      "width": 1440,
+      "theme": "light",
+      "file": "after-V-10-1440-light.png",
+      "beforeFile": "/home/dawn/work/ticket/plans/261022-ui-motion/audit/supplement/before-V-10-1440-light.png"
+    },
+    {
+      "label": "V-11",
+      "width": 1440,
+      "theme": "light",
+      "file": "after-V-11-1440-light.png",
+      "beforeFile": "/home/dawn/work/ticket/plans/261022-ui-motion/audit/supplement/before-V-11-1440-light.png"
+    },
+    {
+      "label": "V-01-normal",
+      "width": 1440,
+      "theme": "dark",
+      "file": "after-V-01-normal-1440-dark.png",
+      "beforeFile": "/home/dawn/work/ticket/plans/261022-ui-motion/audit/retry-02/before-V-01-normal-1440-dark.png"
+    },
+    {
+      "label": "V-01-hover",
+      "width": 1440,
+      "theme": "dark",
+      "file": "after-V-01-hover-1440-dark.png",
+      "beforeFile": "/home/dawn/work/ticket/plans/261022-ui-motion/audit/retry-02/before-V-01-hover-1440-dark.png"
+    },
+    {
+      "label": "V-01-focus",
+      "width": 1440,
+      "theme": "dark",
+      "file": "after-V-01-focus-1440-dark.png",
+      "beforeFile": "/home/dawn/work/ticket/plans/261022-ui-motion/audit/retry-02/before-V-01-focus-1440-dark.png"
+    },
+    {
+      "label": "V-06-normal",
+      "width": 1440,
+      "theme": "dark",
+      "file": "after-V-06-normal-1440-dark.png",
+      "beforeFile": "/home/dawn/work/ticket/plans/261022-ui-motion/audit/retry-02/before-V-06-1440-dark.png"
+    },
+    {
+      "label": "V-06-hover",
+      "width": 1440,
+      "theme": "dark",
+      "file": "after-V-06-hover-1440-dark.png",
+      "beforeFile": "/home/dawn/work/ticket/plans/261022-ui-motion/audit/retry-02/before-V-06-hover-1440-dark.png"
+    },
+    {
+      "label": "V-02",
+      "width": 1440,
+      "theme": "dark",
+      "file": "after-V-02-1440-dark.png",
+      "beforeFile": "/home/dawn/work/ticket/plans/261022-ui-motion/audit/retry-02/before-V-02-1440-dark.png"
+    },
+    {
+      "label": "V-04",
+      "width": 1440,
+      "theme": "dark",
+      "file": "after-V-04-1440-dark.png",
+      "beforeFile": "/home/dawn/work/ticket/plans/261022-ui-motion/audit/retry-02/before-V-04-1440-dark.png"
+    },
+    {
+      "label": "V-07",
+      "width": 1440,
+      "theme": "dark",
+      "file": "after-V-07-1440-dark.png",
+      "beforeFile": "/home/dawn/work/ticket/plans/261022-ui-motion/audit/retry-02/before-V-07-1440-dark.png"
+    },
+    {
+      "label": "V-10",
+      "width": 1440,
+      "theme": "dark",
+      "file": "after-V-10-1440-dark.png",
+      "beforeFile": "/home/dawn/work/ticket/plans/261022-ui-motion/audit/supplement/before-V-10-1440-dark.png"
+    },
+    {
+      "label": "V-11",
+      "width": 1440,
+      "theme": "dark",
+      "file": "after-V-11-1440-dark.png",
+      "beforeFile": "/home/dawn/work/ticket/plans/261022-ui-motion/audit/supplement/before-V-11-1440-dark.png"
+    },
+    {
+      "label": "V-01-normal",
+      "width": 375,
+      "theme": "light",
+      "file": "after-V-01-normal-375-light.png",
+      "beforeFile": "/home/dawn/work/ticket/plans/261022-ui-motion/audit/retry-02/before-V-01-normal-375-light.png"
+    },
+    {
+      "label": "V-01-hover",
+      "width": 375,
+      "theme": "light",
+      "file": "after-V-01-hover-375-light.png",
+      "beforeFile": "/home/dawn/work/ticket/plans/261022-ui-motion/audit/retry-02/before-V-01-hover-375-light.png"
+    },
+    {
+      "label": "V-01-focus",
+      "width": 375,
+      "theme": "light",
+      "file": "after-V-01-focus-375-light.png",
+      "beforeFile": "/home/dawn/work/ticket/plans/261022-ui-motion/audit/retry-02/before-V-01-focus-375-light.png"
+    },
+    {
+      "label": "V-06-normal",
+      "width": 375,
+      "theme": "light",
+      "file": "after-V-06-normal-375-light.png",
+      "beforeFile": "/home/dawn/work/ticket/plans/261022-ui-motion/audit/retry-02/before-V-06-375-light.png"
+    },
+    {
+      "label": "V-06-hover",
+      "width": 375,
+      "theme": "light",
+      "file": "after-V-06-hover-375-light.png",
+      "beforeFile": "/home/dawn/work/ticket/plans/261022-ui-motion/audit/retry-02/before-V-06-hover-375-light.png"
+    },
+    {
+      "label": "V-02",
+      "width": 375,
+      "theme": "light",
+      "file": "after-V-02-375-light.png",
+      "beforeFile": "/home/dawn/work/ticket/plans/261022-ui-motion/audit/retry-02/before-V-02-375-light.png"
+    },
+    {
+      "label": "V-04",
+      "width": 375,
+      "theme": "light",
+      "file": "after-V-04-375-light.png",
+      "beforeFile": "/home/dawn/work/ticket/plans/261022-ui-motion/audit/retry-02/before-V-04-375-light.png"
+    },
+    {
+      "label": "V-07",
+      "width": 375,
+      "theme": "light",
+      "file": "after-V-07-375-light.png",
+      "beforeFile": "/home/dawn/work/ticket/plans/261022-ui-motion/audit/retry-02/before-V-07-375-light.png"
+    },
+    {
+      "label": "V-10",
+      "width": 375,
+      "theme": "light",
+      "file": "after-V-10-375-light.png",
+      "beforeFile": "/home/dawn/work/ticket/plans/261022-ui-motion/audit/supplement/before-V-10-375-light.png"
+    },
+    {
+      "label": "V-11",
+      "width": 375,
+      "theme": "light",
+      "file": "after-V-11-375-light.png",
+      "beforeFile": "/home/dawn/work/ticket/plans/261022-ui-motion/audit/supplement/before-V-11-375-light.png"
+    },
+    {
+      "label": "V-01-normal",
+      "width": 375,
+      "theme": "dark",
+      "file": "after-V-01-normal-375-dark.png",
+      "beforeFile": "/home/dawn/work/ticket/plans/261022-ui-motion/audit/retry-02/before-V-01-normal-375-dark.png"
+    },
+    {
+      "label": "V-01-hover",
+      "width": 375,
+      "theme": "dark",
+      "file": "after-V-01-hover-375-dark.png",
+      "beforeFile": "/home/dawn/work/ticket/plans/261022-ui-motion/audit/retry-02/before-V-01-hover-375-dark.png"
+    },
+    {
+      "label": "V-01-focus",
+      "width": 375,
+      "theme": "dark",
+      "file": "after-V-01-focus-375-dark.png",
+      "beforeFile": "/home/dawn/work/ticket/plans/261022-ui-motion/audit/retry-02/before-V-01-focus-375-dark.png"
+    },
+    {
+      "label": "V-06-normal",
+      "width": 375,
+      "theme": "dark",
+      "file": "after-V-06-normal-375-dark.png",
+      "beforeFile": "/home/dawn/work/ticket/plans/261022-ui-motion/audit/retry-02/before-V-06-375-dark.png"
+    },
+    {
+      "label": "V-06-hover",
+      "width": 375,
+      "theme": "dark",
+      "file": "after-V-06-hover-375-dark.png",
+      "beforeFile": "/home/dawn/work/ticket/plans/261022-ui-motion/audit/retry-02/before-V-06-hover-375-dark.png"
+    },
+    {
+      "label": "V-02",
+      "width": 375,
+      "theme": "dark",
+      "file": "after-V-02-375-dark.png",
+      "beforeFile": "/home/dawn/work/ticket/plans/261022-ui-motion/audit/retry-02/before-V-02-375-dark.png"
+    },
+    {
+      "label": "V-04",
+      "width": 375,
+      "theme": "dark",
+      "file": "after-V-04-375-dark.png",
+      "beforeFile": "/home/dawn/work/ticket/plans/261022-ui-motion/audit/retry-02/before-V-04-375-dark.png"
+    },
+    {
+      "label": "V-07",
+      "width": 375,
+      "theme": "dark",
+      "file": "after-V-07-375-dark.png",
+      "beforeFile": "/home/dawn/work/ticket/plans/261022-ui-motion/audit/retry-02/before-V-07-375-dark.png"
+    },
+    {
+      "label": "V-10",
+      "width": 375,
+      "theme": "dark",
+      "file": "after-V-10-375-dark.png",
+      "beforeFile": "/home/dawn/work/ticket/plans/261022-ui-motion/audit/supplement/before-V-10-375-dark.png"
+    },
+    {
+      "label": "V-11",
+      "width": 375,
+      "theme": "dark",
+      "file": "after-V-11-375-dark.png",
+      "beforeFile": "/home/dawn/work/ticket/plans/261022-ui-motion/audit/supplement/before-V-11-375-dark.png"
+    }
+  ],
+  "diagnostics": [
+    {
+      "reduced": false,
+      "realUserClickPressed": true,
+      "durations": [
+        350,
+        300,
+        250,
+        450
+      ]
+    },
+    {
+      "reduced": true,
+      "realUserClickPressed": true,
+      "durations": []
+    }
+  ],
+  "mainScreens": false,
+  "viewedImages": 40
+}

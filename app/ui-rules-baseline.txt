@@ -31,9 +31,6 @@ rounded	features/products/cart-view.tsx:rounded-2xl	-
 rounded	features/products/cart-view.tsx:rounded-2xl#2	-
 rounded	features/products/cart-view.tsx:rounded-2xl#3	-
 rounded	features/products/orders-view.tsx:rounded-[var(--radius-md)]	-
-rounded	features/products/product-create-dialog.tsx:rounded-[var(--radius-md)]	-
-rounded	features/products/product-detail-view.tsx:rounded-2xl	-
-rounded	features/products/product-detail-view.tsx:rounded-2xl#2	-
 rounded	features/products/products-view.tsx:rounded-2xl	-
 rounded	features/products/products-view.tsx:rounded-2xl#2	-
 rounded	features/products/products-view.tsx:rounded-2xl#3	-

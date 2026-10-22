@@ -1,0 +1,41 @@
+/* Lucian UX/UI Prompt #216 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#216 */
+@keyframes fade {
+  from { opacity: 0; }
+}
+
+@keyframes rise {
+  from { transform: translateY(14px); }
+}
+
+@keyframes heading {
+  from { opacity: 0; transform: translateY(14px); }
+}
+
+@keyframes visualRise {
+  from { transform: translateY(46px) rotateX(24deg) scale(.94); }
+}
+
+@keyframes sharpen {
+  from { filter: blur(6px); }
+}
+
+@media (prefers-reduced-motion: no-preference) and (scripting: enabled) {
+  .eyebrow, .description, .actions, .homeContent {
+    animation: fade 550ms cubic-bezier(.2,.8,.2,1) var(--delay) backwards,
+      rise 700ms cubic-bezier(.2,.8,.2,1) var(--delay) backwards;
+  }
+
+  .eyebrow, .homeContent { --delay: 180ms; }
+  .description { --delay: 620ms; }
+  .actions { --delay: 760ms; }
+
+  .heading {
+    animation: heading 750ms cubic-bezier(.2,.8,.2,1) 300ms backwards;
+  }
+
+  .visual {
+    animation: fade 600ms cubic-bezier(.2,.8,.2,1) 900ms backwards,
+      visualRise 1100ms cubic-bezier(.2,.8,.2,1) 900ms backwards,
+      sharpen 900ms cubic-bezier(.2,.8,.2,1) 900ms backwards;
+  }
+}

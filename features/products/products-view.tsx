@@ -28,6 +28,7 @@ import {
 import { Product, DataSource, formatVND } from "@/lib/api/sales";
 import { PageShell, PageHeader } from "@/components/ui/page";
 import { ProductCreateDialog } from "./product-create-dialog";
+import motion from "./filter-motion.module.css";
 
 interface ProductsViewProps {
   initialProducts: Product[];
@@ -145,6 +146,7 @@ export function ProductsView({ initialProducts, dataSource = "api", canCreate = 
             size="sm"
             variant={statusFilter === "ALL" ? "secondary" : "outline"}
             aria-pressed={statusFilter === "ALL"}
+            className={motion.filter}
             onClick={() => setStatusFilter("ALL")}
           >
             {statusFilter === "ALL" && <Check aria-hidden="true" />}
@@ -155,6 +157,7 @@ export function ProductsView({ initialProducts, dataSource = "api", canCreate = 
             size="sm"
             variant={statusFilter === "ACTIVE" ? "secondary" : "outline"}
             aria-pressed={statusFilter === "ACTIVE"}
+            className={motion.filter}
             onClick={() => setStatusFilter("ACTIVE")}
           >
             {statusFilter === "ACTIVE" && <Check aria-hidden="true" />}
@@ -165,6 +168,7 @@ export function ProductsView({ initialProducts, dataSource = "api", canCreate = 
             size="sm"
             variant={statusFilter === "DRAFT" ? "secondary" : "outline"}
             aria-pressed={statusFilter === "DRAFT"}
+            className={motion.filter}
             onClick={() => setStatusFilter("DRAFT")}
           >
             {statusFilter === "DRAFT" && <Check aria-hidden="true" />}

@@ -1,0 +1,1 @@
+5 hiệu ứng gắn được một phần; 8 dòng V-n gồm V-01 bắt buộc và 7 nghi vấn chưa có ảnh; 11 slice; chụp màn: Claude chạy.

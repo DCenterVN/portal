@@ -11,9 +11,10 @@ import { login } from "@/lib/api/customer-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { authTabHref, SHAKE_STYLE } from "./form-feedback";
+import { authTabHref } from "./form-feedback";
 import { PasswordInput } from "@/components/patterns/password-input";
 import { cn } from "@/lib/utils";
+import motion from "./login-motion.module.css";
 
 function loginErrorKey(err: unknown): string {
   if (!(err instanceof FetchError)) return "loginFailed";
@@ -65,7 +66,7 @@ export function LoginForm() {
       setErrorKey(key);
       const ms = err instanceof FetchError ? (err.info as { retry_after_ms?: unknown } | undefined)?.retry_after_ms : undefined;
       if (key === "rateLimited" && typeof ms === "number" && ms > 0) setWait(Math.ceil(ms / 1000));
-      form.querySelector<HTMLInputElement>("input")?.focus();
+      requestAnimationFrame(() => form.querySelector<HTMLInputElement>("input")?.focus());
     } finally {
       pending.current = false;
       setBusy(false);
@@ -76,7 +77,6 @@ export function LoginForm() {
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: SHAKE_STYLE }} />
       <div role="tablist" aria-label={t("login")} className="mb-5 grid grid-cols-2 rounded-sm border border-line bg-l1-2 p-0.5 text-sm font-bold">
         <span role="tab" aria-selected="true" className="flex min-h-10 items-center justify-center rounded-[2px] border border-line bg-l1 text-fg">
           {t("login")}
@@ -87,7 +87,7 @@ export function LoginForm() {
       </div>
       <form onSubmit={onSubmit} noValidate aria-busy={busy} className="space-y-4">
         {error && (
-          <div id={`${id}-error`} role="alert" className="animate-shake flex flex-wrap items-center gap-x-2.5 gap-y-1 rounded-lg border border-err bg-err-soft px-3.5 py-2.5 text-sm font-semibold text-err">
+          <div id={`${id}-error`} role="alert" className={cn("flex flex-wrap items-center gap-x-2.5 gap-y-1 rounded-lg border border-err bg-err-soft px-3.5 py-2.5 text-sm font-semibold text-err", motion.error)}>
             <AlertCircle aria-hidden="true" className="size-5 shrink-0" />
             <span>{error}</span>
             {errorKey === "notActivated" && (
@@ -133,7 +133,7 @@ export function LoginForm() {
             {t("forgot")}
           </Link>
         </div>
-        <Button type="submit" variant="primary" size="md" disabled={busy || wait > 0} className="w-full font-bold">
+        <Button type="submit" variant="primary" size="md" disabled={busy || wait > 0} className={cn("w-full font-bold", motion.submit)}>
           {busy ? t("loginPending") : t("login")}
         </Button>
       </form>

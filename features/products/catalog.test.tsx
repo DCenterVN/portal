@@ -1,3 +1,5 @@
+import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { describe, expect, it, vi } from "vitest";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
@@ -122,5 +124,42 @@ describe("AC-1 lọc và sắp xếp trên tập đã tải (OD-2)", () => {
   });
   it("kết hợp tên + giá + sắp xếp", () => {
     expect(names(applyCatalogFilters(products, { query: "h", maxPrice: 300000, sort: "price-desc" }))).toEqual(["Cá hồi áp chảo", "Bún bò Huế"]);
+  });
+});
+
+describe("AC-7 module filter-motion dùng chung", () => {
+  const read = (file: string) => readFileSync(new URL(file, import.meta.url), "utf8");
+  const MODULE = "filter-motion.module.css";
+
+  it("module dùng chung tồn tại, là style effect duy nhất trong features/products", () => {
+    expect(existsSync(fileURLToPath(new URL(MODULE, import.meta.url)))).toBe(true);
+    const css = readdirSync(fileURLToPath(new URL(".", import.meta.url))).filter(f => f.endsWith(".css"));
+    expect(css).toEqual([MODULE]);
+  });
+  it("module giữ transition 350ms/300ms ease, animation 250ms/450ms spring và reduced-motion tắt trượt/scale", () => {
+    const css = read(MODULE);
+    expect(css).toMatch(/\.filter\s*\{[^}]*background-color 350ms ease[^}]*color 300ms ease/s);
+    expect(css).toMatch(/\.filter > svg\s*\{[^}]*checkFade 250ms ease[^}]*checkSlide 450ms cubic-bezier\(\.34,\s*1\.45,\s*\.64,\s*1\)/s);
+    expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\)\s*\{[^@]*\.filter\s*\{\s*transition: none;\s*\}[^@]*\.filter > svg\s*\{\s*animation: none;\s*\}/s);
+    expect(css).not.toMatch(/transition:[^;]*\b(all|padding|width)\b/);
+  });
+});
+
+describe("AC-7 console ProductsView giữ #019 và sửa wrap / căn giữa icon", () => {
+  const source = readFileSync(new URL("products-view.tsx", import.meta.url), "utf8");
+  it("nhập đúng module filter-motion và gắn lên cả 3 nút lọc trạng thái", () => {
+    expect(source).toMatch(/import\s+\w+\s+from\s+["']\.\/filter-motion\.module\.css["']/);
+    expect((source.match(/className=\{\w+\.filter\}/g) ?? [])).toHaveLength(3);
+    expect((source.match(/aria-pressed=\{statusFilter ===/g) ?? [])).toHaveLength(3);
+  });
+  it("hàng actions và hàng nút lọc cho phép wrap, không vượt chiều rộng", () => {
+    expect((source.match(/className="flex max-w-full flex-wrap items-center gap-(?:1\.5|2\.5)/g) ?? [])).toHaveLength(2);
+  });
+  it("icon Search căn giữa dọc theo ô nhập", () => {
+    expect(source).toMatch(/<Search className="[^"]*top-1\/2 -translate-y-1\/2[^"]*"/);
+    expect(source).not.toMatch(/<Search className="[^"]*top-2\.5/);
+  });
+  it("không tạo style effect thứ hai trong console", () => {
+    expect(source).not.toMatch(/@keyframes|checkFade|checkSlide|\.module\.css["'];[\s\S]*\.module\.css["']/);
   });
 });

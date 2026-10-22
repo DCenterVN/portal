@@ -157,3 +157,94 @@ test.describe("AC-6 bố cục", () => {
     await expect(page.getByLabel(/Sắp xếp/).first()).toBeVisible();
   });
 });
+
+const overflow = (page: Page) => page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+const FILTERS = [/^Tất cả \(/, /^Đang mở bán \(/, /^Bản nháp \(/];
+
+const rulesOf = (locator: ReturnType<Page["getByRole"]>) => locator.evaluate((el) => {
+  const s = getComputedStyle(el);
+  const split = (v: string) => v.split(/,(?![^(]*\))/).map((x) => x.trim());
+  const props = split(s.transitionProperty), durations = split(s.transitionDuration);
+  return props.map((prop, i) => ({ prop, ms: parseFloat(durations[i % durations.length]) * (durations[i % durations.length].endsWith("ms") ? 1 : 1000) }));
+});
+
+test.describe("AC-6 catalog khách: bố cục, sheet lọc (phần tử đã có)", () => {
+  for (const width of [375, 768, 1024, 1440]) for (const theme of ["light", "dark"] as const) {
+    test(`không tràn ngang ở ${width}px, ${theme}; sheet lọc có Esc/focus/control ≥44px`, async ({ page }) => {
+      await page.addInitScript((value) => { localStorage.setItem("dcenter_theme", value); document.documentElement.dataset.theme = value; document.documentElement.classList.toggle("dark", value === "dark"); }, theme);
+      await page.emulateMedia({ colorScheme: theme });
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto("/products");
+      await page.waitForLoadState("networkidle");
+      expect(await overflow(page), "tràn ngang").toBeLessThanOrEqual(0);
+      if (width >= 1024) {
+        await expect(page.getByRole("dialog")).toHaveCount(0);
+        await expect(page.getByLabel(/Sắp xếp/).first()).toBeVisible();
+        return;
+      }
+      const open = page.getByRole("button", { name: /Bộ lọc/ });
+      expect((await open.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(44);
+      await open.click();
+      const sheet = page.getByRole("dialog");
+      await expect(sheet).toBeVisible();
+      await expect(sheet.getByRole("textbox").first()).toBeVisible();
+      expect((await sheet.getByRole("button", { name: /Xoá lọc/ }).boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(44);
+      expect(await overflow(page), "tràn ngang khi mở sheet").toBeLessThanOrEqual(0);
+      await page.keyboard.press("Escape");
+      await expect(sheet).toBeHidden();
+      await expect(open).toBeFocused();
+    });
+  }
+
+  test("mở sheet và gõ lọc không làm dịch bố cục trang", async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    await page.goto("/products");
+    await page.waitForLoadState("networkidle");
+    const open = page.getByRole("button", { name: /Bộ lọc/ });
+    const before = await open.boundingBox();
+    await open.click();
+    await page.getByRole("dialog").getByRole("textbox").first().fill("bún");
+    await page.keyboard.press("Escape");
+    const after = await open.boundingBox();
+    expect(Math.abs((after?.y ?? 0) - (before?.y ?? 0))).toBeLessThanOrEqual(1);
+    expect(Math.abs((after?.height ?? 0) - (before?.height ?? 0))).toBeLessThanOrEqual(1);
+  });
+});
+
+test.describe("AC-7 #019 và sửa wrap/icon ở console /sales/products", () => {
+  async function openConsole(page: Page, width: number) {
+    await page.setViewportSize({ width, height: 900 });
+    await login(page, "SALES");
+    test.skip(!(await permissionsOf(page)).includes(READ), "Tài khoản QA SALES chưa có sales:product:read.");
+    await page.goto("/sales/products");
+    await expect(page.getByPlaceholder(/Tìm theo tên/)).toBeVisible();
+  }
+
+  test("ba nút trạng thái giữ #019, chọn đơn và aria-pressed đúng", async ({ page }) => {
+    await openConsole(page, 1440);
+    for (const name of FILTERS) {
+      const rules = await rulesOf(page.getByRole("button", { name }));
+      expect(rules.find((r) => r.prop === "background-color")?.ms).toBe(350);
+      expect(rules.find((r) => r.prop === "color")?.ms).toBe(300);
+    }
+    for (const index of [1, 2, 0]) {
+      await page.getByRole("button", { name: FILTERS[index] }).click();
+      await expect(page.getByRole("button", { name: FILTERS[index] })).toHaveAttribute("aria-pressed", "true");
+      await expect(page.locator('button[aria-pressed="true"]').filter({ hasText: /^(Tất cả|Đang mở bán|Bản nháp) \(/ })).toHaveCount(1);
+    }
+  });
+
+  for (const width of [375, 768, 1024]) {
+    test(`icon tìm kiếm căn giữa ô nhập và không tràn ngang ở ${width}px`, async ({ page }) => {
+      await openConsole(page, width);
+      const input = await page.getByPlaceholder(/Tìm theo tên/).boundingBox();
+      const icon = await page.getByPlaceholder(/Tìm theo tên/).locator("xpath=preceding-sibling::*[local-name()='svg'][1]").boundingBox();
+      expect(Math.abs((icon!.y + icon!.height / 2) - (input!.y + input!.height / 2)), "lệch tâm dọc icon").toBeLessThanOrEqual(1);
+      expect(await overflow(page)).toBeLessThanOrEqual(0);
+      for (const name of FILTERS) {
+        const box = await page.getByRole("button", { name }).boundingBox();
+        expect((box?.x ?? 0) + (box?.width ?? 0), "nút lọc vượt viền phải").toBeLessThanOrEqual(width);
+      }
+    });
+  }
+});

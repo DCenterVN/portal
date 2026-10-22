@@ -1,0 +1,22 @@
+/* Lucian UX/UI Prompt #019 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#019 */
+.filter {
+  transition: background-color 350ms ease, color 300ms ease;
+}
+
+.filter > svg {
+  animation: checkFade 250ms ease backwards,
+    checkSlide 450ms cubic-bezier(.34,1.45,.64,1) backwards;
+}
+
+@keyframes checkFade {
+  from { opacity: 0; }
+}
+
+@keyframes checkSlide {
+  from { transform: translateX(-4px) scale(.8); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .filter { transition: none; }
+  .filter > svg { animation: none; }
+}

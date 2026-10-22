@@ -1,0 +1,10 @@
+{
+  "head": "f0d25ffab0f4ae6e4d04dc20a1e5f075c3a2a598",
+  "before": 62,
+  "after": 61,
+  "new_rule_files": [],
+  "fixed_rule_files": [
+    "FE-09 components/ui/page.tsx"
+  ],
+  "new_details": []
+}

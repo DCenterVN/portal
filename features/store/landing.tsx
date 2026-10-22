@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, BadgeCheck, ClipboardCheck, Check, MapPin, PackageCheck, QrCode, ShieldCheck, ShoppingBasket, Snowflake, Sprout, ThermometerSnowflake, Truck, Users, ChefHat } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
+import motion from "./hero-motion.module.css";
 
 const TRUST = [
   { value: "−18°C", label: "Chuỗi lạnh giám sát liên tục", icon: Snowflake },
@@ -39,18 +40,18 @@ export function Landing() {
       <section aria-labelledby="hero-title" className={`${bleed} border-b border-line py-8 md:py-16`}>
         <div className={`grid items-center gap-10 md:grid-cols-[.9fr_1.1fr] md:gap-16 ${inner}`}>
           <div>
-            <p className={`flex items-center gap-2 ${eyebrow}`}><Sprout className="size-4" aria-hidden="true" />Thực phẩm có hành trình rõ ràng</p>
-            <h1 id="hero-title" className="mt-4 font-heading text-3xl font-bold text-balance md:text-4xl">
+            <p className={`flex items-center gap-2 ${eyebrow} ${motion.eyebrow}`}><Sprout className="size-4" aria-hidden="true" />Thực phẩm có hành trình rõ ràng</p>
+            <h1 id="hero-title" className={`mt-4 font-heading text-3xl font-bold text-balance md:text-4xl ${motion.heading}`}>
               Tươi là một cảm giác.<br /><span className="text-p-text">Sạch là điều kiểm chứng được.</span>
             </h1>
-            <p className="mt-4 max-w-[56ch] text-fg-2">Bếp Tươi kết nối nông trại, kho lạnh và bàn ăn bằng một chuỗi cung ứng minh bạch, để mỗi lựa chọn ngon lành cũng là một lựa chọn an tâm.</p>
-            <div className="mt-6 flex flex-wrap gap-2">
+            <p className={`mt-4 max-w-[56ch] text-fg-2 ${motion.description}`}>Bếp Tươi kết nối nông trại, kho lạnh và bàn ăn bằng một chuỗi cung ứng minh bạch, để mỗi lựa chọn ngon lành cũng là một lựa chọn an tâm.</p>
+            <div className={`mt-6 flex flex-wrap gap-2 ${motion.actions}`}>
               <Link href="/products" className={cta}>Khám phá sản phẩm<ArrowRight aria-hidden="true" /></Link>
               <Link href="/register" className={ctaSecondary}>Tạo tài khoản</Link>
             </div>
             <p className="mt-3 text-sm text-fg-2">Đã là thành viên? <Link href="/login" className="inline-flex min-h-11 items-center px-1.5 font-bold text-p-text underline underline-offset-4 md:min-h-8">Đăng nhập vào hệ thống</Link></p>
           </div>
-          <div role="img" aria-label="Ảnh rau củ tươi được tuyển chọn" className="relative aspect-square rounded-lg bg-l1-2 text-fg-3 md:aspect-[1.2/1]">
+          <div role="img" aria-label="Ảnh rau củ tươi được tuyển chọn" className={`relative aspect-square rounded-lg bg-l1-2 text-fg-3 md:aspect-[1.2/1] ${motion.visual}`}>
             <div className="absolute inset-0 grid place-items-center px-6 text-center text-sm font-bold tracking-wide">[ẢNH HERO: GIAN RAU CỦ TƯƠI ĐẦY MÀU SẮC]</div>
             <div className="absolute -bottom-4 left-3 w-[min(288px,78%)] rounded-lg border border-line bg-l1 px-5 py-4 text-fg shadow-l3 md:-bottom-5 md:-left-9">
               <span className="flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider text-p-text"><BadgeCheck className="size-4" aria-hidden="true" />Lô BT–240831</span>
