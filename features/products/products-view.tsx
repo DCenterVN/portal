@@ -30,6 +30,7 @@ import { useToast } from "@/components/ui/toast";
 import { Product, DataSource, addToCart, formatVND, getOrCreateCartId, recordCartResponse } from "@/lib/api/sales";
 import { PageShell, PageHeader } from "@/components/ui/page";
 import { ProductCreateDialog } from "./product-create-dialog";
+import motion from "./filter-motion.module.css";
 
 interface ProductsViewProps {
   initialProducts: Product[];
@@ -119,7 +120,7 @@ export function ProductsView({ initialProducts, dataSource = "api" }: ProductsVi
         }
         description="Quản lý danh mục mặt hàng thực phẩm sạch, kích hoạt mở bán và điều phối đơn hàng"
         actions={
-          <div className="flex items-center gap-2.5">
+          <div className="flex max-w-full flex-wrap items-center gap-2.5">
             <Link href={"/cart" as Route}>
               <Button
                 type="button"
@@ -177,7 +178,7 @@ export function ProductsView({ initialProducts, dataSource = "api" }: ProductsVi
       {/* Search & Filter Bar */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mb-6">
         <div className="relative w-full sm:w-80">
-          <Search className="size-4 text-[var(--color-muted)] absolute left-3 top-2.5 pointer-events-none" />
+          <Search className="size-4 text-[var(--color-muted)] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -186,12 +187,13 @@ export function ProductsView({ initialProducts, dataSource = "api" }: ProductsVi
           />
         </div>
 
-        <div className="flex items-center gap-1.5 self-start sm:self-auto">
+        <div className="flex max-w-full flex-wrap items-center gap-1.5 self-start sm:self-auto">
           <Button
             type="button"
             size="sm"
             variant={statusFilter === "ALL" ? "secondary" : "outline"}
             aria-pressed={statusFilter === "ALL"}
+            className={motion.filter}
             onClick={() => setStatusFilter("ALL")}
           >
             {statusFilter === "ALL" && <Check aria-hidden="true" />}
@@ -202,6 +204,7 @@ export function ProductsView({ initialProducts, dataSource = "api" }: ProductsVi
             size="sm"
             variant={statusFilter === "ACTIVE" ? "secondary" : "outline"}
             aria-pressed={statusFilter === "ACTIVE"}
+            className={motion.filter}
             onClick={() => setStatusFilter("ACTIVE")}
           >
             {statusFilter === "ACTIVE" && <Check aria-hidden="true" />}
@@ -212,6 +215,7 @@ export function ProductsView({ initialProducts, dataSource = "api" }: ProductsVi
             size="sm"
             variant={statusFilter === "DRAFT" ? "secondary" : "outline"}
             aria-pressed={statusFilter === "DRAFT"}
+            className={motion.filter}
             onClick={() => setStatusFilter("DRAFT")}
           >
             {statusFilter === "DRAFT" && <Check aria-hidden="true" />}

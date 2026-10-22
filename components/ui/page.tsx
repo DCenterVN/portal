@@ -42,7 +42,7 @@ export function PageHeader({
       <div>
         <div className="flex items-center gap-2.5">
           {icon && (
-            <div className="flex size-9 items-center justify-center rounded-xl bg-sky-500/10 text-[var(--primary)] shrink-0 [&_svg]:size-5">
+            <div className="flex size-9 items-center justify-center rounded-xl bg-transparent text-[var(--primary)] shrink-0 [&_svg]:size-5">
               {icon}
             </div>
           )}

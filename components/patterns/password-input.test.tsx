@@ -24,4 +24,18 @@ describe("PasswordInput", () => {
     const off = renderToStaticMarkup(<PasswordInput name="password" disabled />);
     expect(off.match(/disabled=""/g)).toHaveLength(2);
   });
+
+  it("V-01 toggle has no filled background in any state and no ring on the box", () => {
+    const toggle = html.match(/<button[^>]*class="([^"]*)"/)?.[1].split(/\s+/) ?? [];
+    expect(toggle).toContain("bg-transparent");
+    expect(toggle).toContain("hover:bg-transparent");
+    expect(toggle).toContain("shadow-none");
+    expect(toggle).not.toContain("focus-visible:ring-2");
+    expect(toggle.some((name) => /^(hover|active|focus-visible|disabled):bg-(?!transparent)/.test(name))).toBe(false);
+  });
+
+  it("V-01 keeps the 40px hit area while the field reserves room for it", () => {
+    expect(html).toMatch(/<button[^>]*class="[^"]*\bsize-10\b/);
+    expect(html).toMatch(/<input[^>]*class="[^"]*\bpr-11\b/);
+  });
 });

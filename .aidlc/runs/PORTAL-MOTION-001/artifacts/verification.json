@@ -1,0 +1,69 @@
+{
+  "task": "PORTAL-MOTION-001",
+  "actor": "agent:claude-code(171709704+dawnmoriaty@users.noreply.github.com)",
+  "worker": null,
+  "ts": "2026-10-22T17:10:37+00:00",
+  "cwd": ".",
+  "head": "473d8e313e3d56cc630713624469a2750f81f7b6",
+  "dirty": true,
+  "checks": [
+    {
+      "name": "unit",
+      "command": "TMPDIR=/home/dawn/work/ticket/.cache/tmp ESBUILD_BINARY_PATH=/home/dawn/.local/share/esbuild/esbuild-0.21.5 pnpm exec vitest run --exclude 'e2e/**' components/patterns/password-input.test.tsx",
+      "exit": 0,
+      "status": "PASS",
+      "seconds": 0.7,
+      "log": ".aidlc/runs/PORTAL-MOTION-001/artifacts/logs/unit.log",
+      "sha256": "45384b35b31f8bc291f350378874ecbd6afe75690a18a691f40a47b56f37c5a0",
+      "tail": [
+        "",
+        " Test Files  1 passed (1)",
+        "      Tests  5 passed (5)",
+        "   Start at  00:08:11",
+        "   Duration  367ms (transform 69ms, setup 0ms, collect 115ms, tests 6ms, environment 0ms, prepare 59ms)"
+      ]
+    },
+    {
+      "name": "integration",
+      "command": "TMPDIR=/home/dawn/work/ticket/.cache/tmp rtk playwright test --config .aidlc/runs/PORTAL-MOTION-001/tests/playwright.config.mjs .aidlc/runs/PORTAL-MOTION-001/tests/motion-hero.spec.mjs .aidlc/runs/PORTAL-MOTION-001/tests/motion-filter.spec.mjs .aidlc/runs/PORTAL-MOTION-001/tests/motion-login.spec.mjs",
+      "exit": 0,
+      "status": "PASS",
+      "seconds": 57.2,
+      "log": ".aidlc/runs/PORTAL-MOTION-001/artifacts/logs/integration.log",
+      "sha256": "af3583a636d480fcb4304a0384c8d9ed0e015f91963697fb62dc1d5e5b864c87",
+      "tail": [
+        "PASS (18) FAIL (0)",
+        "",
+        "Time: 56744ms"
+      ]
+    },
+    {
+      "name": "e2e",
+      "command": "TMPDIR=/home/dawn/work/ticket/.cache/tmp rtk playwright test --config .aidlc/runs/PORTAL-MOTION-001/tests/playwright.config.mjs .aidlc/runs/PORTAL-MOTION-001/tests/visual-controls.spec.mjs .aidlc/runs/PORTAL-MOTION-001/tests/visual-layout.spec.mjs",
+      "exit": 0,
+      "status": "PASS",
+      "seconds": 87.1,
+      "log": ".aidlc/runs/PORTAL-MOTION-001/artifacts/logs/e2e.log",
+      "sha256": "75b5b413d6482e3f3a2645eb98876b962c306a1cb644b0b12f619679eab1de45",
+      "tail": [
+        "PASS (37) FAIL (0)",
+        "",
+        "Time: 86668ms"
+      ]
+    },
+    {
+      "name": "typecheck",
+      "command": "pnpm run typecheck",
+      "exit": 0,
+      "status": "PASS",
+      "seconds": 1.5,
+      "log": ".aidlc/runs/PORTAL-MOTION-001/artifacts/logs/typecheck.log",
+      "sha256": "aa802e7d3a098603609434f1bfcb710a3d265515518b7266b9f286a9f0958d77",
+      "tail": [
+        "> @dcentervn/portal@0.1.0 typecheck /home/dawn/wt/portal-motion",
+        "> node node_modules/typescript/bin/tsc --noEmit"
+      ]
+    }
+  ],
+  "verdict": "PASS"
+}

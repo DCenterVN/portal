@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Box, Carrot, Snowflake, Utensils } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/state";
+import motion from "./hero-motion.module.css";
 
 const CATEGORIES = [
   { name: "Meal kit", sub: "Nấu 15–30 phút", icon: Box },
@@ -20,8 +21,8 @@ export function Home({ name }: { name?: string }) {
   return (
     <>
       <section aria-label="Giới thiệu" className="relative -mx-4 h-130 overflow-hidden bg-l1-2 md:-mx-10 md:h-140">
-        <div className="absolute inset-0 grid place-items-center text-sm font-bold tracking-wide text-fg-3">[ẢNH HERO: MÂM MEAL KIT THẬT, TRÀN VIỀN]</div>
-        <div className="absolute inset-x-4 bottom-4 max-w-140 rounded-xl border border-line bg-l1 p-5 shadow-l3 md:bottom-12 md:left-10 md:right-auto md:p-8">
+        <div className={`absolute inset-0 grid place-items-center text-sm font-bold tracking-wide text-fg-3 ${motion.visual}`}>[ẢNH HERO: MÂM MEAL KIT THẬT, TRÀN VIỀN]</div>
+        <div className={`absolute inset-x-4 bottom-4 max-w-140 rounded-xl border border-line bg-l1 p-5 shadow-l3 md:bottom-12 md:left-10 md:right-auto md:p-8 ${motion.homeContent}`}>
           <span className="inline-flex h-6 items-center rounded-sm border border-line bg-l1 px-2.5 text-xs font-bold text-fg-2">Đặt trước 15h · giao trong ngày</span>
           <h1 className="mt-3 font-heading text-3xl font-bold md:text-4xl">{name ? `Chào ${name}, bữa tối 20 phút nhé?` : "Bữa tối 20 phút. Nguyên liệu đã sơ chế sẵn."}</h1>
           <p className="mt-2 text-fg-2">Mỗi hộp có thịt cá, rau củ đã sơ chế, gia vị đã định lượng và công thức từng bước.</p>
