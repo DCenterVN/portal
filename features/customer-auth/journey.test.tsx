@@ -23,6 +23,7 @@ function findForm(tree: ReactElement): ReactElement<Props> {
 }
 async function submit(tree: ReactElement, fields: Record<string, string>) {
   const form = {querySelector: vi.fn(() => ({focus: vi.fn()}))};
+  vi.stubGlobal("requestAnimationFrame", (callback: FrameRequestCallback) => { callback(0); return 0; });
   vi.stubGlobal("FormData", class { get(key: string) {return fields[key] ?? null;} });
   await findForm(tree).props.onSubmit?.({preventDefault() {}, currentTarget: form} as unknown as React.FormEvent<HTMLFormElement>);
   return form;

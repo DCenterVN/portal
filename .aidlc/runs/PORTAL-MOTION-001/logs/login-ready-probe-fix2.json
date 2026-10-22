@@ -1,0 +1,14 @@
+[
+  {
+    "kind": "FOOD_DEV",
+    "status": 200,
+    "ok": true,
+    "error": null
+  },
+  {
+    "kind": "ADMIN",
+    "status": 200,
+    "ok": false,
+    "error": "TimeoutError"
+  }
+]

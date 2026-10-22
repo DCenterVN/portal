@@ -1,0 +1,11 @@
+{
+  "cacheMovedTo": "/home/dawn/work/ticket/.cache/next-portal-motion-fix2-unhydrated-c6034a77",
+  "server": "nohup serve.sh",
+  "hydrationPreload": "/home/dawn/work/ticket/.cache/tmp/motion-fix2-ready.cjs",
+  "waitBefore": [
+    "fill",
+    "click",
+    "dblclick"
+  ],
+  "testSourceChanges": 0
+}

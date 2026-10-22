@@ -3,6 +3,7 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { nextTab } from "./tabs";
+import motion from "./console-motion.module.css";
 
 // Esc closes and hands focus back to the trigger; a press outside closes and leaves focus where the user put it.
 export function popoverDismiss(root: { contains(node: unknown): boolean }, trigger: { focus(): void } | null, close: () => void) {
@@ -95,6 +96,7 @@ export function Popover({ trigger, label, triggerClassName, align = "start", men
           className={cn(
             "absolute top-full z-(--z-popover) mt-2 min-w-48 rounded-lg border border-glass-edge bg-glass-l3 p-1 text-fg shadow-l3 glass-blur-l3",
             align === "end" ? "right-0" : "left-0",
+            motion.popover,
             className,
           )}
         >

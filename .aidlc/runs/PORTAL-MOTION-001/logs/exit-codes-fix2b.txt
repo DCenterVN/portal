@@ -1,0 +1,13 @@
+frame-lock-before 1
+frame-lock-write 0
+frame-lock-after 0
+S0 0
+vitest-all 0
+build-turbopack 1
+build-webpack 0
+e2e 1
+typecheck 0
+arch-before 1
+arch-after 1
+arch-new 0
+server-stop-curl 7

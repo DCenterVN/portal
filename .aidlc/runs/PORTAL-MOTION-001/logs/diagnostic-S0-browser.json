@@ -1,0 +1,10 @@
+{
+  "press": "80ms",
+  "hover": "120ms",
+  "enter": "180ms",
+  "exit": "120ms",
+  "sheet": "220ms",
+  "ease-out": "ease-out",
+  "ease-in": "ease-in",
+  "ease-enter": "cubic-bezier(.2,.8,.2,1)"
+}

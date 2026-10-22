@@ -1,0 +1,166 @@
+{
+  "errors": [],
+  "responses": [
+    {
+      "path": "/staff/login",
+      "status": 200
+    },
+    {
+      "path": "/icon.svg",
+      "status": 200
+    },
+    {
+      "path": "/staff/login",
+      "status": 200
+    },
+    {
+      "path": "/staff/login",
+      "status": 200
+    },
+    {
+      "path": "/icon.svg",
+      "status": 200
+    },
+    {
+      "path": "/__nextjs_font/geist-latin.woff2",
+      "status": 200
+    },
+    {
+      "path": "/icon.svg",
+      "status": 200
+    },
+    {
+      "path": "/staff/login",
+      "status": 200
+    },
+    {
+      "path": "/staff/login",
+      "status": 200
+    },
+    {
+      "path": "/staff/login",
+      "status": 200
+    },
+    {
+      "path": "/staff/login",
+      "status": 200
+    },
+    {
+      "path": "/staff/login",
+      "status": 200
+    },
+    {
+      "path": "/staff/login",
+      "status": 200
+    },
+    {
+      "path": "/staff/login",
+      "status": 200
+    },
+    {
+      "path": "/staff/login",
+      "status": 200
+    },
+    {
+      "path": "/staff/login",
+      "status": 200
+    },
+    {
+      "path": "/staff/login",
+      "status": 200
+    },
+    {
+      "path": "/staff/login",
+      "status": 200
+    },
+    {
+      "path": "/staff/login",
+      "status": 200
+    },
+    {
+      "path": "/staff/login",
+      "status": 200
+    },
+    {
+      "path": "/__nextjs_font/geist-latin.woff2",
+      "status": 200
+    },
+    {
+      "path": "/icon.svg",
+      "status": 200
+    },
+    {
+      "path": "/staff/login",
+      "status": 200
+    },
+    {
+      "path": "/staff/login",
+      "status": 200
+    },
+    {
+      "path": "/staff/login",
+      "status": 200
+    },
+    {
+      "path": "/staff/login",
+      "status": 200
+    },
+    {
+      "path": "/staff/login",
+      "status": 200
+    },
+    {
+      "path": "/staff/login",
+      "status": 200
+    },
+    {
+      "path": "/staff/login",
+      "status": 200
+    },
+    {
+      "path": "/staff/login",
+      "status": 200
+    },
+    {
+      "path": "/staff/login",
+      "status": 200
+    },
+    {
+      "path": "/staff/login",
+      "status": 200
+    },
+    {
+      "path": "/staff/login",
+      "status": 200
+    },
+    {
+      "path": "/staff/login",
+      "status": 200
+    },
+    {
+      "path": "/staff/login",
+      "status": 200
+    },
+    {
+      "path": "/staff/login",
+      "status": 200
+    },
+    {
+      "path": "/staff/login",
+      "status": 200
+    },
+    {
+      "path": "/__nextjs_font/geist-latin.woff2",
+      "status": 200
+    },
+    {
+      "path": "/icon.svg",
+      "status": 200
+    }
+  ],
+  "finalPath": "/staff/login",
+  "heading": [
+    "Đăng nhập nhân viên"
+  ],
+  "passwordInURL": true
+}

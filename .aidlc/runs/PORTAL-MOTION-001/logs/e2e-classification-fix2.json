@@ -1,0 +1,403 @@
+{
+  "caseCount": 28,
+  "bySpec": {
+    "motion-console.spec.mjs": {
+      "failed": 7,
+      "passed": 4
+    },
+    "motion-login.spec.mjs": {
+      "failed": 4
+    },
+    "visual-controls.spec.mjs": {
+      "failed": 13
+    }
+  },
+  "cases": [
+    {
+      "status": "failed",
+      "number": 1,
+      "spec": "motion-console.spec.mjs",
+      "name": "motion-console token: --motion-* có thật trên :root của console (20.5s)"
+    },
+    {
+      "status": "failed",
+      "number": 2,
+      "spec": "motion-console.spec.mjs",
+      "name": "motion-console button: bấm scale .97 trong <100ms (80ms ease-out), nhả thì bung lại (1.5m)"
+    },
+    {
+      "status": "passed",
+      "number": 3,
+      "spec": "motion-console.spec.mjs",
+      "name": "motion-console button: hover đổi nền 120ms ease-out, không dịch layout (5.5s)"
+    },
+    {
+      "status": "passed",
+      "number": 4,
+      "spec": "motion-console.spec.mjs",
+      "name": "motion-console popover: vào 180ms cubic-bezier(.2,.8,.2,1) trượt 4–8px, Esc đóng ngay và trả focus (2.6s)"
+    },
+    {
+      "status": "passed",
+      "number": 5,
+      "spec": "motion-console.spec.mjs",
+      "name": "motion-console popover: đóng/mở liên tiếp khi đang animate không kẹt (4.5s)"
+    },
+    {
+      "status": "failed",
+      "number": 6,
+      "spec": "motion-console.spec.mjs",
+      "name": "motion-console dialog: vào 220ms cubic-bezier(.2,.8,.2,1), Tab giữ trong hộp, Esc đóng ngay và trả focus (desktop) (20.7s)"
+    },
+    {
+      "status": "failed",
+      "number": 7,
+      "spec": "motion-console.spec.mjs",
+      "name": "motion-console dialog: vào 220ms cubic-bezier(.2,.8,.2,1), Tab giữ trong hộp, Esc đóng ngay và trả focus (mobile) (20.7s)"
+    },
+    {
+      "status": "failed",
+      "number": 8,
+      "spec": "motion-console.spec.mjs",
+      "name": "motion-console dialog: Esc giữa lúc animate đóng ngay, mở lại vẫn chạy đủ (20.6s)"
+    },
+    {
+      "status": "passed",
+      "number": 9,
+      "spec": "motion-console.spec.mjs",
+      "name": "motion-console scope: store/login giữ nhịp gốc, không nhận token console (1.5s)"
+    },
+    {
+      "status": "failed",
+      "number": 10,
+      "spec": "motion-console.spec.mjs",
+      "name": "motion-console reduced: không scale khi bấm, popover và dialog chỉ fade ≤120ms, luồng chính vẫn chạy (20.7s)"
+    },
+    {
+      "status": "failed",
+      "number": 11,
+      "spec": "motion-console.spec.mjs",
+      "name": "motion-console CLS ≤ 0.01 khi bấm nút, mở popover và hover (20.6s)"
+    },
+    {
+      "status": "failed",
+      "number": 12,
+      "spec": "motion-login.spec.mjs",
+      "name": "motion-store login: alert lỗi rung 500ms cubic-bezier(.36,.07,.19,.97), hiện ngay và request đi ngay (20.7s)"
+    },
+    {
+      "status": "failed",
+      "number": 13,
+      "spec": "motion-login.spec.mjs",
+      "name": "motion-store login: alert rung không đổi hộp bố cục, không morph width/radius của thẻ (20.7s)"
+    },
+    {
+      "status": "failed",
+      "number": 14,
+      "spec": "motion-login.spec.mjs",
+      "name": "motion-store login: nhãn busy fade 200ms, nút khoá, bấm đúp chỉ gửi một request (20.4s)"
+    },
+    {
+      "status": "failed",
+      "number": 15,
+      "spec": "motion-login.spec.mjs",
+      "name": "motion-store login: reduced-motion bỏ rung, alert hiện ngay, busy chỉ fade ≤120ms (20.6s)"
+    },
+    {
+      "status": "failed",
+      "number": 16,
+      "spec": "visual-controls.spec.mjs",
+      "name": "visual controls V-01 login popup desktop light: toggle mật khẩu trong suốt mọi trạng thái, icon đậm khi hover, vòng focus quanh icon (20.7s)"
+    },
+    {
+      "status": "failed",
+      "number": 17,
+      "spec": "visual-controls.spec.mjs",
+      "name": "visual controls V-01 login popup desktop dark: toggle mật khẩu trong suốt mọi trạng thái, icon đậm khi hover, vòng focus quanh icon (20.5s)"
+    },
+    {
+      "status": "failed",
+      "number": 18,
+      "spec": "visual-controls.spec.mjs",
+      "name": "visual controls V-01 login popup mobile light: toggle mật khẩu trong suốt mọi trạng thái, icon đậm khi hover, vòng focus quanh icon (20.7s)"
+    },
+    {
+      "status": "failed",
+      "number": 19,
+      "spec": "visual-controls.spec.mjs",
+      "name": "visual controls V-01 login popup mobile dark: toggle mật khẩu trong suốt mọi trạng thái, icon đậm khi hover, vòng focus quanh icon (20.6s)"
+    },
+    {
+      "status": "failed",
+      "number": 20,
+      "spec": "visual-controls.spec.mjs",
+      "name": "visual controls V-01 staff login desktop light: toggle mật khẩu trong suốt mọi trạng thái, icon đậm khi hover, vòng focus quanh icon (1.6s)"
+    },
+    {
+      "status": "failed",
+      "number": 21,
+      "spec": "visual-controls.spec.mjs",
+      "name": "visual controls V-01 staff login desktop dark: toggle mật khẩu trong suốt mọi trạng thái, icon đậm khi hover, vòng focus quanh icon (1.6s)"
+    },
+    {
+      "status": "failed",
+      "number": 22,
+      "spec": "visual-controls.spec.mjs",
+      "name": "visual controls V-01 staff login mobile light: toggle mật khẩu trong suốt mọi trạng thái, icon đậm khi hover, vòng focus quanh icon (1.6s)"
+    },
+    {
+      "status": "failed",
+      "number": 23,
+      "spec": "visual-controls.spec.mjs",
+      "name": "visual controls V-01 staff login mobile dark: toggle mật khẩu trong suốt mọi trạng thái, icon đậm khi hover, vòng focus quanh icon (1.6s)"
+    },
+    {
+      "status": "failed",
+      "number": 24,
+      "spec": "visual-controls.spec.mjs",
+      "name": "visual controls V-01 reset password desktop light: toggle mật khẩu trong suốt mọi trạng thái, icon đậm khi hover, vòng focus quanh icon (2.2s)"
+    },
+    {
+      "status": "failed",
+      "number": 25,
+      "spec": "visual-controls.spec.mjs",
+      "name": "visual controls V-01 reset password desktop dark: toggle mật khẩu trong suốt mọi trạng thái, icon đậm khi hover, vòng focus quanh icon (1.6s)"
+    },
+    {
+      "status": "failed",
+      "number": 26,
+      "spec": "visual-controls.spec.mjs",
+      "name": "visual controls V-01 reset password mobile light: toggle mật khẩu trong suốt mọi trạng thái, icon đậm khi hover, vòng focus quanh icon (1.5s)"
+    },
+    {
+      "status": "failed",
+      "number": 27,
+      "spec": "visual-controls.spec.mjs",
+      "name": "visual controls V-01 reset password mobile dark: toggle mật khẩu trong suốt mọi trạng thái, icon đậm khi hover, vòng focus quanh icon (1.5s)"
+    },
+    {
+      "status": "failed",
+      "number": 28,
+      "spec": "visual-controls.spec.mjs",
+      "name": "visual controls V-01 giữ hành vi: bấm đổi loại ô, aria-pressed và nhãn, bàn phím Space/Enter vẫn bật tắt (20.7s)"
+    }
+  ],
+  "errorCategories": {
+    "hydration action blocked": 6,
+    "runtime/locator/navigation timeout": 10,
+    "V-01 transparent background": 8
+  },
+  "errors": [
+    {
+      "heading": "1) .aidlc/runs/PORTAL-MOTION-001/tests/motion-console.spec.mjs:134:1 › motion-console token: --motion-* có thật trên :root của console",
+      "category": "hydration action blocked",
+      "details": [
+        "Error: Password form did not hydrate; login click blocked"
+      ]
+    },
+    {
+      "heading": "2) .aidlc/runs/PORTAL-MOTION-001/tests/motion-console.spec.mjs:141:1 › motion-console button: bấm scale .97 trong <100ms (80ms ease-out), nhả thì bung lại",
+      "category": "runtime/locator/navigation timeout",
+      "details": [
+        "Error: page.waitForURL: Test ended.",
+        "waiting for navigation until \"load\"",
+        "> 58 |   await page.waitForURL(customer ? /\\/$/ : /\\/(console|platform(?:\\/role-matrix)?)$/);"
+      ]
+    },
+    {
+      "heading": "3) .aidlc/runs/PORTAL-MOTION-001/tests/motion-console.spec.mjs:205:3 › motion-console dialog: vào 220ms cubic-bezier(.2,.8,.2,1), Tab giữ trong hộp, Esc đóng ngay và trả focus (desktop)",
+      "category": "hydration action blocked",
+      "details": [
+        "Error: Password form did not hydrate; login action blocked"
+      ]
+    },
+    {
+      "heading": "4) .aidlc/runs/PORTAL-MOTION-001/tests/motion-console.spec.mjs:205:3 › motion-console dialog: vào 220ms cubic-bezier(.2,.8,.2,1), Tab giữ trong hộp, Esc đóng ngay và trả focus (mobile)",
+      "category": "hydration action blocked",
+      "details": [
+        "Error: Password form did not hydrate; login action blocked"
+      ]
+    },
+    {
+      "heading": "5) .aidlc/runs/PORTAL-MOTION-001/tests/motion-console.spec.mjs:226:1 › motion-console dialog: Esc giữa lúc animate đóng ngay, mở lại vẫn chạy đủ",
+      "category": "hydration action blocked",
+      "details": [
+        "Error: Password form did not hydrate; login action blocked"
+      ]
+    },
+    {
+      "heading": "6) .aidlc/runs/PORTAL-MOTION-001/tests/motion-console.spec.mjs:252:1 › motion-console reduced: không scale khi bấm, popover và dialog chỉ fade ≤120ms, luồng chính vẫn chạy",
+      "category": "hydration action blocked",
+      "details": [
+        "Error: Password form did not hydrate; login action blocked"
+      ]
+    },
+    {
+      "heading": "7) .aidlc/runs/PORTAL-MOTION-001/tests/motion-console.spec.mjs:273:1 › motion-console CLS ≤ 0.01 khi bấm nút, mở popover và hover",
+      "category": "hydration action blocked",
+      "details": [
+        "Error: Password form did not hydrate; login action blocked"
+      ]
+    },
+    {
+      "heading": "8) .aidlc/runs/PORTAL-MOTION-001/tests/motion-login.spec.mjs:123:1 › motion-store login: alert lỗi rung 500ms cubic-bezier(.36,.07,.19,.97), hiện ngay và request đi ngay",
+      "category": "runtime/locator/navigation timeout",
+      "details": [
+        "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.",
+        "- waiting for getByRole('dialog') to be visible"
+      ]
+    },
+    {
+      "heading": "9) .aidlc/runs/PORTAL-MOTION-001/tests/motion-login.spec.mjs:141:1 › motion-store login: alert rung không đổi hộp bố cục, không morph width/radius của thẻ",
+      "category": "runtime/locator/navigation timeout",
+      "details": [
+        "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.",
+        "- waiting for getByRole('dialog') to be visible"
+      ]
+    },
+    {
+      "heading": "10) .aidlc/runs/PORTAL-MOTION-001/tests/motion-login.spec.mjs:155:1 › motion-store login: nhãn busy fade 200ms, nút khoá, bấm đúp chỉ gửi một request",
+      "category": "runtime/locator/navigation timeout",
+      "details": [
+        "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.",
+        "- waiting for getByRole('dialog') to be visible"
+      ]
+    },
+    {
+      "heading": "11) .aidlc/runs/PORTAL-MOTION-001/tests/motion-login.spec.mjs:172:1 › motion-store login: reduced-motion bỏ rung, alert hiện ngay, busy chỉ fade ≤120ms",
+      "category": "runtime/locator/navigation timeout",
+      "details": [
+        "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.",
+        "- waiting for getByRole('dialog') to be visible"
+      ]
+    },
+    {
+      "heading": "12) .aidlc/runs/PORTAL-MOTION-001/tests/visual-controls.spec.mjs:155:3 › visual controls V-01 login popup desktop light: toggle mật khẩu trong suốt mọi trạng thái, icon đậm khi hover, vòng focus quanh icon",
+      "category": "runtime/locator/navigation timeout",
+      "details": [
+        "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.",
+        "- waiting for getByRole('dialog') to be visible"
+      ]
+    },
+    {
+      "heading": "13) .aidlc/runs/PORTAL-MOTION-001/tests/visual-controls.spec.mjs:155:3 › visual controls V-01 login popup desktop dark: toggle mật khẩu trong suốt mọi trạng thái, icon đậm khi hover, vòng focus quanh icon",
+      "category": "runtime/locator/navigation timeout",
+      "details": [
+        "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.",
+        "- waiting for getByRole('dialog') to be visible"
+      ]
+    },
+    {
+      "heading": "14) .aidlc/runs/PORTAL-MOTION-001/tests/visual-controls.spec.mjs:155:3 › visual controls V-01 login popup mobile light: toggle mật khẩu trong suốt mọi trạng thái, icon đậm khi hover, vòng focus quanh icon",
+      "category": "runtime/locator/navigation timeout",
+      "details": [
+        "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.",
+        "- waiting for getByRole('dialog') to be visible"
+      ]
+    },
+    {
+      "heading": "15) .aidlc/runs/PORTAL-MOTION-001/tests/visual-controls.spec.mjs:155:3 › visual controls V-01 login popup mobile dark: toggle mật khẩu trong suốt mọi trạng thái, icon đậm khi hover, vòng focus quanh icon",
+      "category": "runtime/locator/navigation timeout",
+      "details": [
+        "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.",
+        "- waiting for getByRole('dialog') to be visible"
+      ]
+    },
+    {
+      "heading": "16) .aidlc/runs/PORTAL-MOTION-001/tests/visual-controls.spec.mjs:155:3 › visual controls V-01 staff login desktop light: toggle mật khẩu trong suốt mọi trạng thái, icon đậm khi hover, vòng focus quanh icon",
+      "category": "V-01 transparent background",
+      "details": [
+        "Error: hover: nền phải trong suốt",
+        "Expected: 0",
+        "Received: 1",
+        "139 | const expectFlat = (state, label) => {",
+        "at expectFlat (/home/dawn/wt/portal-motion/.aidlc/runs/PORTAL-MOTION-001/tests/visual-controls.spec.mjs:140:53)"
+      ]
+    },
+    {
+      "heading": "17) .aidlc/runs/PORTAL-MOTION-001/tests/visual-controls.spec.mjs:155:3 › visual controls V-01 staff login desktop dark: toggle mật khẩu trong suốt mọi trạng thái, icon đậm khi hover, vòng focus quanh icon",
+      "category": "V-01 transparent background",
+      "details": [
+        "Error: hover: nền phải trong suốt",
+        "Expected: 0",
+        "Received: 1",
+        "139 | const expectFlat = (state, label) => {",
+        "at expectFlat (/home/dawn/wt/portal-motion/.aidlc/runs/PORTAL-MOTION-001/tests/visual-controls.spec.mjs:140:53)"
+      ]
+    },
+    {
+      "heading": "18) .aidlc/runs/PORTAL-MOTION-001/tests/visual-controls.spec.mjs:155:3 › visual controls V-01 staff login mobile light: toggle mật khẩu trong suốt mọi trạng thái, icon đậm khi hover, vòng focus quanh icon",
+      "category": "V-01 transparent background",
+      "details": [
+        "Error: hover: nền phải trong suốt",
+        "Expected: 0",
+        "Received: 1",
+        "139 | const expectFlat = (state, label) => {",
+        "at expectFlat (/home/dawn/wt/portal-motion/.aidlc/runs/PORTAL-MOTION-001/tests/visual-controls.spec.mjs:140:53)"
+      ]
+    },
+    {
+      "heading": "19) .aidlc/runs/PORTAL-MOTION-001/tests/visual-controls.spec.mjs:155:3 › visual controls V-01 staff login mobile dark: toggle mật khẩu trong suốt mọi trạng thái, icon đậm khi hover, vòng focus quanh icon",
+      "category": "V-01 transparent background",
+      "details": [
+        "Error: hover: nền phải trong suốt",
+        "Expected: 0",
+        "Received: 1",
+        "139 | const expectFlat = (state, label) => {",
+        "at expectFlat (/home/dawn/wt/portal-motion/.aidlc/runs/PORTAL-MOTION-001/tests/visual-controls.spec.mjs:140:53)"
+      ]
+    },
+    {
+      "heading": "20) .aidlc/runs/PORTAL-MOTION-001/tests/visual-controls.spec.mjs:155:3 › visual controls V-01 reset password desktop light: toggle mật khẩu trong suốt mọi trạng thái, icon đậm khi hover, vòng focus quanh icon",
+      "category": "V-01 transparent background",
+      "details": [
+        "Error: hover: nền phải trong suốt",
+        "Expected: 0",
+        "Received: 1",
+        "139 | const expectFlat = (state, label) => {",
+        "at expectFlat (/home/dawn/wt/portal-motion/.aidlc/runs/PORTAL-MOTION-001/tests/visual-controls.spec.mjs:140:53)"
+      ]
+    },
+    {
+      "heading": "21) .aidlc/runs/PORTAL-MOTION-001/tests/visual-controls.spec.mjs:155:3 › visual controls V-01 reset password desktop dark: toggle mật khẩu trong suốt mọi trạng thái, icon đậm khi hover, vòng focus quanh icon",
+      "category": "V-01 transparent background",
+      "details": [
+        "Error: hover: nền phải trong suốt",
+        "Expected: 0",
+        "Received: 1",
+        "139 | const expectFlat = (state, label) => {",
+        "at expectFlat (/home/dawn/wt/portal-motion/.aidlc/runs/PORTAL-MOTION-001/tests/visual-controls.spec.mjs:140:53)"
+      ]
+    },
+    {
+      "heading": "22) .aidlc/runs/PORTAL-MOTION-001/tests/visual-controls.spec.mjs:155:3 › visual controls V-01 reset password mobile light: toggle mật khẩu trong suốt mọi trạng thái, icon đậm khi hover, vòng focus quanh icon",
+      "category": "V-01 transparent background",
+      "details": [
+        "Error: hover: nền phải trong suốt",
+        "Expected: 0",
+        "Received: 1",
+        "139 | const expectFlat = (state, label) => {",
+        "at expectFlat (/home/dawn/wt/portal-motion/.aidlc/runs/PORTAL-MOTION-001/tests/visual-controls.spec.mjs:140:53)"
+      ]
+    },
+    {
+      "heading": "23) .aidlc/runs/PORTAL-MOTION-001/tests/visual-controls.spec.mjs:155:3 › visual controls V-01 reset password mobile dark: toggle mật khẩu trong suốt mọi trạng thái, icon đậm khi hover, vòng focus quanh icon",
+      "category": "V-01 transparent background",
+      "details": [
+        "Error: hover: nền phải trong suốt",
+        "Expected: 0",
+        "Received: 1",
+        "139 | const expectFlat = (state, label) => {",
+        "at expectFlat (/home/dawn/wt/portal-motion/.aidlc/runs/PORTAL-MOTION-001/tests/visual-controls.spec.mjs:140:53)"
+      ]
+    },
+    {
+      "heading": "24) .aidlc/runs/PORTAL-MOTION-001/tests/visual-controls.spec.mjs:197:1 › visual controls V-01 giữ hành vi: bấm đổi loại ô, aria-pressed và nhãn, bàn phím Space/Enter vẫn bật tắt",
+      "category": "runtime/locator/navigation timeout",
+      "details": [
+        "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.",
+        "- waiting for getByRole('dialog') to be visible"
+      ]
+    }
+  ]
+}

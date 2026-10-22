@@ -1,0 +1,453 @@
+{
+  "caseCount": 66,
+  "bySpec": {
+    "motion-console.spec.mjs": {
+      "failed": 2,
+      "passed": 9
+    },
+    "motion-filter.spec.mjs": {
+      "passed": 6
+    },
+    "motion-hero.spec.mjs": {
+      "passed": 8
+    },
+    "motion-login.spec.mjs": {
+      "passed": 4
+    },
+    "visual-controls.spec.mjs": {
+      "passed": 13
+    },
+    "visual-layout.spec.mjs": {
+      "passed": 24
+    }
+  },
+  "cases": [
+    {
+      "status": "failed",
+      "number": 1,
+      "spec": "motion-console.spec.mjs",
+      "name": "motion-console token: --motion-* có thật trên :root của console (1.2s)"
+    },
+    {
+      "status": "passed",
+      "number": 2,
+      "spec": "motion-console.spec.mjs",
+      "name": "motion-console button: bấm scale .97 trong <100ms (80ms ease-out), nhả thì bung lại (1.4s)"
+    },
+    {
+      "status": "passed",
+      "number": 3,
+      "spec": "motion-console.spec.mjs",
+      "name": "motion-console button: hover đổi nền 120ms ease-out, không dịch layout (1.1s)"
+    },
+    {
+      "status": "passed",
+      "number": 4,
+      "spec": "motion-console.spec.mjs",
+      "name": "motion-console popover: vào 180ms cubic-bezier(.2,.8,.2,1) trượt 4–8px, Esc đóng ngay và trả focus (1.8s)"
+    },
+    {
+      "status": "passed",
+      "number": 5,
+      "spec": "motion-console.spec.mjs",
+      "name": "motion-console popover: đóng/mở liên tiếp khi đang animate không kẹt (1.2s)"
+    },
+    {
+      "status": "passed",
+      "number": 6,
+      "spec": "motion-console.spec.mjs",
+      "name": "motion-console dialog: vào 220ms cubic-bezier(.2,.8,.2,1), Tab giữ trong hộp, Esc đóng ngay và trả focus (desktop) (3.1s)"
+    },
+    {
+      "status": "passed",
+      "number": 7,
+      "spec": "motion-console.spec.mjs",
+      "name": "motion-console dialog: vào 220ms cubic-bezier(.2,.8,.2,1), Tab giữ trong hộp, Esc đóng ngay và trả focus (mobile) (2.8s)"
+    },
+    {
+      "status": "passed",
+      "number": 8,
+      "spec": "motion-console.spec.mjs",
+      "name": "motion-console dialog: Esc giữa lúc animate đóng ngay, mở lại vẫn chạy đủ (2.0s)"
+    },
+    {
+      "status": "passed",
+      "number": 9,
+      "spec": "motion-console.spec.mjs",
+      "name": "motion-console scope: store/login giữ nhịp gốc, không nhận token console (884ms)"
+    },
+    {
+      "status": "passed",
+      "number": 10,
+      "spec": "motion-console.spec.mjs",
+      "name": "motion-console reduced: không scale khi bấm, popover và dialog chỉ fade ≤120ms, luồng chính vẫn chạy (1.8s)"
+    },
+    {
+      "status": "failed",
+      "number": 11,
+      "spec": "motion-console.spec.mjs",
+      "name": "motion-console CLS ≤ 0.01 khi bấm nút, mở popover và hover (1.5s)"
+    },
+    {
+      "status": "passed",
+      "number": 12,
+      "spec": "motion-filter.spec.mjs",
+      "name": "motion-store filter: nút lọc chuyển nền 350ms và màu 300ms ease, không animate padding/width (966ms)"
+    },
+    {
+      "status": "passed",
+      "number": 13,
+      "spec": "motion-filter.spec.mjs",
+      "name": "motion-store filter: dấu Check vào với opacity 250ms ease và transform 450ms spring (1.5s)"
+    },
+    {
+      "status": "passed",
+      "number": 14,
+      "spec": "motion-filter.spec.mjs",
+      "name": "motion-store filter: aria-pressed đổi ngay khi bấm, vẫn chọn đơn ALL/ACTIVE/DRAFT (799ms)"
+    },
+    {
+      "status": "passed",
+      "number": 15,
+      "spec": "motion-filter.spec.mjs",
+      "name": "motion-store filter: bấm nhanh liên tiếp lấy lần bấm cuối, không mất thao tác (1.2s)"
+    },
+    {
+      "status": "passed",
+      "number": 16,
+      "spec": "motion-filter.spec.mjs",
+      "name": "motion-store filter: CLS ≤ 0.01, hàng nút không đổi vị trí dọc và chiều cao khi chọn (2.2s)"
+    },
+    {
+      "status": "passed",
+      "number": 17,
+      "spec": "motion-filter.spec.mjs",
+      "name": "motion-store filter: reduced-motion bỏ trượt/scale, chỉ fade ≤120ms, trạng thái cuối ngay (1.4s)"
+    },
+    {
+      "status": "passed",
+      "number": 18,
+      "spec": "motion-hero.spec.mjs",
+      "name": "motion-store hero: mỗi phần tử vào đúng độ trễ và thời lượng của mẫu #216 (4.5s)"
+    },
+    {
+      "status": "passed",
+      "number": 19,
+      "spec": "motion-hero.spec.mjs",
+      "name": "motion-store hero: trạng thái cuối hiện đủ, không còn dịch, mờ hay blur (4.5s)"
+    },
+    {
+      "status": "passed",
+      "number": 20,
+      "spec": "motion-hero.spec.mjs",
+      "name": "motion-store hero: không chia chữ thành span và vẫn có đúng một h1 (4.6s)"
+    },
+    {
+      "status": "passed",
+      "number": 21,
+      "spec": "motion-hero.spec.mjs",
+      "name": "motion-store hero: CLS ≤ 0.01 và hộp bố cục không dịch lúc vào (desktop) (4.5s)"
+    },
+    {
+      "status": "passed",
+      "number": 22,
+      "spec": "motion-hero.spec.mjs",
+      "name": "motion-store hero: CLS ≤ 0.01 và hộp bố cục không dịch lúc vào (mobile) (4.5s)"
+    },
+    {
+      "status": "passed",
+      "number": 23,
+      "spec": "motion-hero.spec.mjs",
+      "name": "motion-store hero: reduced-motion bỏ trượt/scale/blur, chỉ fade ≤120ms, trạng thái cuối ngay (4.7s)"
+    },
+    {
+      "status": "passed",
+      "number": 24,
+      "spec": "motion-hero.spec.mjs",
+      "name": "motion-store hero: tắt JS vẫn thấy toàn bộ hero (145ms)"
+    },
+    {
+      "status": "passed",
+      "number": 25,
+      "spec": "motion-hero.spec.mjs",
+      "name": "motion-store hero: Home đã đăng nhập có chuyển động vào, trạng thái cuối đủ và không dịch bố cục (3.7s)"
+    },
+    {
+      "status": "passed",
+      "number": 26,
+      "spec": "motion-login.spec.mjs",
+      "name": "motion-store login: alert lỗi rung 500ms cubic-bezier(.36,.07,.19,.97), hiện ngay và request đi ngay (2.3s)"
+    },
+    {
+      "status": "passed",
+      "number": 27,
+      "spec": "motion-login.spec.mjs",
+      "name": "motion-store login: alert rung không đổi hộp bố cục, không morph width/radius của thẻ (1.4s)"
+    },
+    {
+      "status": "passed",
+      "number": 28,
+      "spec": "motion-login.spec.mjs",
+      "name": "motion-store login: nhãn busy fade 200ms, nút khoá, bấm đúp chỉ gửi một request (1.9s)"
+    },
+    {
+      "status": "passed",
+      "number": 29,
+      "spec": "motion-login.spec.mjs",
+      "name": "motion-store login: reduced-motion bỏ rung, alert hiện ngay, busy chỉ fade ≤120ms (2.3s)"
+    },
+    {
+      "status": "passed",
+      "number": 30,
+      "spec": "visual-controls.spec.mjs",
+      "name": "visual controls V-01 login popup desktop light: toggle mật khẩu trong suốt mọi trạng thái, icon đậm khi hover, vòng focus quanh icon (1.9s)"
+    },
+    {
+      "status": "passed",
+      "number": 31,
+      "spec": "visual-controls.spec.mjs",
+      "name": "visual controls V-01 login popup desktop dark: toggle mật khẩu trong suốt mọi trạng thái, icon đậm khi hover, vòng focus quanh icon (1.9s)"
+    },
+    {
+      "status": "passed",
+      "number": 32,
+      "spec": "visual-controls.spec.mjs",
+      "name": "visual controls V-01 login popup mobile light: toggle mật khẩu trong suốt mọi trạng thái, icon đậm khi hover, vòng focus quanh icon (2.0s)"
+    },
+    {
+      "status": "passed",
+      "number": 33,
+      "spec": "visual-controls.spec.mjs",
+      "name": "visual controls V-01 login popup mobile dark: toggle mật khẩu trong suốt mọi trạng thái, icon đậm khi hover, vòng focus quanh icon (1.9s)"
+    },
+    {
+      "status": "passed",
+      "number": 34,
+      "spec": "visual-controls.spec.mjs",
+      "name": "visual controls V-01 staff login desktop light: toggle mật khẩu trong suốt mọi trạng thái, icon đậm khi hover, vòng focus quanh icon (1.9s)"
+    },
+    {
+      "status": "passed",
+      "number": 35,
+      "spec": "visual-controls.spec.mjs",
+      "name": "visual controls V-01 staff login desktop dark: toggle mật khẩu trong suốt mọi trạng thái, icon đậm khi hover, vòng focus quanh icon (1.9s)"
+    },
+    {
+      "status": "passed",
+      "number": 36,
+      "spec": "visual-controls.spec.mjs",
+      "name": "visual controls V-01 staff login mobile light: toggle mật khẩu trong suốt mọi trạng thái, icon đậm khi hover, vòng focus quanh icon (1.9s)"
+    },
+    {
+      "status": "passed",
+      "number": 37,
+      "spec": "visual-controls.spec.mjs",
+      "name": "visual controls V-01 staff login mobile dark: toggle mật khẩu trong suốt mọi trạng thái, icon đậm khi hover, vòng focus quanh icon (1.9s)"
+    },
+    {
+      "status": "passed",
+      "number": 38,
+      "spec": "visual-controls.spec.mjs",
+      "name": "visual controls V-01 reset password desktop light: toggle mật khẩu trong suốt mọi trạng thái, icon đậm khi hover, vòng focus quanh icon (1.9s)"
+    },
+    {
+      "status": "passed",
+      "number": 39,
+      "spec": "visual-controls.spec.mjs",
+      "name": "visual controls V-01 reset password desktop dark: toggle mật khẩu trong suốt mọi trạng thái, icon đậm khi hover, vòng focus quanh icon (1.9s)"
+    },
+    {
+      "status": "passed",
+      "number": 40,
+      "spec": "visual-controls.spec.mjs",
+      "name": "visual controls V-01 reset password mobile light: toggle mật khẩu trong suốt mọi trạng thái, icon đậm khi hover, vòng focus quanh icon (1.9s)"
+    },
+    {
+      "status": "passed",
+      "number": 41,
+      "spec": "visual-controls.spec.mjs",
+      "name": "visual controls V-01 reset password mobile dark: toggle mật khẩu trong suốt mọi trạng thái, icon đậm khi hover, vòng focus quanh icon (1.9s)"
+    },
+    {
+      "status": "passed",
+      "number": 42,
+      "spec": "visual-controls.spec.mjs",
+      "name": "visual controls V-01 giữ hành vi: bấm đổi loại ô, aria-pressed và nhãn, bàn phím Space/Enter vẫn bật tắt (844ms)"
+    },
+    {
+      "status": "passed",
+      "number": 43,
+      "spec": "visual-layout.spec.mjs",
+      "name": "visual store V-02+V-10 catalog desktop light: cụm lọc và nút tạo nằm trong khung, trang không tràn ngang (1.2s)"
+    },
+    {
+      "status": "passed",
+      "number": 44,
+      "spec": "visual-layout.spec.mjs",
+      "name": "visual store V-04 ô tìm desktop light: tâm kính lúp trùng tâm input (903ms)"
+    },
+    {
+      "status": "passed",
+      "number": 45,
+      "spec": "visual-layout.spec.mjs",
+      "name": "visual dialog V-06 nút đóng popup desktop light: hover không đổ khối nền, vùng bấm và vị trí giữ nguyên (1.3s)"
+    },
+    {
+      "status": "passed",
+      "number": 46,
+      "spec": "visual-layout.spec.mjs",
+      "name": "visual store V-02+V-10 catalog desktop dark: cụm lọc và nút tạo nằm trong khung, trang không tràn ngang (914ms)"
+    },
+    {
+      "status": "passed",
+      "number": 47,
+      "spec": "visual-layout.spec.mjs",
+      "name": "visual store V-04 ô tìm desktop dark: tâm kính lúp trùng tâm input (923ms)"
+    },
+    {
+      "status": "passed",
+      "number": 48,
+      "spec": "visual-layout.spec.mjs",
+      "name": "visual dialog V-06 nút đóng popup desktop dark: hover không đổ khối nền, vùng bấm và vị trí giữ nguyên (1.3s)"
+    },
+    {
+      "status": "passed",
+      "number": 49,
+      "spec": "visual-layout.spec.mjs",
+      "name": "visual store V-02+V-10 catalog mobile light: cụm lọc và nút tạo nằm trong khung, trang không tràn ngang (899ms)"
+    },
+    {
+      "status": "passed",
+      "number": 50,
+      "spec": "visual-layout.spec.mjs",
+      "name": "visual store V-04 ô tìm mobile light: tâm kính lúp trùng tâm input (898ms)"
+    },
+    {
+      "status": "passed",
+      "number": 51,
+      "spec": "visual-layout.spec.mjs",
+      "name": "visual dialog V-06 nút đóng popup mobile light: hover không đổ khối nền, vùng bấm và vị trí giữ nguyên (1.3s)"
+    },
+    {
+      "status": "passed",
+      "number": 52,
+      "spec": "visual-layout.spec.mjs",
+      "name": "visual store V-02+V-10 catalog mobile dark: cụm lọc và nút tạo nằm trong khung, trang không tràn ngang (898ms)"
+    },
+    {
+      "status": "passed",
+      "number": 53,
+      "spec": "visual-layout.spec.mjs",
+      "name": "visual store V-04 ô tìm mobile dark: tâm kính lúp trùng tâm input (903ms)"
+    },
+    {
+      "status": "passed",
+      "number": 54,
+      "spec": "visual-layout.spec.mjs",
+      "name": "visual dialog V-06 nút đóng popup mobile dark: hover không đổ khối nền, vùng bấm và vị trí giữ nguyên (1.3s)"
+    },
+    {
+      "status": "passed",
+      "number": 55,
+      "spec": "visual-layout.spec.mjs",
+      "name": "visual console V-07 catalog desktop light: ô icon tiêu đề không còn nền xanh, cỡ 36px giữ nguyên (921ms)"
+    },
+    {
+      "status": "passed",
+      "number": 56,
+      "spec": "visual-layout.spec.mjs",
+      "name": "visual console V-07 page header desktop light: ô icon tiêu đề không còn nền xanh, cỡ 36px giữ nguyên (1.2s)"
+    },
+    {
+      "status": "passed",
+      "number": 57,
+      "spec": "visual-layout.spec.mjs",
+      "name": "visual console V-07 catalog desktop dark: ô icon tiêu đề không còn nền xanh, cỡ 36px giữ nguyên (901ms)"
+    },
+    {
+      "status": "passed",
+      "number": 58,
+      "spec": "visual-layout.spec.mjs",
+      "name": "visual console V-07 page header desktop dark: ô icon tiêu đề không còn nền xanh, cỡ 36px giữ nguyên (954ms)"
+    },
+    {
+      "status": "passed",
+      "number": 59,
+      "spec": "visual-layout.spec.mjs",
+      "name": "visual console V-07 catalog mobile light: ô icon tiêu đề không còn nền xanh, cỡ 36px giữ nguyên (892ms)"
+    },
+    {
+      "status": "passed",
+      "number": 60,
+      "spec": "visual-layout.spec.mjs",
+      "name": "visual console V-07 page header mobile light: ô icon tiêu đề không còn nền xanh, cỡ 36px giữ nguyên (956ms)"
+    },
+    {
+      "status": "passed",
+      "number": 61,
+      "spec": "visual-layout.spec.mjs",
+      "name": "visual console V-07 catalog mobile dark: ô icon tiêu đề không còn nền xanh, cỡ 36px giữ nguyên (899ms)"
+    },
+    {
+      "status": "passed",
+      "number": 62,
+      "spec": "visual-layout.spec.mjs",
+      "name": "visual console V-07 page header mobile dark: ô icon tiêu đề không còn nền xanh, cỡ 36px giữ nguyên (959ms)"
+    },
+    {
+      "status": "passed",
+      "number": 63,
+      "spec": "visual-layout.spec.mjs",
+      "name": "visual footer V-11 desktop light: tên liên kết, hover và dòng pháp lý đọc rõ (tương phản ≥ 4.5) trên mọi route (3.4s)"
+    },
+    {
+      "status": "passed",
+      "number": 64,
+      "spec": "visual-layout.spec.mjs",
+      "name": "visual footer V-11 desktop dark: tên liên kết, hover và dòng pháp lý đọc rõ (tương phản ≥ 4.5) trên mọi route (3.4s)"
+    },
+    {
+      "status": "passed",
+      "number": 65,
+      "spec": "visual-layout.spec.mjs",
+      "name": "visual footer V-11 mobile light: tên liên kết, hover và dòng pháp lý đọc rõ (tương phản ≥ 4.5) trên mọi route (3.4s)"
+    },
+    {
+      "status": "passed",
+      "number": 66,
+      "spec": "visual-layout.spec.mjs",
+      "name": "visual footer V-11 mobile dark: tên liên kết, hover và dòng pháp lý đọc rõ (tương phản ≥ 4.5) trên mọi route (3.4s)"
+    }
+  ],
+  "errors": [
+    {
+      "heading": "1) .aidlc/runs/PORTAL-MOTION-001/tests/motion-console.spec.mjs:134:1 › motion-console token: --motion-* có thật trên :root của console",
+      "category": "production time serialization",
+      "details": [
+        "Error: expect(received).toEqual(expected) // deep equality",
+        "-   \"--motion-enter\": \"180ms\",",
+        "-   \"--motion-exit\": \"120ms\",",
+        "-   \"--motion-hover\": \"120ms\",",
+        "+   \"--motion-enter\": \".18s\",",
+        "+   \"--motion-exit\": \".12s\",",
+        "+   \"--motion-hover\": \".12s\",",
+        "\"--motion-press\": \"80ms\",",
+        "-   \"--motion-sheet\": \"220ms\",",
+        "+   \"--motion-sheet\": \".22s\","
+      ]
+    },
+    {
+      "heading": "2) .aidlc/runs/PORTAL-MOTION-001/tests/motion-console.spec.mjs:273:1 › motion-console CLS ≤ 0.01 khi bấm nút, mở popover và hover",
+      "category": "pre-existing CLS",
+      "details": [
+        "Error: LayoutShift gồm cả hadRecentInput",
+        "Expected: <= 0.01",
+        "Received:    0.010255069610218942",
+        ".aidlc/runs/PORTAL-MOTION-001/tests/motion-console.spec.mjs:134:1 › motion-console token: --motion-* có thật trên :root của console"
+      ]
+    }
+  ],
+  "pass": 64,
+  "fail": 2,
+  "skip": 0
+}

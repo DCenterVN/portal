@@ -25,6 +25,14 @@
   --radius-md: 12px;
   --radius-lg: 16px;
   --radius-pill: 9999px;
+  --motion-press: 80ms;
+  --motion-hover: 120ms;
+  --motion-enter: 180ms;
+  --motion-exit: 120ms;
+  --motion-sheet: 220ms;
+  --motion-ease-out: ease-out;
+  --motion-ease-in: ease-in;
+  --motion-ease-enter: cubic-bezier(.2,.8,.2,1);
   --font-display: "Quicksand", system-ui, sans-serif;
   --font-sans: "Nunito", system-ui, -apple-system, "Segoe UI", sans-serif;
 }

@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "./button";
+import motion from "./console-motion.module.css";
 
 // ---------- Global scroll lock ref counter ----------
 // Prevents race condition when multiple modals are open simultaneously.
@@ -240,7 +241,7 @@ export function DialogContent({
     <div
       className={cn("fixed inset-0 flex items-center justify-center overflow-y-auto p-4 sm:p-6", sheet && "max-md:items-end max-md:p-0", config.container)}
     >
-      <div className="fixed inset-0 bg-scrim" onClick={handleBackdropClick} aria-hidden="true" />
+      <div className={cn("fixed inset-0 bg-scrim", motion.backdrop)} onClick={handleBackdropClick} aria-hidden="true" />
 
       {/* Modal Surface */}
       <div
@@ -253,6 +254,8 @@ export function DialogContent({
           "relative w-full rounded-xl border border-line bg-l1 p-6 text-fg shadow-l3 outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]",
           sizeClasses[size],
           sheet && "max-md:max-w-none max-md:rounded-b-none max-md:animate-sheet-in motion-reduce:animate-none",
+          motion.dialog,
+          sheet && motion.sheet,
           className
         )}
         {...props}

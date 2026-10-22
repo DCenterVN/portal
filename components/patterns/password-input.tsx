@@ -11,9 +11,9 @@ export function PasswordInput({ className, disabled, ...props }: Omit<React.Comp
   return (
     <div className="relative">
       <Input {...props} type={shown ? "text" : "password"} disabled={disabled} className={cn("h-10 pr-11", className)} />
-      <Button type="button" variant="ghost" size="icon" disabled={disabled} aria-pressed={shown}
+      <Button type="button" variant="ghost-icon" size="icon" disabled={disabled} aria-pressed={shown}
         aria-label={shown ? "Ẩn mật khẩu" : "Hiện mật khẩu"} onClick={() => setShown((v) => !v)}
-        className="absolute right-0 top-0 size-10 bg-transparent text-[var(--color-muted)] shadow-none [box-shadow:none] hover:bg-transparent hover:text-[var(--color-ink)] active:bg-transparent focus-visible:bg-transparent focus-visible:ring-0 focus-visible:[box-shadow:none] disabled:bg-transparent after:absolute after:left-1/2 after:top-1/2 after:size-5 after:-translate-x-1/2 after:-translate-y-1/2 after:rounded-sm after:content-[''] focus-visible:after:outline focus-visible:after:outline-1 focus-visible:after:outline-[var(--color-focus)]">
+        className="absolute right-0 top-0 size-10 focus-visible:ring-0 after:absolute after:left-1/2 after:top-1/2 after:size-5 after:-translate-x-1/2 after:-translate-y-1/2 after:content-[''] focus-visible:after:outline focus-visible:after:outline-1 focus-visible:after:outline-[var(--color-focus)]">
         {shown ? <EyeOff aria-hidden="true" /> : <Eye aria-hidden="true" />}
       </Button>
     </div>
