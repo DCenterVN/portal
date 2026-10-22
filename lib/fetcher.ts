@@ -1,5 +1,5 @@
 // Derived from app/(console) pages; the route-group drift test enforces completeness.
-export const CONSOLE_ROUTES = ["/account", "/branches", "/console", "/inventory/shelves", "/memberships", "/production/food-plans", "/production/material-requirements", "/production/orders", "/production/qc", "/production/targets", "/roles", "/sales/pricing"] as const;
+export const CONSOLE_ROUTES = ["/account", "/branches", "/console", "/inventory/shelves", "/memberships", "/production/food-plans", "/production/material-requirements", "/production/orders", "/production/qc", "/production/targets", "/roles", "/sales/pricing", "/sales/products"] as const;
 export function isEmployeeRoute(pathname: string): boolean {
   return [...CONSOLE_ROUTES, "/staff", "/platform", "/switch-branch", "/switch-org"].some(path => pathname === path || pathname.startsWith(`${path}/`));
 }

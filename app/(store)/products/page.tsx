@@ -1,8 +1,8 @@
-import { ProductsLoader } from "@/features/products/products-loader";
+import { CatalogLoader } from "@/features/products/catalog-view";
 
 export const metadata = {
-  title: "Danh mục Sản phẩm & Bán hàng — Việt Sạch",
-  description: "Quản lý danh mục mặt hàng thực phẩm sạch, kích hoạt mở bán và điều phối đơn hàng",
+  title: "Món ngon — Việt Sạch",
+  description: "Khám phá món ngon và chọn món cho bữa ăn của bạn",
 };
 
-export default function ProductsPage() { return <ProductsLoader />; }
+export default function ProductsPage() { return <CatalogLoader />; }

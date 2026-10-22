@@ -1,0 +1,32 @@
+{
+  "task": "PORTAL-CATALOG-SPLIT-001",
+  "actor": "user:171709704+dawnmoriaty@users.noreply.github.com",
+  "worker": null,
+  "ts": "2026-10-22T14:57:32+00:00",
+  "plan_hash": "e85026784f9dad3a2b11e399a53837596771036c8bca87d88dd66d464477dd47",
+  "testkit_hash": null,
+  "files": [
+    "app/(store)/products/page.tsx",
+    "features/products/catalog-view.tsx",
+    "features/products/catalog-filters.tsx",
+    "app/(console)/sales/products/page.tsx",
+    "features/products/products-loader.tsx",
+    "features/products/products-view.tsx",
+    "features/products/product-create-dialog.tsx",
+    "features/products/product-detail-view.tsx",
+    "lib/api/sales.ts",
+    "app/api/sales/carts/[cart_id]/items/route.ts",
+    "features/console/console-nav.ts",
+    "lib/fetcher.ts",
+    "messages/vi.json",
+    "messages/en.json",
+    "lib/api/sales.test.ts",
+    "features/products/catalog.test.tsx",
+    "features/products/products.test.tsx",
+    "features/console/console-nav.test.ts",
+    "e2e/catalog-split/catalog-split.spec.ts",
+    "app/rebrand.test.ts",
+    "app/api/sales/sales-bff.test.ts"
+  ],
+  "verdict": "PASS"
+}

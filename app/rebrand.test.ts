@@ -816,14 +816,13 @@ describe("S7 rendered target, cart, orders and product creation roles", () => {
     if (state === "empty") expect(classesFor(html, "a")).toContain("text-[var(--color-primary-hover)]");
   });
   it.each([false, true])("keeps product fields, values, validation constraints and submit feedback (busy=%s)", (busy) => {
-    const html = s7Markup(React.createElement(ProductCreateDialog, { open: true, onOpenChange: () => {} }), ["Cá hồi", "SKU-FISH", "kg", 300000, "Bảo quản lạnh", busy]);
+    const html = s7Markup(React.createElement(ProductCreateDialog, { open: true, onOpenChange: () => {} }), ["Cá hồi", "ca-hoi", busy]);
     expectS7Roles(html, 1);
     expect(html).toContain('role="dialog"');
-    for (const value of ["Cá hồi", "SKU-FISH", "300000", "Bảo quản lạnh"]) expect(html).toContain(value);
-    expect(html.match(/required=""/g)).toHaveLength(3);
-    expect(html).toContain('min="0"');
-    expect(html).toContain('step="1000"');
-    expect(html.match(/<option\b/g)).toHaveLength(6);
+    for (const value of ["Cá hồi", "ca-hoi"]) expect(html).toContain(value);
+    expect(html.match(/required=""/g)).toHaveLength(2);
+    expect(html).toContain('pattern="[a-z0-9]+(-[a-z0-9]+)*"');
+    expect(html).not.toMatch(/<option\b|<select\b|<textarea\b|min="0"|step="1000"/);
     expect(html).toContain(busy ? "Đang tạo..." : "Lưu bản nháp (DRAFT)");
     expect((html.match(/disabled=""/g) ?? []).length).toBe(busy ? 2 : 0);
   });
@@ -864,10 +863,7 @@ function catalogueFilters(html: string) {
 describe("review fix rendered accessibility and filter selection", () => {
   it.each([
     ["Tên sản phẩm (*)", "input"],
-    ["Mã định danh SKU (*)", "input"],
-    ["Đơn vị tính (UOM) (*)", "select"],
-    ["Giá niêm yết (VND) (*)", "input"],
-    ["Mô tả sản phẩm & Quy cách bảo quản", "input"],
+    ["Mã sản phẩm (*)", "input"],
   ])("finds the product control by its label: %s", (label, tag) => {
     const html = s7Markup(React.createElement(ProductCreateDialog, { open: true, onOpenChange: () => {} }), []);
     expect(getByLabelText(html, label)).toMatch(new RegExp(`^<${tag}\\b`));
@@ -897,7 +893,7 @@ describe("review fix rendered accessibility and filter selection", () => {
     try {
       for (const label of ["Tất cả (3)", "Đang mở bán (1)", "Bản nháp (1)", "Tất cả (3)"]) {
         if (portalRender.filterClicks[label]) portalRender.filterClicks[label]();
-        const html = surfaceMarkup(React.createElement(ProductsView, { initialProducts: s8Products }));
+        const html = surfaceMarkup(React.createElement(ProductsView, { initialProducts: s8Products, canCreate: true }));
         const filters = catalogueFilters(html);
         expect(filters).toHaveLength(3);
         const pressed = filters.filter((button) => button.includes('aria-pressed="true"'));
@@ -920,7 +916,7 @@ describe("review fix rendered accessibility and filter selection", () => {
   });
 
   it.each(["ALL", "ACTIVE", "DRAFT"])("uses secondary selection and outline alternatives without destructive styling (%s)", (filter) => {
-    const html = surfaceMarkup(React.createElement(ProductsView, { initialProducts: s8Products }), [s8Products, "", filter, false, null]);
+    const html = surfaceMarkup(React.createElement(ProductsView, { initialProducts: s8Products, canCreate: true }), [s8Products, "", filter, false]);
     const filters = catalogueFilters(html);
     expect(filters).toHaveLength(3);
     expect(filters.filter((button) => button.includes('aria-pressed="true"'))).toHaveLength(1);
@@ -942,34 +938,32 @@ describe("review fix rendered accessibility and filter selection", () => {
 describe("S8 rendered product and traceability roles", () => {
   it.each(s8Products)("preserves detail status, facts and CTA hierarchy ($status)", (product) => {
     const html = surfaceMarkup(React.createElement(ProductDetailView, { initialProduct: product }));
-    expectS7Roles(html, product.status === "SUSPENDED" ? 0 : 1);
-    for (const value of [product.name, product.sku_code, "893001", "Bảo quản lạnh", "300.000"]) expect(html).toContain(value);
+    expectS7Roles(html, 1);
+    for (const value of [product.name, "Bảo quản lạnh", "300.000"]) expect(html).toContain(value);
+    for (const hidden of [product.sku_code, "893001", "Kích hoạt", "Tạm ngưng bán", "Đang mở bán", "Bản nháp"]) expect(html).not.toContain(hidden);
     expect(html).toContain('href="/products"');
     expect(html).not.toMatch(/<img\b/);
     expect(html.replace(/<svg\b[\s\S]*?<\/svg>/g, "")).not.toMatch(/text-\[var\(--color-leaf\)\]/);
-    if (product.status === "ACTIVE") {
-      expect(html).toContain("Thêm vào giỏ hàng");
-      expect(html).toContain('aria-label="Giảm số lượng"');
-      expect(html).toContain('aria-label="Tăng số lượng"');
-      expect(html).toContain("Đang mở bán");
-    } else expect(html).toContain(product.status === "DRAFT" ? "Kích hoạt mở bán (ACTIVE)" : "Tạm ngưng bán");
+    expect(html).toContain("Thêm vào giỏ hàng");
+    expect(html).toContain('aria-label="Giảm số lượng"');
+    expect(html).toContain('aria-label="Tăng số lượng"');
   });
   it.each(["ALL", "ACTIVE", "DRAFT"])("keeps one catalogue primary with neutral selected filter (%s)", (filter) => {
-    const html = surfaceMarkup(React.createElement(ProductsView, { initialProducts: s8Products }), [s8Products, "", filter, false, null]);
+    const html = surfaceMarkup(React.createElement(ProductsView, { initialProducts: s8Products, canCreate: true }), [s8Products, "", filter, false]);
     expectS7Roles(html, 1);
     expect(html).toContain("Tạo sản phẩm mới");
-    expect(html).toContain('href="/cart"');
     expect(html.replace(/<svg\b[\s\S]*?<\/svg>/g, "")).not.toMatch(/text-\[var\(--color-leaf\)\]/);
     expect(html).toContain("Đang mở bán (ACTIVE)");
     expect(html).toContain("Bản nháp (DRAFT)");
     if (filter === "ALL") {
-      for (const label of ["Đang mở bán", "Bản nháp", "Tạm ngưng", "+ Giỏ", "Chi tiết"]) expect(html).toContain(label);
+      for (const label of ["Đang mở bán", "Bản nháp", "Tạm ngưng", "Chi tiết"]) expect(html).toContain(label);
+      expect(html).not.toContain("+ Giỏ");
       expect(html).toContain("300.000");
       expect(html).toContain('href="/products/ACTIVE"');
     }
   });
   it.each(["api", "unavailable"] as const)("preserves catalogue empty/error state (%s)", (dataSource) => {
-    const html = surfaceMarkup(React.createElement(ProductsView, { initialProducts: [], dataSource }));
+    const html = surfaceMarkup(React.createElement(ProductsView, { initialProducts: [], dataSource, canCreate: true }));
     expectS7Roles(html, 1);
     expect(html).toContain("Không tìm thấy sản phẩm nào phù hợp");
     if (dataSource === "unavailable") {

@@ -1,0 +1,109 @@
+{
+  "id": "PORTAL-CATALOG-SPLIT-001",
+  "title": "Tách catalog khách và quản trị sản phẩm",
+  "description": "worker: unassigned · story: US-UI-002 · sprint: 01 · slices: 6/7 · next: review: review-decision.json missing",
+  "pipeline": "sdlc",
+  "agent": null,
+  "agents": [
+    "sdlc-discovery",
+    "sdlc-technical",
+    "sdlc-ux",
+    "sdlc-design",
+    "sdlc-build",
+    "sdlc-integration",
+    "sdlc-e2e",
+    "sdlc-release"
+  ],
+  "currentStep": 4,
+  "status": "in_progress",
+  "createdAt": "2026-10-22T14:35:00+00:00",
+  "updatedAt": "2026-10-22T17:02:02+00:00",
+  "stepStates": [
+    {
+      "agent": "sdlc-discovery",
+      "status": "done",
+      "revision": 1,
+      "runStatus": "approved",
+      "startedAt": null,
+      "finishedAt": null,
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-CATALOG-SPLIT-001/plan.md"
+      ]
+    },
+    {
+      "agent": "sdlc-technical",
+      "status": "done",
+      "revision": 1,
+      "runStatus": "approved",
+      "startedAt": null,
+      "finishedAt": null,
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-CATALOG-SPLIT-001/plan.md"
+      ]
+    },
+    {
+      "agent": "sdlc-ux",
+      "status": "done",
+      "revision": 1,
+      "runStatus": "approved",
+      "startedAt": null,
+      "finishedAt": null,
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-CATALOG-SPLIT-001/plan.md"
+      ]
+    },
+    {
+      "agent": "sdlc-design",
+      "status": "done",
+      "revision": 1,
+      "runStatus": "approved",
+      "startedAt": null,
+      "finishedAt": null,
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-CATALOG-SPLIT-001/plan.md"
+      ]
+    },
+    {
+      "agent": "sdlc-build",
+      "status": "in_progress",
+      "revision": 1,
+      "runStatus": "awaiting_work",
+      "startedAt": null,
+      "finishedAt": null,
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-CATALOG-SPLIT-001/handback.md"
+      ]
+    },
+    {
+      "agent": "sdlc-integration",
+      "status": "pending",
+      "revision": 1,
+      "runStatus": "pending",
+      "startedAt": null,
+      "finishedAt": null,
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-CATALOG-SPLIT-001/artifacts/verification.json"
+      ]
+    },
+    {
+      "agent": "sdlc-e2e",
+      "status": "pending",
+      "revision": 1,
+      "runStatus": "pending",
+      "startedAt": null,
+      "finishedAt": null,
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-CATALOG-SPLIT-001/artifacts/verification.json"
+      ]
+    },
+    {
+      "agent": "sdlc-release",
+      "status": "pending",
+      "revision": 1,
+      "runStatus": "pending",
+      "startedAt": null,
+      "finishedAt": null,
+      "artifactsProduced": []
+    }
+  ]
+}

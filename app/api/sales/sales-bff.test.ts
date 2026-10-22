@@ -50,3 +50,37 @@ describe("Sales BFF fail-closed forwarding", () => {
     expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining("/sales/orders/order-id/cancel"), expect.objectContaining({ headers: expect.objectContaining({ "Idempotency-Key": "cancel-key" }) }));
   });
 });
+
+describe("AC-5 BFF giỏ hàng forward branch_id", () => {
+  const branch = "0198fd55-3f46-7a01-9e52-f4c0de000020";
+  const sku = "0198fd55-3f46-7a01-9e52-f4c0de000002";
+  const cartItems = async () => (await import("./carts/[cart_id]/items/route")).POST;
+  const upstreamUrl = () => String(vi.mocked(global.fetch).mock.calls[0][0]);
+
+  it("giữ query branch_id trên URL upstream", async () => {
+    global.fetch = vi.fn().mockResolvedValue(new Response(JSON.stringify({ data: { items: [] } }), { status: 201, headers: { "content-type": "application/json" } }));
+    const post = await cartItems();
+    const response = await post(request(`/api/sales/carts/cart-1/items?branch_id=${branch}`, JSON.stringify({ sku_ref: sku, quantity: 1 })), { params: Promise.resolve({ cart_id: "cart-1" }) });
+    expect(response.status).toBe(201);
+    const url = new URL(upstreamUrl());
+    expect(url.pathname).toBe("/sales/carts/cart-1/items");
+    expect(url.searchParams.get("branch_id")).toBe(branch);
+  });
+
+  it("không chuyển tiếp query lạ lên upstream", async () => {
+    global.fetch = vi.fn().mockResolvedValue(new Response("{}", { status: 201, headers: { "content-type": "application/json" } }));
+    const post = await cartItems();
+    await post(request(`/api/sales/carts/cart-1/items?branch_id=${branch}&org_id=evil`, JSON.stringify({ sku_ref: sku, quantity: 1 })), { params: Promise.resolve({ cart_id: "cart-1" }) });
+    expect(new URL(upstreamUrl()).searchParams.get("branch_id")).toBe(branch);
+    expect(new URL(upstreamUrl()).searchParams.has("org_id")).toBe(false);
+  });
+
+  it("giữ nguyên lỗi 409 hết hàng của upstream", async () => {
+    global.fetch = vi.fn().mockResolvedValue(new Response(JSON.stringify({ error: "state_conflict", message: "hết hàng" }), { status: 409, headers: { "content-type": "application/json" } }));
+    const post = await cartItems();
+    const response = await post(request(`/api/sales/carts/cart-1/items?branch_id=${branch}`, JSON.stringify({ sku_ref: sku, quantity: 1 })), { params: Promise.resolve({ cart_id: "cart-1" }) });
+    expect(response.status).toBe(409);
+    expect(await response.json()).toMatchObject({ error: "state_conflict" });
+    expect(new URL(upstreamUrl()).searchParams.get("branch_id")).toBe(branch);
+  });
+});

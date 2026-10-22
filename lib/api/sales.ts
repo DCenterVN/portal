@@ -2,7 +2,7 @@ import { z } from "zod";
 import { decodePlatform } from "@/lib/api/platform-contract";
 import { apiFetch } from "@/lib/fetcher";
 
-export interface Product { id: string; sku_code: string; name: string; description?: string; barcode?: string; uom: string; base_price_vnd: number; status: "DRAFT" | "ACTIVE" | "SUSPENDED"; created_at: string; updated_at?: string; sku_ref?: string; }
+export interface Product { id: string; sku_code: string; name: string; description?: string; barcode?: string; uom: string; base_price_vnd?: number; status: "DRAFT" | "ACTIVE" | "SUSPENDED"; created_at: string; updated_at?: string; sku_ref?: string; branch_ref?: string; image_urls?: string[]; available_quantity?: number; }
 export interface CreateProductInput { sku_code: string; name: string; description?: string; uom: string; base_price_vnd: number; }
 export interface CartItem { product_id: string; sku_code: string; name: string; quantity: number; price_snapshot_vnd: number; uom: string; }
 export interface Cart { id: string; items: CartItem[]; total_amount_vnd: number; }
@@ -41,9 +41,8 @@ export async function getProducts(): Promise<DataResult<Product[]>> {
   try {
     const res = await apiFetch("/api/sales/products");
     if (!res.ok) return { data: [], source: "unavailable", error: await errorMessage(res, `Sales API trả về ${res.status}`) };
-    const payload = await res.json();
-    const items = Array.isArray(payload?.items) ? payload.items : [];
-    return { data: items.map(normalizeProduct), source: "api" };
+    const page = decodePlatform(await res.json(), catalogPageSchema);
+    return { data: page.items.map(entry => catalogToProduct(entry)), source: "api" };
   } catch (error) {
     return { data: [], source: "unavailable", error: error instanceof Error ? error.message : "Không kết nối được Sales API" };
   }
@@ -60,19 +59,43 @@ export async function getProductById(id: string): Promise<DataResult<Product | n
   }
 }
 
-interface CatalogEntry { product: { id: string; name: string; description?: string; created_at: string }; variants: Array<{ id: string; sku_code: string; uom_code: string; unit_price_vnd: number }> }
-function catalogToProduct({ product, variants }: CatalogEntry): Product {
-  const v = variants[0]; // ponytail: first variant stands for the product, variant picker when the store needs it
-  return { id: product.id, sku_ref: v?.id, sku_code: v?.sku_code ?? "", name: product.name, description: product.description, uom: v?.uom_code ?? "", base_price_vnd: v?.unit_price_vnd ?? 0, status: "ACTIVE", created_at: product.created_at };
+const catalogEntrySchema = z.object({
+  product: z.object({
+    id: z.string(), name: z.string(), description: z.string().nullish(),
+    status: z.enum(["DRAFT", "ACTIVE", "SUSPENDED"]).optional(),
+    created_at: z.string(), branch_ref: z.string().optional(),
+    image_urls: z.array(z.string()).nullish(),
+  }),
+  variants: z.array(z.object({
+    id: z.string(), sku_code: z.string(), uom_code: z.string(),
+    base_price_vnd: z.number().optional(), unit_price_vnd: z.number().optional(),
+    available_quantity: z.number().nullish(),
+  })).nullable().transform(items => items ?? []),
+});
+const catalogPageSchema = z.object({
+  items: z.array(catalogEntrySchema).nullable().transform(items => items ?? []),
+  next_cursor: z.string().nullish(),
+});
+function catalogToProduct({ product, variants }: z.infer<typeof catalogEntrySchema>): Product {
+  const variant = variants[0];
+  return {
+    id: product.id, name: product.name, description: product.description ?? undefined,
+    status: product.status ?? "ACTIVE", created_at: product.created_at,
+    branch_ref: product.branch_ref, image_urls: product.image_urls ?? [],
+    sku_ref: variant?.id, sku_code: variant?.sku_code ?? "", uom: variant?.uom_code ?? "",
+    base_price_vnd: variant?.unit_price_vnd ?? variant?.base_price_vnd,
+    available_quantity: variant?.available_quantity ?? undefined,
+  };
 }
 
-export async function getCatalog(): Promise<DataResult<Product[]>> {
+export async function getCatalog({ cursor }: { cursor?: string } = {}): Promise<DataResult<Product[]> & { next_cursor?: string }> {
   try {
-    const res = await fetch("/api/public/catalog?page_size=100");
+    const query = new URLSearchParams({ page_size: "100" });
+    if (cursor) query.set("cursor", cursor);
+    const res = await fetch(`/api/public/catalog?${query}`);
     if (!res.ok) return { data: [], source: "unavailable", error: await errorMessage(res, `Sales API trả về ${res.status}`) };
-    const payload = await res.json();
-    const items: CatalogEntry[] = (payload?.data ?? payload)?.items ?? [];
-    return { data: items.map(catalogToProduct), source: "api" };
+    const page = decodePlatform(await res.json(), catalogPageSchema);
+    return { data: page.items.map(catalogToProduct), source: "api", next_cursor: page.next_cursor ?? undefined };
   } catch (error) {
     return { data: [], source: "unavailable", error: error instanceof Error ? error.message : "Không kết nối được Sales API" };
   }
@@ -83,8 +106,7 @@ export async function getCatalogProduct(id: string): Promise<DataResult<Product 
     const res = await fetch(`/api/public/catalog/${encodeURIComponent(id)}`);
     if (res.status === 404) return { data: null, source: "api" };
     if (!res.ok) return { data: null, source: "unavailable", error: await errorMessage(res, `Sales API trả về ${res.status}`) };
-    const payload = await res.json();
-    return { data: catalogToProduct(payload?.data ?? payload), source: "api" };
+    return { data: catalogToProduct(decodePlatform(await res.json(), catalogEntrySchema)), source: "api" };
   } catch (error) {
     return { data: null, source: "unavailable", error: error instanceof Error ? error.message : "Không kết nối được Sales API" };
   }
@@ -156,10 +178,18 @@ export async function approvePriceFloorPolicyVersion(policyId: string, versionId
 	return responseData(res);
 }
 
-export async function addToCart(cartId: string, item: { product_id: string; quantity: number }): Promise<SalesCartResponse> {
-  const res = await apiFetch(`/api/sales/carts/${encodeURIComponent(cartId)}/items`, { method: "POST", headers: { "Content-Type": "application/json", "Idempotency-Key": crypto.randomUUID() }, body: JSON.stringify({ sku_ref: item.product_id, quantity: item.quantity }) });
+export async function addToCart(cartId: string, item: { sku_ref: string; branch_id: string; quantity: number }): Promise<SalesCartResponse> {
+  if (!item.sku_ref || !item.branch_id) throw new Error("Món chưa đủ thông tin để thêm vào giỏ");
+  const query = new URLSearchParams({ branch_id: item.branch_id });
+  const res = await apiFetch(`/api/sales/carts/${encodeURIComponent(cartId)}/items?${query}`, {
+    method: "POST", headers: mutationHeaders(),
+    body: JSON.stringify({ sku_ref: item.sku_ref, quantity: item.quantity }),
+  });
   if (!res.ok) throw new Error(await errorMessage(res, "Không thể thêm vào giỏ hàng"));
-  return res.json();
+  return decodePlatform(await res.json(), z.object({
+    cart: z.object({ id: z.string(), status: z.enum(["ACTIVE", "CHECKED_OUT"]), version: z.number() }),
+    items: z.array(z.object({ sku_ref: z.string(), quantity: z.number(), price_snapshot_vnd: z.number() })),
+  }));
 }
 export async function getCart(cartId: string): Promise<SalesCartResponse> {
   const res = await apiFetch(`/api/sales/carts/${encodeURIComponent(cartId)}`);
@@ -224,7 +254,7 @@ export function clearCart(): void {
   window.localStorage.removeItem("vietsach.cart_id");
 }
 const vndFormatter = new Intl.NumberFormat("vi-VN");
-export function formatVND(amount: number): string { return vndFormatter.format(amount) + " ₫"; }
+export function formatVND(amount: number | undefined): string { return amount === undefined ? "Chưa có giá" : vndFormatter.format(amount) + " ₫"; }
 
 export interface Material {
   id: string; sku_code: string; name: string; category_ref?: string;

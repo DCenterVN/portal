@@ -1,0 +1,15 @@
+{
+  "head": "473d8e313e3d56cc630713624469a2750f81f7b6",
+  "before": 66,
+  "after": 62,
+  "new_rule_files": [],
+  "fixed_rule_files": [
+    "FE-09 features/products/products-loader.tsx",
+    "FE-10 features/products/product-detail-view.tsx",
+    "FE-13 features/products/products-view.tsx",
+    "FE-14 features/products/products-loader.tsx"
+  ],
+  "changed_details": [
+    "FE-14 features/products/product-create-dialog.tsx missing empty"
+  ]
+}

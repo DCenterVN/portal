@@ -1,0 +1,65 @@
+{
+  "task": "PORTAL-CATALOG-SPLIT-001",
+  "actor": "agent:claude-code(171709704+dawnmoriaty@users.noreply.github.com)",
+  "worker": null,
+  "ts": "2026-10-22T17:02:01+00:00",
+  "cwd": ".",
+  "head": "473d8e313e3d56cc630713624469a2750f81f7b6",
+  "dirty": true,
+  "checks": [
+    {
+      "name": "unit",
+      "command": "TMPDIR=/home/dawn/work/ticket/.cache/tmp ESBUILD_BINARY_PATH=/home/dawn/.local/share/esbuild/esbuild-0.21.5 rtk vitest run app/rebrand.test.ts features/products/catalog.test.tsx features/products/products.test.tsx features/console/console-nav.test.ts",
+      "exit": 0,
+      "status": "PASS",
+      "seconds": 1.9,
+      "log": ".aidlc/runs/PORTAL-CATALOG-SPLIT-001/artifacts/logs/unit.log",
+      "sha256": "300a7a1d1145537b87236b17a9f8f66dad53a846c6c27e416a7e05278a488a8f",
+      "tail": [
+        "PASS (148) FAIL (0)"
+      ]
+    },
+    {
+      "name": "integration",
+      "command": "TMPDIR=/home/dawn/work/ticket/.cache/tmp ESBUILD_BINARY_PATH=/home/dawn/.local/share/esbuild/esbuild-0.21.5 rtk vitest run lib/api/sales.test.ts app/api/sales/sales-bff.test.ts",
+      "exit": 0,
+      "status": "PASS",
+      "seconds": 0.6,
+      "log": ".aidlc/runs/PORTAL-CATALOG-SPLIT-001/artifacts/logs/integration.log",
+      "sha256": "15356b7fe10010e49a7070ce363230da74569de9ad2bb5ca4f56c30d5bd1dc27",
+      "tail": [
+        "PASS (24) FAIL (0)"
+      ]
+    },
+    {
+      "name": "typecheck",
+      "command": "pnpm run typecheck",
+      "exit": 0,
+      "status": "PASS",
+      "seconds": 1.5,
+      "log": ".aidlc/runs/PORTAL-CATALOG-SPLIT-001/artifacts/logs/typecheck.log",
+      "sha256": "9e49257a9cebc5b11ca2698b151affd45c0379580ca1e264d155379e2f039531",
+      "tail": [
+        "> @dcentervn/portal@0.1.0 typecheck /home/dawn/wt/portal-catalog",
+        "> node node_modules/typescript/bin/tsc --noEmit"
+      ]
+    },
+    {
+      "name": "e2e",
+      "command": "TMPDIR=/home/dawn/work/ticket/.cache/tmp pnpm exec playwright test e2e/catalog-split/catalog-split.spec.ts",
+      "exit": 0,
+      "status": "PASS",
+      "seconds": 26.3,
+      "log": ".aidlc/runs/PORTAL-CATALOG-SPLIT-001/artifacts/logs/e2e.log",
+      "sha256": "f0342513e56c1d2e026a46ec7b253ef61c460d2727503f694d89bd35ed2e297a",
+      "tail": [
+        "  ✓  19 [mobile] › e2e/catalog-split/catalog-split.spec.ts:135:3 › AC-6 bố cục › mobile 390: bộ lọc mở bằng sheet, Esc đóng, không tràn ngang (1.2s)",
+        "  -  20 [mobile] › e2e/catalog-split/catalog-split.spec.ts:153:3 › AC-6 bố cục › desktop: bộ lọc nằm sẵn trong trang, không phải sheet",
+        "",
+        "  6 skipped",
+        "  14 passed (25.9s)"
+      ]
+    }
+  ],
+  "verdict": "PASS"
+}
