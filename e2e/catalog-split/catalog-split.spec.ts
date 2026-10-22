@@ -60,7 +60,7 @@ async function expectStoreClean(page: Page) {
 
 async function hasCards(page: Page) {
   await page.goto("/products");
-  await page.waitForLoadState("networkidle");
+  await page.waitForLoadState("load");
   return (await page.locator('a[href^="/products/"]').count()) > 0;
 }
 
@@ -128,14 +128,14 @@ test.describe("AC-3/AC-4 /sales/products trong console", () => {
 test.describe("AC-6 bố cục", () => {
   test("không tràn ngang ở /products", async ({ page }) => {
     await page.goto("/products");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
   });
 
   test("mobile 390: bộ lọc mở bằng sheet, Esc đóng, không tràn ngang", async ({ page }, info) => {
     test.skip(info.project.name !== "mobile", "Chỉ chạy ở project mobile 390.");
     await page.goto("/products");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     const open = page.getByRole("button", { name: /Bộ lọc/ });
     await expect(open).toBeVisible();
     const box = await open.boundingBox();
@@ -175,7 +175,7 @@ test.describe("AC-6 catalog khách: bố cục, sheet lọc (phần tử đã c�
       await page.emulateMedia({ colorScheme: theme });
       await page.setViewportSize({ width, height: 900 });
       await page.goto("/products");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
       expect(await overflow(page), "tràn ngang").toBeLessThanOrEqual(0);
       if (width >= 1024) {
         await expect(page.getByRole("dialog")).toHaveCount(0);
@@ -199,7 +199,7 @@ test.describe("AC-6 catalog khách: bố cục, sheet lọc (phần tử đã c�
   test("mở sheet và gõ lọc không làm dịch bố cục trang", async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
     await page.goto("/products");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     const open = page.getByRole("button", { name: /Bộ lọc/ });
     const before = await open.boundingBox();
     await open.click();
@@ -218,6 +218,7 @@ test.describe("AC-7 #019 và sửa wrap/icon ở console /sales/products", () =>
     test.skip(!(await permissionsOf(page)).includes(READ), "Tài khoản QA SALES chưa có sales:product:read.");
     await page.goto("/sales/products");
     await expect(page.getByPlaceholder(/Tìm theo tên/)).toBeVisible();
+    await page.waitForFunction(() => document.getAnimations().every((a) => a.effect?.getComputedTiming().iterations === Infinity || a.playState !== "running"));
   }
 
   test("ba nút trạng thái giữ #019, chọn đơn và aria-pressed đúng", async ({ page }) => {

@@ -1,5 +1,6 @@
 /* Lucian UX/UI Prompt #019 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#019 */
-.filter {
+.filter,
+:global([data-surface="console"]) .filter.filter {
   transition: background-color 350ms ease, color 300ms ease;
 }
 
@@ -17,6 +18,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .filter { transition: none; }
+  .filter,
+  :global([data-surface="console"]) .filter.filter { transition: none; }
   .filter > svg { animation: none; }
 }
