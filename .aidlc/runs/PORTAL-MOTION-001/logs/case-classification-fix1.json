@@ -1,0 +1,1573 @@
+{
+  "summary": {
+    "worktree": {
+      "motion-console.spec.mjs": {
+        "FAIL": 11
+      },
+      "motion-filter.spec.mjs": {
+        "FAIL": 6
+      },
+      "motion-hero.spec.mjs": {
+        "PASS": 8
+      },
+      "motion-login.spec.mjs": {
+        "FAIL": 4
+      },
+      "visual-controls.spec.mjs": {
+        "FAIL": 5,
+        "PASS": 8
+      },
+      "visual-layout.spec.mjs": {
+        "FAIL": 24
+      }
+    },
+    "clean_source": {
+      "motion-console.spec.mjs": {
+        "PASS": 7,
+        "SKIP": 3,
+        "FAIL": 1
+      },
+      "motion-filter.spec.mjs": {
+        "PASS": 6
+      },
+      "motion-hero.spec.mjs": {
+        "PASS": 7,
+        "FAIL": 1
+      },
+      "motion-login.spec.mjs": {
+        "PASS": 4
+      },
+      "visual-controls.spec.mjs": {
+        "PASS": 13
+      },
+      "visual-layout.spec.mjs": {
+        "PASS": 24
+      }
+    }
+  },
+  "cases": [
+    {
+      "original": {
+        "spec": "motion-console.spec.mjs",
+        "source_line": 126,
+        "case": "motion-console token: --motion-* có thật trên :root của console",
+        "status": "FAIL",
+        "log": "S6-fix1.log",
+        "log_line": 39,
+        "error": "Test timeout of 90000ms exceeded.",
+        "stage": "chờ điều hướng sau login"
+      },
+      "clean_source": {
+        "spec": "motion-console.spec.mjs",
+        "source_line": 126,
+        "case": "motion-console token: --motion-* có thật trên :root của console",
+        "status": "PASS",
+        "log": "S6-clean-runtime-fix1.log",
+        "log_line": 6,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "Môi trường/setup worktree; cùng source PASS ở bản tạm"
+    },
+    {
+      "original": {
+        "spec": "motion-console.spec.mjs",
+        "source_line": 133,
+        "case": "motion-console button: bấm scale .97 trong <100ms (80ms ease-out), nhả thì bung lại",
+        "status": "FAIL",
+        "log": "S6-fix1.log",
+        "log_line": 62,
+        "error": "TimeoutError: page.waitForResponse: Timeout 20000ms exceeded while waiting for event \"response\"",
+        "stage": "chờ điều hướng sau login"
+      },
+      "clean_source": {
+        "spec": "motion-console.spec.mjs",
+        "source_line": 133,
+        "case": "motion-console button: bấm scale .97 trong <100ms (80ms ease-out), nhả thì bung lại",
+        "status": "PASS",
+        "log": "S6-clean-runtime-fix1.log",
+        "log_line": 7,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "Môi trường/setup worktree; cùng source PASS ở bản tạm"
+    },
+    {
+      "original": {
+        "spec": "motion-console.spec.mjs",
+        "source_line": 149,
+        "case": "motion-console button: hover đổi nền 120ms ease-out, không dịch layout",
+        "status": "FAIL",
+        "log": "S6-fix1.log",
+        "log_line": 80,
+        "error": "TimeoutError: page.waitForResponse: Timeout 20000ms exceeded while waiting for event \"response\"",
+        "stage": "chờ điều hướng sau login"
+      },
+      "clean_source": {
+        "spec": "motion-console.spec.mjs",
+        "source_line": 149,
+        "case": "motion-console button: hover đổi nền 120ms ease-out, không dịch layout",
+        "status": "PASS",
+        "log": "S6-clean-runtime-fix1.log",
+        "log_line": 8,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "Môi trường/setup worktree; cùng source PASS ở bản tạm"
+    },
+    {
+      "original": {
+        "spec": "motion-console.spec.mjs",
+        "source_line": 162,
+        "case": "motion-console popover: vào 180ms cubic-bezier(.2,.8,.2,1) trượt 4–8px, Esc đóng ngay và trả focus",
+        "status": "FAIL",
+        "log": "S6-fix1.log",
+        "log_line": 98,
+        "error": "TimeoutError: page.waitForResponse: Timeout 20000ms exceeded while waiting for event \"response\"",
+        "stage": "chờ điều hướng sau login"
+      },
+      "clean_source": {
+        "spec": "motion-console.spec.mjs",
+        "source_line": 162,
+        "case": "motion-console popover: vào 180ms cubic-bezier(.2,.8,.2,1) trượt 4–8px, Esc đóng ngay và trả focus",
+        "status": "PASS",
+        "log": "S6-clean-runtime-fix1.log",
+        "log_line": 9,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "Môi trường/setup worktree; cùng source PASS ở bản tạm"
+    },
+    {
+      "original": {
+        "spec": "motion-console.spec.mjs",
+        "source_line": 184,
+        "case": "motion-console popover: đóng/mở liên tiếp khi đang animate không kẹt",
+        "status": "FAIL",
+        "log": "S6-fix1.log",
+        "log_line": 116,
+        "error": "TimeoutError: page.waitForResponse: Timeout 20000ms exceeded while waiting for event \"response\"",
+        "stage": "chờ điều hướng sau login"
+      },
+      "clean_source": {
+        "spec": "motion-console.spec.mjs",
+        "source_line": 184,
+        "case": "motion-console popover: đóng/mở liên tiếp khi đang animate không kẹt",
+        "status": "PASS",
+        "log": "S6-clean-runtime-fix1.log",
+        "log_line": 10,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "Môi trường/setup worktree; cùng source PASS ở bản tạm"
+    },
+    {
+      "original": {
+        "spec": "motion-console.spec.mjs",
+        "source_line": 197,
+        "case": "motion-console dialog: vào 220ms cubic-bezier(.2,.8,.2,1), Tab giữ trong hộp, Esc đóng ngay và trả focus (desktop)",
+        "status": "FAIL",
+        "log": "S6-fix1.log",
+        "log_line": 134,
+        "error": "TimeoutError: page.waitForResponse: Timeout 20000ms exceeded while waiting for event \"response\"",
+        "stage": "chờ điều hướng sau login"
+      },
+      "clean_source": {
+        "spec": "motion-console.spec.mjs",
+        "source_line": 197,
+        "case": "motion-console dialog: vào 220ms cubic-bezier(.2,.8,.2,1), Tab giữ trong hộp, Esc đóng ngay và trả focus (desktop)",
+        "status": "SKIP",
+        "log": "S6-clean-runtime-fix1.log",
+        "log_line": 11,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "QA/setup: chính test skip vì ADMIN không thấy Thêm nhân viên"
+    },
+    {
+      "original": {
+        "spec": "motion-console.spec.mjs",
+        "source_line": 197,
+        "case": "motion-console dialog: vào 220ms cubic-bezier(.2,.8,.2,1), Tab giữ trong hộp, Esc đóng ngay và trả focus (mobile)",
+        "status": "FAIL",
+        "log": "S6-fix1.log",
+        "log_line": 152,
+        "error": "TimeoutError: page.waitForResponse: Timeout 20000ms exceeded while waiting for event \"response\"",
+        "stage": "chờ điều hướng sau login"
+      },
+      "clean_source": {
+        "spec": "motion-console.spec.mjs",
+        "source_line": 197,
+        "case": "motion-console dialog: vào 220ms cubic-bezier(.2,.8,.2,1), Tab giữ trong hộp, Esc đóng ngay và trả focus (mobile)",
+        "status": "SKIP",
+        "log": "S6-clean-runtime-fix1.log",
+        "log_line": 12,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "QA/setup: chính test skip vì ADMIN không thấy Thêm nhân viên"
+    },
+    {
+      "original": {
+        "spec": "motion-console.spec.mjs",
+        "source_line": 218,
+        "case": "motion-console dialog: Esc giữa lúc animate đóng ngay, mở lại vẫn chạy đủ",
+        "status": "FAIL",
+        "log": "S6-fix1.log",
+        "log_line": 170,
+        "error": "TimeoutError: page.waitForResponse: Timeout 20000ms exceeded while waiting for event \"response\"",
+        "stage": "chờ điều hướng sau login"
+      },
+      "clean_source": {
+        "spec": "motion-console.spec.mjs",
+        "source_line": 218,
+        "case": "motion-console dialog: Esc giữa lúc animate đóng ngay, mở lại vẫn chạy đủ",
+        "status": "SKIP",
+        "log": "S6-clean-runtime-fix1.log",
+        "log_line": 13,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "QA/setup: chính test skip vì ADMIN không thấy Thêm nhân viên"
+    },
+    {
+      "original": {
+        "spec": "motion-console.spec.mjs",
+        "source_line": 230,
+        "case": "motion-console scope: store/login giữ nhịp gốc, không nhận token console",
+        "status": "FAIL",
+        "log": "S6-fix1.log",
+        "log_line": 188,
+        "error": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.",
+        "stage": "chờ dialog/màn"
+      },
+      "clean_source": {
+        "spec": "motion-console.spec.mjs",
+        "source_line": 230,
+        "case": "motion-console scope: store/login giữ nhịp gốc, không nhận token console",
+        "status": "PASS",
+        "log": "S6-clean-runtime-fix1.log",
+        "log_line": 14,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "Môi trường/setup worktree; cùng source PASS ở bản tạm"
+    },
+    {
+      "original": {
+        "spec": "motion-console.spec.mjs",
+        "source_line": 244,
+        "case": "motion-console reduced: không scale khi bấm, popover và dialog chỉ fade ≤120ms, luồng chính vẫn chạy",
+        "status": "FAIL",
+        "log": "S6-fix1.log",
+        "log_line": 206,
+        "error": "Test timeout of 90000ms exceeded.",
+        "stage": "chờ điều hướng sau login"
+      },
+      "clean_source": {
+        "spec": "motion-console.spec.mjs",
+        "source_line": 244,
+        "case": "motion-console reduced: không scale khi bấm, popover và dialog chỉ fade ≤120ms, luồng chính vẫn chạy",
+        "status": "PASS",
+        "log": "S6-clean-runtime-fix1.log",
+        "log_line": 15,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "Môi trường/setup worktree; cùng source PASS ở bản tạm"
+    },
+    {
+      "original": {
+        "spec": "motion-console.spec.mjs",
+        "source_line": 265,
+        "case": "motion-console CLS ≤ 0.01 khi bấm nút, mở popover và hover",
+        "status": "FAIL",
+        "log": "S6-fix1.log",
+        "log_line": 229,
+        "error": "TimeoutError: page.waitForResponse: Timeout 20000ms exceeded while waiting for event \"response\"",
+        "stage": "chờ điều hướng sau login"
+      },
+      "clean_source": {
+        "spec": "motion-console.spec.mjs",
+        "source_line": 265,
+        "case": "motion-console CLS ≤ 0.01 khi bấm nút, mở popover và hover",
+        "status": "FAIL",
+        "log": "S6-clean-runtime-fix1.log",
+        "log_line": 19,
+        "error": "Error: LayoutShift gồm cả hadRecentInput",
+        "stage": ""
+      },
+      "classification": "Môi trường/timing có sẵn trên HEAD: CLS 0.0102550696 > 0.01"
+    },
+    {
+      "original": {
+        "spec": "motion-filter.spec.mjs",
+        "source_line": 119,
+        "case": "motion-store filter: nút lọc chuyển nền 350ms và màu 300ms ease, không animate padding/width",
+        "status": "FAIL",
+        "log": "regression-fix1.log",
+        "log_line": 139,
+        "error": "TimeoutError: locator.fill: Timeout 20000ms exceeded.",
+        "stage": "chờ POST login"
+      },
+      "clean_source": {
+        "spec": "motion-filter.spec.mjs",
+        "source_line": 119,
+        "case": "motion-store filter: nút lọc chuyển nền 350ms và màu 300ms ease, không animate padding/width",
+        "status": "PASS",
+        "log": "regression-clean-runtime-fix1.log",
+        "log_line": 6,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "Môi trường/setup worktree; cùng source PASS ở bản tạm"
+    },
+    {
+      "original": {
+        "spec": "motion-filter.spec.mjs",
+        "source_line": 132,
+        "case": "motion-store filter: dấu Check vào với opacity 250ms ease và transform 450ms spring",
+        "status": "FAIL",
+        "log": "regression-fix1.log",
+        "log_line": 160,
+        "error": "TimeoutError: locator.fill: Timeout 20000ms exceeded.",
+        "stage": "chờ POST login"
+      },
+      "clean_source": {
+        "spec": "motion-filter.spec.mjs",
+        "source_line": 132,
+        "case": "motion-store filter: dấu Check vào với opacity 250ms ease và transform 450ms spring",
+        "status": "PASS",
+        "log": "regression-clean-runtime-fix1.log",
+        "log_line": 7,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "Môi trường/setup worktree; cùng source PASS ở bản tạm"
+    },
+    {
+      "original": {
+        "spec": "motion-filter.spec.mjs",
+        "source_line": 143,
+        "case": "motion-store filter: aria-pressed đổi ngay khi bấm, vẫn chọn đơn ALL/ACTIVE/DRAFT",
+        "status": "FAIL",
+        "log": "regression-fix1.log",
+        "log_line": 181,
+        "error": "TimeoutError: locator.fill: Timeout 20000ms exceeded.",
+        "stage": "chờ POST login"
+      },
+      "clean_source": {
+        "spec": "motion-filter.spec.mjs",
+        "source_line": 143,
+        "case": "motion-store filter: aria-pressed đổi ngay khi bấm, vẫn chọn đơn ALL/ACTIVE/DRAFT",
+        "status": "PASS",
+        "log": "regression-clean-runtime-fix1.log",
+        "log_line": 8,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "Môi trường/setup worktree; cùng source PASS ở bản tạm"
+    },
+    {
+      "original": {
+        "spec": "motion-filter.spec.mjs",
+        "source_line": 153,
+        "case": "motion-store filter: bấm nhanh liên tiếp lấy lần bấm cuối, không mất thao tác",
+        "status": "FAIL",
+        "log": "regression-fix1.log",
+        "log_line": 202,
+        "error": "TimeoutError: locator.fill: Timeout 20000ms exceeded.",
+        "stage": "chờ POST login"
+      },
+      "clean_source": {
+        "spec": "motion-filter.spec.mjs",
+        "source_line": 153,
+        "case": "motion-store filter: bấm nhanh liên tiếp lấy lần bấm cuối, không mất thao tác",
+        "status": "PASS",
+        "log": "regression-clean-runtime-fix1.log",
+        "log_line": 9,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "Môi trường/setup worktree; cùng source PASS ở bản tạm"
+    },
+    {
+      "original": {
+        "spec": "motion-filter.spec.mjs",
+        "source_line": 168,
+        "case": "motion-store filter: CLS ≤ 0.01, hàng nút không đổi vị trí dọc và chiều cao khi chọn",
+        "status": "FAIL",
+        "log": "regression-fix1.log",
+        "log_line": 223,
+        "error": "TimeoutError: locator.fill: Timeout 20000ms exceeded.",
+        "stage": "chờ POST login"
+      },
+      "clean_source": {
+        "spec": "motion-filter.spec.mjs",
+        "source_line": 168,
+        "case": "motion-store filter: CLS ≤ 0.01, hàng nút không đổi vị trí dọc và chiều cao khi chọn",
+        "status": "PASS",
+        "log": "regression-clean-runtime-fix1.log",
+        "log_line": 10,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "Môi trường/setup worktree; cùng source PASS ở bản tạm"
+    },
+    {
+      "original": {
+        "spec": "motion-filter.spec.mjs",
+        "source_line": 184,
+        "case": "motion-store filter: reduced-motion bỏ trượt/scale, chỉ fade ≤120ms, trạng thái cuối ngay",
+        "status": "FAIL",
+        "log": "regression-fix1.log",
+        "log_line": 244,
+        "error": "TimeoutError: locator.fill: Timeout 20000ms exceeded.",
+        "stage": "chờ POST login"
+      },
+      "clean_source": {
+        "spec": "motion-filter.spec.mjs",
+        "source_line": 184,
+        "case": "motion-store filter: reduced-motion bỏ trượt/scale, chỉ fade ≤120ms, trạng thái cuối ngay",
+        "status": "PASS",
+        "log": "regression-clean-runtime-fix1.log",
+        "log_line": 11,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "Môi trường/setup worktree; cùng source PASS ở bản tạm"
+    },
+    {
+      "original": {
+        "spec": "motion-hero.spec.mjs",
+        "source_line": 160,
+        "case": "motion-store hero: mỗi phần tử vào đúng độ trễ và thời lượng của mẫu #216",
+        "status": "PASS",
+        "log": "regression-fix1.log",
+        "log_line": 24,
+        "error": "",
+        "stage": ""
+      },
+      "clean_source": {
+        "spec": "motion-hero.spec.mjs",
+        "source_line": 160,
+        "case": "motion-store hero: mỗi phần tử vào đúng độ trễ và thời lượng của mẫu #216",
+        "status": "PASS",
+        "log": "regression-clean-runtime-fix1.log",
+        "log_line": 12,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "PASS"
+    },
+    {
+      "original": {
+        "spec": "motion-hero.spec.mjs",
+        "source_line": 172,
+        "case": "motion-store hero: trạng thái cuối hiện đủ, không còn dịch, mờ hay blur",
+        "status": "PASS",
+        "log": "regression-fix1.log",
+        "log_line": 25,
+        "error": "",
+        "stage": ""
+      },
+      "clean_source": {
+        "spec": "motion-hero.spec.mjs",
+        "source_line": 172,
+        "case": "motion-store hero: trạng thái cuối hiện đủ, không còn dịch, mờ hay blur",
+        "status": "PASS",
+        "log": "regression-clean-runtime-fix1.log",
+        "log_line": 13,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "PASS"
+    },
+    {
+      "original": {
+        "spec": "motion-hero.spec.mjs",
+        "source_line": 190,
+        "case": "motion-store hero: không chia chữ thành span và vẫn có đúng một h1",
+        "status": "PASS",
+        "log": "regression-fix1.log",
+        "log_line": 26,
+        "error": "",
+        "stage": ""
+      },
+      "clean_source": {
+        "spec": "motion-hero.spec.mjs",
+        "source_line": 190,
+        "case": "motion-store hero: không chia chữ thành span và vẫn có đúng một h1",
+        "status": "PASS",
+        "log": "regression-clean-runtime-fix1.log",
+        "log_line": 14,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "PASS"
+    },
+    {
+      "original": {
+        "spec": "motion-hero.spec.mjs",
+        "source_line": 198,
+        "case": "motion-store hero: CLS ≤ 0.01 và hộp bố cục không dịch lúc vào (desktop)",
+        "status": "PASS",
+        "log": "regression-fix1.log",
+        "log_line": 27,
+        "error": "",
+        "stage": ""
+      },
+      "clean_source": {
+        "spec": "motion-hero.spec.mjs",
+        "source_line": 198,
+        "case": "motion-store hero: CLS ≤ 0.01 và hộp bố cục không dịch lúc vào (desktop)",
+        "status": "FAIL",
+        "log": "regression-clean-runtime-fix1.log",
+        "log_line": 65,
+        "error": "Error: eyebrow offsetTop",
+        "stage": ""
+      },
+      "classification": "Môi trường/timing có sẵn trên HEAD: eyebrow offsetTop 12px"
+    },
+    {
+      "original": {
+        "spec": "motion-hero.spec.mjs",
+        "source_line": 198,
+        "case": "motion-store hero: CLS ≤ 0.01 và hộp bố cục không dịch lúc vào (mobile)",
+        "status": "PASS",
+        "log": "regression-fix1.log",
+        "log_line": 28,
+        "error": "",
+        "stage": ""
+      },
+      "clean_source": {
+        "spec": "motion-hero.spec.mjs",
+        "source_line": 198,
+        "case": "motion-store hero: CLS ≤ 0.01 và hộp bố cục không dịch lúc vào (mobile)",
+        "status": "PASS",
+        "log": "regression-clean-runtime-fix1.log",
+        "log_line": 18,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "PASS"
+    },
+    {
+      "original": {
+        "spec": "motion-hero.spec.mjs",
+        "source_line": 211,
+        "case": "motion-store hero: reduced-motion bỏ trượt/scale/blur, chỉ fade ≤120ms, trạng thái cuối ngay",
+        "status": "PASS",
+        "log": "regression-fix1.log",
+        "log_line": 29,
+        "error": "",
+        "stage": ""
+      },
+      "clean_source": {
+        "spec": "motion-hero.spec.mjs",
+        "source_line": 211,
+        "case": "motion-store hero: reduced-motion bỏ trượt/scale/blur, chỉ fade ≤120ms, trạng thái cuối ngay",
+        "status": "PASS",
+        "log": "regression-clean-runtime-fix1.log",
+        "log_line": 19,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "PASS"
+    },
+    {
+      "original": {
+        "spec": "motion-hero.spec.mjs",
+        "source_line": 224,
+        "case": "motion-store hero: tắt JS vẫn thấy toàn bộ hero",
+        "status": "PASS",
+        "log": "regression-fix1.log",
+        "log_line": 30,
+        "error": "",
+        "stage": ""
+      },
+      "clean_source": {
+        "spec": "motion-hero.spec.mjs",
+        "source_line": 224,
+        "case": "motion-store hero: tắt JS vẫn thấy toàn bộ hero",
+        "status": "PASS",
+        "log": "regression-clean-runtime-fix1.log",
+        "log_line": 20,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "PASS"
+    },
+    {
+      "original": {
+        "spec": "motion-hero.spec.mjs",
+        "source_line": 236,
+        "case": "motion-store hero: Home đã đăng nhập có chuyển động vào, trạng thái cuối đủ và không dịch bố cục",
+        "status": "PASS",
+        "log": "regression-fix1.log",
+        "log_line": 31,
+        "error": "",
+        "stage": ""
+      },
+      "clean_source": {
+        "spec": "motion-hero.spec.mjs",
+        "source_line": 236,
+        "case": "motion-store hero: Home đã đăng nhập có chuyển động vào, trạng thái cuối đủ và không dịch bố cục",
+        "status": "PASS",
+        "log": "regression-clean-runtime-fix1.log",
+        "log_line": 21,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "PASS"
+    },
+    {
+      "original": {
+        "spec": "motion-login.spec.mjs",
+        "source_line": 123,
+        "case": "motion-store login: alert lỗi rung 500ms cubic-bezier(.36,.07,.19,.97), hiện ngay và request đi ngay",
+        "status": "FAIL",
+        "log": "regression-fix1.log",
+        "log_line": 265,
+        "error": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.",
+        "stage": "chờ dialog/màn"
+      },
+      "clean_source": {
+        "spec": "motion-login.spec.mjs",
+        "source_line": 123,
+        "case": "motion-store login: alert lỗi rung 500ms cubic-bezier(.36,.07,.19,.97), hiện ngay và request đi ngay",
+        "status": "PASS",
+        "log": "regression-clean-runtime-fix1.log",
+        "log_line": 22,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "Môi trường/setup worktree; cùng source PASS ở bản tạm"
+    },
+    {
+      "original": {
+        "spec": "motion-login.spec.mjs",
+        "source_line": 141,
+        "case": "motion-store login: alert rung không đổi hộp bố cục, không morph width/radius của thẻ",
+        "status": "FAIL",
+        "log": "regression-fix1.log",
+        "log_line": 284,
+        "error": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.",
+        "stage": "chờ dialog/màn"
+      },
+      "clean_source": {
+        "spec": "motion-login.spec.mjs",
+        "source_line": 141,
+        "case": "motion-store login: alert rung không đổi hộp bố cục, không morph width/radius của thẻ",
+        "status": "PASS",
+        "log": "regression-clean-runtime-fix1.log",
+        "log_line": 23,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "Môi trường/setup worktree; cùng source PASS ở bản tạm"
+    },
+    {
+      "original": {
+        "spec": "motion-login.spec.mjs",
+        "source_line": 155,
+        "case": "motion-store login: nhãn busy fade 200ms, nút khoá, bấm đúp chỉ gửi một request",
+        "status": "FAIL",
+        "log": "regression-fix1.log",
+        "log_line": 303,
+        "error": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.",
+        "stage": "chờ dialog/màn"
+      },
+      "clean_source": {
+        "spec": "motion-login.spec.mjs",
+        "source_line": 155,
+        "case": "motion-store login: nhãn busy fade 200ms, nút khoá, bấm đúp chỉ gửi một request",
+        "status": "PASS",
+        "log": "regression-clean-runtime-fix1.log",
+        "log_line": 24,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "Môi trường/setup worktree; cùng source PASS ở bản tạm"
+    },
+    {
+      "original": {
+        "spec": "motion-login.spec.mjs",
+        "source_line": 172,
+        "case": "motion-store login: reduced-motion bỏ rung, alert hiện ngay, busy chỉ fade ≤120ms",
+        "status": "FAIL",
+        "log": "regression-fix1.log",
+        "log_line": 322,
+        "error": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.",
+        "stage": "chờ dialog/màn"
+      },
+      "clean_source": {
+        "spec": "motion-login.spec.mjs",
+        "source_line": 172,
+        "case": "motion-store login: reduced-motion bỏ rung, alert hiện ngay, busy chỉ fade ≤120ms",
+        "status": "PASS",
+        "log": "regression-clean-runtime-fix1.log",
+        "log_line": 25,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "Môi trường/setup worktree; cùng source PASS ở bản tạm"
+    },
+    {
+      "original": {
+        "spec": "visual-controls.spec.mjs",
+        "source_line": 155,
+        "case": "visual controls V-01 login popup desktop light: toggle mật khẩu trong suốt mọi trạng thái, icon đậm khi hover, vòng focus quanh icon",
+        "status": "FAIL",
+        "log": "regression-fix1.log",
+        "log_line": 341,
+        "error": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.",
+        "stage": "chờ dialog/màn"
+      },
+      "clean_source": {
+        "spec": "visual-controls.spec.mjs",
+        "source_line": 155,
+        "case": "visual controls V-01 login popup desktop light: toggle mật khẩu trong suốt mọi trạng thái, icon đậm khi hover, vòng focus quanh icon",
+        "status": "PASS",
+        "log": "regression-clean-runtime-fix1.log",
+        "log_line": 26,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "Môi trường/setup worktree; cùng source PASS ở bản tạm"
+    },
+    {
+      "original": {
+        "spec": "visual-controls.spec.mjs",
+        "source_line": 155,
+        "case": "visual controls V-01 login popup desktop dark: toggle mật khẩu trong suốt mọi trạng thái, icon đậm khi hover, vòng focus quanh icon",
+        "status": "FAIL",
+        "log": "regression-fix1.log",
+        "log_line": 361,
+        "error": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.",
+        "stage": "chờ dialog/màn"
+      },
+      "clean_source": {
+        "spec": "visual-controls.spec.mjs",
+        "source_line": 155,
+        "case": "visual controls V-01 login popup desktop dark: toggle mật khẩu trong suốt mọi trạng thái, icon đậm khi hover, vòng focus quanh icon",
+        "status": "PASS",
+        "log": "regression-clean-runtime-fix1.log",
+        "log_line": 27,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "Môi trường/setup worktree; cùng source PASS ở bản tạm"
+    },
+    {
+      "original": {
+        "spec": "visual-controls.spec.mjs",
+        "source_line": 155,
+        "case": "visual controls V-01 login popup mobile light: toggle mật khẩu trong suốt mọi trạng thái, icon đậm khi hover, vòng focus quanh icon",
+        "status": "FAIL",
+        "log": "regression-fix1.log",
+        "log_line": 381,
+        "error": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.",
+        "stage": "chờ dialog/màn"
+      },
+      "clean_source": {
+        "spec": "visual-controls.spec.mjs",
+        "source_line": 155,
+        "case": "visual controls V-01 login popup mobile light: toggle mật khẩu trong suốt mọi trạng thái, icon đậm khi hover, vòng focus quanh icon",
+        "status": "PASS",
+        "log": "regression-clean-runtime-fix1.log",
+        "log_line": 28,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "Môi trường/setup worktree; cùng source PASS ở bản tạm"
+    },
+    {
+      "original": {
+        "spec": "visual-controls.spec.mjs",
+        "source_line": 155,
+        "case": "visual controls V-01 login popup mobile dark: toggle mật khẩu trong suốt mọi trạng thái, icon đậm khi hover, vòng focus quanh icon",
+        "status": "FAIL",
+        "log": "regression-fix1.log",
+        "log_line": 401,
+        "error": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.",
+        "stage": "chờ dialog/màn"
+      },
+      "clean_source": {
+        "spec": "visual-controls.spec.mjs",
+        "source_line": 155,
+        "case": "visual controls V-01 login popup mobile dark: toggle mật khẩu trong suốt mọi trạng thái, icon đậm khi hover, vòng focus quanh icon",
+        "status": "PASS",
+        "log": "regression-clean-runtime-fix1.log",
+        "log_line": 29,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "Môi trường/setup worktree; cùng source PASS ở bản tạm"
+    },
+    {
+      "original": {
+        "spec": "visual-controls.spec.mjs",
+        "source_line": 155,
+        "case": "visual controls V-01 staff login desktop light: toggle mật khẩu trong suốt mọi trạng thái, icon đậm khi hover, vòng focus quanh icon",
+        "status": "PASS",
+        "log": "regression-fix1.log",
+        "log_line": 56,
+        "error": "",
+        "stage": ""
+      },
+      "clean_source": {
+        "spec": "visual-controls.spec.mjs",
+        "source_line": 155,
+        "case": "visual controls V-01 staff login desktop light: toggle mật khẩu trong suốt mọi trạng thái, icon đậm khi hover, vòng focus quanh icon",
+        "status": "PASS",
+        "log": "regression-clean-runtime-fix1.log",
+        "log_line": 30,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "PASS"
+    },
+    {
+      "original": {
+        "spec": "visual-controls.spec.mjs",
+        "source_line": 155,
+        "case": "visual controls V-01 staff login desktop dark: toggle mật khẩu trong suốt mọi trạng thái, icon đậm khi hover, vòng focus quanh icon",
+        "status": "PASS",
+        "log": "regression-fix1.log",
+        "log_line": 57,
+        "error": "",
+        "stage": ""
+      },
+      "clean_source": {
+        "spec": "visual-controls.spec.mjs",
+        "source_line": 155,
+        "case": "visual controls V-01 staff login desktop dark: toggle mật khẩu trong suốt mọi trạng thái, icon đậm khi hover, vòng focus quanh icon",
+        "status": "PASS",
+        "log": "regression-clean-runtime-fix1.log",
+        "log_line": 31,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "PASS"
+    },
+    {
+      "original": {
+        "spec": "visual-controls.spec.mjs",
+        "source_line": 155,
+        "case": "visual controls V-01 staff login mobile light: toggle mật khẩu trong suốt mọi trạng thái, icon đậm khi hover, vòng focus quanh icon",
+        "status": "PASS",
+        "log": "regression-fix1.log",
+        "log_line": 58,
+        "error": "",
+        "stage": ""
+      },
+      "clean_source": {
+        "spec": "visual-controls.spec.mjs",
+        "source_line": 155,
+        "case": "visual controls V-01 staff login mobile light: toggle mật khẩu trong suốt mọi trạng thái, icon đậm khi hover, vòng focus quanh icon",
+        "status": "PASS",
+        "log": "regression-clean-runtime-fix1.log",
+        "log_line": 32,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "PASS"
+    },
+    {
+      "original": {
+        "spec": "visual-controls.spec.mjs",
+        "source_line": 155,
+        "case": "visual controls V-01 staff login mobile dark: toggle mật khẩu trong suốt mọi trạng thái, icon đậm khi hover, vòng focus quanh icon",
+        "status": "PASS",
+        "log": "regression-fix1.log",
+        "log_line": 59,
+        "error": "",
+        "stage": ""
+      },
+      "clean_source": {
+        "spec": "visual-controls.spec.mjs",
+        "source_line": 155,
+        "case": "visual controls V-01 staff login mobile dark: toggle mật khẩu trong suốt mọi trạng thái, icon đậm khi hover, vòng focus quanh icon",
+        "status": "PASS",
+        "log": "regression-clean-runtime-fix1.log",
+        "log_line": 33,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "PASS"
+    },
+    {
+      "original": {
+        "spec": "visual-controls.spec.mjs",
+        "source_line": 155,
+        "case": "visual controls V-01 reset password desktop light: toggle mật khẩu trong suốt mọi trạng thái, icon đậm khi hover, vòng focus quanh icon",
+        "status": "PASS",
+        "log": "regression-fix1.log",
+        "log_line": 60,
+        "error": "",
+        "stage": ""
+      },
+      "clean_source": {
+        "spec": "visual-controls.spec.mjs",
+        "source_line": 155,
+        "case": "visual controls V-01 reset password desktop light: toggle mật khẩu trong suốt mọi trạng thái, icon đậm khi hover, vòng focus quanh icon",
+        "status": "PASS",
+        "log": "regression-clean-runtime-fix1.log",
+        "log_line": 34,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "PASS"
+    },
+    {
+      "original": {
+        "spec": "visual-controls.spec.mjs",
+        "source_line": 155,
+        "case": "visual controls V-01 reset password desktop dark: toggle mật khẩu trong suốt mọi trạng thái, icon đậm khi hover, vòng focus quanh icon",
+        "status": "PASS",
+        "log": "regression-fix1.log",
+        "log_line": 61,
+        "error": "",
+        "stage": ""
+      },
+      "clean_source": {
+        "spec": "visual-controls.spec.mjs",
+        "source_line": 155,
+        "case": "visual controls V-01 reset password desktop dark: toggle mật khẩu trong suốt mọi trạng thái, icon đậm khi hover, vòng focus quanh icon",
+        "status": "PASS",
+        "log": "regression-clean-runtime-fix1.log",
+        "log_line": 35,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "PASS"
+    },
+    {
+      "original": {
+        "spec": "visual-controls.spec.mjs",
+        "source_line": 155,
+        "case": "visual controls V-01 reset password mobile light: toggle mật khẩu trong suốt mọi trạng thái, icon đậm khi hover, vòng focus quanh icon",
+        "status": "PASS",
+        "log": "regression-fix1.log",
+        "log_line": 62,
+        "error": "",
+        "stage": ""
+      },
+      "clean_source": {
+        "spec": "visual-controls.spec.mjs",
+        "source_line": 155,
+        "case": "visual controls V-01 reset password mobile light: toggle mật khẩu trong suốt mọi trạng thái, icon đậm khi hover, vòng focus quanh icon",
+        "status": "PASS",
+        "log": "regression-clean-runtime-fix1.log",
+        "log_line": 36,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "PASS"
+    },
+    {
+      "original": {
+        "spec": "visual-controls.spec.mjs",
+        "source_line": 155,
+        "case": "visual controls V-01 reset password mobile dark: toggle mật khẩu trong suốt mọi trạng thái, icon đậm khi hover, vòng focus quanh icon",
+        "status": "PASS",
+        "log": "regression-fix1.log",
+        "log_line": 63,
+        "error": "",
+        "stage": ""
+      },
+      "clean_source": {
+        "spec": "visual-controls.spec.mjs",
+        "source_line": 155,
+        "case": "visual controls V-01 reset password mobile dark: toggle mật khẩu trong suốt mọi trạng thái, icon đậm khi hover, vòng focus quanh icon",
+        "status": "PASS",
+        "log": "regression-clean-runtime-fix1.log",
+        "log_line": 37,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "PASS"
+    },
+    {
+      "original": {
+        "spec": "visual-controls.spec.mjs",
+        "source_line": 197,
+        "case": "visual controls V-01 giữ hành vi: bấm đổi loại ô, aria-pressed và nhãn, bàn phím Space/Enter vẫn bật tắt",
+        "status": "FAIL",
+        "log": "regression-fix1.log",
+        "log_line": 421,
+        "error": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.",
+        "stage": "chờ dialog/màn"
+      },
+      "clean_source": {
+        "spec": "visual-controls.spec.mjs",
+        "source_line": 197,
+        "case": "visual controls V-01 giữ hành vi: bấm đổi loại ô, aria-pressed và nhãn, bàn phím Space/Enter vẫn bật tắt",
+        "status": "PASS",
+        "log": "regression-clean-runtime-fix1.log",
+        "log_line": 38,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "Môi trường/setup worktree; cùng source PASS ở bản tạm"
+    },
+    {
+      "original": {
+        "spec": "visual-layout.spec.mjs",
+        "source_line": 148,
+        "case": "visual store V-02+V-10 catalog desktop light: cụm lọc và nút tạo nằm trong khung, trang không tràn ngang",
+        "status": "FAIL",
+        "log": "regression-fix1.log",
+        "log_line": 441,
+        "error": "TimeoutError: locator.fill: Timeout 20000ms exceeded.",
+        "stage": "chờ POST login"
+      },
+      "clean_source": {
+        "spec": "visual-layout.spec.mjs",
+        "source_line": 148,
+        "case": "visual store V-02+V-10 catalog desktop light: cụm lọc và nút tạo nằm trong khung, trang không tràn ngang",
+        "status": "PASS",
+        "log": "regression-clean-runtime-fix1.log",
+        "log_line": 39,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "Môi trường/setup worktree; cùng source PASS ở bản tạm"
+    },
+    {
+      "original": {
+        "spec": "visual-layout.spec.mjs",
+        "source_line": 167,
+        "case": "visual store V-04 ô tìm desktop light: tâm kính lúp trùng tâm input",
+        "status": "FAIL",
+        "log": "regression-fix1.log",
+        "log_line": 463,
+        "error": "TimeoutError: locator.fill: Timeout 20000ms exceeded.",
+        "stage": "chờ POST login"
+      },
+      "clean_source": {
+        "spec": "visual-layout.spec.mjs",
+        "source_line": 167,
+        "case": "visual store V-04 ô tìm desktop light: tâm kính lúp trùng tâm input",
+        "status": "PASS",
+        "log": "regression-clean-runtime-fix1.log",
+        "log_line": 40,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "Môi trường/setup worktree; cùng source PASS ở bản tạm"
+    },
+    {
+      "original": {
+        "spec": "visual-layout.spec.mjs",
+        "source_line": 178,
+        "case": "visual dialog V-06 nút đóng popup desktop light: hover không đổ khối nền, vùng bấm và vị trí giữ nguyên",
+        "status": "FAIL",
+        "log": "regression-fix1.log",
+        "log_line": 485,
+        "error": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.",
+        "stage": "chờ dialog/màn"
+      },
+      "clean_source": {
+        "spec": "visual-layout.spec.mjs",
+        "source_line": 178,
+        "case": "visual dialog V-06 nút đóng popup desktop light: hover không đổ khối nền, vùng bấm và vị trí giữ nguyên",
+        "status": "PASS",
+        "log": "regression-clean-runtime-fix1.log",
+        "log_line": 41,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "Môi trường/setup worktree; cùng source PASS ở bản tạm"
+    },
+    {
+      "original": {
+        "spec": "visual-layout.spec.mjs",
+        "source_line": 148,
+        "case": "visual store V-02+V-10 catalog desktop dark: cụm lọc và nút tạo nằm trong khung, trang không tràn ngang",
+        "status": "FAIL",
+        "log": "regression-fix1.log",
+        "log_line": 503,
+        "error": "TimeoutError: locator.fill: Timeout 20000ms exceeded.",
+        "stage": "chờ POST login"
+      },
+      "clean_source": {
+        "spec": "visual-layout.spec.mjs",
+        "source_line": 148,
+        "case": "visual store V-02+V-10 catalog desktop dark: cụm lọc và nút tạo nằm trong khung, trang không tràn ngang",
+        "status": "PASS",
+        "log": "regression-clean-runtime-fix1.log",
+        "log_line": 42,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "Môi trường/setup worktree; cùng source PASS ở bản tạm"
+    },
+    {
+      "original": {
+        "spec": "visual-layout.spec.mjs",
+        "source_line": 167,
+        "case": "visual store V-04 ô tìm desktop dark: tâm kính lúp trùng tâm input",
+        "status": "FAIL",
+        "log": "regression-fix1.log",
+        "log_line": 525,
+        "error": "TimeoutError: locator.fill: Timeout 20000ms exceeded.",
+        "stage": "chờ POST login"
+      },
+      "clean_source": {
+        "spec": "visual-layout.spec.mjs",
+        "source_line": 167,
+        "case": "visual store V-04 ô tìm desktop dark: tâm kính lúp trùng tâm input",
+        "status": "PASS",
+        "log": "regression-clean-runtime-fix1.log",
+        "log_line": 43,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "Môi trường/setup worktree; cùng source PASS ở bản tạm"
+    },
+    {
+      "original": {
+        "spec": "visual-layout.spec.mjs",
+        "source_line": 178,
+        "case": "visual dialog V-06 nút đóng popup desktop dark: hover không đổ khối nền, vùng bấm và vị trí giữ nguyên",
+        "status": "FAIL",
+        "log": "regression-fix1.log",
+        "log_line": 547,
+        "error": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.",
+        "stage": "chờ dialog/màn"
+      },
+      "clean_source": {
+        "spec": "visual-layout.spec.mjs",
+        "source_line": 178,
+        "case": "visual dialog V-06 nút đóng popup desktop dark: hover không đổ khối nền, vùng bấm và vị trí giữ nguyên",
+        "status": "PASS",
+        "log": "regression-clean-runtime-fix1.log",
+        "log_line": 44,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "Môi trường/setup worktree; cùng source PASS ở bản tạm"
+    },
+    {
+      "original": {
+        "spec": "visual-layout.spec.mjs",
+        "source_line": 148,
+        "case": "visual store V-02+V-10 catalog mobile light: cụm lọc và nút tạo nằm trong khung, trang không tràn ngang",
+        "status": "FAIL",
+        "log": "regression-fix1.log",
+        "log_line": 565,
+        "error": "TimeoutError: locator.fill: Timeout 20000ms exceeded.",
+        "stage": "chờ POST login"
+      },
+      "clean_source": {
+        "spec": "visual-layout.spec.mjs",
+        "source_line": 148,
+        "case": "visual store V-02+V-10 catalog mobile light: cụm lọc và nút tạo nằm trong khung, trang không tràn ngang",
+        "status": "PASS",
+        "log": "regression-clean-runtime-fix1.log",
+        "log_line": 45,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "Môi trường/setup worktree; cùng source PASS ở bản tạm"
+    },
+    {
+      "original": {
+        "spec": "visual-layout.spec.mjs",
+        "source_line": 167,
+        "case": "visual store V-04 ô tìm mobile light: tâm kính lúp trùng tâm input",
+        "status": "FAIL",
+        "log": "regression-fix1.log",
+        "log_line": 587,
+        "error": "TimeoutError: locator.fill: Timeout 20000ms exceeded.",
+        "stage": "chờ POST login"
+      },
+      "clean_source": {
+        "spec": "visual-layout.spec.mjs",
+        "source_line": 167,
+        "case": "visual store V-04 ô tìm mobile light: tâm kính lúp trùng tâm input",
+        "status": "PASS",
+        "log": "regression-clean-runtime-fix1.log",
+        "log_line": 46,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "Môi trường/setup worktree; cùng source PASS ở bản tạm"
+    },
+    {
+      "original": {
+        "spec": "visual-layout.spec.mjs",
+        "source_line": 178,
+        "case": "visual dialog V-06 nút đóng popup mobile light: hover không đổ khối nền, vùng bấm và vị trí giữ nguyên",
+        "status": "FAIL",
+        "log": "regression-fix1.log",
+        "log_line": 609,
+        "error": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.",
+        "stage": "chờ dialog/màn"
+      },
+      "clean_source": {
+        "spec": "visual-layout.spec.mjs",
+        "source_line": 178,
+        "case": "visual dialog V-06 nút đóng popup mobile light: hover không đổ khối nền, vùng bấm và vị trí giữ nguyên",
+        "status": "PASS",
+        "log": "regression-clean-runtime-fix1.log",
+        "log_line": 47,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "Môi trường/setup worktree; cùng source PASS ở bản tạm"
+    },
+    {
+      "original": {
+        "spec": "visual-layout.spec.mjs",
+        "source_line": 148,
+        "case": "visual store V-02+V-10 catalog mobile dark: cụm lọc và nút tạo nằm trong khung, trang không tràn ngang",
+        "status": "FAIL",
+        "log": "regression-fix1.log",
+        "log_line": 627,
+        "error": "TimeoutError: locator.fill: Timeout 20000ms exceeded.",
+        "stage": "chờ POST login"
+      },
+      "clean_source": {
+        "spec": "visual-layout.spec.mjs",
+        "source_line": 148,
+        "case": "visual store V-02+V-10 catalog mobile dark: cụm lọc và nút tạo nằm trong khung, trang không tràn ngang",
+        "status": "PASS",
+        "log": "regression-clean-runtime-fix1.log",
+        "log_line": 48,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "Môi trường/setup worktree; cùng source PASS ở bản tạm"
+    },
+    {
+      "original": {
+        "spec": "visual-layout.spec.mjs",
+        "source_line": 167,
+        "case": "visual store V-04 ô tìm mobile dark: tâm kính lúp trùng tâm input",
+        "status": "FAIL",
+        "log": "regression-fix1.log",
+        "log_line": 649,
+        "error": "TimeoutError: locator.fill: Timeout 20000ms exceeded.",
+        "stage": "chờ POST login"
+      },
+      "clean_source": {
+        "spec": "visual-layout.spec.mjs",
+        "source_line": 167,
+        "case": "visual store V-04 ô tìm mobile dark: tâm kính lúp trùng tâm input",
+        "status": "PASS",
+        "log": "regression-clean-runtime-fix1.log",
+        "log_line": 49,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "Môi trường/setup worktree; cùng source PASS ở bản tạm"
+    },
+    {
+      "original": {
+        "spec": "visual-layout.spec.mjs",
+        "source_line": 178,
+        "case": "visual dialog V-06 nút đóng popup mobile dark: hover không đổ khối nền, vùng bấm và vị trí giữ nguyên",
+        "status": "FAIL",
+        "log": "regression-fix1.log",
+        "log_line": 671,
+        "error": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.",
+        "stage": "chờ dialog/màn"
+      },
+      "clean_source": {
+        "spec": "visual-layout.spec.mjs",
+        "source_line": 178,
+        "case": "visual dialog V-06 nút đóng popup mobile dark: hover không đổ khối nền, vùng bấm và vị trí giữ nguyên",
+        "status": "PASS",
+        "log": "regression-clean-runtime-fix1.log",
+        "log_line": 50,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "Môi trường/setup worktree; cùng source PASS ở bản tạm"
+    },
+    {
+      "original": {
+        "spec": "visual-layout.spec.mjs",
+        "source_line": 210,
+        "case": "visual console V-07 catalog desktop light: ô icon tiêu đề không còn nền xanh, cỡ 36px giữ nguyên",
+        "status": "FAIL",
+        "log": "regression-fix1.log",
+        "log_line": 689,
+        "error": "Test timeout of 90000ms exceeded.",
+        "stage": "chờ điều hướng sau login"
+      },
+      "clean_source": {
+        "spec": "visual-layout.spec.mjs",
+        "source_line": 210,
+        "case": "visual console V-07 catalog desktop light: ô icon tiêu đề không còn nền xanh, cỡ 36px giữ nguyên",
+        "status": "PASS",
+        "log": "regression-clean-runtime-fix1.log",
+        "log_line": 51,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "Môi trường/setup worktree; cùng source PASS ở bản tạm"
+    },
+    {
+      "original": {
+        "spec": "visual-layout.spec.mjs",
+        "source_line": 210,
+        "case": "visual console V-07 page header desktop light: ô icon tiêu đề không còn nền xanh, cỡ 36px giữ nguyên",
+        "status": "FAIL",
+        "log": "regression-fix1.log",
+        "log_line": 712,
+        "error": "TimeoutError: page.waitForResponse: Timeout 20000ms exceeded while waiting for event \"response\"",
+        "stage": "chờ điều hướng sau login"
+      },
+      "clean_source": {
+        "spec": "visual-layout.spec.mjs",
+        "source_line": 210,
+        "case": "visual console V-07 page header desktop light: ô icon tiêu đề không còn nền xanh, cỡ 36px giữ nguyên",
+        "status": "PASS",
+        "log": "regression-clean-runtime-fix1.log",
+        "log_line": 52,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "Môi trường/setup worktree; cùng source PASS ở bản tạm"
+    },
+    {
+      "original": {
+        "spec": "visual-layout.spec.mjs",
+        "source_line": 210,
+        "case": "visual console V-07 catalog desktop dark: ô icon tiêu đề không còn nền xanh, cỡ 36px giữ nguyên",
+        "status": "FAIL",
+        "log": "regression-fix1.log",
+        "log_line": 730,
+        "error": "TimeoutError: locator.fill: Timeout 20000ms exceeded.",
+        "stage": "chờ POST login"
+      },
+      "clean_source": {
+        "spec": "visual-layout.spec.mjs",
+        "source_line": 210,
+        "case": "visual console V-07 catalog desktop dark: ô icon tiêu đề không còn nền xanh, cỡ 36px giữ nguyên",
+        "status": "PASS",
+        "log": "regression-clean-runtime-fix1.log",
+        "log_line": 53,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "Môi trường/setup worktree; cùng source PASS ở bản tạm"
+    },
+    {
+      "original": {
+        "spec": "visual-layout.spec.mjs",
+        "source_line": 210,
+        "case": "visual console V-07 page header desktop dark: ô icon tiêu đề không còn nền xanh, cỡ 36px giữ nguyên",
+        "status": "FAIL",
+        "log": "regression-fix1.log",
+        "log_line": 751,
+        "error": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.",
+        "stage": "chờ dialog/màn"
+      },
+      "clean_source": {
+        "spec": "visual-layout.spec.mjs",
+        "source_line": 210,
+        "case": "visual console V-07 page header desktop dark: ô icon tiêu đề không còn nền xanh, cỡ 36px giữ nguyên",
+        "status": "PASS",
+        "log": "regression-clean-runtime-fix1.log",
+        "log_line": 54,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "Môi trường/setup worktree; cùng source PASS ở bản tạm"
+    },
+    {
+      "original": {
+        "spec": "visual-layout.spec.mjs",
+        "source_line": 210,
+        "case": "visual console V-07 catalog mobile light: ô icon tiêu đề không còn nền xanh, cỡ 36px giữ nguyên",
+        "status": "FAIL",
+        "log": "regression-fix1.log",
+        "log_line": 769,
+        "error": "TimeoutError: locator.fill: Timeout 20000ms exceeded.",
+        "stage": "chờ POST login"
+      },
+      "clean_source": {
+        "spec": "visual-layout.spec.mjs",
+        "source_line": 210,
+        "case": "visual console V-07 catalog mobile light: ô icon tiêu đề không còn nền xanh, cỡ 36px giữ nguyên",
+        "status": "PASS",
+        "log": "regression-clean-runtime-fix1.log",
+        "log_line": 55,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "Môi trường/setup worktree; cùng source PASS ở bản tạm"
+    },
+    {
+      "original": {
+        "spec": "visual-layout.spec.mjs",
+        "source_line": 210,
+        "case": "visual console V-07 page header mobile light: ô icon tiêu đề không còn nền xanh, cỡ 36px giữ nguyên",
+        "status": "FAIL",
+        "log": "regression-fix1.log",
+        "log_line": 790,
+        "error": "TimeoutError: page.waitForResponse: Timeout 20000ms exceeded while waiting for event \"response\"",
+        "stage": "chờ điều hướng sau login"
+      },
+      "clean_source": {
+        "spec": "visual-layout.spec.mjs",
+        "source_line": 210,
+        "case": "visual console V-07 page header mobile light: ô icon tiêu đề không còn nền xanh, cỡ 36px giữ nguyên",
+        "status": "PASS",
+        "log": "regression-clean-runtime-fix1.log",
+        "log_line": 56,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "Môi trường/setup worktree; cùng source PASS ở bản tạm"
+    },
+    {
+      "original": {
+        "spec": "visual-layout.spec.mjs",
+        "source_line": 210,
+        "case": "visual console V-07 catalog mobile dark: ô icon tiêu đề không còn nền xanh, cỡ 36px giữ nguyên",
+        "status": "FAIL",
+        "log": "regression-fix1.log",
+        "log_line": 808,
+        "error": "TimeoutError: locator.fill: Timeout 20000ms exceeded.",
+        "stage": "chờ POST login"
+      },
+      "clean_source": {
+        "spec": "visual-layout.spec.mjs",
+        "source_line": 210,
+        "case": "visual console V-07 catalog mobile dark: ô icon tiêu đề không còn nền xanh, cỡ 36px giữ nguyên",
+        "status": "PASS",
+        "log": "regression-clean-runtime-fix1.log",
+        "log_line": 57,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "Môi trường/setup worktree; cùng source PASS ở bản tạm"
+    },
+    {
+      "original": {
+        "spec": "visual-layout.spec.mjs",
+        "source_line": 210,
+        "case": "visual console V-07 page header mobile dark: ô icon tiêu đề không còn nền xanh, cỡ 36px giữ nguyên",
+        "status": "FAIL",
+        "log": "regression-fix1.log",
+        "log_line": 829,
+        "error": "TimeoutError: page.waitForResponse: Timeout 20000ms exceeded while waiting for event \"response\"",
+        "stage": "chờ điều hướng sau login"
+      },
+      "clean_source": {
+        "spec": "visual-layout.spec.mjs",
+        "source_line": 210,
+        "case": "visual console V-07 page header mobile dark: ô icon tiêu đề không còn nền xanh, cỡ 36px giữ nguyên",
+        "status": "PASS",
+        "log": "regression-clean-runtime-fix1.log",
+        "log_line": 58,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "Môi trường/setup worktree; cùng source PASS ở bản tạm"
+    },
+    {
+      "original": {
+        "spec": "visual-layout.spec.mjs",
+        "source_line": 229,
+        "case": "visual footer V-11 desktop light: tên liên kết, hover và dòng pháp lý đọc rõ (tương phản ≥ 4.5) trên mọi route",
+        "status": "FAIL",
+        "log": "regression-fix1.log",
+        "log_line": 847,
+        "error": "TimeoutError: locator.fill: Timeout 20000ms exceeded.",
+        "stage": "chờ POST login"
+      },
+      "clean_source": {
+        "spec": "visual-layout.spec.mjs",
+        "source_line": 229,
+        "case": "visual footer V-11 desktop light: tên liên kết, hover và dòng pháp lý đọc rõ (tương phản ≥ 4.5) trên mọi route",
+        "status": "PASS",
+        "log": "regression-clean-runtime-fix1.log",
+        "log_line": 59,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "Môi trường/setup worktree; cùng source PASS ở bản tạm"
+    },
+    {
+      "original": {
+        "spec": "visual-layout.spec.mjs",
+        "source_line": 229,
+        "case": "visual footer V-11 desktop dark: tên liên kết, hover và dòng pháp lý đọc rõ (tương phản ≥ 4.5) trên mọi route",
+        "status": "FAIL",
+        "log": "regression-fix1.log",
+        "log_line": 868,
+        "error": "TimeoutError: locator.fill: Timeout 20000ms exceeded.",
+        "stage": "chờ POST login"
+      },
+      "clean_source": {
+        "spec": "visual-layout.spec.mjs",
+        "source_line": 229,
+        "case": "visual footer V-11 desktop dark: tên liên kết, hover và dòng pháp lý đọc rõ (tương phản ≥ 4.5) trên mọi route",
+        "status": "PASS",
+        "log": "regression-clean-runtime-fix1.log",
+        "log_line": 60,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "Môi trường/setup worktree; cùng source PASS ở bản tạm"
+    },
+    {
+      "original": {
+        "spec": "visual-layout.spec.mjs",
+        "source_line": 229,
+        "case": "visual footer V-11 mobile light: tên liên kết, hover và dòng pháp lý đọc rõ (tương phản ≥ 4.5) trên mọi route",
+        "status": "FAIL",
+        "log": "regression-fix1.log",
+        "log_line": 889,
+        "error": "TimeoutError: locator.fill: Timeout 20000ms exceeded.",
+        "stage": "chờ POST login"
+      },
+      "clean_source": {
+        "spec": "visual-layout.spec.mjs",
+        "source_line": 229,
+        "case": "visual footer V-11 mobile light: tên liên kết, hover và dòng pháp lý đọc rõ (tương phản ≥ 4.5) trên mọi route",
+        "status": "PASS",
+        "log": "regression-clean-runtime-fix1.log",
+        "log_line": 61,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "Môi trường/setup worktree; cùng source PASS ở bản tạm"
+    },
+    {
+      "original": {
+        "spec": "visual-layout.spec.mjs",
+        "source_line": 229,
+        "case": "visual footer V-11 mobile dark: tên liên kết, hover và dòng pháp lý đọc rõ (tương phản ≥ 4.5) trên mọi route",
+        "status": "FAIL",
+        "log": "regression-fix1.log",
+        "log_line": 910,
+        "error": "TimeoutError: locator.fill: Timeout 20000ms exceeded.",
+        "stage": "chờ POST login"
+      },
+      "clean_source": {
+        "spec": "visual-layout.spec.mjs",
+        "source_line": 229,
+        "case": "visual footer V-11 mobile dark: tên liên kết, hover và dòng pháp lý đọc rõ (tương phản ≥ 4.5) trên mọi route",
+        "status": "PASS",
+        "log": "regression-clean-runtime-fix1.log",
+        "log_line": 62,
+        "error": "",
+        "stage": ""
+      },
+      "classification": "Môi trường/setup worktree; cùng source PASS ở bản tạm"
+    }
+  ],
+  "notes": [
+    "287 application files byte-identical; tests/config from original worktree unchanged.",
+    "HEAD control and patched source use same temporary root, service config, browser, localhost:3000.",
+    "Timing failures reproduce on HEAD; no proof of a newly introduced assertion failure. Three QA skips remain unverified, not counted as pass."
+  ]
+}

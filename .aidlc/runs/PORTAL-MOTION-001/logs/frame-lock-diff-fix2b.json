@@ -1,0 +1,20 @@
+{
+  "beforeDrift": [
+    "components/patterns/password-input.tsx",
+    "components/ui/button.tsx"
+  ],
+  "refreshedEntries": [
+    {
+      "file": "components/patterns/password-input.tsx",
+      "before": "22b2c7ad3a01ec88faf8561950f1b1df29b5082342cb921bca30b3b73f1eec11",
+      "after": "435c09417673cf63a0585b2ef34a837bff2a4f5b926527ca9054d954d63245a6"
+    },
+    {
+      "file": "components/ui/button.tsx",
+      "before": "8c8343705f0e77e17e99308322f0861d494146bc16145e5be19849189c2d5e7c",
+      "after": "e2c8fa3d6fc59c79ea0c012b9854256cc55d934e449438e0f9e89a365d1cb8f4"
+    }
+  ],
+  "afterDrift": [],
+  "afterEntryCount": 54
+}

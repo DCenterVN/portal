@@ -1,0 +1,15 @@
+{
+  "changedSinceFix2b": [
+    ".aidlc/runs/PORTAL-MOTION-001/handback.md",
+    "components/patterns/password-input.tsx",
+    "components/ui/button.tsx",
+    "frame.lock.json"
+  ],
+  "unexpectedChangedFiles": [],
+  "testChanges": [],
+  "nextEnvPreserved": true,
+  "nodeModulesLinkPreserved": true,
+  "doneExists": false,
+  "serverStopCurl": "000",
+  "serverStopCurlExit": 7
+}

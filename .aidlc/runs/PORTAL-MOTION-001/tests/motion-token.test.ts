@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { test } from 'node:test';
 
-const css = readFileSync(resolve(process.cwd(), 'app/tokens.generated.css'), 'utf8');
+const css = readFileSync(resolve(process.cwd(), process.env.TOKENS_CSS ?? 'app/tokens.generated.css'), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
 const blocks = [...css.matchAll(/([^{}]+)\{([^}]*)\}/g)].map(([, selector, body]) => ({ selector: selector.trim(), body }));
 const light = blocks.find(block => block.selector.startsWith(':root'))?.body ?? '';
 const dark = blocks.find(block => /\.dark|data-theme="dark"/.test(block.selector))?.body ?? '';

@@ -1,0 +1,64 @@
+:global([data-surface="console"]) .button {
+  scale: 1;
+  transition:
+    transform var(--motion-press) var(--motion-ease-out),
+    background-color var(--motion-hover) var(--motion-ease-out),
+    border-color var(--motion-hover) var(--motion-ease-out),
+    color var(--motion-hover) var(--motion-ease-out),
+    opacity var(--motion-hover) var(--motion-ease-out),
+    box-shadow var(--motion-hover) var(--motion-ease-out);
+}
+
+:global([data-surface="console"]) .button:active:not(:disabled) {
+  transform: scale(.97);
+}
+
+:global([data-surface="console"]) .popover {
+  animation: popover-in var(--motion-enter) var(--motion-ease-enter);
+}
+
+:global(body:has([data-surface="console"])) .dialog {
+  animation: dialog-in var(--motion-sheet) var(--motion-ease-enter);
+}
+
+:global(body:has([data-surface="console"])) .backdrop {
+  animation: fade-in var(--motion-sheet) var(--motion-ease-enter);
+}
+
+@media (width < 48rem) {
+  :global(body:has([data-surface="console"])) .sheet {
+    animation-name: sheet-in;
+  }
+}
+
+@keyframes popover-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes dialog-in {
+  from { opacity: 0; transform: scale(.98); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes sheet-in {
+  from { opacity: 0; transform: translateY(100%); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :global([data-surface="console"]) .button:active:not(:disabled) {
+    transform: none;
+  }
+
+  :global([data-surface="console"]) .popover,
+  :global(body:has([data-surface="console"])) .dialog,
+  :global(body:has([data-surface="console"])) .backdrop {
+    animation: fade-in var(--motion-exit) var(--motion-ease-out) !important;
+  }
+}

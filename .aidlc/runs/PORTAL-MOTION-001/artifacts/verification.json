@@ -2,53 +2,57 @@
   "task": "PORTAL-MOTION-001",
   "actor": "agent:claude-code(171709704+dawnmoriaty@users.noreply.github.com)",
   "worker": null,
-  "ts": "2026-10-22T17:10:37+00:00",
+  "ts": "2026-10-22T20:20:42+00:00",
   "cwd": ".",
-  "head": "473d8e313e3d56cc630713624469a2750f81f7b6",
+  "head": "b5fdb44c1235f1b4c5e6164f0b32118c4559cb1d",
   "dirty": true,
   "checks": [
     {
       "name": "unit",
-      "command": "TMPDIR=/home/dawn/work/ticket/.cache/tmp ESBUILD_BINARY_PATH=/home/dawn/.local/share/esbuild/esbuild-0.21.5 pnpm exec vitest run --exclude 'e2e/**' components/patterns/password-input.test.tsx",
+      "command": "TMPDIR=/home/dawn/work/ticket/.cache/tmp ESBUILD_BINARY_PATH=/home/dawn/.local/share/esbuild/esbuild-0.21.5 pnpm exec vitest run --exclude 'e2e/**'",
       "exit": 0,
       "status": "PASS",
-      "seconds": 0.7,
+      "seconds": 2.5,
       "log": ".aidlc/runs/PORTAL-MOTION-001/artifacts/logs/unit.log",
-      "sha256": "45384b35b31f8bc291f350378874ecbd6afe75690a18a691f40a47b56f37c5a0",
+      "sha256": "0540eeaac953c27e23f3716b8cf7661c2a8d35e3b6ced1861da2ead4ea0d5faf",
       "tail": [
+        "stderr | app/api/auth/bff.test.ts > Portal BFF Auth Handlers (9 handlers) > 1. POST /api/auth/login sets cookies and forwards response",
+        "PORTAL_CLIENT_IP_SOURCE is unset; auth forwarding is disabled",
         "",
-        " Test Files  1 passed (1)",
-        "      Tests  5 passed (5)",
-        "   Start at  00:08:11",
-        "   Duration  367ms (transform 69ms, setup 0ms, collect 115ms, tests 6ms, environment 0ms, prepare 59ms)"
+        "stderr | app/api/operations/operations.test.ts > Portal BFF Operations & Operator Console > 4. GET operation (auth.operator.users.list) calls backend and returns data",
+        "PORTAL_CLIENT_IP_SOURCE is unset; auth forwarding is disabled"
       ]
     },
     {
       "name": "integration",
-      "command": "TMPDIR=/home/dawn/work/ticket/.cache/tmp rtk playwright test --config .aidlc/runs/PORTAL-MOTION-001/tests/playwright.config.mjs .aidlc/runs/PORTAL-MOTION-001/tests/motion-hero.spec.mjs .aidlc/runs/PORTAL-MOTION-001/tests/motion-filter.spec.mjs .aidlc/runs/PORTAL-MOTION-001/tests/motion-login.spec.mjs",
+      "command": "TMPDIR=/home/dawn/work/ticket/.cache/tmp ESBUILD_BINARY_PATH=/home/dawn/.local/share/esbuild/esbuild-0.21.5 TOKENS_CSS=app/tokens.generated.css node --experimental-strip-types --test .aidlc/runs/PORTAL-MOTION-001/tests/motion-token.test.ts && TMPDIR=/home/dawn/work/ticket/.cache/tmp ESBUILD_BINARY_PATH=/home/dawn/.local/share/esbuild/esbuild-0.21.5 pnpm exec playwright test --config .aidlc/runs/PORTAL-MOTION-001/tests/playwright.config.mjs .aidlc/runs/PORTAL-MOTION-001/tests/motion-console.spec.mjs --grep-invert 'CLS'",
       "exit": 0,
       "status": "PASS",
-      "seconds": 57.2,
+      "seconds": 18.1,
       "log": ".aidlc/runs/PORTAL-MOTION-001/artifacts/logs/integration.log",
-      "sha256": "af3583a636d480fcb4304a0384c8d9ed0e015f91963697fb62dc1d5e5b864c87",
+      "sha256": "0b322edcc58f0a3e920d1a32ee700519db28985533b0ba8bce57489dc5ff28ad",
       "tail": [
-        "PASS (18) FAIL (0)",
+        "  ✓   8 .aidlc/runs/PORTAL-MOTION-001/tests/motion-console.spec.mjs:227:1 › motion-console dialog: Esc giữa lúc animate đóng ngay, mở lại vẫn chạy đủ (2.0s)",
+        "  ✓   9 .aidlc/runs/PORTAL-MOTION-001/tests/motion-console.spec.mjs:239:1 › motion-console scope: store/login giữ nhịp gốc, không nhận token console (898ms)",
+        "  ✓  10 .aidlc/runs/PORTAL-MOTION-001/tests/motion-console.spec.mjs:253:1 › motion-console reduced: không scale khi bấm, popover và dialog chỉ fade ≤120ms, luồng chính vẫn chạy (1.8s)",
         "",
-        "Time: 56744ms"
+        "  10 passed (17.7s)"
       ]
     },
     {
       "name": "e2e",
-      "command": "TMPDIR=/home/dawn/work/ticket/.cache/tmp rtk playwright test --config .aidlc/runs/PORTAL-MOTION-001/tests/playwright.config.mjs .aidlc/runs/PORTAL-MOTION-001/tests/visual-controls.spec.mjs .aidlc/runs/PORTAL-MOTION-001/tests/visual-layout.spec.mjs",
+      "command": "TMPDIR=/home/dawn/work/ticket/.cache/tmp ESBUILD_BINARY_PATH=/home/dawn/.local/share/esbuild/esbuild-0.21.5 pnpm exec playwright test --config .aidlc/runs/PORTAL-MOTION-001/tests/playwright.config.mjs .aidlc/runs/PORTAL-MOTION-001/tests/motion-hero.spec.mjs .aidlc/runs/PORTAL-MOTION-001/tests/motion-filter.spec.mjs .aidlc/runs/PORTAL-MOTION-001/tests/motion-login.spec.mjs .aidlc/runs/PORTAL-MOTION-001/tests/visual-controls.spec.mjs .aidlc/runs/PORTAL-MOTION-001/tests/visual-layout.spec.mjs",
       "exit": 0,
       "status": "PASS",
-      "seconds": 87.1,
+      "seconds": 106.2,
       "log": ".aidlc/runs/PORTAL-MOTION-001/artifacts/logs/e2e.log",
-      "sha256": "75b5b413d6482e3f3a2645eb98876b962c306a1cb644b0b12f619679eab1de45",
+      "sha256": "39ba0cd61b28c5e967aed84e21cd6bc66e465efb5ede194f202f6997574522e3",
       "tail": [
-        "PASS (37) FAIL (0)",
+        "  ✓  53 .aidlc/runs/PORTAL-MOTION-001/tests/visual-layout.spec.mjs:229:3 › visual footer V-11 desktop dark: tên liên kết, hover và dòng pháp lý đọc rõ (tương phản ≥ 4.5) trên mọi route (3.4s)",
+        "  ✓  54 .aidlc/runs/PORTAL-MOTION-001/tests/visual-layout.spec.mjs:229:3 › visual footer V-11 mobile light: tên liên kết, hover và dòng pháp lý đọc rõ (tương phản ≥ 4.5) trên mọi route (3.4s)",
+        "  ✓  55 .aidlc/runs/PORTAL-MOTION-001/tests/visual-layout.spec.mjs:229:3 › visual footer V-11 mobile dark: tên liên kết, hover và dòng pháp lý đọc rõ (tương phản ≥ 4.5) trên mọi route (3.4s)",
         "",
-        "Time: 86668ms"
+        "  55 passed (1.8m)"
       ]
     },
     {
@@ -56,7 +60,7 @@
       "command": "pnpm run typecheck",
       "exit": 0,
       "status": "PASS",
-      "seconds": 1.5,
+      "seconds": 1.4,
       "log": ".aidlc/runs/PORTAL-MOTION-001/artifacts/logs/typecheck.log",
       "sha256": "aa802e7d3a098603609434f1bfcb710a3d265515518b7266b9f286a9f0958d77",
       "tail": [

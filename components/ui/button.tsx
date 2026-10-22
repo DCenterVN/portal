@@ -1,6 +1,7 @@
 import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
+import motion from "./console-motion.module.css";
 
 const buttonVariants = cva(
   "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[var(--radius-md)] text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 cursor-pointer active:scale-[0.98]",
@@ -19,6 +20,7 @@ const buttonVariants = cva(
         secondary:
           "border border-[var(--border)] bg-transparent text-[var(--primary)]",
         ghost: "text-[var(--foreground)] hover:bg-[var(--secondary)]",
+        "ghost-icon": "bg-transparent hover:bg-transparent active:bg-transparent focus-visible:bg-transparent disabled:bg-transparent shadow-none [box-shadow:none] focus-visible:[box-shadow:none] text-[var(--color-muted)] hover:text-[var(--color-ink)]",
         link: "text-[var(--primary)] underline-offset-4 hover:underline p-0 h-auto font-medium",
       },
       size: {
@@ -47,7 +49,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, ...props }, ref) => {
     return (
       <button
-        className={cn(buttonVariants({ variant, size, className }))}
+        className={cn(buttonVariants({ variant, size, className }), motion.button)}
         ref={ref}
         {...props}
       />

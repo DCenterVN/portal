@@ -1,0 +1,20 @@
+{
+  "initialHashes": {
+    ".aidlc/runs/PORTAL-MOTION-001/tests/motion-token.test.ts": "5983c40f79534c94f1fc871bc1dd4f2af8d6aca1f10e5b96445ac5585a50448e",
+    ".aidlc/runs/PORTAL-MOTION-001/tests/playwright.config.mjs": "8ef618926f92225e253e69fc06501131f1f9203860ed805953678315eda3a822",
+    ".aidlc/runs/PORTAL-MOTION-001/tests/motion-hero.spec.mjs": "a73299e6a282227b3b722607f32ab016e69d20d33cad0ffa8fd5d2c886bc1d4b",
+    ".aidlc/runs/PORTAL-MOTION-001/tests/motion-filter.spec.mjs": "6918137ba243568a5c8bc4011346b464689ab06f172285c1985f9a60ee92e597",
+    ".aidlc/runs/PORTAL-MOTION-001/tests/motion-quantity.spec.mjs": "68100f319524cbd6810568ccb67c8932056fd51df5151ed5dbd8983093c0c5c6",
+    ".aidlc/runs/PORTAL-MOTION-001/tests/motion-cart.spec.mjs": "3f7a9b81421d982896251f1307c03ff99b9a198136f9b6c433ae6816cfffe03d",
+    ".aidlc/runs/PORTAL-MOTION-001/tests/motion-login.spec.mjs": "0402d5bfbce6e0dc77f9acb505f3570962f50327d0104d64f4a67657d07072a1",
+    ".aidlc/runs/PORTAL-MOTION-001/tests/motion-console.spec.mjs": "f78e0659bfe4f16762a35d9f272b5c3d4a238a1436a28fce0b00afcc025afe99",
+    ".aidlc/runs/PORTAL-MOTION-001/tests/visual-controls.spec.mjs": "60a163c6827eec33f16a9f963202eccd0d9eb5138ed321f55daf7eabd55d5019",
+    ".aidlc/runs/PORTAL-MOTION-001/tests/visual-layout.spec.mjs": "62b4f0d28e43ccf04de3150291c7564dc3e5fa3c433420765dd685550f83d1af",
+    "components/patterns/password-input.test.tsx": "661778e3e6333d4670dc7feeb09bd5378c349ed348ebe6266c509e1e35c314d0"
+  },
+  "changedTestFilesObserved": {
+    ".aidlc/runs/PORTAL-MOTION-001/tests/motion-filter.spec.mjs": "7f14caffb6fe4ae16d44dde6f6fde2625ca0817aca880c8ff20f23ba6fd7de27"
+  },
+  "editedByCodex": false,
+  "filterCasesOnCurrentRevision": "6 passed, exit 0"
+}

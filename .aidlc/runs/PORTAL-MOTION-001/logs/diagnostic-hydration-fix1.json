@@ -1,0 +1,36 @@
+{
+  "errors": [],
+  "consoleErrors": [],
+  "failed": [],
+  "scriptResponses": [
+    {
+      "path": "/_next/static/chunks/app/layout.js",
+      "status": 200
+    },
+    {
+      "path": "/_next/static/chunks/main-app.js",
+      "status": 200
+    },
+    {
+      "path": "/_next/static/chunks/app-pages-internals.js",
+      "status": 200
+    },
+    {
+      "path": "/_next/static/chunks/webpack.js",
+      "status": 200
+    },
+    {
+      "path": "/_next/static/chunks/app/not-found.js",
+      "status": 200
+    },
+    {
+      "path": "/_next/static/chunks/app/(employee-auth)/layout.js",
+      "status": 200
+    },
+    {
+      "path": "/_next/static/chunks/app/(employee-auth)/staff/login/page.js",
+      "status": 200
+    }
+  ],
+  "hydrated": true
+}

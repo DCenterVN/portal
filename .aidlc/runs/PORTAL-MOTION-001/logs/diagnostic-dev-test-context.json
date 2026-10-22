@@ -1,0 +1,13 @@
+{
+  "hydrated": true,
+  "errors": [
+    {
+      "message": "Cannot read properties of null (reading 'dataset')",
+      "stack": [
+        "TypeError: Cannot read properties of null (reading 'dataset')",
+        "    at <anonymous>:2:85",
+        "    at <anonymous>:2:172"
+      ]
+    }
+  ]
+}

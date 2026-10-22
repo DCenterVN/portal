@@ -1,0 +1,10 @@
+{
+  "mode": "production",
+  "buildCommand": "pnpm exec next build --webpack",
+  "startCommand": "pnpm exec next start -p 3000",
+  "buildId": "aviG8-FoRP-_0gRO5s4E7",
+  "testPreload": false,
+  "nodeOptionsUnset": true,
+  "nextEnvChangedByBuild": true,
+  "nextEnvRestored": true
+}

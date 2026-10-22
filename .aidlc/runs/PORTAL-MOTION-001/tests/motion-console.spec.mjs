@@ -115,6 +115,14 @@ async function openMemberships(browser, options) {
   const session = await openAs(browser, 'ADMIN', options);
   await session.page.goto('/memberships');
   await settle(session.page, 800);
+  if (session.page.url().includes('/staff/switch-org')) {
+    await session.page.waitForFunction(() => { const s = document.querySelector('select[name=org_id]'); return s && !s.disabled && s.options.length > 1; });
+    await session.page.locator('select[name=org_id]').selectOption({ index: 1 });
+    await session.page.getByRole('button', { name: 'Tiếp tục', exact: true }).click();
+    await session.page.waitForURL(url => !url.pathname.includes('/staff/switch-org'));
+    await session.page.goto('/memberships');
+    await settle(session.page, 800);
+  }
   const add = session.page.getByRole('button', { name: 'Thêm nhân viên', exact: true });
   if (!(await add.count())) {
     await session.context.close();
@@ -126,7 +134,8 @@ async function openMemberships(browser, options) {
 test('motion-console token: --motion-* có thật trên :root của console', async ({ browser }) => {
   const { context, page } = await openTargets(browser);
   const values = await page.evaluate(names => Object.fromEntries(names.map(n => [n, getComputedStyle(document.documentElement).getPropertyValue(n).trim()])), Object.keys(TOKENS));
-  expect(values).toEqual(TOKENS);
+  const ms = v => Math.round(parseFloat(v) * (/ms$/.test(v) ? 1 : 1000));
+  expect(Object.fromEntries(Object.entries(values).map(([k, v]) => [k, ms(v)]))).toEqual(Object.fromEntries(Object.entries(TOKENS).map(([k, v]) => [k, ms(v)])));
   await context.close();
 });
 

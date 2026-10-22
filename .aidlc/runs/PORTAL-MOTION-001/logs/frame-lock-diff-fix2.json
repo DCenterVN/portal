@@ -1,0 +1,52 @@
+{
+  "refreshedEntries": [
+    {
+      "file": "app/tokens.generated.css",
+      "before": "fdacb901f789b8bcfa8e7a19eb6b285917c9a7a633216b89268555e0686b6ee8",
+      "after": "33574f928a7bfeffb0dddf66b026086c3d4101a693da6cd6a9c984849b0c2046"
+    },
+    {
+      "file": "components/layout/site-footer.tsx",
+      "before": "9bd915838ddaf982001f02cdec446770b5a4cff38ed8a2ad78e271bf93300d0b",
+      "after": "39117ab8055211df3895098d9cce71bd1abb474ec70d9d4189ade2e8edfad729"
+    },
+    {
+      "file": "components/patterns/password-input.test.tsx",
+      "before": "dc1a9e549e01fe97bf43a5534e69eaddd3670b76fcd91a165ef4d2f485654d5f",
+      "after": "661778e3e6333d4670dc7feeb09bd5378c349ed348ebe6266c509e1e35c314d0"
+    },
+    {
+      "file": "components/patterns/password-input.tsx",
+      "before": "a100b4c3f58408b59f3f27a138e73da3561a16a699f32988b257b3fc37ae7b22",
+      "after": "22b2c7ad3a01ec88faf8561950f1b1df29b5082342cb921bca30b3b73f1eec11"
+    },
+    {
+      "file": "components/ui/button.tsx",
+      "before": "d35940413538804b958b7d36c8765b5a91ded510a416419010ea4f45ec2c754d",
+      "after": "8c8343705f0e77e17e99308322f0861d494146bc16145e5be19849189c2d5e7c"
+    },
+    {
+      "file": "components/ui/console-motion.module.css",
+      "before": null,
+      "after": "4e5e24bde5745b85b210732dc0319254efd1e8798a82938214a1f0970b238fe2"
+    },
+    {
+      "file": "components/ui/dialog.tsx",
+      "before": "ff7fde45a4bb9e4c47f9ae32ea3540f59f4a4a9a2615bae14e5084c3d4f3f21d",
+      "after": "dc7c8f8e37b34728df547a8b45283214e486a6e48c74ddd7e8203d5040316a59"
+    },
+    {
+      "file": "components/ui/page.tsx",
+      "before": "4690a19c813ae5d8b97bbf19a1eab352463d098e16d850ac25f740e43d1d9e1b",
+      "after": "e5c9c6257e37d7e2048f58ddb21d9e37685bbf336d7c2d80b9c57dd56fe9d534"
+    },
+    {
+      "file": "components/ui/popover.tsx",
+      "before": "b75906fb92c2828de4d7b8d093a6b80cfb06c6e38afe76c9cc888e80b73dd5a9",
+      "after": "d889d05b147d69ad2a217f84298a7739082f2a58e5ea54b08678d1532916a989"
+    }
+  ],
+  "entryCountAfter": 54,
+  "driftAfter": [],
+  "command": "node scripts/frame-lock.mjs --write"
+}

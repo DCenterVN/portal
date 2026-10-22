@@ -1,0 +1,26 @@
+{
+  "source": "e2e-fix2b.log, actual getComputedStyle result in failed token assertion",
+  "actual": {
+    "--motion-press": "80ms",
+    "--motion-hover": ".12s",
+    "--motion-enter": ".18s",
+    "--motion-exit": ".12s",
+    "--motion-sheet": ".22s"
+  },
+  "normalizedMs": {
+    "--motion-press": 80.0,
+    "--motion-hover": 120.0,
+    "--motion-enter": 180.0,
+    "--motion-exit": 120.0,
+    "--motion-sheet": 220.0
+  },
+  "expectedMs": {
+    "--motion-press": 80,
+    "--motion-hover": 120,
+    "--motion-enter": 180,
+    "--motion-exit": 120,
+    "--motion-sheet": 220
+  },
+  "numericValuesMatch": true,
+  "originalTestResult": "failed; no test edits"
+}

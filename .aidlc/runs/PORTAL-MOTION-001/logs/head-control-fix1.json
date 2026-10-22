@@ -1,0 +1,22 @@
+{
+  "root": "/home/dawn/work/ticket/.cache/tmp/motion-fix1-head-control-z_d3p8oi",
+  "revision": "b5fdb44c1235f1b4c5e6164f0b32118c4559cb1d",
+  "archive_members": 502,
+  "gitignore_matches_head": true,
+  "initial_source_files_matched_head": [
+    "app/tokens.generated.css",
+    "components/ui/button.tsx",
+    "components/ui/popover.tsx",
+    "components/ui/dialog.tsx"
+  ],
+  "phase_now": "patched_restored_after_HEAD_CLS_control",
+  "patched_files": {
+    "app/tokens.generated.css": "33574f928a7bfeffb0dddf66b026086c3d4101a693da6cd6a9c984849b0c2046",
+    "components/ui/button.tsx": "8c8343705f0e77e17e99308322f0861d494146bc16145e5be19849189c2d5e7c",
+    "components/ui/popover.tsx": "d889d05b147d69ad2a217f84298a7739082f2a58e5ea54b08678d1532916a989",
+    "components/ui/dialog.tsx": "dc7c8f8e37b34728df547a8b45283214e486a6e48c74ddd7e8203d5040316a59",
+    "components/ui/console-motion.module.css": "4e5e24bde5745b85b210732dc0319254efd1e8798a82938214a1f0970b238fe2"
+  },
+  "HEAD_CLS_received": 0.010255069610218942,
+  "patched_CLS_received": 0.010255069610218942
+}
