@@ -1,0 +1,13 @@
+{
+  "task": "UX-NO-UUID-001",
+  "actor": "agent:claude-code(171709704+dawnmoriaty@users.noreply.github.com)",
+  "worker": null,
+  "ts": "2026-10-22T01:01:15+00:00",
+  "reviewer": "hs:code-reviewer-opus",
+  "report": "/home/dawn/work/ticket/plans/261021-ui-handoff/review-ux-no-uuid-r2.md",
+  "report_sha256": "0e4cee899025c4983fb460167fd081b469d8024c00bcb307f992ec067a604772",
+  "risks": [
+    "Đặt hàng thật 422 (D-256); nhánh order_code chỉ chứng minh bằng mock; S1 giá sàn chưa làm"
+  ],
+  "verdict": "PASS_WITH_RISK"
+}

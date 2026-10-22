@@ -20,7 +20,7 @@ function Change({ entry }: { entry: AuditEntry }) {
       <summary className="inline-flex min-h-11 cursor-pointer items-center text-[var(--primary)]">Xem thay đổi</summary>
       <pre className="max-h-48 overflow-auto rounded-md bg-[var(--secondary)] p-2 font-mono text-xs">
         {JSON.stringify({ before: entry.before ?? null, after: entry.after ?? null }, (key, value: unknown) => {
-          if (/^(?:id|.*_id|.*_ref)$/.test(key)) return undefined;
+          if (/^(?:id|.*_id|.*_ref)$/.test(key) && key !== "contract_ref") return undefined;
           if (typeof value === "string" && /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-/i.test(value)) return undefined;
           return value;
         }, 2)}
@@ -80,7 +80,7 @@ export function AuditLog({ source, root = "" }: { source: PlaneAccess["plane"]; 
                 <TableHead>Action</TableHead>
                 <TableHead className="hidden md:table-cell">Người làm</TableHead>
                 <TableHead className="hidden lg:table-cell">Đối tượng</TableHead>
-                <TableHead className="hidden md:table-cell">Lý do</TableHead>
+                <TableHead className="hidden md:table-cell">Lý do / hợp đồng</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -101,6 +101,7 @@ export function AuditLog({ source, root = "" }: { source: PlaneAccess["plane"]; 
                   </TableCell>
                   <TableCell className="hidden max-w-xs text-xs md:table-cell">
                     {entry.reason || "—"}
+                    {entry.contract_ref && !/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-/i.test(entry.contract_ref) && <p>{entry.contract_ref}</p>}
                   </TableCell>
                 </TableRow>
               ))}

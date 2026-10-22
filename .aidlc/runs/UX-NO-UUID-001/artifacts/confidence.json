@@ -1,0 +1,16 @@
+{
+  "task": "UX-NO-UUID-001",
+  "actor": "agent:claude-code(171709704+dawnmoriaty@users.noreply.github.com)",
+  "worker": null,
+  "ts": "2026-10-22T01:01:15+00:00",
+  "verified_head": "9315a3390e6529857a9cc366730c2909c80906f0",
+  "signals": {
+    "correctness": 0.8,
+    "ux_no_uuid_coverage": 0.72,
+    "test_strength": 0.7
+  },
+  "score": 0.4032,
+  "bar": 0.95,
+  "sensitive": false,
+  "verdict": "BELOW_BAR"
+}

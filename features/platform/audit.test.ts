@@ -36,12 +36,12 @@ vi.mock("./use-audit", async (original) => ({
 }));
 afterEach(() => vi.unstubAllGlobals());
 
-it("audit_no_uuid", async () => {
+it.each(["HĐ-261021-001", "0192f3a4-5b6c-7d8e-9f00-112233445566"])("audit_no_uuid (%s)", async (contractRef) => {
   const uuid = "0192f3a4-5b6c-7d8e-9f00-112233445566";
   const fetchMock = vi.fn<typeof fetch>().mockImplementation(async () => Response.json({ code: 200, status: "success", message: "Success", data: {
-    items: [{ id: uuid, actor_user_id: uuid, target_id: uuid, contract_ref: uuid, root_branch_id: uuid,
+    items: [{ id: uuid, actor_user_id: uuid, target_id: uuid, contract_ref: contractRef, root_branch_id: uuid,
       occurred_at: "2026-10-21T07:05:00Z", plane: "platform", action: "update", target_type: "Chi nhánh",
-      reason: "Cập nhật thông tin", before: { id: uuid, branch_ref: uuid, name: "Bếp cũ" }, after: { id: uuid, nested: { parent_id: uuid }, name: "Bếp mới", memo: `Nội bộ ${uuid}` },
+      reason: "Cập nhật thông tin", before: { id: uuid, contract_ref: uuid, branch_ref: uuid, name: "Bếp cũ" }, after: { id: uuid, contract_ref: "HĐ-261021-002", nested: { parent_id: uuid }, name: "Bếp mới", memo: `Nội bộ ${uuid}` },
     }], page: 1, limit: 20,
   } }));
   vi.stubGlobal("fetch", fetchMock);
@@ -51,6 +51,8 @@ it("audit_no_uuid", async () => {
     const html = renderToStaticMarkup(React.createElement(AuditLog, { source, root: uuid }));
     expect(html).toContain("Cập nhật thông tin");
     expect(html).toContain("Chi nhánh");
+    if (contractRef !== uuid) expect(html).toContain(contractRef);
+    expect(html).toContain("HĐ-261021-002");
     if (source === "company") expect(html).toContain("Bếp mới");
     expect(userFacingContent(html)).not.toMatch(/[0-9a-f]{8}-[0-9a-f]{4}-/);
   }

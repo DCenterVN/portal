@@ -6,7 +6,7 @@ export interface Product { id: string; sku_code: string; name: string; descripti
 export interface CreateProductInput { sku_code: string; name: string; description?: string; uom: string; base_price_vnd: number; }
 export interface CartItem { product_id: string; sku_code: string; name: string; quantity: number; price_snapshot_vnd: number; uom: string; }
 export interface Cart { id: string; items: CartItem[]; total_amount_vnd: number; }
-export interface Order { id: string; cart_ref: string; status: "CREATED" | "CANCELLED"; subtotal_vnd: number; total_vnd: number; branch_ref?: string; created_at: string; }
+export type Order = z.infer<typeof orderDisplaySchema>;
 export interface SalesCartResponse { cart: { id: string; status: "ACTIVE" | "CHECKED_OUT"; version: number }; items: Array<{ sku_ref: string; quantity: number; price_snapshot_vnd: number }> }
 export type DataSource = "api" | "unavailable";
 export interface DataResult<T> { data: T; source: DataSource; error?: string; }
@@ -169,10 +169,10 @@ export async function getCart(cartId: string): Promise<SalesCartResponse> {
 export async function createOrder(cartRef: string): Promise<Order> {
   const res = await apiFetch("/api/sales/orders", { method: "POST", headers: { "Content-Type": "application/json", "Idempotency-Key": crypto.randomUUID() }, body: JSON.stringify({ cart_ref: cartRef }) });
   if (!res.ok) throw new Error(await errorMessage(res, "Không thể tạo đơn hàng"));
-  return res.json();
+  return decodePlatform(await res.json(), orderDisplaySchema);
 }
 const orderDisplaySchema = z.object({
-  id: z.string(), cart_ref: z.string(), status: z.string(),
+  id: z.string(), order_code: z.string().optional(), cart_ref: z.string(), status: z.string(),
   subtotal_vnd: z.number(), total_vnd: z.number(), branch_ref: z.string().optional(), created_at: z.string(),
 });
 
@@ -186,17 +186,6 @@ export async function getOrderDisplay(id?: string) {
   return id ? decodePlatform(body, orderDisplaySchema) : decodePlatform(body, z.object({ items: z.array(orderDisplaySchema).nullish() })).items ?? [];
 }
 
-export async function getOrders(pageSize = 50): Promise<Order[]> {
-  const res = await apiFetch(`/api/sales/orders?page_size=${pageSize}`);
-  if (!res.ok) throw new Error(await errorMessage(res, "Không thể tải đơn hàng"));
-  const payload = await res.json();
-  return Array.isArray(payload?.items) ? payload.items : [];
-}
-export async function getOrder(id: string): Promise<Order> {
-  const res = await apiFetch(`/api/sales/orders/${encodeURIComponent(id)}`);
-  if (!res.ok) throw new Error(await errorMessage(res, "Không thể tải đơn hàng"));
-  return res.json();
-}
 export async function cancelOrder(id: string, reason: string): Promise<Order> {
   const res = await apiFetch(`/api/sales/orders/${encodeURIComponent(id)}/cancel`, {
     method: "POST",

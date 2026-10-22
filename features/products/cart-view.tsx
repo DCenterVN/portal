@@ -81,8 +81,8 @@ export function CartView({ initialCart }: CartViewProps) {
     setSubmittingOrder(true);
     try {
       const order = await createOrder(cartId);
-      setCreatedOrderCode(order.id);
-      toast.success("Tạo đơn hàng thành công", `Mã đơn: ${order.id}`);
+      setCreatedOrderCode(order.order_code ?? "");
+      toast.success("Tạo đơn hàng thành công", order.order_code ? `Mã đơn: ${order.order_code}` : undefined);
       setItems([]);
       clearCart();
       setCartId("");
@@ -232,7 +232,7 @@ export function CartView({ initialCart }: CartViewProps) {
       </div>
 
       {/* Order Created Success Dialog */}
-      <Dialog open={!!createdOrderCode} onOpenChange={(open) => !open && setCreatedOrderCode(null)}>
+      <Dialog open={createdOrderCode !== null} onOpenChange={(open) => !open && setCreatedOrderCode(null)}>
         <DialogContent size="sm" className="bg-[var(--color-surface)] text-center">
           <DialogHeader className="text-center items-center">
             <div className="flex size-12 items-center justify-center rounded-2xl bg-[var(--color-tint)] text-[var(--color-leaf)] mb-2">
@@ -246,14 +246,14 @@ export function CartView({ initialCart }: CartViewProps) {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="my-4 p-4 rounded-xl border border-[var(--color-line)] bg-[var(--color-tint)] text-center">
+          {createdOrderCode && <div className="my-4 p-4 rounded-xl border border-[var(--color-line)] bg-[var(--color-tint)] text-center">
             <div className="text-[11px] uppercase font-bold text-[var(--color-muted)]">
               Mã Đơn Hàng
             </div>
             <div className="font-mono text-xl font-extrabold text-[var(--color-ink)] mt-1">
               {createdOrderCode}
             </div>
-          </div>
+          </div>}
 
           <DialogFooter className="sm:justify-center">
             <Link href={"/products" as Route} className="w-full">

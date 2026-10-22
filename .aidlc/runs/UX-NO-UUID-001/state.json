@@ -1,7 +1,7 @@
 {
   "id": "UX-NO-UUID-001",
   "title": "UX-NO-UUID-001",
-  "description": "worker: unassigned · story: US-001 · sprint: 01 · slices: 0/4 · next: verification: no 'integration*' check (pipeline stage integration)",
+  "description": "worker: unassigned · story: US-001 · sprint: 01 · slices: 0/4 · next: review: verdict PASS_WITH_RISK != PASS",
   "pipeline": "sdlc",
   "agent": null,
   "agents": [
@@ -17,7 +17,7 @@
   "currentStep": 4,
   "status": "in_progress",
   "createdAt": "2026-10-21T12:02:51+00:00",
-  "updatedAt": "2026-10-21T15:30:02+00:00",
+  "updatedAt": "2026-10-22T07:33:00+00:00",
   "stepStates": [
     {
       "agent": "sdlc-discovery",
@@ -101,7 +101,9 @@
       "runStatus": "pending",
       "startedAt": null,
       "finishedAt": null,
-      "artifactsProduced": []
+      "artifactsProduced": [
+        ".aidlc/runs/UX-NO-UUID-001/artifacts/review-decision.json"
+      ]
     }
   ]
 }

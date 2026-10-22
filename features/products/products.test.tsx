@@ -97,7 +97,7 @@ describe("Sales & Products UI Feature", () => {
 });
 
 
-const orderHarness = vi.hoisted(() => ({ slots: [] as unknown[], cursor: 0, effects: [] as (() => unknown)[], mounted: false }));
+const orderHarness = vi.hoisted(() => ({ toast: { error: vi.fn(), success: vi.fn() }, slots: [] as unknown[], cursor: 0, effects: [] as (() => unknown)[], mounted: false }));
 vi.mock("react", async (original) => ({
   ...await original<typeof import("react")>(),
   useState(initial: unknown) {
@@ -106,9 +106,10 @@ vi.mock("react", async (original) => ({
     return [orderHarness.slots[index], (next: unknown) => { orderHarness.slots[index] = typeof next === "function" ? next(orderHarness.slots[index]) : next; }];
   },
   useCallback: (callback: unknown) => callback,
+  useMemo: (compute: () => unknown) => compute(),
   useEffect: (effect: () => unknown) => { if (!orderHarness.mounted) orderHarness.effects.push(effect); },
 }));
-vi.mock("@/components/ui/toast", () => ({ useToast: () => ({ toast: { error: vi.fn(), success: vi.fn() } }) }));
+vi.mock("@/components/ui/toast", () => ({ useToast: () => ({ toast: orderHarness.toast }) }));
 import { renderToStaticMarkup } from "react-dom/server";
 import { OrdersView, orderStatusLabels } from "./orders-view";
 import { OrderDetailView } from "./order-detail-view";
@@ -120,7 +121,7 @@ it("orders_no_uuid", async () => {
   vi.stubGlobal("fetch", fetchMock);
   try {
     for (const [status, label] of Object.entries(orderStatusLabels)) {
-      const order = { id: uuid, cart_ref: uuid, branch_ref: uuid, status, total_vnd: 120000, subtotal_vnd: 120000, created_at: createdAt };
+      const order = { id: uuid, order_code: "DH-261021-00001", cart_ref: uuid, branch_ref: uuid, status, total_vnd: 120000, subtotal_vnd: 120000, created_at: createdAt };
       for (const component of [OrdersView, () => OrderDetailView({ id: uuid })]) {
         orderHarness.slots = []; orderHarness.cursor = 0; orderHarness.effects = []; orderHarness.mounted = false;
         fetchMock.mockReset().mockImplementation(async (input) => Response.json({ code: 200, status: "success", message: "Success", data: String(input).includes("page_size") ? { items: [order] } : order }));
@@ -130,6 +131,7 @@ it("orders_no_uuid", async () => {
         await vi.waitFor(() => {
           const html = renderToStaticMarkup(view());
           expect(html).toContain(label);
+          expect(html).toContain(order.order_code);
           expect(html).toContain(new Date(createdAt).toLocaleString("vi-VN"));
           expect(html).toContain(formatVND(120000));
           expect(html).not.toContain("Giỏ");
@@ -151,3 +153,48 @@ function userFacingContent(html: string): string {
     .flatMap((input) => input.match(/\svalue="[^"]*"/g) ?? []);
   return [text, ...labels, ...values].join(" ");
 }
+
+
+// SSR has no portal target. Keep the real dialog context/open state while rendering its content.
+vi.mock("@/components/ui/dialog", async (original) => {
+  const actual = await original<typeof import("@/components/ui/dialog")>();
+  return { ...actual, DialogContent: ({ children }: { children: React.ReactNode }) => actual.useDialog().open ? React.createElement("div", { role: "dialog" }, children) : null };
+});
+import { Button } from "@/components/ui/button";
+
+function checkoutAction(node: React.ReactNode): (() => Promise<void>) | undefined {
+  for (const child of React.Children.toArray(node)) {
+    if (!React.isValidElement<{ children?: React.ReactNode; onClick?: () => Promise<void> }>(child)) continue;
+    if (child.type === Button && React.Children.toArray(child.props.children).includes("Tạo Đơn Hàng")) return child.props.onClick;
+    const action = checkoutAction(child.props.children);
+    if (action) return action;
+  }
+}
+
+it.each(["DH-261021-00001", undefined])("cart_order_code_no_uuid (%s)", async (orderCode) => {
+  const uuid = "0192f3a4-5b6c-7d8e-9f00-112233445566";
+  const order = { id: uuid, cart_ref: uuid, order_code: orderCode, status: "AWAITING_PAYMENT", subtotal_vnd: 120000, total_vnd: 120000, created_at: "2026-10-21T07:05:00Z" };
+  const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(Response.json({ code: 201, status: "success", message: "Created", data: order }));
+  vi.stubGlobal("fetch", fetchMock);
+  orderHarness.slots = []; orderHarness.cursor = 0; orderHarness.effects = []; orderHarness.mounted = true;
+  orderHarness.toast.success.mockClear(); orderHarness.toast.error.mockClear();
+  const view = () => {
+    orderHarness.cursor = 0;
+    return CartView({ initialCart: { id: uuid, total_amount_vnd: 120000, items: [{ product_id: uuid, sku_code: "BUN-7K", name: "Bún bò Huế QA7K", uom: "suất", quantity: 1, price_snapshot_vnd: 120000 }] } });
+  };
+  try {
+    const checkout = checkoutAction(view());
+    expect(checkout).toBeDefined();
+    await checkout?.();
+    expect(orderHarness.toast.error).not.toHaveBeenCalled();
+    expect(orderHarness.toast.success).toHaveBeenCalledWith("Tạo đơn hàng thành công", orderCode ? `Mã đơn: ${orderCode}` : undefined);
+    expect(JSON.stringify(orderHarness.toast.success.mock.calls)).not.toContain(uuid);
+    const html = renderToStaticMarkup(view());
+    expect(html).toContain('role="dialog"');
+    expect(html).toContain("Đã Tạo Đơn Hàng Thành Công!");
+    if (orderCode) expect(html).toContain(orderCode);
+    else expect(html).not.toContain("Mã Đơn Hàng");
+    expect(userFacingContent(html)).not.toContain(uuid);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  } finally { vi.unstubAllGlobals(); }
+});

@@ -2,9 +2,9 @@
   "task": "UX-NO-UUID-001",
   "actor": "agent:claude-code(171709704+dawnmoriaty@users.noreply.github.com)",
   "worker": null,
-  "ts": "2026-10-21T15:30:02+00:00",
+  "ts": "2026-10-22T00:51:47+00:00",
   "cwd": ".",
-  "head": "c98f22dd001c1fc9d3b4cefe13c486174e9483b0",
+  "head": "9315a3390e6529857a9cc366730c2909c80906f0",
   "dirty": true,
   "checks": [
     {
@@ -12,15 +12,15 @@
       "command": "TMPDIR=/home/dawn/work/ticket/.cache/tmp ESBUILD_BINARY_PATH=/home/dawn/.local/share/esbuild/esbuild-0.21.5 node node_modules/vitest/vitest.mjs run --exclude \"e2e/**\"",
       "exit": 0,
       "status": "PASS",
-      "seconds": 2.6,
+      "seconds": 2.3,
       "log": ".aidlc/runs/UX-NO-UUID-001/artifacts/logs/unit.log",
-      "sha256": "b4e88810946a5b66e6b6af8e92778b183ee1eea81e429b8b8c63bdedd2b87942",
+      "sha256": "6dce5822f01f300f2e1dede80a32bd6c5818b7ec59a805abd239fe392e95c983",
       "tail": [
         "stderr | app/api/auth/bff.test.ts > Portal BFF Auth Handlers (9 handlers) > 1. POST /api/auth/login sets cookies and forwards response",
         "PORTAL_CLIENT_IP_SOURCE is unset; auth forwarding is disabled",
         "",
-        "stderr | app/rebrand.test.ts > S7 rendered target, cart, orders and product creation roles > keeps target permissions, labelled statuses and sole create/submit emphasis (form=false)",
-        "React does not recognize the `asChild` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `aschild` instead. If you accidentally passed it from a parent component, remove it from the DOM element."
+        "stderr | app/api/operations/operations.test.ts > Portal BFF Operations & Operator Console > 4. GET operation (auth.operator.users.list) calls backend and returns data",
+        "PORTAL_CLIENT_IP_SOURCE is unset; auth forwarding is disabled"
       ]
     },
     {
@@ -28,7 +28,7 @@
       "command": "pnpm typecheck",
       "exit": 0,
       "status": "PASS",
-      "seconds": 1.2,
+      "seconds": 1.4,
       "log": ".aidlc/runs/UX-NO-UUID-001/artifacts/logs/typecheck.log",
       "sha256": "9ba2ca8999c9c4686a02eda00b909b46af9f33c8d39174b599819ff393c96127",
       "tail": [
@@ -38,26 +38,60 @@
     },
     {
       "name": "lint",
-      "command": "pnpm lint",
+      "command": "pnpm exec eslint app/rebrand.test.ts components/ui/entity-picker.tsx features/inventory/shelves-view.test.tsx features/inventory/shelves-view.tsx features/memberships/memberships-view.test.tsx features/memberships/memberships-view.tsx features/platform/audit-view.tsx features/platform/audit.test.ts features/production/targets-view.test.tsx features/production/targets-view.tsx features/products/cart-view.tsx features/products/order-detail-view.tsx features/products/orders-view.tsx features/products/products.test.tsx lib/api/production.ts lib/api/sales.ts lib/ux-no-uuid.test.ts next-env.d.ts ",
       "exit": 0,
       "status": "PASS",
-      "seconds": 2.0,
+      "seconds": 1.1,
       "log": ".aidlc/runs/UX-NO-UUID-001/artifacts/logs/lint.log",
-      "sha256": "533e95e82d9a20c2666996697a6bd6063676821de3fdfe07eadeb521f990c308",
+      "sha256": "2285529baf99e6e26259479928f58fd53e5874f3e5818232c291462ca9d0e806",
       "tail": [
-        "> @dcentervn/portal@0.1.0 lint /home/dawn/wt/portal-nouuid",
-        "> node node_modules/eslint/bin/eslint.js ."
+        "/home/dawn/wt/portal-nouuid/next-env.d.ts",
+        "  0:0  warning  File ignored because of a matching ignore pattern. Use \"--no-ignore\" to disable file ignore settings or use \"--no-warn-ignored\" to suppress this warning",
+        "",
+        "✖ 1 problem (0 errors, 1 warning)"
       ]
     },
     {
       "name": "arch",
-      "command": "! python3 /home/dawn/agent_skills/sdlc/engine/archcheck.py | grep \"^NEW\" | grep -E \"(shelves-view|targets-view|orders-view|order-detail-view|memberships-view|audit-view|entity-picker|ux-no-uuid|lib/api/(sales|production))\"",
+      "command": "/home/dawn/work/ticket/.cache/fooddev/arch-new-only.sh /home/dawn/wt/portal-nouuid",
       "exit": 0,
       "status": "PASS",
-      "seconds": 0.2,
+      "seconds": 0.5,
       "log": ".aidlc/runs/UX-NO-UUID-001/artifacts/logs/arch.log",
-      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "tail": []
+      "sha256": "5095bfedee294ec76b6dc8f3abe587a87284267712cf922b507850b58ccbea53",
+      "tail": [
+        "base NEW=45cddef head-only:",
+        "<none>"
+      ]
+    },
+    {
+      "name": "integration_bff_orders",
+      "command": "node /home/dawn/work/ticket/.cache/fooddev/wh-order-probe.mjs bff",
+      "exit": 0,
+      "status": "PASS",
+      "seconds": 0.4,
+      "log": ".aidlc/runs/UX-NO-UUID-001/artifacts/logs/integration_bff_orders.log",
+      "sha256": "eaac3b0d60b5189c16c1b87b6310c734941583f90c48b3fa92c8b7d2a7abcbbf",
+      "tail": [
+        "BFF /api/production/orders=200 envelope=success",
+        "WAREHOUSE GET /production/orders=200 perm_read=true perm_update=false"
+      ]
+    },
+    {
+      "name": "e2e_no_uuid_live",
+      "command": "node /home/dawn/work/ticket/.cache/fooddev/nouuid-live.mjs",
+      "exit": 0,
+      "status": "PASS",
+      "seconds": 15.6,
+      "log": ".aidlc/runs/UX-NO-UUID-001/artifacts/logs/e2e_no_uuid_live.log",
+      "sha256": "154a8fe5aa198d32f9b91b416827e2aade79c809a9abbf6e2e37d19ef95c6d02",
+      "tail": [
+        "{\"name\":\"targets-375-dark\",\"path\":\"/production/targets\",\"ok\":true,\"note\":\"\",\"api\":[\"200 /api/auth/me\",\"200 /api/auth/context\",\"200 /api/auth/me\",\"200 /api/org/permissions/me?org_id=01a157cd-fef2-72ff-9428-63b4df7d25d0&branch_id=01a157cd-fef2-72ff-9428-63b4df7d25d0\",\"200 /api/auth/context\",\"200 /api/org/permissions/me?org_id=01a157cd-fef2-72ff-9428-63b4df7d25d0&branch_id=01a157cd-fef2-72ff-9428-63b4df7d25d0\",\"200 /api/sales/products?page_size=100&cursor=\",\"200 /api/auth/context\",\"200 /api/sales/products?page_size=100&cursor=\",\"200 /api/auth/context\"],\"uuid\":null,\"url\":\"/production/targets\",\"snippet\":\"Bỏ qua tới nội dung QA Fresh QA Fresh TỔNG QUAN Bảng điều khiển SẢN XUẤT Chỉ tiêu Kế hoạch Nhu cầu nguyên liệu Q QA role qa-roles-food_dev@dcentervn.local Chỉ tiêu sản xuất Tạo chỉ tiêu đã duyệt cho set chuẩn bị nguyên l\"}",
+        "{\"name\":\"memberships-375-dark\",\"path\":\"/memberships\",\"ok\":true,\"note\":\"\",\"api\":[\"200 /api/auth/me\",\"200 /api/auth/context\",\"200 /api/auth/me\",\"200 /api/org/permissions/me?org_id=01a157cd-fef2-72ff-9428-63b4df7d25d0&branch_id=01a157cd-fef2-72ff-9428-63b4df7d25d0\",\"200 /api/auth/context\",\"200 /api/org/permissions/me?org_id=01a157cd-fef2-72ff-9428-63b4df7d25d0&branch_id=01a157cd-fef2-72ff-9428-63b4df7d25d0\",\"200 /api/org/company/memberships?page=1&limit=20\"],\"uuid\":null,\"url\":\"/memberships\",\"snippet\":\"Bỏ qua tới nội dung QA Fresh QA Fresh TỔNG QUAN Bảng điều khiển TỔ CHỨC Chi nhánh Thành viên Vai trò KHO Kệ hàng SẢN XUẤT Chỉ tiêu Kế hoạch Nhu cầu nguyên liệu Lệnh sản xuất Kiểm định BÁN HÀNG Bảng giá Q QA role qa-roles\"}",
+        "{\"name\":\"audit-375-dark\",\"path\":\"/platform/audit\",\"ok\":true,\"note\":\"\",\"api\":[\"200 /api/auth/context\",\"200 /api/org/permissions/me?org_id=01a157cd-fef2-72ff-9428-63b4df7d25d0&branch_id=01a157cd-fef2-72ff-9428-63b4df7d25d0\",\"200 /api/org/company/audit-logs?page=1&limit=20\"],\"uuid\":null,\"url\":\"/platform/audit\",\"snippet\":\"Bỏ qua tới nội dung Nền tảng NỀN TẢNG Ma trận quyền Nhật ký Q Quản trị viên Nhật ký kiểm toán Chỉ đọc. Không sửa, không xoá. Action Từ Đến Lọc Không có bản ghi audit khớp bộ lọc. Điều hướng quản trị Ma trận quyền Nhật ký\"}",
+        "{\"name\":\"orders-375-dark\",\"path\":\"/orders\",\"ok\":true,\"note\":\"no order link\",\"api\":[\"200 /api/auth/me\",\"403 /api/sales/orders?page_size=50\",\"200 /api/auth/me\",\"403 /api/sales/orders?page_size=50\"],\"uuid\":null,\"url\":\"/orders\",\"snippet\":\"Bỏ qua tới nội dung Việt Sạch Q Đơn hàng của tôi Danh sách được Sales giới hạn theo chủ giỏ của phiên đăng nhập Làm mới Không thể tải đơn hàng Không thể tải đơn hàng. Thử tải lại. VIỆT SẠCH Về chúng tôi Liên hệ MUA SẮM S\"}",
+        "screens=10 fail=0"
+      ]
     }
   ],
   "verdict": "PASS"

@@ -4,7 +4,7 @@
 - **Mode**: `hard`
 - **Story**: US-001
 - **Sprint**: 01
-- **Issue**: 
+- **Issue**:
 
 ## Scope
 - Outcome: người dùng portal không bao giờ nhập hoặc thấy UUID; chọn thực thể bằng tên/mã nghiệp vụ (R16, Dawn 21/10, nợ D-246). Số ô nhập UUID trên portal = 0, số chỗ in `*_ref`/id thô = 0, có test chặn tái phạm.
@@ -63,9 +63,11 @@
 - features/inventory/shelves-view.test.tsx
 - features/memberships/memberships-view.test.tsx
 - lib/ux-no-uuid.test.ts
+- features/platform/audit.test.ts
 - components/ui/entity-picker.tsx
 - lib/api/production.ts
 - lib/api/sales.ts
+- features/products/cart-view.tsx
 - app/rebrand.test.ts
 - app/ui-rules-baseline.txt
 - frame.lock.json
@@ -90,7 +92,17 @@
 - `lib/api/production.ts`: `getOrders({forPicker:true})` lọc `status=QC_PASSED`, ném lỗi HTTP để tách lỗi với rỗng; lời gọi cũ không đổi.
 - `lib/api/sales.ts`: `getOrderDisplay` đọc envelope bằng `decodePlatform` (R14); `getOrders/getOrder` cũ đọc body phẳng nên mất dữ liệu.
 - `app/rebrand.test.ts`, `app/ui-rules-baseline.txt` (chỉ xoá 2 dòng hết vi phạm), `frame.lock.json` (script `frame-lock.mjs --write`, 1 hash entity-picker): gate cũ theo hành vi mới.
+- Rebase 21/10 22:55 lên portal `origin/main` `45cddef` (nhánh dựng nhầm trên `c98f22d` cũ 15 commit): origin đã xoá `features/platform/audit-view.test.tsx` → case `audit_no_uuid` chuyển sang `features/platform/audit.test.ts`. Màn thành viên origin dùng DTO chỉ có id/role/status → bỏ cột id, chưa có tên/email (nợ BE). Lint `next.config.mjs:3` `process` no-undef có sẵn trên origin/main, ngoài phạm vi → check lint của task chỉ chạy trên file task.
 - Nợ BE mới: lệnh sản xuất chưa trả tên sản phẩm; `GET /production/orders` chưa có limit/phân trang; audit DTO chưa có tên người làm/đối tượng.
+
+## Sửa sau review 21/10 khuya (cần Dawn approve lại)
+Review [review-ux-no-uuid.md](../../../../../work/ticket/plans/261021-ui-handoff/review-ux-no-uuid.md) BLOCKED; Dawn chốt sửa trong task:
+- `features/products/cart-view.tsx` (mới vào plan): sau khi đặt hàng, toast + dialog hiện `order_code` (`DH-YYMMDD-NNNNN`, sales `internal/store/models.go:94` đã trả) thay `order.id`; thiếu `order_code` thì bỏ dòng mã. Test trong `products.test.tsx`.
+- Màn đơn (`orders-view.tsx`, `order-detail-view.tsx`): hiện `order_code` để phân biệt hai đơn giống nhau.
+- `lib/api/sales.ts`: xoá `getOrders`/`getOrder` cũ không còn ai gọi (R11).
+- `features/platform/audit-view.tsx`: hiện lại `contract_ref` (mã hợp đồng giấy, không phải UUID).
+- `lib/ux-no-uuid.test.ts`: quét thêm chuỗi trong `toast.*(…)`, template có `.id}`/`_id}`/`_ref}` trong text/title/aria, `.slice(0, 8)` trên id, và cả `app/**`. File ngoài plan còn vi phạm → allowlist kèm D-246.
+- Ghi nợ, không làm: khối "Huỷ đơn" so `CREATED` trong khi sales tạo đơn ở `AWAITING_PAYMENT`; nhãn enum tiếng Anh còn in thẳng; màn thành viên cần tên/email (D-255).
 
 ## Risks / rollback
 - Picker cần endpoint danh sách chưa có (variant/BOM/price book/lô) → không chặn task: ghi nợ BE, ô đó tạm ẩn kèm thông báo "chưa có dữ liệu để chọn", không quay lại ô nhập UUID.
