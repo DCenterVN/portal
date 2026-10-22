@@ -50,24 +50,27 @@ export function resolveConsoleSession(profilePayload: unknown, contextPayload: u
 }
 
 export async function fetchConsoleSession(fetcher: typeof fetch = fetch): Promise<ConsoleSession> {
-  const results = await Promise.allSettled(["/api/auth/me", "/api/auth/context"].map(async (url) => {
-    const response = await fetcher(url);
-    if (response.status === 401) return { status: 401, payload: null };
-    if (!response.ok) throw new Error("Session request failed");
-    return { status: response.status, payload: await response.json() as unknown };
-  }));
-  if (results.some((result) => result.status === "fulfilled" && result.value.status === 401)) {
-    return { user: { name: "Đăng nhập" }, context: { label: "Phiên làm việc hết hạn" }, error: "Phiên làm việc hết hạn. Vui lòng đăng nhập lại." };
-  }
-  const [profile, context] = results;
-  if (profile.status === "rejected" || typeof objectValue(profile.value.payload)?.display_name !== "string") {
+  let response: Response;
+  let payload: unknown;
+  try {
+    response = await fetcher("/api/auth/context");
+    if (response.status === 401) {
+      return { user: { name: "Đăng nhập" }, context: { label: "Phiên làm việc hết hạn" }, error: "Phiên làm việc hết hạn. Vui lòng đăng nhập lại." };
+    }
+    payload = await response.json();
+  } catch {
     return { ...EMPTY_SESSION, error: "Không tải được phiên làm việc." };
   }
-  const session = resolveConsoleSession(profile.value.payload, context.status === "fulfilled" ? context.value.payload : null);
-  if (context.status === "rejected" || !objectValue(context.value.payload)) {
+  const context = objectValue(payload);
+  const profile = objectValue(context?.user);
+  if (typeof profile?.display_name !== "string") {
+    return { ...EMPTY_SESSION, error: "Không tải được phiên làm việc." };
+  }
+  const session = resolveConsoleSession(profile, context);
+  if (!response.ok) {
     return { ...session, error: "Không tải được phạm vi chi nhánh." };
   }
-  const active = objectValue(objectValue(context.value.payload)?.active_context);
+  const active = objectValue(context?.active_context);
   if (typeof active?.org_id !== "string" || typeof active?.branch_id !== "string") return session;
   try {
     const params = new URLSearchParams({ org_id: active.org_id, branch_id: active.branch_id });

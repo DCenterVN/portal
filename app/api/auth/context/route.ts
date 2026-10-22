@@ -15,6 +15,7 @@ interface AccessContextItem {
 }
 
 export async function GET(req: NextRequest) {
+  let userData: unknown;
   try {
     const accessToken = req.cookies.get("access_token")?.value || "";
     if (!accessToken) {
@@ -33,7 +34,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json(errData, { status: meRes.status });
     }
 
-    const userData = await meRes.json();
+    userData = await meRes.json();
 
     // 2. Fetch user's access contexts from Org service
     let accessContexts: AccessContextItem[] = [];
@@ -45,7 +46,7 @@ export async function GET(req: NextRequest) {
     if (!contextsRes.ok) {
       const details = await contextsRes.json().catch(() => ({}));
       return NextResponse.json(
-        { error: "org_context_unavailable", message: "Không thể tải phạm vi tổ chức", details },
+        { user: userData, error: "org_context_unavailable", message: "Không thể tải phạm vi tổ chức", details },
         { status: contextsRes.status },
       );
     }
@@ -66,7 +67,7 @@ export async function GET(req: NextRequest) {
       if (!permsRes.ok) {
         const details = await permsRes.json().catch(() => ({}));
         return NextResponse.json(
-          { error: "permissions_unavailable", message: "Không thể xác minh quyền truy cập", details },
+          { user: userData, error: "permissions_unavailable", message: "Không thể xác minh quyền truy cập", details },
           { status: permsRes.status },
         );
       }
@@ -84,6 +85,6 @@ export async function GET(req: NextRequest) {
       permissions: permissions,
     });
   } catch {
-    return NextResponse.json({ error: "upstream_unavailable", message: "Dịch vụ xác thực hoặc tổ chức hiện không khả dụng" }, { status: 502 });
+    return NextResponse.json({ user: userData, error: "upstream_unavailable", message: "Dịch vụ xác thực hoặc tổ chức hiện không khả dụng" }, { status: 502 });
   }
 }
