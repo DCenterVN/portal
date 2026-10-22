@@ -2,9 +2,9 @@
   "task": "UX-NO-UUID-001",
   "actor": "agent:claude-code(171709704+dawnmoriaty@users.noreply.github.com)",
   "worker": null,
-  "ts": "2026-10-22T00:51:47+00:00",
+  "ts": "2026-10-22T07:56:03+00:00",
   "cwd": ".",
-  "head": "9315a3390e6529857a9cc366730c2909c80906f0",
+  "head": "d4b6be28a86e2d3ab2e5c6c8f42caaddd67b861c",
   "dirty": true,
   "checks": [
     {
@@ -12,9 +12,9 @@
       "command": "TMPDIR=/home/dawn/work/ticket/.cache/tmp ESBUILD_BINARY_PATH=/home/dawn/.local/share/esbuild/esbuild-0.21.5 node node_modules/vitest/vitest.mjs run --exclude \"e2e/**\"",
       "exit": 0,
       "status": "PASS",
-      "seconds": 2.3,
+      "seconds": 2.7,
       "log": ".aidlc/runs/UX-NO-UUID-001/artifacts/logs/unit.log",
-      "sha256": "6dce5822f01f300f2e1dede80a32bd6c5818b7ec59a805abd239fe392e95c983",
+      "sha256": "ff6aecef4e818a53067602538b0d2224cace445d7fbb81c2c6c9780d9c38dd5e",
       "tail": [
         "stderr | app/api/auth/bff.test.ts > Portal BFF Auth Handlers (9 handlers) > 1. POST /api/auth/login sets cookies and forwards response",
         "PORTAL_CLIENT_IP_SOURCE is unset; auth forwarding is disabled",
@@ -28,7 +28,7 @@
       "command": "pnpm typecheck",
       "exit": 0,
       "status": "PASS",
-      "seconds": 1.4,
+      "seconds": 1.9,
       "log": ".aidlc/runs/UX-NO-UUID-001/artifacts/logs/typecheck.log",
       "sha256": "9ba2ca8999c9c4686a02eda00b909b46af9f33c8d39174b599819ff393c96127",
       "tail": [
@@ -41,7 +41,7 @@
       "command": "pnpm exec eslint app/rebrand.test.ts components/ui/entity-picker.tsx features/inventory/shelves-view.test.tsx features/inventory/shelves-view.tsx features/memberships/memberships-view.test.tsx features/memberships/memberships-view.tsx features/platform/audit-view.tsx features/platform/audit.test.ts features/production/targets-view.test.tsx features/production/targets-view.tsx features/products/cart-view.tsx features/products/order-detail-view.tsx features/products/orders-view.tsx features/products/products.test.tsx lib/api/production.ts lib/api/sales.ts lib/ux-no-uuid.test.ts next-env.d.ts ",
       "exit": 0,
       "status": "PASS",
-      "seconds": 1.1,
+      "seconds": 1.0,
       "log": ".aidlc/runs/UX-NO-UUID-001/artifacts/logs/lint.log",
       "sha256": "2285529baf99e6e26259479928f58fd53e5874f3e5818232c291462ca9d0e806",
       "tail": [
@@ -58,9 +58,9 @@
       "status": "PASS",
       "seconds": 0.5,
       "log": ".aidlc/runs/UX-NO-UUID-001/artifacts/logs/arch.log",
-      "sha256": "5095bfedee294ec76b6dc8f3abe587a87284267712cf922b507850b58ccbea53",
+      "sha256": "69dd2b5858d4023ec4fc06e47004b22212c421a608719e0856b9a048aa16d8c1",
       "tail": [
-        "base NEW=45cddef head-only:",
+        "base NEW=06743c7 head-only:",
         "<none>"
       ]
     },
@@ -69,7 +69,7 @@
       "command": "node /home/dawn/work/ticket/.cache/fooddev/wh-order-probe.mjs bff",
       "exit": 0,
       "status": "PASS",
-      "seconds": 0.4,
+      "seconds": 0.3,
       "log": ".aidlc/runs/UX-NO-UUID-001/artifacts/logs/integration_bff_orders.log",
       "sha256": "eaac3b0d60b5189c16c1b87b6310c734941583f90c48b3fa92c8b7d2a7abcbbf",
       "tail": [
@@ -82,14 +82,14 @@
       "command": "node /home/dawn/work/ticket/.cache/fooddev/nouuid-live.mjs",
       "exit": 0,
       "status": "PASS",
-      "seconds": 15.6,
+      "seconds": 15.1,
       "log": ".aidlc/runs/UX-NO-UUID-001/artifacts/logs/e2e_no_uuid_live.log",
-      "sha256": "154a8fe5aa198d32f9b91b416827e2aade79c809a9abbf6e2e37d19ef95c6d02",
+      "sha256": "c18acb30af946ef5ce935a332193cf8d47d1a082f6777041dea9a066edb4c2d2",
       "tail": [
-        "{\"name\":\"targets-375-dark\",\"path\":\"/production/targets\",\"ok\":true,\"note\":\"\",\"api\":[\"200 /api/auth/me\",\"200 /api/auth/context\",\"200 /api/auth/me\",\"200 /api/org/permissions/me?org_id=01a157cd-fef2-72ff-9428-63b4df7d25d0&branch_id=01a157cd-fef2-72ff-9428-63b4df7d25d0\",\"200 /api/auth/context\",\"200 /api/org/permissions/me?org_id=01a157cd-fef2-72ff-9428-63b4df7d25d0&branch_id=01a157cd-fef2-72ff-9428-63b4df7d25d0\",\"200 /api/sales/products?page_size=100&cursor=\",\"200 /api/auth/context\",\"200 /api/sales/products?page_size=100&cursor=\",\"200 /api/auth/context\"],\"uuid\":null,\"url\":\"/production/targets\",\"snippet\":\"Bỏ qua tới nội dung QA Fresh QA Fresh TỔNG QUAN Bảng điều khiển SẢN XUẤT Chỉ tiêu Kế hoạch Nhu cầu nguyên liệu Q QA role qa-roles-food_dev@dcentervn.local Chỉ tiêu sản xuất Tạo chỉ tiêu đã duyệt cho set chuẩn bị nguyên l\"}",
-        "{\"name\":\"memberships-375-dark\",\"path\":\"/memberships\",\"ok\":true,\"note\":\"\",\"api\":[\"200 /api/auth/me\",\"200 /api/auth/context\",\"200 /api/auth/me\",\"200 /api/org/permissions/me?org_id=01a157cd-fef2-72ff-9428-63b4df7d25d0&branch_id=01a157cd-fef2-72ff-9428-63b4df7d25d0\",\"200 /api/auth/context\",\"200 /api/org/permissions/me?org_id=01a157cd-fef2-72ff-9428-63b4df7d25d0&branch_id=01a157cd-fef2-72ff-9428-63b4df7d25d0\",\"200 /api/org/company/memberships?page=1&limit=20\"],\"uuid\":null,\"url\":\"/memberships\",\"snippet\":\"Bỏ qua tới nội dung QA Fresh QA Fresh TỔNG QUAN Bảng điều khiển TỔ CHỨC Chi nhánh Thành viên Vai trò KHO Kệ hàng SẢN XUẤT Chỉ tiêu Kế hoạch Nhu cầu nguyên liệu Lệnh sản xuất Kiểm định BÁN HÀNG Bảng giá Q QA role qa-roles\"}",
-        "{\"name\":\"audit-375-dark\",\"path\":\"/platform/audit\",\"ok\":true,\"note\":\"\",\"api\":[\"200 /api/auth/context\",\"200 /api/org/permissions/me?org_id=01a157cd-fef2-72ff-9428-63b4df7d25d0&branch_id=01a157cd-fef2-72ff-9428-63b4df7d25d0\",\"200 /api/org/company/audit-logs?page=1&limit=20\"],\"uuid\":null,\"url\":\"/platform/audit\",\"snippet\":\"Bỏ qua tới nội dung Nền tảng NỀN TẢNG Ma trận quyền Nhật ký Q Quản trị viên Nhật ký kiểm toán Chỉ đọc. Không sửa, không xoá. Action Từ Đến Lọc Không có bản ghi audit khớp bộ lọc. Điều hướng quản trị Ma trận quyền Nhật ký\"}",
-        "{\"name\":\"orders-375-dark\",\"path\":\"/orders\",\"ok\":true,\"note\":\"no order link\",\"api\":[\"200 /api/auth/me\",\"403 /api/sales/orders?page_size=50\",\"200 /api/auth/me\",\"403 /api/sales/orders?page_size=50\"],\"uuid\":null,\"url\":\"/orders\",\"snippet\":\"Bỏ qua tới nội dung Việt Sạch Q Đơn hàng của tôi Danh sách được Sales giới hạn theo chủ giỏ của phiên đăng nhập Làm mới Không thể tải đơn hàng Không thể tải đơn hàng. Thử tải lại. VIỆT SẠCH Về chúng tôi Liên hệ MUA SẮM S\"}",
+        "{\"name\":\"targets-375-dark\",\"path\":\"/production/targets\",\"ok\":true,\"note\":\"\",\"api\":[\"200 /api/auth/context\",\"200 /api/org/permissions/me?org_id=01a157cd-fef2-72ff-9428-63b4df7d25d0&branch_id=01a157cd-fef2-72ff-9428-63b4df7d25d0\",\"200 /api/auth/context\",\"200 /api/org/permissions/me?org_id=01a157cd-fef2-72ff-9428-63b4df7d25d0&branch_id=01a157cd-fef2-72ff-9428-63b4df7d25d0\",\"200 /api/sales/products?page_size=100&cursor=\",\"200 /api/auth/context\",\"200 /api/sales/products?page_size=100&cursor=\",\"200 /api/auth/context\"],\"uuid\":null,\"url\":\"/production/targets\",\"snippet\":\"Bỏ qua tới nội dung QA Fresh QA Fresh TỔNG QUAN Bảng điều khiển SẢN XUẤT Chỉ tiêu Kế hoạch Nhu cầu nguyên liệu Q QA role qa-roles-food_dev@dcentervn.local Chỉ tiêu sản xuất Tạo chỉ tiêu đã duyệt cho set chuẩn bị nguyên l\"}",
+        "{\"name\":\"memberships-375-dark\",\"path\":\"/memberships\",\"ok\":true,\"note\":\"\",\"api\":[\"200 /api/auth/context\",\"200 /api/org/permissions/me?org_id=01a157cd-fef2-72ff-9428-63b4df7d25d0&branch_id=01a157cd-fef2-72ff-9428-63b4df7d25d0\",\"200 /api/auth/context\",\"200 /api/org/permissions/me?org_id=01a157cd-fef2-72ff-9428-63b4df7d25d0&branch_id=01a157cd-fef2-72ff-9428-63b4df7d25d0\",\"200 /api/org/company/memberships?page=1&limit=20\"],\"uuid\":null,\"url\":\"/memberships\",\"snippet\":\"Bỏ qua tới nội dung QA Fresh QA Fresh TỔNG QUAN Bảng điều khiển TỔ CHỨC Chi nhánh Thành viên Vai trò KHO Kệ hàng SẢN XUẤT Chỉ tiêu Kế hoạch Nhu cầu nguyên liệu Lệnh sản xuất Kiểm định BÁN HÀNG Bảng giá Q QA role qa-roles\"}",
+        "{\"name\":\"audit-375-dark\",\"path\":\"/platform/audit\",\"ok\":true,\"note\":\"\",\"api\":[\"200 /api/auth/context\",\"200 /api/org/permissions/me?org_id=01a157cd-fef2-72ff-9428-63b4df7d25d0&branch_id=01a157cd-fef2-72ff-9428-63b4df7d25d0\",\"200 /api/org/company/audit-logs?page=1&limit=20\"],\"uuid\":null,\"url\":\"/platform/audit\",\"snippet\":\"Bỏ qua tới nội dung Nền tảng NỀN TẢNG Ma trận quyền Nhật ký Q Quản trị viên Nhật ký kiểm toán Chỉ đọc. Không sửa, không xoá. Action Từ Đến Lọc Dịch vụ tổ chức hiện không khả dụng. Truy cập bị chặn cho tới khi xác minh lạ\"}",
+        "{\"name\":\"orders-375-dark\",\"path\":\"/orders\",\"ok\":true,\"note\":\"no order link\",\"api\":[\"403 /api/sales/orders?page_size=50\",\"200 /api/auth/me\",\"403 /api/sales/orders?page_size=50\",\"200 /api/auth/me\"],\"uuid\":null,\"url\":\"/orders\",\"snippet\":\"Bỏ qua tới nội dung Việt Sạch Q Đơn hàng của tôi Danh sách được Sales giới hạn theo chủ giỏ của phiên đăng nhập Làm mới Không thể tải đơn hàng Không thể tải đơn hàng. Thử tải lại. VIỆT SẠCH Về chúng tôi Liên hệ MUA SẮM S\"}",
         "screens=10 fail=0"
       ]
     }
