@@ -8,7 +8,7 @@ import { Segmented } from "@/components/ui/segmented";
 import { Skeleton, EmptyState, ErrorState, InlineAlert } from "@/components/ui/state";
 import { useToast } from "@/components/ui/toast";
 import { errorText } from "./access";
-import { RequireAction, useAccess } from "./access-boundary";
+import { RequireAction, useAccess } from "@/lib/access-boundary";
 import { PageHeader } from "@/components/ui/page";
 import { PermissionGrid } from "./permission-grid";
 import { actionChanges, catalogOf, replaceRole, resourcesOf, useRoleMatrix } from "./use-role-matrix";

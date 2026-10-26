@@ -16,7 +16,7 @@ import { EmployeeAuthShell } from "../components/layout/employee-auth-shell";
 import ProfileClient from "./(store)/me/profile-client";
 import { StaffProfileView } from "../features/staff-profile/staff-profile-view";
 import { SWRConfig, unstable_serialize } from "swr";
-import { AccessProvider } from "../features/platform/access-boundary";
+import { AccessProvider } from "../lib/access-boundary";
 import type { Membership } from "../lib/api/platform-client";
 import { BranchesView } from "../features/branches/branches-view";
 import { MembershipsView } from "../features/memberships/memberships-view";

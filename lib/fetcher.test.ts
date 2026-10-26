@@ -1,5 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { fetcher, mutationFetcher, apiFetch, FetchError } from "./fetcher";
+import { isEmployeeRoute } from "./fetcher";
+
+it.each(["/inventory/suppliers", "/inventory/suppliers/detail", "/inventory/goods-receipts/new"])("supplier employee route %s", path => {
+  expect(isEmployeeRoute(path)).toBe(true);
+  expect(isEmployeeRoute(`${path}-lookalike`)).toBe(path.includes("/suppliers/"));
+});
 
 describe("fetcher and apiFetch", () => {
   const originalFetch = global.fetch;

@@ -19,13 +19,15 @@ export async function forwardService(request: NextRequest, options: ForwardServi
   if (requireAuth) {
     const accessToken = request.cookies.get("access_token")?.value;
     if (!accessToken) {
-      return NextResponse.json({ error: "unauthenticated", message: "Chưa đăng nhập" }, { status: 401 });
+      return NextResponse.json({ error: "unauthenticated", message: "Chưa đăng nhập" }, { status: 401, headers: { "Cache-Control": "no-store" } });
     }
     headers.Authorization = `Bearer ${accessToken}`;
   }
 
   const idempotencyKey = request.headers.get("idempotency-key");
   if (idempotencyKey) headers["Idempotency-Key"] = idempotencyKey;
+  const ifMatch = request.headers.get("if-match");
+  if (ifMatch) headers["If-Match"] = ifMatch;
 
   let body: string | undefined;
   if (bodyPolicy === "required") {
@@ -33,7 +35,7 @@ export async function forwardService(request: NextRequest, options: ForwardServi
       body = JSON.stringify(await request.json());
       headers["Content-Type"] = "application/json";
     } catch {
-      return NextResponse.json({ error: "validation_failed", message: "Nội dung JSON không hợp lệ" }, { status: 400 });
+      return NextResponse.json({ error: "validation_failed", message: "Nội dung JSON không hợp lệ" }, { status: 400, headers: { "Cache-Control": "no-store" } });
     }
   }
 
@@ -49,11 +51,12 @@ export async function forwardService(request: NextRequest, options: ForwardServi
     return new NextResponse(upstream.status === 204 ? null : responseBody || null, {
       status: upstream.status,
       headers: {
+        "Cache-Control": "no-store",
         "Content-Type": upstream.headers.get("content-type") || "application/json",
         ...(requestId ? { "X-Request-ID": requestId } : {}),
       },
     });
   } catch {
-    return NextResponse.json({ error: "upstream_unavailable", message: options.unavailableMessage }, { status: 502 });
+    return NextResponse.json({ error: "upstream_unavailable", message: options.unavailableMessage }, { status: 502, headers: { "Cache-Control": "no-store" } });
   }
 }

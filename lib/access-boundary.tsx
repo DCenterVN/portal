@@ -1,17 +1,14 @@
 "use client";
 
-import { createContext, useContext, type ReactNode } from "react";
+import { useContext, type ReactNode } from "react";
 import { ErrorState } from "@/components/ui/state";
 
-export type PlaneAccess = { plane: "platform" | "company"; actions: ReadonlySet<string>; root: string; role?: string };
-
-const AccessContext = createContext<PlaneAccess | null>(null);
+import { AccessContext, type PlaneAccess } from "@/lib/access-context";
 
 export function AccessProvider({ value, children }: { value: PlaneAccess; children: ReactNode }) {
   return <AccessContext.Provider value={value}>{children}</AccessContext.Provider>;
 }
 
-// ponytail: no provider = no verified access, so every check is false (fail closed).
 export function useAccess() {
   const access = useContext(AccessContext);
   return {

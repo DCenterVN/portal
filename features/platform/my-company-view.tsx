@@ -2,7 +2,7 @@
 
 import { KeyRound } from "lucide-react";
 import { PageHeader } from "@/components/ui/page";
-import { RequireAction, useAccess } from "./access-boundary";
+import { RequireAction, useAccess } from "@/lib/access-boundary";
 import { RoleMatrix } from "./role-matrix-view";
 
 export function MyCompanyView() {

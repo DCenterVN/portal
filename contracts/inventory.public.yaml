@@ -1,0 +1,3893 @@
+openapi: 3.1.0
+info:
+  title: inventory public API
+  version: 0.1.0
+paths:
+  /inventory/suppliers:
+    post:
+      x-action-key: inventory:supplier:create
+      x-scope: none
+      x-exposure: public
+      operationId: createSupplier
+      parameters:
+      - in: header
+        name: Idempotency-Key
+        required: true
+        schema:
+          type: string
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupplierResponseEnvelope201'
+        '400':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '401':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '409':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '422':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '503':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSupplierRequest'
+    get:
+      x-action-key: inventory:supplier:read
+      x-scope: none
+      x-exposure: public
+      operationId: listSuppliers
+      parameters:
+      - name: q
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - ACTIVE
+          - SUSPENDED
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      - name: cursor
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupplierPageEnvelope200'
+        '400':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '401':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '422':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '503':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /inventory/suppliers/{supplier_id}/evaluations:
+    post:
+      x-action-key: inventory:supplier:update
+      x-scope: none
+      x-exposure: public
+      operationId: evaluateSupplier
+      responses:
+        '201':
+          description: Evaluated
+  /inventory/suppliers/{supplier_id}:
+    patch:
+      x-action-key: inventory:supplier:update
+      x-scope: none
+      x-exposure: public
+      operationId: updateSupplier
+      parameters:
+      - name: supplier_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: header
+        name: Idempotency-Key
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupplierResponseEnvelope200'
+        '400':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '401':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '404':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '409':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '422':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '503':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateSupplierRequest'
+    get:
+      x-action-key: inventory:supplier:read
+      x-scope: none
+      x-exposure: public
+      operationId: getSupplier
+      parameters:
+      - name: supplier_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupplierResponseEnvelope200'
+        '400':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '401':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '404':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '503':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /inventory/suppliers/{supplier_id}/suspend:
+    post:
+      x-action-key: inventory:supplier:update
+      x-scope: none
+      x-exposure: public
+      operationId: suspendSupplier
+      parameters:
+      - name: supplier_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: header
+        name: Idempotency-Key
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Status changed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupplierResponseEnvelope200'
+        '400':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '401':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '404':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '409':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '422':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '503':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SuspendSupplierRequest'
+  /inventory/suppliers/{supplier_id}/goods-receipts:
+    get:
+      x-action-key: inventory:supplier:read
+      x-scope: none
+      x-exposure: public
+      operationId: listSupplierGoodsReceipts
+      responses:
+        '200':
+          description: List goods receipts
+  /inventory/goods-receipts:
+    post:
+      x-action-key: inventory:goods_receipt:create
+      x-scope: none
+      x-exposure: public
+      operationId: createGoodsReceipt
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GoodsReceiptEnvelope201'
+        '400':
+          description: Invalid JSON
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '409':
+          description: State or idempotency conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '422':
+          description: Validation or media failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '503':
+          description: Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+      security:
+      - bearerJWT: []
+      parameters:
+      - in: header
+        name: Idempotency-Key
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          pattern: \S
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateGoodsReceiptRequest'
+  /inventory/goods-receipts/{goods_receipt_id}/receive:
+    post:
+      x-action-key: inventory:goods_receipt:update
+      x-scope: none
+      x-exposure: public
+      operationId: receiveGoodsReceipt
+      responses:
+        '201':
+          description: Lot created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RawMaterialLotEnvelope201'
+        '400':
+          description: Invalid JSON
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '409':
+          description: State or idempotency conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '422':
+          description: Validation or media failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '503':
+          description: Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+      security:
+      - bearerJWT: []
+      parameters:
+      - in: path
+        name: goods_receipt_id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: header
+        name: Idempotency-Key
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          pattern: \S
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReceiveGoodsRequest'
+  /inventory/goods-receipts/{goods_receipt_id}/quantity-variances:
+    post:
+      x-action-key: inventory:goods_receipt:update
+      x-scope: none
+      x-exposure: public
+      operationId: recordQuantityVariance
+      responses:
+        '201':
+          description: Variance recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GoodsReceiptQuantityVarianceEnvelope201'
+        '400':
+          description: Invalid JSON
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '409':
+          description: State or idempotency conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '422':
+          description: Validation or media failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '503':
+          description: Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+      security:
+      - bearerJWT: []
+      parameters:
+      - in: path
+        name: goods_receipt_id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: header
+        name: Idempotency-Key
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          pattern: \S
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecordQuantityVarianceRequest'
+  /inventory/inventory-lots/{lot_id}/allergens:
+    put:
+      x-action-key: inventory:lot_allergen:update
+      x-scope: none
+      x-exposure: public
+      operationId: declareLotAllergens
+      responses:
+        '200':
+          description: Allergen declared
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RawMaterialLotEnvelope200'
+        '400':
+          description: Invalid JSON
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '409':
+          description: State or idempotency conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '422':
+          description: Validation or media failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '503':
+          description: Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+      security:
+      - bearerJWT: []
+      parameters:
+      - in: path
+        name: lot_id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: header
+        name: Idempotency-Key
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          pattern: \S
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeclareAllergensRequest'
+  /inventory/inventory-lots/{lot_id}/storage-location:
+    put:
+      x-action-key: inventory:lot:update
+      x-scope: none
+      x-exposure: public
+      operationId: assignLotLocation
+      responses:
+        '200':
+          description: Location assigned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RawMaterialLotEnvelope200'
+        '400':
+          description: Invalid JSON
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '409':
+          description: State or idempotency conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '422':
+          description: Validation or media failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '503':
+          description: Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+      security:
+      - bearerJWT: []
+      parameters:
+      - in: path
+        name: lot_id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: header
+        name: Idempotency-Key
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          pattern: \S
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssignStorageLocationRequest'
+  /inventory/inventory-lots/{lot_id}/qc-decisions:
+    post:
+      x-action-key: inventory:lot_qc_decision:create
+      x-scope: none
+      x-exposure: public
+      operationId: decideLotQC
+      responses:
+        '200':
+          description: QC decided
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RawMaterialLotEnvelope200'
+        '400':
+          description: Invalid JSON
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '409':
+          description: State or idempotency conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '422':
+          description: Validation or media failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '503':
+          description: Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+      security:
+      - bearerJWT: []
+      parameters:
+      - in: path
+        name: lot_id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: header
+        name: Idempotency-Key
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          pattern: \S
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DecideLotQCRequest'
+      description: QC failure/rejection requires finalized QC_DEFECT image owned by this lot/inspection before mutation.
+  /inventory/inbound-qc-inspections/{inspection_id}/samples:
+    post:
+      x-action-key: inventory:qc:update
+      x-scope: none
+      x-exposure: public
+      operationId: takeQCSamples
+      responses:
+        '200':
+          description: Samples taken
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InboundQcInspectionEnvelope200'
+        '400':
+          description: Invalid JSON
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '409':
+          description: State or idempotency conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '422':
+          description: Validation or media failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '503':
+          description: Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+      security:
+      - bearerJWT: []
+      parameters:
+      - in: path
+        name: inspection_id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: header
+        name: Idempotency-Key
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          pattern: \S
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TakeSamplesRequest'
+  /inventory/inbound-qc-inspections/{inspection_id}/sensory-result:
+    put:
+      x-action-key: inventory:qc:update
+      x-scope: none
+      x-exposure: public
+      operationId: updateQCSensoryResult
+      responses:
+        '200':
+          description: Sensory result recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InboundQcInspectionEnvelope200'
+        '400':
+          description: Invalid JSON
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '409':
+          description: State or idempotency conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '422':
+          description: Validation or media failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '503':
+          description: Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+      security:
+      - bearerJWT: []
+      parameters:
+      - in: path
+        name: inspection_id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: header
+        name: Idempotency-Key
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          pattern: \S
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateSensoryResultRequest'
+      description: QC failure/rejection requires finalized QC_DEFECT image owned by this lot/inspection before mutation.
+  /inventory/inbound-qc-inspections/{inspection_id}/temperature-result:
+    put:
+      x-action-key: inventory:qc:update
+      x-scope: none
+      x-exposure: public
+      operationId: updateQCTemperatureResult
+      responses:
+        '200':
+          description: Temperature result recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InboundQcInspectionEnvelope200'
+        '400':
+          description: Invalid JSON
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '409':
+          description: State or idempotency conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '422':
+          description: Validation or media failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '503':
+          description: Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+      security:
+      - bearerJWT: []
+      parameters:
+      - in: path
+        name: inspection_id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: header
+        name: Idempotency-Key
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          pattern: \S
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTemperatureResultRequest'
+      description: QC failure/rejection requires finalized QC_DEFECT image owned by this lot/inspection before mutation.
+  /inventory/inbound-qc-inspections/{inspection_id}/shelf-life-result:
+    put:
+      x-action-key: inventory:qc:update
+      x-scope: none
+      x-exposure: public
+      operationId: updateQCShelfLifeResult
+      responses:
+        '200':
+          description: Shelf life result recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InboundQcInspectionEnvelope200'
+        '400':
+          description: Invalid JSON
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '409':
+          description: State or idempotency conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '422':
+          description: Validation or media failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '503':
+          description: Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+      security:
+      - bearerJWT: []
+      parameters:
+      - in: path
+        name: inspection_id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: header
+        name: Idempotency-Key
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          pattern: \S
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateShelfLifeResultRequest'
+      description: QC failure/rejection requires finalized QC_DEFECT image owned by this lot/inspection before mutation.
+  /inventory/inbound-qc-inspections/{inspection_id}/complete:
+    post:
+      x-action-key: inventory:qc:update
+      x-scope: none
+      x-exposure: public
+      operationId: completeQCInspection
+      responses:
+        '200':
+          description: QC completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InboundQcInspectionEnvelope200'
+        '400':
+          description: Invalid JSON
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '409':
+          description: State or idempotency conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '422':
+          description: Validation or media failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '503':
+          description: Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+      security:
+      - bearerJWT: []
+      parameters:
+      - in: path
+        name: inspection_id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: header
+        name: Idempotency-Key
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          pattern: \S
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompleteQCInspectionRequest'
+      description: QC failure/rejection requires finalized QC_DEFECT image owned by this lot/inspection before mutation.
+  /inventory/inbound-qc-inspections/{inspection_id}/lab-tests:
+    post:
+      x-action-key: inventory:qc:update
+      x-scope: none
+      x-exposure: public
+      operationId: requestQCLabTest
+      responses:
+        '201':
+          description: Lab test requested
+        '400':
+          description: Invalid JSON
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '409':
+          description: State or idempotency conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '422':
+          description: Validation or media failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '503':
+          description: Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+      security:
+      - bearerJWT: []
+      parameters:
+      - in: path
+        name: inspection_id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestQCLabTestRequest'
+  /inventory/inventory-lots:
+    get:
+      x-action-key: inventory:lot:read
+      x-scope: none
+      x-exposure: public
+      operationId: listInventoryLots
+      responses:
+        '200':
+          description: List lots
+  /inventory/stock-levels:
+    get:
+      x-action-key: inventory:stock:read
+      x-scope: none
+      x-exposure: public
+      operationId: listStockLevels
+      responses:
+        '200':
+          description: List stock levels
+  /inventory/shelf-placements:
+    post:
+      x-action-key: inventory:shelf_placement:create
+      x-scope: none
+      x-exposure: public
+      operationId: placeOnShelf
+      responses:
+        '201':
+          description: Placed on shelf
+    get:
+      x-action-key: inventory:shelf_placement:read
+      x-scope: none
+      x-exposure: public
+      operationId: listShelfPlacements
+      responses:
+        '200':
+          description: List shelf placements
+  /inventory/suppliers/{supplier_id}/agreements:
+    post:
+      operationId: createSupplierAgreement
+      x-action-key: inventory:supplier:update
+      x-scope: none
+      x-exposure: public
+      security:
+      - bearerJWT: []
+      parameters:
+      - in: path
+        name: supplier_id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: header
+        name: Idempotency-Key
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          pattern: \S
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SupplierAgreementRequest'
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupplierAgreementResponseEnvelope201'
+        '400':
+          description: Invalid JSON
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '409':
+          description: State or idempotency conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '422':
+          description: Validation or media failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '503':
+          description: Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+    get:
+      operationId: listSupplierAgreements
+      x-action-key: inventory:supplier:read
+      x-scope: none
+      x-exposure: public
+      security:
+      - bearerJWT: []
+      parameters:
+      - in: path
+        name: supplier_id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: limit
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          maximum: 100
+          default: 20
+      - in: query
+        name: cursor
+        required: false
+        schema: &id001
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupplierAgreementPageEnvelope200'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '422':
+          description: Validation or media failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '503':
+          description: Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /inventory/suppliers/{supplier_id}/agreements/{agreement_id}/versions:
+    post:
+      operationId: createSupplierAgreementVersion
+      x-action-key: inventory:supplier:update
+      x-scope: none
+      x-exposure: public
+      security:
+      - bearerJWT: []
+      parameters:
+      - in: path
+        name: supplier_id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: path
+        name: agreement_id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: header
+        name: Idempotency-Key
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          pattern: \S
+      - in: header
+        name: If-Match
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SupplierAgreementRequest'
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupplierAgreementResponseEnvelope201'
+        '400':
+          description: Invalid JSON
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '409':
+          description: State or idempotency conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '422':
+          description: Validation or media failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '503':
+          description: Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+    get:
+      operationId: listSupplierAgreementVersions
+      x-action-key: inventory:supplier:read
+      x-scope: none
+      x-exposure: public
+      security:
+      - bearerJWT: []
+      parameters:
+      - in: path
+        name: supplier_id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: path
+        name: agreement_id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: limit
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          maximum: 100
+          default: 20
+      - in: query
+        name: cursor
+        required: false
+        schema: *id001
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupplierAgreementPageEnvelope200'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '422':
+          description: Validation or media failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '503':
+          description: Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /inventory/inventory-lots/{lot_id}/trace:
+    get:
+      operationId: getReceiptLotTrace
+      x-action-key: inventory:lot:read
+      x-scope: none
+      x-exposure: public
+      security:
+      - bearerJWT: []
+      parameters:
+      - in: path
+        name: lot_id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReceiptLotTraceResponseEnvelope200'
+        '400':
+          description: Invalid JSON
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '422':
+          description: Validation or media failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '503':
+          description: Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+      description: Private evidence references/hashes and supplier document snapshots. No signed URLs/object keys/bytes.
+  /inventory/goods-receipts/{goods_receipt_id}/evidence-uploads:
+    post:
+      operationId: presignReceiptEvidence
+      x-action-key: inventory:goods_receipt:update
+      x-scope: none
+      x-exposure: public
+      security:
+      - bearerJWT: []
+      parameters:
+      - in: path
+        name: goods_receipt_id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: header
+        name: Idempotency-Key
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          pattern: \S
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PresignReceiptEvidenceRequest'
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PresignReceiptEvidenceResponseEnvelope201'
+        '400':
+          description: Invalid JSON
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '409':
+          description: State or idempotency conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '422':
+          description: Validation or media failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '503':
+          description: Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+      description: Metadata only. Upload bytes directly to MinIO through Kong. TTL300s. QC_DEFECT additionally requires
+        inventory:qc:update.
+  /inventory/goods-receipts/{goods_receipt_id}/evidence-uploads/{upload_id}/finalize:
+    post:
+      operationId: finalizeReceiptEvidence
+      x-action-key: inventory:goods_receipt:update
+      x-scope: none
+      x-exposure: public
+      security:
+      - bearerJWT: []
+      parameters:
+      - in: path
+        name: goods_receipt_id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: path
+        name: upload_id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: header
+        name: Idempotency-Key
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          pattern: \S
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinalizeReceiptEvidenceResponseEnvelope200'
+        '400':
+          description: Invalid JSON
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '409':
+          description: State or idempotency conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '422':
+          description: Validation or media failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+              examples:
+                invalidMedia:
+                  summary: Verify rejects size, magic bytes or content type
+                  value:
+                    code: 422
+                    status: error
+                    message: storage invalid content
+                    errors:
+                      error_code: 'MEDIA_VALIDATION_FAILED'
+                    retryable: false
+                checksumMismatch:
+                  summary: Verify rejects a SHA256 mismatch
+                  value:
+                    code: 422
+                    status: error
+                    message: storage checksum mismatch
+                    errors:
+                      error_code: 'MEDIA_CHECKSUM_MISMATCH'
+                    retryable: false
+        '500':
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '503':
+          description: Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+      description: No request body. Verify size/magic/SHA256, then finalize idempotently. Never receive file bytes
+        here.
+  /inventory/goods-receipts/{goods_receipt_id}/evidence/{media_ref}/download:
+    get:
+      operationId: downloadReceiptEvidence
+      x-action-key: inventory:lot:read
+      x-scope: none
+      x-exposure: public
+      security:
+      - bearerJWT: []
+      parameters:
+      - in: path
+        name: goods_receipt_id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: path
+        name: media_ref
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReceiptEvidenceDownloadResponseEnvelope200'
+        '400':
+          description: Invalid JSON
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '422':
+          description: Validation or media failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '503':
+          description: Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /inventory/suppliers/{supplier_id}/contract-documents:
+    get:
+      x-action-key: inventory:supplier:read
+      x-scope: none
+      x-exposure: public
+      operationId: listSupplierContractDocuments
+      parameters:
+      - name: supplier_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupplierContractDocumentPageEnvelope200'
+        '400':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '401':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '404':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '422':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '503':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /inventory/suppliers/{supplier_id}/contract-documents/presign:
+    post:
+      x-action-key: inventory:supplier:update
+      x-scope: none
+      x-exposure: public
+      operationId: presignSupplierContractDocument
+      parameters:
+      - name: supplier_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: header
+        name: Idempotency-Key
+        required: true
+        schema:
+          type: string
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PresignSupplierContractDocumentResponseEnvelope201'
+        '400':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '401':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '404':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '409':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '422':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '503':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PresignSupplierContractDocumentRequest'
+  /inventory/suppliers/{supplier_id}/contract-documents/finalize:
+    post:
+      x-action-key: inventory:supplier:update
+      x-scope: none
+      x-exposure: public
+      operationId: finalizeSupplierContractDocument
+      parameters:
+      - name: supplier_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: header
+        name: Idempotency-Key
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupplierContractDocumentResponseEnvelope200'
+        '400':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '401':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '404':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '409':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '422':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '503':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FinalizeSupplierContractDocumentRequest'
+  /inventory/suppliers/{supplier_id}/contract-documents/{document_id}/download:
+    get:
+      x-action-key: inventory:supplier:read
+      x-scope: none
+      x-exposure: public
+      operationId: downloadSupplierContractDocument
+      parameters:
+      - name: supplier_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: document_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupplierContractDocumentDownloadEnvelope200'
+        '400':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '401':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '404':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '422':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '503':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+components:
+  securitySchemes:
+    bearerJWT:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    CreateSupplierRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        tax_code:
+          type: string
+        address:
+          type: object
+          additionalProperties: true
+        material_categories:
+          type: array
+          items:
+            type: string
+        food_safety_credential_media_ref:
+          type: string
+          format: uuid
+      required:
+      - code
+      - name
+    UpdateSupplierRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        name:
+          type: string
+        tax_code:
+          type: string
+        address:
+          type: object
+          additionalProperties: true
+        material_categories:
+          type: array
+          items:
+            type: string
+        food_safety_credential_media_ref:
+          type: string
+          format: uuid
+      required: []
+    SuspendSupplierRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        operation:
+          type: string
+          enum:
+          - SUSPEND
+          - ACTIVATE
+        reason:
+          type: string
+      required:
+      - operation
+      - reason
+    SupplierResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          format: uuid
+        code:
+          type: string
+        name:
+          type: string
+        tax_code:
+          type: string
+        address:
+          anyOf:
+          - type: object
+            additionalProperties: true
+          - type: string
+          - type: 'null'
+        material_categories:
+          type: array
+          items:
+            type: string
+        food_safety_credential_media_ref:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: 'null'
+        status:
+          type: string
+          enum:
+          - ACTIVE
+          - SUSPENDED
+        rating_grade:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+      - id
+      - code
+      - name
+      - status
+    SupplierPage:
+      type: object
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/SupplierResponse'
+        next_cursor:
+          type: string
+      required:
+      - items
+      - next_cursor
+    PresignSupplierContractDocumentRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        filename:
+          type: string
+          minLength: 1
+          maxLength: 255
+        content_type:
+          type: string
+          enum:
+          - application/pdf
+          - image/jpeg
+          - image/png
+          - image/webp
+        size_bytes:
+          type: integer
+          minimum: 1
+          maximum: 5242880
+        sha256:
+          type: string
+          pattern: ^[a-f0-9]{64}$
+      required:
+      - filename
+      - content_type
+      - size_bytes
+    FinalizeSupplierContractDocumentRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        upload_id:
+          type: string
+          format: uuid
+      required:
+      - upload_id
+    PresignSupplierContractDocumentResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        upload_id:
+          type: string
+          format: uuid
+        upload_url:
+          type: string
+          format: uri
+        form_fields:
+          type: object
+          additionalProperties:
+            type: string
+        expires_in:
+          type: integer
+          const: 300
+      required:
+      - upload_id
+      - upload_url
+      - form_fields
+      - expires_in
+    SupplierContractDocumentResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        document_id:
+          type: string
+          format: uuid
+        mime:
+          type: string
+        size_bytes:
+          type: integer
+          minimum: 1
+        sha256:
+          type: string
+        display_name:
+          type: string
+      required:
+      - document_id
+      - mime
+      - size_bytes
+      - sha256
+      - display_name
+    SupplierContractDocumentPage:
+      type: object
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/SupplierContractDocumentResponse'
+        next_cursor:
+          type: string
+      required:
+      - items
+      - next_cursor
+    SupplierContractDocumentDownload:
+      type: object
+      additionalProperties: false
+      properties:
+        url:
+          type: string
+          format: uri
+        expires_in:
+          type: integer
+          const: 300
+      required:
+      - url
+      - expires_in
+    SupplierResponseEnvelope200:
+      type: object
+      additionalProperties: false
+      properties:
+        code:
+          type: integer
+          const: 200
+        status:
+          type: string
+          const: success
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/SupplierResponse'
+      required:
+      - code
+      - status
+      - message
+      - data
+    SupplierResponseEnvelope201:
+      type: object
+      additionalProperties: false
+      properties:
+        code:
+          type: integer
+          const: 201
+        status:
+          type: string
+          const: success
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/SupplierResponse'
+      required:
+      - code
+      - status
+      - message
+      - data
+    SupplierPageEnvelope200:
+      type: object
+      additionalProperties: false
+      properties:
+        code:
+          type: integer
+          const: 200
+        status:
+          type: string
+          const: success
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/SupplierPage'
+      required:
+      - code
+      - status
+      - message
+      - data
+    PresignSupplierContractDocumentResponseEnvelope201:
+      type: object
+      additionalProperties: false
+      properties:
+        code:
+          type: integer
+          const: 201
+        status:
+          type: string
+          const: success
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/PresignSupplierContractDocumentResponse'
+      required:
+      - code
+      - status
+      - message
+      - data
+    SupplierContractDocumentResponseEnvelope200:
+      type: object
+      additionalProperties: false
+      properties:
+        code:
+          type: integer
+          const: 200
+        status:
+          type: string
+          const: success
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/SupplierContractDocumentResponse'
+      required:
+      - code
+      - status
+      - message
+      - data
+    SupplierContractDocumentPageEnvelope200:
+      type: object
+      additionalProperties: false
+      properties:
+        code:
+          type: integer
+          const: 200
+        status:
+          type: string
+          const: success
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/SupplierContractDocumentPage'
+      required:
+      - code
+      - status
+      - message
+      - data
+    SupplierContractDocumentDownloadEnvelope200:
+      type: object
+      additionalProperties: false
+      properties:
+        code:
+          type: integer
+          const: 200
+        status:
+          type: string
+          const: success
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/SupplierContractDocumentDownload'
+      required:
+      - code
+      - status
+      - message
+      - data
+    PriceSourceEvidence:
+      type: object
+      additionalProperties: false
+      properties:
+        url:
+          type: string
+          format: uri
+          pattern: ^https?://
+        sha256: &id013
+          type: string
+          pattern: ^[a-f0-9]{64}$
+        quote:
+          type: string
+          minLength: 1
+        observed_at: &id009
+          type: string
+          format: date-time
+      required:
+      - url
+      - sha256
+      - quote
+      - observed_at
+    SupplierPriceLineRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        sku_ref: &id004
+          type: string
+          format: uuid
+        uom: &id005
+          type: string
+          minLength: 1
+        unit_price_vnd: &id006
+          type: integer
+          format: int64
+          minimum: 0
+        valid_from: &id002
+          type: string
+          format: date
+        valid_to: *id002
+        tax_treatment: &id003
+          type: string
+        delivery_treatment: *id003
+        price_source_evidence: &id007
+          anyOf:
+          - $ref: '#/components/schemas/PriceSourceEvidence'
+          - type: 'null'
+      required:
+      - sku_ref
+      - uom
+      - unit_price_vnd
+      - valid_from
+      - valid_to
+    SupplierAgreementRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        code:
+          type: string
+          minLength: 1
+          pattern: \S
+        valid_from: *id002
+        valid_to: *id002
+        status:
+          type: string
+          enum:
+          - DRAFT
+          - ACTIVE
+          - SUSPENDED
+        status_reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+        document_ref:
+          type: string
+          format: uuid
+        lines:
+          type: array
+          items:
+            $ref: '#/components/schemas/SupplierPriceLineRequest'
+          minItems: 1
+        dataset_mode:
+          type: string
+          enum:
+          - REAL
+          - DEMO
+          default: REAL
+      required:
+      - code
+      - valid_from
+      - valid_to
+      - status
+      - lines
+      allOf:
+      - if:
+          properties:
+            status:
+              const: ACTIVE
+          required:
+          - status
+        then:
+          required:
+          - document_ref
+          properties:
+            document_ref:
+              not:
+                const: 00000000-0000-0000-0000-000000000000
+            lines:
+              items:
+                required:
+                - tax_treatment
+                - delivery_treatment
+                properties:
+                  tax_treatment:
+                    minLength: 1
+                    pattern: \S
+                  delivery_treatment:
+                    minLength: 1
+                    pattern: \S
+      - if:
+          properties:
+            dataset_mode:
+              const: DEMO
+          required:
+          - dataset_mode
+        then:
+          properties:
+            lines:
+              items:
+                required:
+                - price_source_evidence
+                properties:
+                  price_source_evidence:
+                    $ref: '#/components/schemas/PriceSourceEvidence'
+    SupplierPriceLineResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        price_line_ref:
+          type: string
+          format: uuid
+        sku_ref: *id004
+        uom: *id005
+        unit_price_vnd: *id006
+        valid_from: *id002
+        valid_to: *id002
+        tax_treatment: *id003
+        delivery_treatment: *id003
+        price_source_evidence: *id007
+        dataset_mode:
+          type: string
+          enum:
+          - REAL
+          - DEMO
+      required:
+      - price_line_ref
+      - sku_ref
+      - uom
+      - unit_price_vnd
+      - valid_from
+      - valid_to
+      - tax_treatment
+      - delivery_treatment
+      - price_source_evidence
+      - dataset_mode
+    SupplierAgreementResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        code:
+          type: string
+        effective_status:
+          type: string
+          enum: [DRAFT, ACTIVE, SUSPENDED, EXPIRED]
+        status_reason:
+          type: string
+        agreement_id:
+          type: string
+          format: uuid
+        version_id:
+          type: string
+          format: uuid
+        version:
+          type: integer
+          minimum: 1
+        status:
+          type: string
+          enum: [DRAFT, ACTIVE, SUSPENDED, EXPIRED]
+        valid_from: *id002
+        valid_to: *id002
+        document_ref:
+          type: string
+          format: uuid
+        lines:
+          type: array
+          items:
+            $ref: '#/components/schemas/SupplierPriceLineResponse'
+          minItems: 1
+        created_at: *id009
+      required:
+      - agreement_id
+      - version_id
+      - version
+      - status
+      - valid_from
+      - valid_to
+      - document_ref
+      - lines
+      - created_at
+    SupplierAgreementPage:
+      type: object
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/SupplierAgreementResponse'
+          minItems: 0
+        next_cursor: *id003
+      required:
+      - items
+      - next_cursor
+    CreateGoodsReceiptLineItem:
+      type: object
+      additionalProperties: false
+      properties:
+        sku_ref:
+          type: string
+          format: uuid
+        expected_quantity: &id010
+          type: number
+          exclusiveMinimum: 0
+          multipleOf: 0.001
+        uom:
+          type: string
+          minLength: 1
+        unit_cost_vnd: *id006
+        agreement_version_ref:
+          type: string
+          format: uuid
+        price_line_ref:
+          type: string
+          format: uuid
+      required:
+      - sku_ref
+      - expected_quantity
+      - uom
+      - agreement_version_ref
+      - price_line_ref
+    CreateGoodsReceiptRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        branch_ref:
+          type: string
+          format: uuid
+        supplier_ref:
+          type: string
+          format: uuid
+        expected_at: *id009
+        notes: *id003
+        expected_lines:
+          type: array
+          items:
+            $ref: '#/components/schemas/CreateGoodsReceiptLineItem'
+          minItems: 1
+        total_amount_vnd: *id006
+      required:
+      - branch_ref
+      - supplier_ref
+      - expected_at
+      - expected_lines
+    ReceiveGoodsRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        goods_receipt_line_id:
+          type: string
+          format: uuid
+        supplier_lot_code:
+          type: string
+          minLength: 1
+        sku_ref:
+          type: string
+          format: uuid
+        initial_quantity: *id010
+        expiry_date: *id009
+        received_temperature_celsius:
+          type: number
+        uom:
+          type: string
+          minLength: 1
+        receive_attempt_ref:
+          type: string
+          format: uuid
+        evidence_refs:
+          type: array
+          items: &id011
+            type: string
+            format: uuid
+          minItems: 2
+          maxItems: 10
+          uniqueItems: true
+      required:
+      - goods_receipt_line_id
+      - supplier_lot_code
+      - sku_ref
+      - initial_quantity
+      - expiry_date
+      - received_temperature_celsius
+      - uom
+      - receive_attempt_ref
+      - evidence_refs
+    RecordQuantityVarianceRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        expected_quantity: *id010
+        actual_quantity:
+          type: number
+          minimum: 0
+          multipleOf: 0.001
+        explanation: *id003
+        receive_attempt_ref:
+          type: string
+          format: uuid
+        evidence_refs: &id012
+          type: array
+          items: *id011
+          minItems: 0
+          maxItems: 10
+          uniqueItems: true
+      required:
+      - expected_quantity
+      - actual_quantity
+      - receive_attempt_ref
+      - evidence_refs
+    DeclareAllergensRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        allergen_snapshot:
+          type: array
+          items: *id003
+          minItems: 0
+      required:
+      - allergen_snapshot
+    AssignStorageLocationRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        storage_location_code:
+          type: string
+          minLength: 1
+      required:
+      - storage_location_code
+    TakeSamplesRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        target_lot_ref:
+          type: string
+          format: uuid
+        sample_plan: {}
+      required:
+      - target_lot_ref
+      - sample_plan
+    UpdateSensoryResultRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        qc_metrics: {}
+        evidence_refs: *id012
+      required:
+      - qc_metrics
+    UpdateTemperatureResultRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        core_temperature_celsius:
+          type: number
+        qc_metrics: {}
+        evidence_refs: *id012
+      required:
+      - core_temperature_celsius
+      - qc_metrics
+    UpdateShelfLifeResultRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        expiry_date: *id009
+        qc_metrics: {}
+        evidence_refs: *id012
+      required:
+      - expiry_date
+      - qc_metrics
+    CompleteQCInspectionRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        decision:
+          type: string
+          enum:
+          - PASS
+          - FAIL
+          - REJECT
+        failure_reason:
+          type:
+          - string
+          - 'null'
+        evidence_refs: *id012
+      required:
+      - decision
+      allOf:
+      - if:
+          properties:
+            decision:
+              enum:
+              - FAIL
+              - REJECT
+          required:
+          - decision
+        then:
+          required:
+          - evidence_refs
+          - failure_reason
+          properties:
+            evidence_refs:
+              minItems: 1
+            failure_reason:
+              type: string
+              minLength: 1
+              pattern: \S
+    DecideLotQCRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        decision:
+          type: string
+          enum:
+          - APPROVE
+          - REJECT
+        reason: *id003
+        evidence_refs: *id012
+      required:
+      - decision
+      - reason
+      allOf:
+      - if:
+          properties:
+            decision:
+              enum:
+              - REJECT
+          required:
+          - decision
+        then:
+          required:
+          - evidence_refs
+          - reason
+          properties:
+            evidence_refs:
+              minItems: 1
+            reason:
+              type: string
+              minLength: 1
+              pattern: \S
+    RequestQCLabTestRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        test_type:
+          type: string
+          minLength: 1
+        reason:
+          type: string
+          minLength: 1
+        sample_refs:
+          type: array
+          items:
+            type: string
+            format: uuid
+          minItems: 1
+      required:
+      - test_type
+      - reason
+      - sample_refs
+    PresignReceiptEvidenceRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        goods_receipt_line_id:
+          type: string
+          format: uuid
+        receive_attempt_ref:
+          type: string
+          format: uuid
+        inspection_ref:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        purpose: &id015
+          type: string
+          enum:
+          - DELIVERED_GOODS
+          - DELIVERY_DOCUMENT
+          - QUANTITY_VARIANCE
+          - QC_DEFECT
+        content_type: &id014
+          type: string
+          enum:
+          - image/jpeg
+          - image/png
+          - image/webp
+          - application/pdf
+        size_bytes:
+          type: integer
+          minimum: 1
+          maximum: 5242880
+        sha256: *id013
+      required:
+      - goods_receipt_line_id
+      - receive_attempt_ref
+      - purpose
+      - content_type
+      - size_bytes
+      - sha256
+      allOf:
+      - if:
+          properties:
+            purpose:
+              const: QC_DEFECT
+          required:
+          - purpose
+        then:
+          required:
+          - inspection_ref
+          properties:
+            inspection_ref:
+              type: string
+              format: uuid
+      - if:
+          properties:
+            content_type:
+              const: application/pdf
+          required:
+          - content_type
+        then:
+          properties:
+            purpose:
+              const: DELIVERY_DOCUMENT
+    PresignReceiptEvidenceResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        upload_id:
+          type: string
+          format: uuid
+        upload_url:
+          type: string
+          format: uri
+        form_fields:
+          type: object
+          additionalProperties:
+            type: string
+        expires_in:
+          type: integer
+          const: 300
+      required:
+      - upload_id
+      - upload_url
+      - form_fields
+      - expires_in
+    FinalizeReceiptEvidenceResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        media_ref:
+          type: string
+          format: uuid
+        sha256: *id013
+        content_type: *id014
+        size_bytes:
+          type: integer
+          minimum: 1
+          maximum: 5242880
+        status:
+          type: string
+          enum:
+          - FINALIZED
+      required:
+      - media_ref
+      - sha256
+      - content_type
+      - size_bytes
+      - status
+    ReceiptEvidenceDownloadResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        download_url:
+          type: string
+          format: uri
+        expires_in:
+          type: integer
+          const: 300
+      required:
+      - download_url
+      - expires_in
+    ReceiptEvidenceItem:
+      type: object
+      additionalProperties: false
+      properties:
+        media_ref:
+          type: string
+          format: uuid
+        sha256: *id013
+        purpose: *id015
+        content_type: *id014
+        size_bytes:
+          type: integer
+          minimum: 1
+          maximum: 5242880
+        created_at: *id009
+        receipt_line_ref:
+          type: string
+          format: uuid
+        lot_ref:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        inspection_ref:
+          type:
+          - string
+          - 'null'
+          format: uuid
+      required:
+      - media_ref
+      - sha256
+      - purpose
+      - content_type
+      - size_bytes
+      - created_at
+      - receipt_line_ref
+      - lot_ref
+      - inspection_ref
+    ReceiptSupplierDocumentItem:
+      type: object
+      additionalProperties: false
+      properties:
+        document_id:
+          type: string
+          format: uuid
+        doc_type:
+          type: string
+          enum:
+          - CONTRACT
+          - FOOD_SAFETY_CERT
+        media_ref:
+          type: string
+          format: uuid
+        sha256: *id013
+        valid_from: *id002
+        valid_to: *id002
+        observed_at: *id009
+        supplier_ref:
+          type: string
+          format: uuid
+      required:
+      - document_id
+      - doc_type
+      - media_ref
+      - sha256
+      - valid_from
+      - valid_to
+      - observed_at
+      - supplier_ref
+    ReceiptLotTraceResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        lot_ref:
+          type: string
+          format: uuid
+        goods_receipt_ref:
+          type: string
+          format: uuid
+        goods_receipt_line_id:
+          type: string
+          format: uuid
+        status: *id003
+        expires_at: *id009
+        storage_location_code: *id003
+        supplier_documents:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReceiptSupplierDocumentItem'
+          minItems: 0
+        evidence:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReceiptEvidenceItem'
+          minItems: 0
+      required:
+      - lot_ref
+      - goods_receipt_ref
+      - goods_receipt_line_id
+      - status
+      - expires_at
+      - storage_location_code
+      - supplier_documents
+      - evidence
+    RawMaterialLot:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          format: uuid
+        goods_receipt_line_id:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        goods_receipt_ref:
+          type: string
+          format: uuid
+        sku_ref:
+          type: string
+          format: uuid
+        branch_ref:
+          type: string
+          format: uuid
+        supplier_lot_code: *id003
+        allergen_snapshot:
+          type:
+          - string
+          - 'null'
+          contentEncoding: base64
+        storage_location_code: *id003
+        initial_quantity:
+          type:
+          - number
+          - 'null'
+        remaining_quantity:
+          type:
+          - number
+          - 'null'
+        uom: *id003
+        received_temperature_celsius:
+          type:
+          - number
+          - 'null'
+        expires_at: *id009
+        status: *id003
+        version:
+          type: integer
+        created_at: *id009
+        updated_at: *id009
+      required:
+      - id
+      - goods_receipt_line_id
+      - goods_receipt_ref
+      - sku_ref
+      - branch_ref
+      - supplier_lot_code
+      - allergen_snapshot
+      - storage_location_code
+      - initial_quantity
+      - remaining_quantity
+      - uom
+      - received_temperature_celsius
+      - expires_at
+      - status
+      - version
+      - created_at
+      - updated_at
+    GoodsReceipt:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          format: uuid
+        branch_ref:
+          type: string
+          format: uuid
+        supplier_ref:
+          type: string
+          format: uuid
+        expected_at: *id009
+        notes:
+          type:
+          - string
+          - 'null'
+        status: *id003
+        expected_quantity:
+          type:
+          - number
+          - 'null'
+        actual_quantity:
+          type:
+          - number
+          - 'null'
+        total_amount_vnd:
+          type: integer
+        created_by_ref:
+          type: string
+          format: uuid
+        created_at: *id009
+        completed_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+      required:
+      - id
+      - branch_ref
+      - supplier_ref
+      - expected_at
+      - notes
+      - status
+      - expected_quantity
+      - actual_quantity
+      - total_amount_vnd
+      - created_by_ref
+      - created_at
+      - completed_at
+    GoodsReceiptQuantityVariance:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          format: uuid
+        goods_receipt_id:
+          type: string
+          format: uuid
+        expected_quantity:
+          type:
+          - number
+          - 'null'
+        actual_quantity:
+          type:
+          - number
+          - 'null'
+        variance_quantity:
+          type:
+          - number
+          - 'null'
+        requires_supplier_explanation:
+          type: boolean
+        explanation:
+          type:
+          - string
+          - 'null'
+        recorded_by_ref:
+          type: string
+          format: uuid
+        created_at: *id009
+      required:
+      - id
+      - goods_receipt_id
+      - expected_quantity
+      - actual_quantity
+      - variance_quantity
+      - requires_supplier_explanation
+      - explanation
+      - recorded_by_ref
+      - created_at
+    InboundQcInspection:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          format: uuid
+        target_lot_ref:
+          type: string
+          format: uuid
+        inspector_ref:
+          type: string
+          format: uuid
+        approver_ref:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        sample_plan:
+          type:
+          - string
+          - 'null'
+          contentEncoding: base64
+        sample_refs:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+            format: uuid
+          minItems: 0
+        qc_metrics:
+          type:
+          - string
+          - 'null'
+          contentEncoding: base64
+        core_temperature_celsius:
+          type:
+          - number
+          - 'null'
+        expiry_date:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        sensory_checked:
+          type: boolean
+        temperature_checked:
+          type: boolean
+        shelf_life_checked:
+          type: boolean
+        sample_taken:
+          type: boolean
+        decision:
+          type:
+          - string
+          - 'null'
+        failure_reason:
+          type:
+          - string
+          - 'null'
+        status: *id003
+        checked_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        created_at: *id009
+        updated_at: *id009
+      required:
+      - id
+      - target_lot_ref
+      - inspector_ref
+      - approver_ref
+      - sample_plan
+      - sample_refs
+      - qc_metrics
+      - core_temperature_celsius
+      - expiry_date
+      - sensory_checked
+      - temperature_checked
+      - shelf_life_checked
+      - sample_taken
+      - decision
+      - failure_reason
+      - status
+      - checked_at
+      - created_at
+      - updated_at
+    ErrorDetail:
+      type: object
+      additionalProperties: false
+      properties:
+        error_code: *id003
+        fields: {}
+      required:
+      - error_code
+    ErrorEnvelope:
+      type: object
+      additionalProperties: false
+      properties:
+        code:
+          type: integer
+        status:
+          type: string
+          enum:
+          - error
+        message: *id003
+        errors:
+          $ref: '#/components/schemas/ErrorDetail'
+        retryable:
+          type: boolean
+        retry_after_ms:
+          type: integer
+          minimum: 0
+      required:
+      - code
+      - status
+      - message
+      - errors
+      - retryable
+    SupplierAgreementResponseEnvelope201:
+      type: object
+      additionalProperties: false
+      properties:
+        code:
+          type: integer
+          const: 201
+        status:
+          type: string
+          enum:
+          - success
+        message: *id003
+        data:
+          $ref: '#/components/schemas/SupplierAgreementResponse'
+      required:
+      - code
+      - status
+      - message
+      - data
+    SupplierAgreementPageEnvelope200:
+      type: object
+      additionalProperties: false
+      properties:
+        code:
+          type: integer
+          const: 200
+        status:
+          type: string
+          enum:
+          - success
+        message: *id003
+        data:
+          $ref: '#/components/schemas/SupplierAgreementPage'
+      required:
+      - code
+      - status
+      - message
+      - data
+    GoodsReceiptEnvelope201:
+      type: object
+      additionalProperties: false
+      properties:
+        code:
+          type: integer
+          const: 201
+        status:
+          type: string
+          enum:
+          - success
+        message: *id003
+        data:
+          $ref: '#/components/schemas/GoodsReceipt'
+      required:
+      - code
+      - status
+      - message
+      - data
+    RawMaterialLotEnvelope201:
+      type: object
+      additionalProperties: false
+      properties:
+        code:
+          type: integer
+          const: 201
+        status:
+          type: string
+          enum:
+          - success
+        message: *id003
+        data:
+          $ref: '#/components/schemas/RawMaterialLot'
+      required:
+      - code
+      - status
+      - message
+      - data
+    GoodsReceiptQuantityVarianceEnvelope201:
+      type: object
+      additionalProperties: false
+      properties:
+        code:
+          type: integer
+          const: 201
+        status:
+          type: string
+          enum:
+          - success
+        message: *id003
+        data:
+          $ref: '#/components/schemas/GoodsReceiptQuantityVariance'
+      required:
+      - code
+      - status
+      - message
+      - data
+    InboundQcInspectionEnvelope200:
+      type: object
+      additionalProperties: false
+      properties:
+        code:
+          type: integer
+          const: 200
+        status:
+          type: string
+          enum:
+          - success
+        message: *id003
+        data:
+          $ref: '#/components/schemas/InboundQcInspection'
+      required:
+      - code
+      - status
+      - message
+      - data
+    RawMaterialLotEnvelope200:
+      type: object
+      additionalProperties: false
+      properties:
+        code:
+          type: integer
+          const: 200
+        status:
+          type: string
+          enum:
+          - success
+        message: *id003
+        data:
+          $ref: '#/components/schemas/RawMaterialLot'
+      required:
+      - code
+      - status
+      - message
+      - data
+    ReceiptLotTraceResponseEnvelope200:
+      type: object
+      additionalProperties: false
+      properties:
+        code:
+          type: integer
+          const: 200
+        status:
+          type: string
+          enum:
+          - success
+        message: *id003
+        data:
+          $ref: '#/components/schemas/ReceiptLotTraceResponse'
+      required:
+      - code
+      - status
+      - message
+      - data
+    PresignReceiptEvidenceResponseEnvelope201:
+      type: object
+      additionalProperties: false
+      properties:
+        code:
+          type: integer
+          const: 201
+        status:
+          type: string
+          enum:
+          - success
+        message: *id003
+        data:
+          $ref: '#/components/schemas/PresignReceiptEvidenceResponse'
+      required:
+      - code
+      - status
+      - message
+      - data
+    FinalizeReceiptEvidenceResponseEnvelope200:
+      type: object
+      additionalProperties: false
+      properties:
+        code:
+          type: integer
+          const: 200
+        status:
+          type: string
+          enum:
+          - success
+        message: *id003
+        data:
+          $ref: '#/components/schemas/FinalizeReceiptEvidenceResponse'
+      required:
+      - code
+      - status
+      - message
+      - data
+    ReceiptEvidenceDownloadResponseEnvelope200:
+      type: object
+      additionalProperties: false
+      properties:
+        code:
+          type: integer
+          const: 200
+        status:
+          type: string
+          enum:
+          - success
+        message: *id003
+        data:
+          $ref: '#/components/schemas/ReceiptEvidenceDownloadResponse'
+      required:
+      - code
+      - status
+      - message
+      - data

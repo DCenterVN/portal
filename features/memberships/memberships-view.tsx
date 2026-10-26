@@ -11,7 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { PageShell, PageHeader } from "@/components/ui/page";
 import { EmptyState, ErrorState, InlineAlert } from "@/components/ui/state";
 import { useToast } from "@/components/ui/toast";
-import { useAccess } from "@/features/platform/access-boundary";
+import { useAccess } from "@/lib/access-boundary";
 import { errorStatus } from "@/features/platform/access";
 import { companyMemberships, createMembership, employeeRoles, replaceMembershipRoles, updateMembershipStatus, type Membership } from "@/lib/api/platform-client";
 

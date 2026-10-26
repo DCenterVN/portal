@@ -21,6 +21,9 @@ export function proxy(request: NextRequest) {
   const hasRefreshToken = request.cookies.has("__Host-refresh_token") || request.cookies.has("refresh_token");
 
   if (!isPublic && !hasAccessToken && !hasRefreshToken) {
+    if (pathname.startsWith("/api/")) {
+      return NextResponse.json({error: "UNAUTHORIZED"}, {status: 401, headers: {"Cache-Control": "no-store"}});
+    }
     const loginUrl = new URL(isEmployeeRoute(pathname) ? "/staff/login" : "/login", request.url);
     loginUrl.searchParams.set("redirect", pathname);
     return NextResponse.redirect(loginUrl);

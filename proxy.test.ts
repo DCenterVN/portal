@@ -3,6 +3,13 @@ import { NextRequest } from "next/server";
 vi.mock("server-only", () => ({}));
 import { proxy } from "./proxy";
 
+it.each(["/inventory/suppliers", "/inventory/suppliers/detail", "/inventory/goods-receipts/new"])("supplier deep-link %s dùng phiên employee", path => {
+  const anonymous = proxy(request(path));
+  expect(anonymous.headers.get("location")).toContain("/staff/login?redirect=");
+  expect(proxy(request(path, "access_token=customer; portal_plane=customer")).status).toBe(307);
+  expect(proxy(request(path, "access_token=employee; portal_plane=employee")).status).toBe(200);
+});
+
 function request(path: string, cookie?: string) {
   return new NextRequest(`http://localhost:3000${path}`, {
     headers: cookie ? { cookie } : undefined,
@@ -29,7 +36,7 @@ describe("portal proxy route boundary", () => {
 
     expect(loginLookalike.status).toBe(307);
     expect(loginLookalike.headers.get("location")).toContain("/login?redirect=%2Flogin-evil");
-    expect(apiLookalike.status).toBe(307);
+    expect(apiLookalike.status).toBe(401);
     expect(traceLookalike.status).toBe(307);
   });
 
@@ -114,14 +121,36 @@ describe("R5-1 console BFF employee boundary", () => {
    expect(proxy(request(path, `${session}; portal_plane=employee`)).headers.get("x-middleware-next")).toBe("1");
   }
  });
- it.each(["/api/console", "/api/console/x"])("no session keeps the existing redirect for %s", path => {
+ it.each(["/api/console", "/api/console/x"])("no session returns JSON 401 for %s", async path => {
   for (const cookie of [undefined, "portal_plane=employee"]) {
    const res = proxy(request(path, cookie));
-   expect(res.status).toBe(307);
-   expect(res.headers.get("location")).toBe("http://localhost:3000/login?redirect=" + encodeURIComponent(path));
+   expect(res.status).toBe(401);
+   expect(await res.json()).toEqual({error: "UNAUTHORIZED"});
+   expect(res.headers.get("Cache-Control")).toBe("no-store");
+   expect(res.headers.get("location")).toBeNull();
   }
  });
  it.each(["/api/console-lookalike", "/api/orders", "/api/products", "/api/auth/context", "/api/public/products"])("other API prefix %s stays reachable with customer session", path => {
   expect(proxy(request(path, "access_token=customer")).headers.get("x-middleware-next")).toBe("1");
+ });
+});
+
+describe("S27 anonymous API boundary", () => {
+ it.each(["/api/inventory/suppliers", "/api/inventory/goods-receipts", "/api/orders"])("%s returns uncached JSON without a session", async path => {
+  const res = proxy(request(path));
+  expect(res.status).toBe(401);
+  expect(res.headers.get("Content-Type")).toContain("application/json");
+  expect(await res.json()).toEqual({error: "UNAUTHORIZED"});
+  expect(res.headers.get("Cache-Control")).toBe("no-store");
+  expect(res.headers.get("location")).toBeNull();
+ });
+ it.each(["refresh_token=session", "__Host-refresh_token=session"])("%s permits protected APIs to reach session refresh", cookie => {
+  expect(proxy(request("/api/inventory/suppliers", cookie)).headers.get("x-middleware-next")).toBe("1");
+ });
+ it("keeps the console forbidden response uncached", async () => {
+  const res = proxy(request("/api/console", "refresh_token=session"));
+  expect(res.status).toBe(403);
+  expect(await res.json()).toEqual({error: "FORBIDDEN"});
+  expect(res.headers.get("Cache-Control")).toBe("no-store");
  });
 });

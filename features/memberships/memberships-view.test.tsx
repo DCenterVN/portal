@@ -10,7 +10,7 @@ import messages from "@/messages/vi.json";
 import { ToastProvider } from "@/components/ui/toast";
 
 vi.mock("swr", () => ({ default: vi.fn() }));
-vi.mock("@/features/platform/access-boundary", () => ({ useAccess: () => ({ can: () => true }) }));
+vi.mock("@/lib/access-boundary", () => ({ useAccess: () => ({ can: () => true }) }));
 afterEach(() => vi.unstubAllGlobals());
 
 it("memberships_no_uuid", async () => {

@@ -16,6 +16,21 @@ describe("requirements permission", () => {
 
 import { CONSOLE_ROUTES, isEmployeeRoute } from "@/lib/fetcher";
 
+describe("NCC và tạo phiếu theo action riêng", () => {
+  it.each(["/inventory/suppliers", "/inventory/suppliers/detail"])("chặn deep link %s sau revoke", path => {
+    expect(consoleRouteAllowed(path, new Set())).toBe(false);
+    expect(consoleRouteAllowed(path, new Set(["ADMIN"]))).toBe(false);
+    expect(consoleRouteAllowed(path, new Set(["inventory:supplier:read"]))).toBe(true);
+    expect(consoleRouteAllowed(path, new Set(["inventory:shelf_placement:read"]))).toBe(false);
+  });
+  it("menu cụ thể không kế thừa broad inventory match", () => {
+    const items = consoleNavFor(new Set(["inventory:supplier:read", "inventory:goods_receipt:create"])).flatMap(group => group.items);
+    expect(items.map(item => item.href)).toContain("/inventory/suppliers");
+    expect(items.map(item => item.href)).toContain("/inventory/goods-receipts/new");
+    expect(consoleRouteAllowed("/inventory/goods-receipts/new", new Set(["inventory:supplier:read"]))).toBe(false);
+  });
+});
+
 describe("AC-4 menu Sản phẩm theo sales:product:read", () => {
   const productRoute = "/sales/products";
   const items = (permissions: string[]) => consoleNavFor(new Set(permissions)).flatMap(group => group.items);

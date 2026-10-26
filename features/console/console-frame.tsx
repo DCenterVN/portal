@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
 import messages from "@/messages/vi.json";
 import { permissionsSchema } from "@/lib/api/platform-contract";
-import { AccessProvider } from "@/features/platform/access-boundary";
+import { AccessProvider } from "@/lib/access-boundary";
 import { ErrorState, Skeleton } from "@/components/ui/state";
 import { ConsoleShell } from "@/components/layout/console-shell";
 import { logoutTo } from "@/lib/auth/client";
