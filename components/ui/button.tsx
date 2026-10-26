@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import motion from "./console-motion.module.css";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[var(--radius-md)] text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 cursor-pointer active:scale-[0.98]",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 cursor-pointer active:scale-[0.98]",
   {
     variants: {
       variant: {
@@ -12,8 +12,8 @@ const buttonVariants = cva(
           "bg-[var(--primary)] text-[var(--primary-foreground)] shadow-[var(--elevation-shadow-card)] hover:bg-[var(--color-primary-hover)]",
         accent:
           "bg-[var(--primary)] text-[var(--primary-foreground)] shadow-[var(--elevation-shadow-card)] hover:bg-[var(--color-primary-hover)]",
-        primary: "rounded-sm bg-p text-on-p duration-100 hover:bg-p-hover",
-        danger: "rounded-sm border border-err bg-transparent text-err duration-100 hover:bg-err-soft",
+        primary: "rounded-lg bg-p text-on-p duration-100 hover:bg-p-hover",
+        danger: "rounded-lg border border-err bg-transparent text-err duration-100 hover:bg-err-soft",
         destructive: "bg-[var(--destructive)] text-[var(--destructive-foreground)] hover:opacity-90",
         outline:
           "border border-[var(--border)] bg-[var(--card)] text-[var(--foreground)] hover:border-[var(--input)]",

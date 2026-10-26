@@ -1,5 +1,5 @@
-import { SuppliersView } from "@/features/inventory/suppliers-view";
+import { SuppliersContainer } from "@/features/inventory/suppliers-container";
 
 export default function SuppliersPage() {
-  return <SuppliersView />;
+  return <SuppliersContainer />;
 }

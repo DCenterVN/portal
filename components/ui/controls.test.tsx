@@ -19,9 +19,11 @@ vi.mock("react", async (original) => {
 });
 
 import { Button, buttonVariants } from "./button";
-import { Field } from "./field";
+import { Field, Select, TextInput, Textarea } from "./field";
 import { Checkbox } from "./checkbox";
 import { Switch } from "./switch";
+import { Tabs, nextTab } from "./tabs";
+import { Input } from "./input";
 import { PasswordInput } from "@/components/patterns/password-input";
 import { passwordError } from "@/features/customer-auth/form-feedback";
 
@@ -56,9 +58,9 @@ describe("Button (FR-4)", () => {
     for (const size of ["sm", "md"] as const) expect(buttonVariants({ size })).toContain("max-md:h-11");
   });
 
-  it("primary is solid --p with white text, --p-hover in 100ms, 2px focus ring, 4px corners", () => {
+  it("primary is solid --p with white text, --p-hover in 100ms, 2px focus ring, 8px corners", () => {
     const own = classes(renderToStaticMarkup(<Button variant="primary">Đặt hàng</Button>), "button");
-    expect(own).toEqual(expect.arrayContaining(["bg-p", "text-on-p", "hover:bg-p-hover", "duration-100", "focus-visible:ring-2", "rounded-sm"]));
+    expect(own).toEqual(expect.arrayContaining(["bg-p", "text-on-p", "hover:bg-p-hover", "duration-100", "focus-visible:ring-2", "rounded-lg"]));
     expect(own).not.toContain("duration-200");
     expect(own).not.toContain("rounded-full");
   });
@@ -176,5 +178,26 @@ describe("Switch (FR-4)", () => {
     expect(on).not.toContain("bg-p");
     expect(off).not.toContain("bg-ok");
     expect(off).toContain("border-line-strong");
+  });
+});
+
+
+describe("Supplier controls", () => {
+  it.each([Input, TextInput, Select, Textarea])("keeps full-width fields with 8px corners and keyboard focus", (Control) => {
+    const markup = renderToStaticMarkup(<Control aria-label="Trường nhập" />);
+    expect(markup).toContain("rounded-lg");
+    expect(markup).not.toContain("rounded-md");
+    expect(markup).toContain("w-full");
+    expect(markup).toContain("focus-visible:ring-2");
+  });
+
+  it("suppresses the mouse outline on tabs while retaining keyboard focus", () => {
+    const markup = renderToStaticMarkup(<Tabs label="Nhà cung cấp" idPrefix="supplier" items={[{ id: "overview", label: "Thông tin" }]} value="overview" onChange={() => {}}>Hồ sơ</Tabs>);
+    expect(classes(markup, "button")).toEqual(expect.arrayContaining(["outline-none", "rounded-lg", "focus-visible:ring-2"]));
+  });
+
+  it("supports vertical arrow navigation as well as horizontal arrows", () => {
+    expect(nextTab(["overview", "agreements"], "overview", "ArrowDown")).toBe("agreements");
+    expect(nextTab(["overview", "agreements"], "overview", "ArrowUp")).toBe("agreements");
   });
 });

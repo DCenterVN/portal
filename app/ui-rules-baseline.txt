@@ -12,9 +12,6 @@ rounded	components/layout/console-shell.tsx:focus:rounded-md	-
 rounded	components/layout/customer-auth-shell.tsx:focus:rounded-md	-
 rounded	components/layout/store-shell.tsx:focus:rounded-md	-
 rounded	components/modals/session-timeout-modal.tsx:rounded-2xl	-
-rounded	components/ui/button.tsx:rounded-[var(--radius-md)]	-
-rounded	components/ui/field.tsx:rounded-md	-
-rounded	components/ui/input.tsx:rounded-[var(--radius-md)]	-
 rounded	features/branches/branches-view.tsx:rounded-2xl	-
 rounded	features/branches/branches-view.tsx:rounded-[var(--radius-md)]	-
 rounded	features/customer-auth/form-feedback.tsx:rounded-[var(--radius-md)]	-

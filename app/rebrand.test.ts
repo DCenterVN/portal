@@ -114,7 +114,7 @@ describe("S3 rendered sidebar and controls", () => {
       type: "password", name: "password", autoComplete: "current-password", disabled: true, "aria-label": "Mật khẩu",
     }));
     const classes = classesFor(html, "input");
-    for (const token of ["h-11", "border-[var(--color-input-border)]", "rounded-[var(--radius-md)]", "bg-[var(--color-surface)]", "text-[var(--color-ink)]", "focus-visible:ring-2", "focus-visible:ring-[var(--color-focus)]"]) expect(classes).toContain(token);
+    for (const token of ["h-11", "border-[var(--color-input-border)]", "rounded-lg", "bg-[var(--color-surface)]", "text-[var(--color-ink)]", "focus-visible:ring-2", "focus-visible:ring-[var(--color-focus)]"]) expect(classes).toContain(token);
     expect(html).toContain('style="border-width:1.5px"');
     expect(classes).not.toMatch(/\bh-(?:9|10)\b/);
     expect(html).toContain('type="password"');

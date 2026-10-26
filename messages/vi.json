@@ -234,5 +234,13 @@
     "outOfStock": "Hết hàng",
     "more": "Xem thêm",
     "showResults": "Xem kết quả"
+  },
+  "supplierAgreement": {
+    "unsaved": "Chưa lưu lên hệ thống",
+    "restored": "Đã khôi phục nháp máy, chưa lưu lên hệ thống.",
+    "reselectFile": "Đã khôi phục nháp máy, chưa lưu lên hệ thống. Cần chọn lại tệp.",
+    "localUnavailable": "Chưa tự lưu được trên máy này",
+    "localConflict": "Nháp máy thuộc phiên bản cũ. Đang giữ bản server, không tự ghi đè.",
+    "stale": "Bảng giá đã thay đổi hoặc trùng kỳ. Dữ liệu nhập được giữ; đóng và mở lại phiên bản mới để tiếp tục."
   }
 }
