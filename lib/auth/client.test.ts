@@ -77,7 +77,7 @@ describe("portal/lib/auth/client", () => {
       } as unknown as Response);
 
       const profile = await getProfile();
-      expect(profile).toEqual(mockProfile);
+      expect(profile).toEqual({...mockProfile, avatar_key:null, avatar_url:null});
     });
 
 

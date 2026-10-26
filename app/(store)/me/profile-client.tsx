@@ -1,6 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import useSWR from "swr";
+import {ACCOUNT_PROFILE_KEY} from "@/lib/api/account-client";
+import {AccountEditContainer} from "@/features/account-edit/account-edit-container";
 import { useRouter } from "next/navigation";
 import {
   User,
@@ -13,7 +16,7 @@ import {
   CheckCircle2,
   AlertCircle
 } from "lucide-react";
-import { getProfile, logout, UserProfile } from "@/lib/auth/client";
+import { getProfile, logout } from "@/lib/auth/client";
 import { PageShell, PageHeader } from "@/components/ui/page";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -21,36 +24,11 @@ import { Badge } from "@/components/ui/badge";
 
 export default function ProfileClient() {
   const router = useRouter();
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [errorStatus, setErrorStatus] = useState<number | null>(null);
-  const [activeTab, setActiveTab] = useState<"general" | "security">("general");
-
-  const fetchUserProfile = () => {
-    setLoading(true);
-    setError("");
-    setErrorStatus(null);
-    getProfile()
-      .then((data) => {
-        if (data.memberships?.length > 0) {
-          router.replace("/account");
-          return;
-        }
-        setProfile(data);
-        setLoading(false);
-      })
-      .catch((err: unknown) => {
-        setError(err instanceof Error ? err.message : "Không thể tải thông tin hồ sơ.");
-        const status = (err as { status?: number })?.status || null;
-        setErrorStatus(status);
-        setLoading(false);
-      });
-  };
-
-  useEffect(() => {
-    fetchUserProfile();
-  }, []);
+  const {data:profile,error,isLoading:loading,mutate}=useSWR(ACCOUNT_PROFILE_KEY,getProfile,{revalidateOnFocus:false});
+  const [activeTab,setActiveTab]=useState<"general"|"security">("general");
+  const errorStatus=error?.status;
+  const fetchUserProfile=()=>void mutate();
+  useEffect(()=>{if(profile?.memberships.length) router.replace("/account");},[profile,router]);
 
   const handleLogout = async () => {
     try {
@@ -76,7 +54,7 @@ export default function ProfileClient() {
   }
 
   if (error || !profile) {
-    const isAuthExpired = errorStatus === 401 || error.toLowerCase().includes("hết hạn") || error.toLowerCase().includes("unauthorized");
+    const isAuthExpired = errorStatus === 401 || false;
     return (
       <PageShell className="bg-[var(--color-bg)] text-[var(--color-ink)]">
         <Card className="bg-[var(--color-surface)] text-[var(--color-ink)] max-w-md mx-auto mt-12 text-center p-6 border-[var(--color-line)]">
@@ -85,7 +63,7 @@ export default function ProfileClient() {
             {isAuthExpired ? "Phiên làm việc hết hạn" : "Không thể tải hồ sơ"}
           </h2>
           <p className="text-xs text-[var(--color-muted)] mt-1 mb-4">
-            {error || (isAuthExpired ? "Vui lòng đăng nhập lại." : "Vui lòng kiểm tra kết nối mạng và thử lại.")}
+            {(isAuthExpired ? "Vui lòng đăng nhập lại." : "Vui lòng kiểm tra kết nối mạng và thử lại.")}
           </p>
           {isAuthExpired ? (
             <Button onClick={() => router.push("/login")} className="w-full">
@@ -120,18 +98,16 @@ export default function ProfileClient() {
         }
       />
 
-      {/* User Hero Banner */}
+      
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 pt-6 pb-6">
-        <Card className="lg:col-span-1 p-5 rounded-2xl border-[var(--color-line)] bg-[var(--color-surface)] text-[var(--color-ink)] flex flex-col justify-between">
+        <Card className="lg:col-span-1 p-5 rounded-lg bg-card flex flex-col justify-between">
           <div className="text-center pb-4 border-b border-[var(--color-line)]">
-            <div className="size-20 rounded-2xl bg-[var(--color-primary)] text-[var(--color-primary-ink)] flex items-center justify-center font-extrabold text-2xl shadow-[var(--elevation-shadow-card)] mx-auto mb-3">
-              {profile.display_name?.slice(0, 2).toUpperCase() || "VS"}
+            <div className="size-20 rounded-lg bg-primary text-primary-foreground mx-auto mb-3">
+              {profile.avatar_url ? <img src={profile.avatar_url} alt="Ảnh đại diện" className="size-20 rounded-lg object-cover"/> : profile.display_name?.slice(0, 2).toUpperCase() || "VS"}
             </div>
             <h2 className="font-[family-name:var(--font-quicksand,var(--font-display))] text-lg font-bold text-[var(--color-ink)]">{profile.display_name || "Nhân sự Việt Sạch"}</h2>
             <p className="text-xs text-[var(--color-muted)] mt-0.5">{profile.email || profile.phone}</p>
-            <Badge variant="secondary" className="mt-2.5 text-xs font-semibold bg-[var(--color-tint)] text-[var(--color-ink)] border border-[var(--color-line)]">
-              Mã NV: {profile.id.slice(0, 8)}
-            </Badge>
+
           </div>
 
           <div className="space-y-1.5 pt-4">
@@ -154,16 +130,16 @@ export default function ProfileClient() {
           </div>
         </Card>
 
-        {/* Tab Content */}
+        
         <div className="lg:col-span-3 space-y-6">
           {activeTab === "general" && (
-            <Card className="rounded-2xl border-[var(--color-line)] bg-[var(--color-surface)] p-6">
+            <Card className="rounded-lg border-[var(--color-line)] bg-[var(--color-surface)] p-6">
               <CardHeader className="p-0 pb-5 border-b border-[var(--color-line)]">
                 <CardTitle className="font-[family-name:var(--font-quicksand,var(--font-display))] text-base font-bold">Thông tin cá nhân</CardTitle>
                 <CardDescription className="text-xs">Dữ liệu tài khoản đã được xác thực trên hệ sinh thái DCenter</CardDescription>
               </CardHeader>
               <CardContent className="p-0 pt-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="p-3.5 rounded-xl border border-[var(--color-line)] bg-[var(--color-tint)]">
+                <div className="p-3.5 rounded-lg border border-[var(--color-line)] bg-[var(--color-tint)]">
                   <div className="flex items-center gap-2 text-xs text-[var(--color-muted)] font-medium">
                     <User className="size-3.5" />
                     <span>Họ và tên</span>
@@ -171,7 +147,7 @@ export default function ProfileClient() {
                   <p className="text-sm font-bold text-[var(--color-ink)] mt-1">{profile.display_name || "Chưa cập nhật"}</p>
                 </div>
 
-                <div className="p-3.5 rounded-xl border border-[var(--color-line)] bg-[var(--color-tint)]">
+                <div className="p-3.5 rounded-lg border border-[var(--color-line)] bg-[var(--color-tint)]">
                   <div className="flex items-center gap-2 text-xs text-[var(--color-muted)] font-medium">
                     <Mail className="size-3.5" />
                     <span>Email đăng ký</span>
@@ -179,7 +155,7 @@ export default function ProfileClient() {
                   <p className="text-sm font-bold text-[var(--color-ink)] mt-1">{profile.email || "—"}</p>
                 </div>
 
-                <div className="p-3.5 rounded-xl border border-[var(--color-line)] bg-[var(--color-tint)]">
+                <div className="p-3.5 rounded-lg border border-[var(--color-line)] bg-[var(--color-tint)]">
                   <div className="flex items-center gap-2 text-xs text-[var(--color-muted)] font-medium">
                     <Phone className="size-3.5" />
                     <span>Số điện thoại</span>
@@ -187,55 +163,28 @@ export default function ProfileClient() {
                   <p className="text-sm font-bold text-[var(--color-ink)] mt-1">{profile.phone || "—"}</p>
                 </div>
 
-                <div className="p-3.5 rounded-xl border border-[var(--color-line)] bg-[var(--color-tint)]">
+                <div className="p-3.5 rounded-lg border border-[var(--color-line)] bg-[var(--color-tint)]">
                   <div className="flex items-center gap-2 text-xs text-[var(--color-muted)] font-medium">
                     <Calendar className="size-3.5" />
                     <span>Ngày khởi tạo</span>
                   </div>
                   <p className="text-sm font-bold text-[var(--color-ink)] mt-1">
-                    {profile.created_at ? new Date(profile.created_at).toLocaleDateString("vi-VN") : "27/08/2026"}
+                    {profile.created_at ? new Date(profile.created_at).toLocaleDateString("vi-VN") : "—"}
                   </p>
                 </div>
+                <div className="sm:col-span-2"><AccountEditContainer section="general"/></div>
               </CardContent>
             </Card>
           )}
 
           {activeTab === "security" && (
-            <Card className="rounded-2xl border-[var(--color-line)] bg-[var(--color-surface)] p-6">
+            <Card className="rounded-lg border-[var(--color-line)] bg-[var(--color-surface)] p-6">
               <CardHeader className="p-0 pb-5 border-b border-[var(--color-line)]">
                 <CardTitle className="font-[family-name:var(--font-quicksand,var(--font-display))] text-base font-bold">Bảo mật & Phiên làm việc</CardTitle>
                 <CardDescription className="text-xs">Thiết lập mật khẩu mới và kiểm soát an toàn tài khoản</CardDescription>
               </CardHeader>
               <CardContent className="p-0 pt-5 space-y-4">
-                <div className="flex items-center justify-between p-4 rounded-xl border border-[var(--color-line)] bg-[var(--color-tint)]">
-                  <div className="flex items-center gap-3">
-                    <div className="size-9 rounded-xl bg-[var(--color-tint)] text-[var(--color-primary)] flex items-center justify-center">
-                      <KeyRound className="size-4" />
-                    </div>
-                    <div>
-                      <h4 className="font-[family-name:var(--font-quicksand,var(--font-display))] text-xs font-bold text-[var(--color-ink)]">Mật khẩu tài khoản</h4>
-                      <p className="text-xs text-[var(--color-muted)]">Được cập nhật định kỳ để bảo vệ dữ liệu chuỗi lạnh</p>
-                    </div>
-                  </div>
-                  <Button size="sm" variant="outline" onClick={() => router.push("/forgot-password")} className="text-xs">
-                    Đổi mật khẩu
-                  </Button>
-                </div>
-
-                <div className="flex items-center justify-between p-4 rounded-xl border border-[var(--color-line)] bg-[var(--color-tint)]">
-                  <div className="flex items-center gap-3">
-                    <div className="size-9 rounded-xl bg-[var(--color-tint)] text-[var(--color-info)] flex items-center justify-center">
-                      <CheckCircle2 className="size-4 text-[var(--color-leaf)]" />
-                    </div>
-                    <div>
-                      <h4 className="font-[family-name:var(--font-quicksand,var(--font-display))] text-xs font-bold text-[var(--color-ink)]">Xác thực phiên làm việc BFF</h4>
-                      <p className="text-xs text-[var(--color-muted)]">HttpOnly cookie an toàn chống XSS & CSRF</p>
-                    </div>
-                  </div>
-                  <Badge variant="secondary" className="text-xs font-bold text-[var(--color-ink)]">
-                    Bảo vệ 100%
-                  </Badge>
-                </div>
+                <AccountEditContainer section="security"/>
               </CardContent>
             </Card>
           )}

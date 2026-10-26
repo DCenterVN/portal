@@ -1,0 +1,111 @@
+{
+  "id": "PORTAL-ACCOUNT-EDIT-001",
+  "title": "PORTAL-ACCOUNT-EDIT-001",
+  "description": "worker: codex · story: US-UI-001 · sprint: 05 · slices: 0/18 · next: verification: verdict BLOCKED != PASS",
+  "pipeline": "sdlc",
+  "agent": null,
+  "agents": [
+    "sdlc-discovery",
+    "sdlc-technical",
+    "sdlc-ux",
+    "sdlc-design",
+    "sdlc-build",
+    "sdlc-integration",
+    "sdlc-e2e",
+    "sdlc-release"
+  ],
+  "currentStep": 4,
+  "status": "in_progress",
+  "createdAt": "2026-10-25T16:52:17+00:00",
+  "updatedAt": "2026-10-26T16:33:31+00:00",
+  "stepStates": [
+    {
+      "agent": "sdlc-discovery",
+      "status": "done",
+      "revision": 1,
+      "runStatus": "approved",
+      "startedAt": null,
+      "finishedAt": null,
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-ACCOUNT-EDIT-001/plan.md"
+      ]
+    },
+    {
+      "agent": "sdlc-technical",
+      "status": "done",
+      "revision": 1,
+      "runStatus": "approved",
+      "startedAt": null,
+      "finishedAt": null,
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-ACCOUNT-EDIT-001/plan.md"
+      ]
+    },
+    {
+      "agent": "sdlc-ux",
+      "status": "done",
+      "revision": 1,
+      "runStatus": "approved",
+      "startedAt": null,
+      "finishedAt": null,
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-ACCOUNT-EDIT-001/plan.md"
+      ]
+    },
+    {
+      "agent": "sdlc-design",
+      "status": "done",
+      "revision": 1,
+      "runStatus": "approved",
+      "startedAt": null,
+      "finishedAt": null,
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-ACCOUNT-EDIT-001/plan.md"
+      ]
+    },
+    {
+      "agent": "sdlc-build",
+      "status": "in_progress",
+      "revision": 1,
+      "runStatus": "awaiting_work",
+      "startedAt": null,
+      "finishedAt": null,
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-ACCOUNT-EDIT-001/handback.md"
+      ]
+    },
+    {
+      "agent": "sdlc-integration",
+      "status": "pending",
+      "revision": 1,
+      "runStatus": "pending",
+      "startedAt": null,
+      "finishedAt": null,
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-ACCOUNT-EDIT-001/badcases.md",
+        ".aidlc/runs/PORTAL-ACCOUNT-EDIT-001/artifacts/verification.json"
+      ]
+    },
+    {
+      "agent": "sdlc-e2e",
+      "status": "pending",
+      "revision": 1,
+      "runStatus": "pending",
+      "startedAt": null,
+      "finishedAt": null,
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-ACCOUNT-EDIT-001/badcases.md",
+        ".aidlc/runs/PORTAL-ACCOUNT-EDIT-001/artifacts/verification.json"
+      ]
+    },
+    {
+      "agent": "sdlc-release",
+      "status": "pending",
+      "revision": 1,
+      "runStatus": "pending",
+      "startedAt": null,
+      "finishedAt": null,
+      "artifactsProduced": []
+    }
+  ]
+}

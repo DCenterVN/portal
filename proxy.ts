@@ -14,6 +14,12 @@ function matchesPathPrefix(pathname: string, prefix: string): boolean {
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  if(pathname==="/email/confirm"){
+    const response=NextResponse.next();
+    response.headers.set("Referrer-Policy","no-referrer");
+    response.headers.set("Cache-Control","no-store");
+    return response;
+  }
   if (matchesPathPrefix(pathname, "/staff/register")) return new NextResponse(null, {status: 404});
   const staffPublic = ["/staff/login", "/staff/forgot-password", "/staff/reset-password", "/staff/invite/accept", "/invite/accept"].includes(pathname);
   const isPublic = staffPublic || pathname === "/" || PUBLIC_PREFIXES.some((path) => matchesPathPrefix(pathname, path));

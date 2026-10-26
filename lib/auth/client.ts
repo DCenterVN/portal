@@ -1,3 +1,5 @@
+import {getAccountProfile} from "../api/account-client";
+import type {UserProfileResponse} from "../api/auth/types";
 import { apiFetch } from "../fetcher";
 
 export interface UserProjection {
@@ -8,20 +10,9 @@ export interface UserProjection {
   status: string;
 }
 
-export interface UserProfile {
-  id: string;
-  email: string;
-  phone: string;
-  display_name: string;
-  status: string;
-  created_at: string;
-  memberships: {
-    org_id: string;
-    org_name: string;
-    branch_id?: string;
-    branch_name?: string;
-    roles: string[];
-  }[];
+export interface UserProfile extends Omit<UserProfileResponse, "avatar_key" | "avatar_url"> {
+  avatar_key?: string | null;
+  avatar_url?: string | null;
 }
 
 export function logout(): Promise<Response> {
@@ -37,16 +28,8 @@ export async function logoutTo(loginPath: string, onError?: (message: string) =>
   window.location.assign(loginPath);
 }
 
-export async function getProfile(): Promise<UserProfile> {
-  const res = await apiFetch("/api/auth/me");
-  if (!res.ok) {
-    const errorData = await res.json().catch(() => ({}));
-    const message = errorData.message || (res.status === 401 ? "Phiên làm việc hết hạn" : "Không thể tải thông tin hồ sơ");
-    const err = new Error(message);
-    (err as unknown as { status?: number }).status = res.status;
-    throw err;
-  }
-  return res.json();
+export function getProfile(): Promise<UserProfile> {
+  return getAccountProfile();
 }
 
 export function sanitizeRedirectUrl(redirect: string | null | undefined, fallback = "/"): string {

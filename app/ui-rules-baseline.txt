@@ -4,10 +4,6 @@ raw-id	features/sales/pricing-floor-view.tsx:label=BOM UUID	B11
 raw-id	features/sales/pricing-floor-view.tsx:label=Price book UUID	B12
 raw-id	features/sales/pricing-floor-view.tsx:label=Product UUID	B9
 raw-id	features/sales/pricing-floor-view.tsx:label=Variant UUID	B10
-rounded	app/(store)/me/profile-client.tsx:rounded-2xl	-
-rounded	app/(store)/me/profile-client.tsx:rounded-2xl#2	-
-rounded	app/(store)/me/profile-client.tsx:rounded-2xl#3	-
-rounded	app/(store)/me/profile-client.tsx:rounded-2xl#4	-
 rounded	components/layout/console-shell.tsx:focus:rounded-md	-
 rounded	components/layout/customer-auth-shell.tsx:focus:rounded-md	-
 rounded	components/layout/store-shell.tsx:focus:rounded-md	-

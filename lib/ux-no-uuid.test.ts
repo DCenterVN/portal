@@ -7,9 +7,6 @@ import { expect, it } from "vitest";
 const allowlist: Record<string, { reason: string; debt: "D-246" }> = {
   "features/console/live-console.tsx": { reason: "Fallback user.id của console nằm ngoài S2–S4.", debt: "D-246" },
   "features/sales/pricing-floor-view.tsx": { reason: "S1 giá sàn chờ BE, brief cấm thực hiện trong S2–S4.", debt: "D-246" },
-  // D-246: legacy profile prints a shortened employee UUID; outside this review scope.
-  "app/(store)/me/profile-client.tsx": { reason: "Mã NV dùng profile.id.slice(0, 8), màn hồ sơ ngoài plan.", debt: "D-246" },
-  "features/staff-profile/staff-profile-view.tsx": { reason: "Fallback org_id của hồ sơ nhân viên nằm ngoài plan.", debt: "D-246" },
 };
 // contract_ref is a paper contract number; audit separately filters UUID values.
 const forbiddenField = /^(?!contract_ref$)(?:id|.*_id|.*_ref)$/;

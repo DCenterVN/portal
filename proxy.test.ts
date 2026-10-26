@@ -125,3 +125,5 @@ describe("R5-1 console BFF employee boundary", () => {
   expect(proxy(request(path, "access_token=customer")).headers.get("x-middleware-next")).toBe("1");
  });
 });
+
+it("account confirm is exactly public, scrubs no token into redirects, and sends privacy headers",()=>{const response=proxy(new NextRequest("http://localhost/email/confirm?token=secret"));expect(response.status).toBe(200);expect(response.headers.get("location")).toBeNull();expect(response.headers.get("referrer-policy")).toBe("no-referrer");expect(response.headers.get("cache-control")).toBe("no-store");const nested=proxy(new NextRequest("http://localhost/email/confirm/private?token=secret"));expect(nested.status).toBe(307);expect(nested.headers.get("location")).not.toContain("secret");});

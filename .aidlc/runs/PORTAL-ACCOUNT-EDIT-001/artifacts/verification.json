@@ -1,0 +1,94 @@
+{
+  "task": "PORTAL-ACCOUNT-EDIT-001",
+  "actor": "agent:codex",
+  "worker": "codex",
+  "ts": "2026-10-26T16:33:16+00:00",
+  "cwd": ".",
+  "head": "306e8a9d4260dec5dde044ee8d2f7ae0a9017b9a",
+  "dirty": true,
+  "checks": [
+    {
+      "name": "unit",
+      "command": "TMPDIR=/home/dawn/work/ticket/.cache/tmp pnpm exec vitest run --exclude=e2e/** --exclude=tests/e2e/** --maxWorkers=2 --minWorkers=1",
+      "exit": 0,
+      "status": "PASS",
+      "seconds": 19.2,
+      "log": ".aidlc/runs/PORTAL-ACCOUNT-EDIT-001/artifacts/logs/unit.log",
+      "sha256": "340d725afd70b13006fc5843180b727c482db47b8c33ebf652cd9306114dd6a1",
+      "tail": [
+        "stderr | lib/api/account-email-bff.test.ts > account email BFF > keeps session for pending request, projects flat response and exact DTO",
+        "PORTAL_CLIENT_IP_SOURCE is unset; auth forwarding is disabled",
+        "",
+        "stderr | lib/api/account-avatar-bff.test.ts > avatar BFF > preserves POST policy and strips unknown output",
+        "PORTAL_CLIENT_IP_SOURCE is unset; auth forwarding is disabled"
+      ]
+    },
+    {
+      "name": "typecheck",
+      "command": "pnpm exec tsc --noEmit",
+      "exit": 0,
+      "status": "PASS",
+      "seconds": 3.1,
+      "log": ".aidlc/runs/PORTAL-ACCOUNT-EDIT-001/artifacts/logs/typecheck.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tail": []
+    },
+    {
+      "name": "arch",
+      "command": "python3 /home/dawn/agent_skills/sdlc/engine/archcheck.py",
+      "exit": 0,
+      "status": "PASS",
+      "seconds": 1.0,
+      "log": ".aidlc/runs/PORTAL-ACCOUNT-EDIT-001/artifacts/logs/arch.log",
+      "sha256": "13c03dd053227fcf9fdea7db9ed74eca5c5a5f45db8795f9c1d0500940474ec0",
+      "tail": [
+        "archcheck: 63 violations, 63 baselined, 0 new, 0 stale"
+      ]
+    },
+    {
+      "name": "spec",
+      "command": "python3 -B /home/dawn/agent_skills/sdlc/engine/speccheck.py --lint .aidlc/runs/PORTAL-ACCOUNT-EDIT-001/account-edit-spec.md",
+      "exit": 0,
+      "status": "PASS",
+      "seconds": 0.1,
+      "log": ".aidlc/runs/PORTAL-ACCOUNT-EDIT-001/artifacts/logs/spec.log",
+      "sha256": "317f206409eea61f8b3f99b76bf760c3872679b417f69085ad321f7448021079",
+      "tail": [
+        "ok   account-edit-spec.md"
+      ]
+    },
+    {
+      "name": "integration",
+      "command": "pnpm exec vitest run tests/integration --testNamePattern=account-profile --maxWorkers=2 --minWorkers=1 --no-file-parallelism",
+      "exit": 1,
+      "status": "FAIL",
+      "seconds": 2.6,
+      "log": ".aidlc/runs/PORTAL-ACCOUNT-EDIT-001/artifacts/logs/integration.log",
+      "sha256": "22dc3cacd9f7a119b853f06489652b38e6d6b591b2bbd167f7b2d2a89f0361d7",
+      "tail": [
+        "     23|  for(const line of raw.split(\"\\n\")){",
+        " ❯ Module.preflightAccount tests/integration/account-fixtures.ts:21:12",
+        " ❯ tests/integration/account-profile.it.test.ts:6:13",
+        "",
+        "⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯"
+      ]
+    },
+    {
+      "name": "e2e",
+      "command": "pnpm exec vitest run tests/integration --testNamePattern=account-security --maxWorkers=2 --minWorkers=1 --no-file-parallelism",
+      "exit": 1,
+      "status": "FAIL",
+      "seconds": 2.5,
+      "log": ".aidlc/runs/PORTAL-ACCOUNT-EDIT-001/artifacts/logs/e2e.log",
+      "sha256": "07151a51355ba05e68f632b468ea014146210e29db9db5dbed42f09b1ab06a1e",
+      "tail": [
+        "     23|  for(const line of raw.split(\"\\n\")){",
+        " ❯ Module.preflightAccount tests/integration/account-fixtures.ts:21:12",
+        " ❯ tests/integration/account-security.it.test.ts:6:13",
+        "",
+        "⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯"
+      ]
+    }
+  ],
+  "verdict": "BLOCKED"
+}

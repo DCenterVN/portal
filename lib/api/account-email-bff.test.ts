@@ -1,0 +1,16 @@
+import {afterEach,beforeEach,describe,it,expect,vi} from "vitest";
+import {NextRequest} from "next/server";
+vi.mock("server-only",()=>({}));
+import {POST as change} from "@/app/api/auth/email/change/route";
+import {POST as confirm} from "@/app/api/auth/email/confirm/route";
+function req(body:unknown,cookie="access_token=test-only",origin="http://localhost:3000"){return new NextRequest("http://localhost:3000/api/auth/email",{method:"POST",headers:{origin,"content-type":"application/json",cookie},body:JSON.stringify(body)});}
+beforeEach(()=>{vi.stubEnv("NEXT_PUBLIC_SITE_URL","http://localhost:3000");vi.stubGlobal("fetch",vi.fn());});
+afterEach(()=>{vi.unstubAllGlobals();vi.unstubAllEnvs();});
+describe("account email BFF",()=>{
+ it("keeps session for pending request, projects flat response and exact DTO",async()=>{vi.mocked(fetch).mockResolvedValue(Response.json({status:"pending",message:"sent",token:"hidden"},{status:202}));const body={current_password:"password-1234",new_email:"qa@example.test"};const res=await change(req(body));expect(res.status).toBe(202);expect(await res.json()).toEqual({status:"pending"});expect(res.headers.get("set-cookie")).toBeNull();expect(fetch).toHaveBeenCalledWith(expect.stringContaining("/auth/email/change"),expect.objectContaining({body:JSON.stringify(body),method:"POST",cache:"no-store"}));});
+ it("requires principal and configured origin before forwarding token",async()=>{expect((await confirm(req({token:"proof"},""))).status).toBe(401);expect((await confirm(req({token:"proof"},"access_token=x","https://evil.example"))).status).toBe(403);expect(fetch).not.toHaveBeenCalled();});
+ it.each([{}, {token:[]},{token:""},{token:"proof",user_id:"other"}])("rejects invalid confirmation before upstream %j",async body=>{expect((await confirm(req(body))).status).toBe(400);expect(fetch).not.toHaveBeenCalled();});
+ it("clears all session cookies only after confirmed success",async()=>{vi.mocked(fetch).mockResolvedValue(Response.json({status:"success",message:"updated"}));const res=await confirm(req({token:"proof"}));expect(res.status).toBe(200);expect(await res.json()).toEqual({status:"success"});for(const name of ["access_token","refresh_token","__Host-refresh_token","CSRF-Token","portal_plane"])expect(res.cookies.get(name)?.value).toBe("");});
+ it.each([[401,"UNAUTHORIZED"],[400,"invalid_token"],[429,"rate_limit_exceeded"],[503,"service_busy"]])("preserves denial %i and Retry-After without clearing session",async(status,code)=>{vi.mocked(fetch).mockResolvedValue(Response.json({errors:{error_code:code},message:"secret"},{status,headers:{"retry-after":"9"}}));const res=await confirm(req({token:"proof"}));expect(res.status).toBe(status);expect(await res.json()).toMatchObject({error:code});expect(res.headers.get("retry-after")).toBe("9");expect(res.headers.get("set-cookie")).toBeNull();expect(fetch).toHaveBeenCalledOnce();});
+ it.each([{new_email:"invalid",current_password:"p"},{new_email:"qa@example.test",current_password:[]},{new_email:"qa@example.test",current_password:"p",org_id:"other"}])("rejects email/proof/owner injection %j",async body=>{expect((await change(req(body))).status).toBe(400);expect(fetch).not.toHaveBeenCalled();});
+});

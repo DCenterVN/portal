@@ -1,0 +1,50 @@
+# Task card PORTAL-ACCOUNT-EDIT-001 / S1
+
+Repo root: `/home/dawn/work/ticket/portal` · Engine: `E=~/agent_skills/sdlc/engine/sdlc.py` · Worker: unassigned
+
+## Do
+S1: BFF đổi tên và mật khẩu, cookie/CSRF và contract có test đỏ trước (files: lib/api/auth/types.ts, lib/api/account-bff.ts, app/api/auth/profile/route.ts, app/api/auth/password/change/route.ts, lib/api/account-bff.test.ts; test: pnpm exec vitest run lib/api/account-bff.test.ts --maxWorkers=2 --minWorkers=1)
+
+## Files you may change (approved plan)
+- lib/api/auth/types.ts
+- lib/api/account-bff.ts
+- app/api/auth/profile/route.ts
+- app/api/auth/password/change/route.ts
+- lib/api/account-bff.test.ts
+
+> NOT APPROVED (no plan-approval.json) - do not start.
+
+## Output check (done when green)
+- `pnpm exec vitest run lib/api/account-bff.test.ts --maxWorkers=2 --minWorkers=1`
+
+## Context to load (only these; do not scan the repo or read other specs)
+- .aidlc/runs/PORTAL-ACCOUNT-EDIT-001/plan.md (Requirements/Design sections)
+- ../auth/.aidlc/specs/email-change-security.md
+- account-edit-spec.md
+- ../auth/.aidlc/specs/login-session.md
+- ../platform-docs/standards/frontend.md
+
+## Test kit (from the task giver - read-only)
+- Env + seed: `testkit/env.md` (seed must be re-runnable; reset before each case). Happy case: `testkit/` files.
+- Allowed error codes: `testkit/errors.md`. Derive bad cases from the happy case, one row each in
+  `.aidlc/runs/PORTAL-ACCOUNT-EDIT-001/badcases.md`: `| id | category | derived from | expected | test |`.
+  Categories: missing_field, wrong_type, boundary, authz, tenant, replay, expired_token. Not applicable -> test `N/A`, reason in expected.
+- Expected = a code from errors.md, written BEFORE running. A bad case the system accepts is a BUG FOUND:
+  keep the red test, report it in handback `## Left over`.
+
+## Rules
+- Claim before starting: `python3 $E claim --task PORTAL-ACCOUNT-EDIT-001 --by <codex|anti|claude|name>`; export `SDLC_ACTOR=<name>`.
+- Change only the files above. Anything else -> stop and write it under `## Left over`.
+- Code shape: early return over nesting (max 2-3 levels), functions short (~40 lines), no boilerplate / wrappers /
+  helpers "for later"; reuse what exists before adding.
+- Reuse first: grep `platform-go/docs/API.md` before writing any helper (ids, JSON decode/encode, errors, paging);
+  a helper 2+ services need goes into platform-go, never copied (`ticket/AGENTS.md` §4a).
+- `.aidlc/specs/*.md` in Context = the contract (usecase, API, DTO, DB, events, errors). Code must match it
+  (`speccheck.py`, verify check `spec`); to change the contract, change the spec first and ask for re-approval.
+- Run checks only via `python3 $E verify --task PORTAL-ACCOUNT-EDIT-001 --cwd <service> name="cmd" ...` (receipts are engine-written).
+- Red test = information: never delete, skip or weaken a test to get green.
+
+## Return
+Write `.aidlc/runs/PORTAL-ACCOUNT-EDIT-001/handback.md` with `## Done`, `## Files changed` (`- path`), `## Decisions`, `## Left over`,
+then `python3 $E handback --task PORTAL-ACCOUNT-EDIT-001`.
+

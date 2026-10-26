@@ -188,7 +188,7 @@ describe("Portal BFF Auth Handlers (9 handlers)", () => {
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
       status: 200,
-      json: async () => ({ id: "u-1", email: "user@example.com" }),
+      json: async () => ({ id: "u-1", email: "user@example.com", phone:"", display_name:"Test",status:"ACTIVE",created_at:"2026-10-26",memberships:[] }),
     } as unknown as Response);
 
     const reqWithToken = new NextRequest("http://localhost:3000/api/auth/me", {
@@ -203,7 +203,8 @@ describe("Portal BFF Auth Handlers (9 handlers)", () => {
     expect(global.fetch).toHaveBeenCalledWith(
       expect.stringContaining("/auth/me"),
       expect.objectContaining({
-        headers: { Authorization: "Bearer valid-jwt" },
+        headers: expect.objectContaining({ Authorization: "Bearer valid-jwt" }),
+        cache: "no-store", signal: expect.any(AbortSignal),
       })
     );
   });

@@ -14,7 +14,8 @@ import { LoginForm } from "../features/customer-auth/login-form";
 import { CustomerAuthShell } from "../components/layout/customer-auth-shell";
 import { EmployeeAuthShell } from "../components/layout/employee-auth-shell";
 import ProfileClient from "./(store)/me/profile-client";
-import { StaffProfileView } from "../features/staff-profile/staff-profile-view";
+import { StaffProfileContainer } from "../features/staff-profile/staff-profile-container";
+import {AccountEditContainer} from "../features/account-edit/account-edit-container";
 import { SWRConfig, unstable_serialize } from "swr";
 import { AccessProvider } from "../features/platform/access-boundary";
 import type { Membership } from "../lib/api/platform-client";
@@ -41,7 +42,7 @@ import type { UserProfile } from "../lib/auth/client";
 // SSR cannot mount a portal. Only expose its rendered tree; effects/keyboard are
 // covered by the existing dialog behavior tests and the later browser audit.
 const portalRender = vi.hoisted(() => ({
-  mounted: false, states: [] as unknown[],
+  mounted: false, profileTab: "general", states: [] as unknown[],
   filter: undefined as string | undefined,
   filterClicks: {} as Record<string, () => void>,
 }));
@@ -53,6 +54,7 @@ vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn(), refresh: 
 vi.mock("react", async (importOriginal) => {
   const actual = await importOriginal<typeof React>();
   return { ...actual, useState: (initial: unknown) => {
+    if(initial === "general") return actual.useState(portalRender.profileTab);
     const state = actual.useState(portalRender.states.length ? portalRender.states.shift() : portalRender.mounted && initial === false ? true : initial);
     if (initial === "ALL" && portalRender.filter !== undefined) {
       return [portalRender.filter, (filter: string) => { portalRender.filter = filter; }];
@@ -418,7 +420,7 @@ const profileFixture: UserProfile = {
   id: "user-42", email: "dawn@example.test", phone: "0901234567", display_name: "Dawn",
   status: "ACTIVE", created_at: "2026-09-29", memberships: [{ org_id: "org-1", org_name: "Bếp Hà Nội", roles: ["STAFF"] }],
 };
-const staffProfile = (profile: UserProfile) => React.createElement(SWRConfig, { value: { fallback: { "staff-profile": profile }, revalidateOnMount: false } }, React.createElement(StaffProfileView));
+const staffProfile = (profile: UserProfile) => React.createElement(SWRConfig, { value: { provider:()=>new Map(), fallback: { "/api/auth/me": profile }, revalidateOnMount: false } }, React.createElement(StaffProfileContainer, {editor: React.createElement(AccountEditContainer,{loginPath:"/staff/login"})}));
 const branchFixtures = ["branch-1", "branch-2"].map((id) => ({
   id, name: `Chi nhánh ${id}`, code: id, address: "Hà Nội", type: "MAIN", tempZone: "-18 °C", membersCount: 3,
 }));
@@ -468,12 +470,14 @@ describe("S5 rendered auth, profile, branch and membership roles", () => {
   });
 
   it.each(["general", "security"])("renders profile %s tab with solid roles and original content", (tab) => {
-    const html = surfaceMarkup(React.createElement(ProfileClient), [profileFixture, false, "", null, tab]);
+    portalRender.profileTab=tab;
+    const html = surfaceMarkup(React.createElement(SWRConfig, {value:{provider:()=>new Map(),fallback:{"/api/auth/me":profileFixture},revalidateOnMount:false}},React.createElement(ProfileClient)));
     expectRoleSurface(html);
     expect(html).toContain("Dawn");
     expect(html).toContain("Đăng xuất");
-    expect(html).toContain("bg-[var(--color-primary)]");
-    if (tab === "security") expect(html).toContain("text-[var(--color-leaf)]");
+    expect(html).toContain("bg-primary");
+    expect(html).toContain(tab === "general" ? "Lưu thay đổi" : "Đổi mật khẩu");
+    if (tab === "security") expect(classesFor(html,"input")).toContain("text-[var(--color-ink)]");
   });
 
   it("renders staff profile memberships with solid roles and original content", () => {
@@ -485,14 +489,14 @@ describe("S5 rendered auth, profile, branch and membership roles", () => {
   });
 
   it.each([401, 500])("renders profile error %s with readable danger cue", (status) => {
-    const html = surfaceMarkup(React.createElement(ProfileClient), [null, false, "Lỗi kết nối", status, "general"]);
+    const html = surfaceMarkup(React.createElement(SWRConfig, {value:{provider:()=>new Map([["/api/auth/me",{error:Object.assign(Error("Lỗi kết nối"),{status})}]]),revalidateOnMount:false}}, React.createElement(ProfileClient)), ["general"]);
     expectRoleSurface(html);
     expect(html).toContain("text-[var(--color-danger)]");
     expect(html).toContain(status === 401 ? "Đăng nhập lại" : "Thử lại");
   });
 
   it("keeps profile loading and empty memberships distinct", () => {
-    const loading = surfaceMarkup(React.createElement(StaffProfileView));
+    const loading = surfaceMarkup(React.createElement(StaffProfileContainer, {editor: React.createElement(AccountEditContainer,{loginPath:"/staff/login"})}));
     expect(loading).toContain("Đang tải hồ sơ nhân viên…");
     expect(loading).not.toMatch(rawSurface);
     const empty = surfaceMarkup(staffProfile({ ...profileFixture, memberships: [] }));
@@ -1011,5 +1015,5 @@ it("S18 retires shared screens and exposes independent shells", () => {
 
 vi.mock("next-intl", async original => {
  const actual = await original<typeof import("next-intl")>();
- return {...actual, useTranslations: (namespace: string) => actual.createTranslator({locale: "vi", messages: JSON.parse(readFileSync("messages/vi.json", "utf8")), namespace})};
+ return {...actual, useLocale:()=>"vi", useTranslations: (namespace: string) => actual.createTranslator({locale: "vi", messages: JSON.parse(readFileSync("messages/vi.json", "utf8")), namespace})};
 });
