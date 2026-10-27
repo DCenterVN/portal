@@ -6,6 +6,12 @@ const config = [
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
+    files: ["**/*.mjs", "**/*.config.{js,mjs}"],
+    languageOptions: {
+      globals: globals.node
+    }
+  },
+  {
     files: ["**/*.{ts,tsx}"],
     languageOptions: {
       globals: {

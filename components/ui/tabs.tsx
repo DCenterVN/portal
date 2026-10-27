@@ -11,8 +11,8 @@ export interface TabItem<T extends string> {
 // WAI-ARIA tabs keys: arrows wrap, Home/End jump; null = key is not a tab key.
 export function nextTab<T>(ids: readonly T[], current: T, key: string): T | null {
   const index = ids.indexOf(current);
-  if (key === "ArrowRight") return ids[(index + 1) % ids.length];
-  if (key === "ArrowLeft") return ids[(index - 1 + ids.length) % ids.length];
+  if (key === "ArrowRight" || key === "ArrowDown") return ids[(index + 1) % ids.length];
+  if (key === "ArrowLeft" || key === "ArrowUp") return ids[(index - 1 + ids.length) % ids.length];
   if (key === "Home") return ids[0];
   if (key === "End") return ids[ids.length - 1];
   return null;
@@ -58,7 +58,7 @@ export function Tabs<T extends string>({ label, idPrefix, items, value, onChange
               tabIndex={selected ? 0 : -1}
               onClick={() => onChange(item.id)}
               className={cn(
-                "flex min-h-11 items-center border-b-2 px-3 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]",
+                "flex min-h-11 items-center rounded-lg outline-none border-b-2 px-3 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]",
                 selected ? "border-[var(--primary)] text-[var(--primary)]" : "border-transparent text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
               )}
             >

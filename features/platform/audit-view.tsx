@@ -10,7 +10,8 @@ import { PageHeader } from "@/components/ui/page";
 import { Skeleton, EmptyState, ErrorState, InlineAlert } from "@/components/ui/state";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TablePager, TableRow } from "@/components/ui/table";
 import { errorText, formatTime } from "./access";
-import { RequireAction, useAccess, type PlaneAccess } from "./access-boundary";
+import { RequireAction, useAccess } from "@/lib/access-boundary";
+import type { PlaneAccess } from "@/lib/access-context";
 import { readAuditFilters, useAudit, type AuditFilters, type AuditEntry } from "./use-audit";
 
 function Change({ entry }: { entry: AuditEntry }) {

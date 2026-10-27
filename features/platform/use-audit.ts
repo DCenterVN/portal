@@ -3,7 +3,7 @@
 export type { AuditEntry } from "@/lib/api/platform-contract";
 import useSWR from "swr";
 import { companyAudit } from "@/lib/api/platform-client";
-import type { PlaneAccess } from "./access-boundary";
+import type { PlaneAccess } from "@/lib/access-context";
 
 export type AuditFilters = { root_branch_id?: string; action?: string; since?: string; until?: string };
 

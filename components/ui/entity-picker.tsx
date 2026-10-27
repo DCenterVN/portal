@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Check, Loader2 } from "lucide-react";
+import { Check, ChevronDown, Loader2 } from "./icons";
 import { cn } from "@/lib/utils";
 import { Button } from "./button";
 import { Field, TextInput } from "./field";
@@ -52,10 +52,11 @@ export function EntityPicker<T>({
   const list = status === "ready" ? items ?? [] : [];
   const matches = filter ?? ((item: T, q: string) => fold(`${getLabel(item)} ${getMeta?.(item) ?? ""}`).includes(fold(q.trim())));
   const options = open ? list.filter((item) => matches(item, query ?? "")).slice(0, maxOptions) : [];
-  const expanded = options.length > 0;
+  const expanded = open && status === "ready";
   const current = Math.min(active, options.length - 1);
-  const selected = items?.find((item) => getId(item) === picked);
-  const missing = required && !picked ? `Hãy chọn ${label.toLowerCase()} trong danh sách.` : undefined;
+  const validPick = query === null ? picked : null;
+  const selected = items?.find((item) => getId(item) === validPick);
+  const missing = required && !validPick ? `Hãy chọn ${label.toLowerCase()} trong danh sách.` : undefined;
 
   const choose = (next: string | null) => {
     setOwn(next);
@@ -65,10 +66,18 @@ export function EntityPicker<T>({
   };
 
   function onKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
-    if (event.key === "Escape") return open ? setOpen(false) : setQuery(null);
-    if (event.key === "Enter" && expanded) {
+    if (event.key === "Escape") {
       event.preventDefault();
-      return choose(getId(options[current]));
+      event.stopPropagation?.();
+      setOpen(false);
+      if (query === null) setQuery(null);
+      return;
+    }
+    if (event.key === "Tab") return setOpen(false);
+    if (event.key === "Enter") {
+      event.preventDefault();
+      if (expanded && options[current]) choose(getId(options[current]));
+      return;
     }
     const key = LIST_KEYS[event.key];
     if (!key || (!open && key !== "ArrowRight" && key !== "ArrowLeft")) return;
@@ -78,10 +87,11 @@ export function EntityPicker<T>({
   }
 
   return (
-    <div className={cn("relative grid gap-1.5", className)}>
+    <div className={cn("relative grid gap-1.5 [anchor-scope:--entity-picker]", className)}>
       <Field label={label} htmlFor={id} error={error || (touched ? missing : undefined)}>
         <TextInput
           ref={(element) => element?.setCustomValidity(missing ?? "")}
+          className="pr-10 [anchor-name:--entity-picker]"
           id={id}
           role="combobox"
           autoComplete="off"
@@ -92,9 +102,14 @@ export function EntityPicker<T>({
           aria-activedescendant={expanded ? `${id}-option-${current}` : undefined}
           placeholder={placeholder}
           value={query ?? (selected ? getLabel(selected) : "")}
+          onFocus={() => { if (status === "ready") setOpen(true); }}
+          onClick={() => { if (status === "ready") setOpen(true); }}
           onChange={(event) => {
             const text = event.target.value;
-            if (!text && picked) return choose(null);
+            if (picked && query === null) {
+              setOwn(null);
+              onChange?.(null);
+            }
             setQuery(text);
             setOpen(true);
             setActive(0);
@@ -103,12 +118,29 @@ export function EntityPicker<T>({
           onBlur={() => {
             setTouched(true);
             setOpen(false);
-            setQuery(null);
           }}
           onInvalid={() => setTouched(true)}
         />
       </Field>
-      {serializeValue && <input type="hidden" name={name} value={picked ?? ""} />}
+      <button
+        type="button"
+        aria-label={label}
+        aria-haspopup="listbox"
+        aria-expanded={expanded}
+        aria-controls={`${id}-listbox`}
+        disabled={status !== "ready"}
+        title={label}
+        className="absolute right-2 top-9 rounded-sm text-fg-3"
+        onMouseDown={(event) => event.preventDefault()}
+        onClick={(event) => {
+          const next = !expanded;
+          event.currentTarget?.parentElement?.querySelector<HTMLInputElement>("input[role=combobox]")?.focus();
+          setOpen(next);
+        }}
+      >
+        <ChevronDown aria-hidden="true" className="size-4" />
+      </button>
+      {serializeValue && <input type="hidden" name={name} value={validPick ?? ""} />}
       {status === "loading" && (
         <p role="status" className="flex items-center gap-1.5 text-xs text-fg-3">
           <Loader2 aria-hidden="true" className="size-3.5 animate-spin" />
@@ -122,14 +154,30 @@ export function EntityPicker<T>({
         </div>
       )}
       {status === "ready" && !items?.length && <p className="text-xs text-fg-3">{emptyText}</p>}
-      {open && list.length > 0 && !expanded && <p role="status" className="text-xs text-fg-3">Không tìm thấy “{query}”.</p>}
+
       <ul
+        ref={(element) => {
+          if (!element?.showPopover) return;
+          if (expanded) element.showPopover();
+          else element.hidePopover();
+        }}
+        popover="manual"
         id={`${id}-listbox`}
         role="listbox"
         aria-label={label}
         hidden={!expanded}
-        className="absolute inset-x-0 top-full z-(--z-popover) mt-1 max-h-64 overflow-auto rounded-lg border border-glass-edge bg-glass-l3 p-1 text-fg shadow-l3 glass-blur-l3"
+        className={cn(
+          "m-0 max-h-64 overflow-auto rounded-lg border p-1",
+          "bg-glass-l3 text-fg shadow-l3 glass-blur-l3",
+          "[position-anchor:--entity-picker] top-[anchor(bottom)] left-[anchor(left)] w-[anchor-size(width)]",
+          "[position-try-fallbacks:flip-block] max-w-[calc(100vw-2rem)]",
+        )}
       >
+        {expanded && !options.length && (
+          <li role="status" className="p-2 text-xs text-fg-3">
+            {list.length ? `Không tìm thấy “${query ?? ""}”.` : emptyText}
+          </li>
+        )}
         {options.map((item, index) => (
           <li
             key={getId(item)}
@@ -138,10 +186,16 @@ export function EntityPicker<T>({
             aria-selected={index === current}
             onMouseDown={(event) => event.preventDefault()}
             onClick={() => choose(getId(item))}
-            className={cn("flex min-h-11 cursor-pointer items-center gap-2 rounded-sm px-3 text-sm hover:bg-l1-2 md:min-h-8", index === current && "bg-p-soft")}
+            className={cn(
+              "flex min-h-11 cursor-pointer items-center gap-2 rounded-sm px-3",
+              "text-sm hover:bg-l1-2 md:min-h-8",
+              index === current && "bg-p-soft",
+            )}
           >
-            <span className="min-w-0 flex-1 truncate">{getLabel(item)}</span>
-            {getMeta && <span className="shrink-0 text-xs text-fg-3">{getMeta(item)}</span>}
+            <span className="grid min-w-0 flex-1">
+              <span className="truncate font-medium">{getLabel(item)}</span>
+              {getMeta && <span className="truncate text-xs text-fg-3">{getMeta(item)}</span>}
+            </span>
             {getId(item) === picked && <Check aria-hidden="true" className="size-4 shrink-0 text-p" />}
           </li>
         ))}

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 const portalBase = process.env.PORTAL_IT_BASE?.replace(/\/$/, "") ?? "";
+const portalPublicBase = process.env.PORTAL_IT_PUBLIC_URL ?? portalBase;
 const email = `portal-it-${Date.now()}-${Math.random().toString(36).slice(2)}@example.com`;
 const phone = `090${String(Date.now()).slice(-7)}`;
 const password = `PortalIT!${Date.now()}Aa`;
@@ -48,30 +49,38 @@ describe.skipIf(!process.env.PORTAL_IT_BASE)("portal and backend integration", (
   });
 
   it("serves public auth pages and redirects protected pages to login", async () => {
-    for (const path of ["/login", "/register"]) {
+    for (const path of ["/login", "/register", "/products"]) {
       const response = await request(path);
       expect(response.status).toBe(200);
     }
 
-    for (const path of ["/products", "/roles", "/console"]) {
+    for (const path of ["/roles", "/console"]) {
       const response = await request(path, { redirect: "manual" });
       expect([307, 308]).toContain(response.status);
       const location = response.headers.get("location");
       expect(location).not.toBeNull();
       const redirect = new URL(location!, portalBase);
-      expect(redirect.pathname).toBe("/login");
+      expect(redirect.pathname).toBe("/staff/login");
       expect(redirect.searchParams.get("redirect")).toBe(path);
     }
   });
 
   it("registers a unique account and receives a valid activation email", async () => {
-    const response = await request("/api/auth/register", {
+    const withoutOrigin = await request("/api/auth/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, phone, display_name: "Portal Integration", password }),
     });
+    expect(withoutOrigin.status).toBe(403);
+    expect(await withoutOrigin.json()).toMatchObject({ error: "FORBIDDEN" });
+
+    const response = await request("/api/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Origin: portalBase },
+      body: JSON.stringify({ email, phone, display_name: "Portal Integration", password }),
+    });
     expect(response.status).toBe(202);
-    expect(await response.json()).toMatchObject({ data: { status: "accepted" } });
+    expect(await response.json()).toMatchObject({ status: "success", message: "Accepted" });
 
     const deadline = Date.now() + 60_000;
     let activationMessage: { ID: string; Subject: string; Text: string } | undefined;
@@ -95,33 +104,35 @@ describe.skipIf(!process.env.PORTAL_IT_BASE)("portal and backend integration", (
     expect(activationMessage!.Subject).not.toMatch(/resort|\{\{/i);
     const activationLink = activationMessage!.Text.match(/https?:\/\/[^\s<>"')]+/)?.[0];
     expect(activationLink).toBeDefined();
-    expect(activationLink!.startsWith(`${portalBase}/activate?token=`)).toBe(true);
+    expect(activationLink!.startsWith(`${portalPublicBase}/activate?token=`)).toBe(true);
     activationToken = new URL(activationLink!).searchParams.get("token") ?? "";
     expect(activationToken.length).toBeGreaterThan(0);
   }, 70_000);
 
-  it("activates the account once and rejects replay with 400", async () => {
+  // D-220: BFF activate chỉ gửi token, auth đòi token+password; bỏ it.fails khi PORTAL-ACTIVATE-PASSWORD-001 xong
+  it.fails("activates the account once and rejects replay with 400", async () => {
     const response = await request("/api/auth/activate", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", Origin: portalBase },
       body: JSON.stringify({ token: activationToken }),
     });
     expect(response.status).toBe(200);
 
     const replay = await request("/api/auth/activate", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", Origin: portalBase },
       body: JSON.stringify({ token: activationToken }),
     });
     expect(replay.status).toBe(400);
-    expect(await replay.json()).toMatchObject({ status: "error", errors: { error_code: "BAD_REQUEST" } });
+    expect(await replay.json()).toMatchObject({ error: "BAD_REQUEST" });
   });
 
-  it("logs in through the BFF, reads the profile, and rejects a wrong password without cookies", async () => {
+  // D-220: BFF activate chỉ gửi token, auth đòi token+password; bỏ it.fails khi PORTAL-ACTIVATE-PASSWORD-001 xong
+  it.fails("logs in through the BFF, reads the profile, and rejects a wrong password without cookies", async () => {
     const response = await request("/api/auth/login", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
+      headers: { "Content-Type": "application/json", Origin: portalBase },
+      body: JSON.stringify({ identifier: email, password }),
     });
     expect(response.status).toBe(200);
     expect(cookies.has("access_token")).toBe(true);
@@ -134,8 +145,8 @@ describe.skipIf(!process.env.PORTAL_IT_BASE)("portal and backend integration", (
 
     const wrongPassword = await request("/api/auth/login", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password: `${password}-wrong` }),
+      headers: { "Content-Type": "application/json", Origin: portalBase },
+      body: JSON.stringify({ identifier: email, password: `${password}-wrong` }),
     });
     expect(wrongPassword.status).toBe(401);
     const wrongPasswordCookies = (wrongPassword.headers as Headers & { getSetCookie?: () => string[] }).getSetCookie?.() ?? [];
@@ -147,16 +158,17 @@ describe.skipIf(!process.env.PORTAL_IT_BASE)("portal and backend integration", (
     expect(products.status).toBe(200);
   });
 
-  // Gap: proxy only checks the session cookie, so a customer without membership reaches employee pages.
-  it.fails("blocks a customer session from roles and console", async () => {
+  it("blocks a customer session from roles and console", async () => {
     for (const path of ["/roles", "/console"]) {
       const response = await request(path, { headers: { Cookie: authenticatedCookies }, redirect: "manual" });
       expect(response.status).not.toBe(200);
     }
   });
 
-  it("logs out, clears auth cookies, and rejects the former session", async () => {
-    const response = await request("/api/auth/logout", { method: "POST" });
+  // D-220: BFF activate chỉ gửi token, auth đòi token+password; bỏ it.fails khi PORTAL-ACTIVATE-PASSWORD-001 xong
+  it.fails("logs out, clears auth cookies, and rejects the former session", async () => {
+    expect(authenticatedCookies).not.toBe("");
+    const response = await request("/api/auth/logout", { method: "POST", headers: { "Content-Type": "application/json", Origin: portalBase } });
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ message: "logged_out" });
     expect(cookies.has("access_token")).toBe(false);

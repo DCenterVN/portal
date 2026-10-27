@@ -5,53 +5,60 @@ FE-03 app/api/auth/me/route.ts
 FE-03 app/api/auth/refresh/route.ts
 FE-03 app/readyz/route.ts
 FE-03 features/inventory/shelves-view.tsx
-FE-03 features/production/food-plans-view.tsx
 FE-03 features/production/orders-view.tsx
-FE-03 features/production/targets-view.tsx
 FE-03 features/sales/pricing-floor-view.tsx
+FE-04 features/console/live-console.tsx features/platform/permission-grid
+FE-04 features/console/live-console.tsx features/platform/use-role-matrix
+FE-04 features/memberships/memberships-view.tsx features/platform/access
+FE-04 features/store/store-frame.tsx features/customer-auth/auth-popup
 FE-09 app/layout.tsx
 FE-09 components/modals/allergen-warning-modal.tsx
 FE-09 components/modals/cold-chain-violation-modal.tsx
 FE-09 components/modals/invite-member-modal.tsx
 FE-09 components/modals/quantity-variance-modal.tsx
 FE-09 components/modals/supplier-suspension-modal.tsx
-FE-09 components/ui/page.tsx
 FE-09 features/console/live-console.tsx
 FE-09 features/products/order-detail-view.tsx
 FE-09 features/products/product-detail-loader.tsx
-FE-09 features/products/products-loader.tsx
 FE-09 features/sales/pricing-floor-view.tsx
+FE-10 components/layout/customer-auth-shell.tsx
+FE-10 components/layout/employee-auth-shell.tsx
 FE-10 components/modals/allergen-warning-modal.tsx
 FE-10 components/modals/cold-chain-violation-modal.tsx
 FE-10 components/modals/confirm-qc-decision-modal.tsx
 FE-10 components/modals/quantity-variance-modal.tsx
 FE-10 components/modals/session-timeout-modal.tsx
 FE-10 components/modals/supplier-suspension-modal.tsx
-FE-10 components/ui/dialog.tsx
 FE-10 components/ui/toast.tsx
 FE-10 features/branches/branches-view.tsx
-FE-10 features/memberships/memberships-view.tsx
+FE-10 features/customer-auth/auth-popup.tsx
+FE-10 features/customer-auth/login-form.tsx
+FE-10 features/platform/permission-grid.tsx
+FE-10 features/platform/role-matrix-view.tsx
 FE-10 features/products/cart-view.tsx
-FE-10 features/products/product-detail-view.tsx
 FE-10 features/products/products-view.tsx
 FE-10 features/roles/roles-view.tsx
 FE-13 components/ui/dialog.tsx
-FE-13 features/memberships/memberships-view.tsx
-FE-13 features/products/products-view.tsx
 FE-13 features/roles/roles-view.tsx
+FE-14 features/console/console-frame.tsx missing empty
 FE-14 features/console/live-console.tsx missing loading,empty
+FE-14 features/customer-auth/login-form.tsx missing empty
+FE-14 features/employee-auth/staff-login.tsx missing empty
 FE-14 features/inventory/shelves-view.tsx missing loading,empty,error
-FE-14 features/production/food-plans-view.tsx missing loading,empty,error
+FE-14 features/memberships/memberships-view.tsx missing loading
 FE-14 features/production/orders-view.tsx missing loading,empty,error
 FE-14 features/production/qc-view.tsx missing loading,empty,error
-FE-14 features/production/targets-view.tsx missing loading,empty,error
 FE-14 features/products/cart-view.tsx missing loading,empty,error
 FE-14 features/products/order-detail-view.tsx missing loading,empty
 FE-14 features/products/orders-view.tsx missing loading,empty
-FE-14 features/products/product-create-dialog.tsx missing loading,empty,error
+FE-14 features/products/product-create-dialog.tsx missing empty
 FE-14 features/products/product-detail-loader.tsx missing loading,empty
 FE-14 features/products/product-detail-view.tsx missing loading,empty,error
-FE-14 features/products/products-loader.tsx missing loading,empty
 FE-14 features/products/products-view.tsx missing loading,empty
 FE-14 features/sales/pricing-floor-view.tsx missing loading,empty,error
+FE-14 features/staff-profile/staff-profile-view.tsx missing empty
 FE-14 features/traceability/trace-view.tsx missing loading,empty,error
+SIZE-01 components/ui/dialog.tsx 403 lines
+SIZE-01 features/roles/roles-view.tsx 528 lines
+SIZE-01 lib/api/production.ts 455 lines
+SIZE-01 lib/api/sales.ts 490 lines

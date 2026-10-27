@@ -14,7 +14,7 @@ import { EmptyState, ErrorState, Skeleton } from "@/components/ui/state";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field, Select } from "@/components/ui/field";
 import { companyAccess, errorStatus, platformAccess, type AccessState } from "./access";
-import { AccessProvider } from "./access-boundary";
+import { AccessProvider } from "@/lib/access-boundary";
 
 type Plane = "platform" | "company";
 type NavRule = { href: string; label: string; action: string };

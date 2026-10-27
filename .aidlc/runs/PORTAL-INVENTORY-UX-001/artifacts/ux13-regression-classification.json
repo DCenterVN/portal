@@ -1,0 +1,112 @@
+{
+  "counts": {
+    "expected": 22,
+    "skipped": 27,
+    "unexpected": 9,
+    "flaky": 0
+  },
+  "inventory_pass": 3,
+  "protected_diff_lines": 0,
+  "failures": [
+    {
+      "file": "catalog-split/catalog-split.spec.ts",
+      "line": 96,
+      "title": "staff có sales:product:read thấy menu Sản phẩm và màn quản trị",
+      "classification": "D-308",
+      "signature": [
+        "catalog-split.spec.ts:39:64",
+        "permissionsOf",
+        "401"
+      ]
+    },
+    {
+      "file": "catalog-split/catalog-split.spec.ts",
+      "line": 108,
+      "title": "staff không có quyền đọc không thấy menu, vào URL trực tiếp bị chặn và không gọi staff list",
+      "classification": "D-308",
+      "signature": [
+        "catalog-split.spec.ts:39:64",
+        "permissionsOf",
+        "401"
+      ]
+    },
+    {
+      "file": "catalog-split/catalog-split.spec.ts",
+      "line": 224,
+      "title": "ba nút trạng thái giữ #019, chọn đơn và aria-pressed đúng",
+      "classification": "D-308",
+      "signature": [
+        "catalog-split.spec.ts:39:64",
+        "permissionsOf",
+        "401"
+      ]
+    },
+    {
+      "file": "catalog-split/catalog-split.spec.ts",
+      "line": 239,
+      "title": "icon tìm kiếm căn giữa ô nhập và không tràn ngang ở 375px",
+      "classification": "D-308",
+      "signature": [
+        "catalog-split.spec.ts:39:64",
+        "permissionsOf",
+        "401"
+      ]
+    },
+    {
+      "file": "catalog-split/catalog-split.spec.ts",
+      "line": 239,
+      "title": "icon tìm kiếm căn giữa ô nhập và không tràn ngang ở 768px",
+      "classification": "D-308",
+      "signature": [
+        "catalog-split.spec.ts:39:64",
+        "permissionsOf",
+        "401"
+      ]
+    },
+    {
+      "file": "catalog-split/catalog-split.spec.ts",
+      "line": 239,
+      "title": "icon tìm kiếm căn giữa ô nhập và không tràn ngang ở 1024px",
+      "classification": "D-308",
+      "signature": [
+        "catalog-split.spec.ts:39:64",
+        "permissionsOf",
+        "401"
+      ]
+    },
+    {
+      "file": "fooddev-pack/fooddev-pack.spec.ts",
+      "line": 261,
+      "title": "FOOD_DEV soạn gói/set, đổi nhãn, pin 100 suất 80/20; WAREHOUSE đọc oracle và write403",
+      "classification": "D-308",
+      "signature": [
+        "fooddev-pack.spec.ts:81:40",
+        "fooddev-pack.spec.ts:117:24",
+        "Network.getResponseBody",
+        "No resource with given identifier found"
+      ]
+    },
+    {
+      "file": "fooddev-set/fooddev-set.spec.ts",
+      "line": 70,
+      "title": "FOOD_DEV tạo và sửa set; kho chỉ đọc; revoke có hiệu lực ngay và restore đúng snapshot",
+      "classification": "D-308",
+      "signature": [
+        "fooddev-set.spec.ts:51:27",
+        "warehouseGrants",
+        "401"
+      ]
+    },
+    {
+      "file": "rbac/rbac.spec.ts",
+      "line": 178,
+      "title": "1. ADMIN tắt rồi bật sales:product:read bằng ma trận",
+      "classification": "D-308",
+      "signature": [
+        "rbac.spec.ts:60:52",
+        "grants",
+        "401"
+      ]
+    }
+  ]
+}

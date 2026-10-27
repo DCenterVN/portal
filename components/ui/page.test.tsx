@@ -34,3 +34,11 @@ describe("Page Components", () => {
     expect(element.props.className).toContain("flex flex-col md:flex-row md:items-center md:justify-between gap-4");
   });
 });
+
+  it("PageHeader allows long titles, badges and actions to wrap in a narrow viewport", () => {
+    const element = PageHeader({ title: "Nhà cung cấp tên rất dài", badge: <span>Đang hợp tác</span>, actions: <button>Ngừng hợp tác</button> });
+    const [heading, actions] = React.Children.toArray(element.props.children) as React.ReactElement<{ className: string }>[];
+    expect(heading.props.className).toContain("min-w-0");
+    expect(actions.props.className).toContain("flex-wrap");
+    expect(actions.props.className).toContain("min-w-0");
+  });

@@ -13,7 +13,11 @@ export const CONSOLE_NAV: { title: string; items: NavRule[] }[] = [
       { href: "/roles", label: "Vai trò", match: "/roles", icon: LayoutDashboard, action: "org:company:read" },
     ],
   },
-  { title: "Kho", items: [{ href: "/inventory/shelves", label: "Kệ hàng", match: "/inventory", icon: Warehouse, action: "inventory:shelf_placement:read" }] },
+  { title: "Kho", items: [
+    { href: "/inventory/shelves", label: "Kệ hàng", match: "/inventory/shelves", icon: Warehouse, action: "inventory:shelf_placement:read" },
+    { href: "/inventory/suppliers", label: "Nhà cung cấp", match: "/inventory/suppliers", icon: Warehouse, action: "inventory:supplier:read" },
+    { href: "/inventory/goods-receipts/new", label: "Tạo phiếu nhập", match: "/inventory/goods-receipts/new", icon: Warehouse, action: "inventory:goods_receipt:create" },
+  ] },
   {
     title: "Sản xuất",
     items: [
