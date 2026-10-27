@@ -101,6 +101,18 @@ describe("ConsoleShell", () => {
     expect(header).toContain('aria-label="Tài khoản của Dawn Nguyen" aria-haspopup="menu"');
   });
 
+  it("hides account name and detail below sm while preserving its accessible name", () => {
+    const html = themed(
+      <ConsoleHeader collapsed={false} onToggle={() => {}} toggleLabel="Toggle" user={{ name: "Dawn Nguyen", detail: "Quản lý kho" }} />
+    );
+    const header = section(html, "header");
+    const classes = header.match(/<span class="([^"]*)">Dawn Nguyen/)?.[1].split(" ") ?? [];
+    expect(classes).toEqual(expect.arrayContaining(["hidden", "sm:block"]));
+    expect(header).toContain('aria-label="Tài khoản của Dawn Nguyen"');
+    expect(header).toMatch(/aria-hidden="true"[^>]*>D<\/span>/);
+    expect(header).toContain("Quản lý kho</span></span>");
+  });
+
   it("lists Tài khoản and Đăng xuất in the open avatar menu", () => {
     flags.open = true;
     try {

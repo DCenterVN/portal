@@ -19,3 +19,18 @@ it.each([404, 503])("giữ status %i để UI tải lại hoặc retry cùng upl
   vi.stubGlobal("fetch", vi.fn().mockResolvedValue(Response.json({ errors: { error_code: status === 404 ? "RESOURCE_NOT_FOUND" : "UNAVAILABLE" } }, { status })));
   await expect(finalizeDocument(supplierID, documentID)).rejects.toMatchObject({ status });
 });
+
+it("upload chỉ cần URL và form fields, gửi đủ trường và file không kèm credentials", async () => {
+  const fetch = vi.fn().mockResolvedValue(new Response(null, { status: 204 }));
+  vi.stubGlobal("fetch", fetch);
+  const file = new File(["photo"], "supplier.png", { type: "image/png" });
+  await uploadDocument({ upload_url: "http://storage.test/photo", form_fields: { key: "tmp/photo", policy: "signed-policy" } }, file);
+  const [url, options] = fetch.mock.calls[0];
+  expect(url).toBe("http://storage.test/photo");
+  expect(options.method).toBe("POST");
+  expect(options.credentials).toBe("omit");
+  expect(options.body.get("key")).toBe("tmp/photo");
+  expect(options.body.get("policy")).toBe("signed-policy");
+  expect(options.body.get("file")).toBe(file);
+  expect(options.headers).toBeUndefined();
+});

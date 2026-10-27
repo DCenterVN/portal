@@ -34,3 +34,10 @@ it("ACTIVE hoặc thiếu quyền không có input giá và action lưu", () => 
     expect(html).not.toContain(">Lưu nháp<");
   }
 });
+
+it("nháp không có chứng từ vẫn có Áp dụng, hướng dẫn file là tùy chọn", () => {
+  const html = markup({ ...agreement, document_ref: null });
+  expect(html).toContain("Áp dụng bảng giá");
+  expect(html).toContain("Chứng từ tùy chọn");
+  expect(html).not.toContain("Cần một chứng từ đã hoàn tất trước khi áp dụng");
+});

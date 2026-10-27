@@ -2,15 +2,25 @@ import { z } from "zod";
 import { apiFetch, FetchError } from "@/lib/fetcher";
 import { decodePlatform } from "./platform-contract";
 
+export const supplierAddressSchema = z.object({ line: z.string().max(300), ward: z.string().max(120), province: z.string().max(120) }).strict();
 export const supplierSchema = z.object({
   id: z.string().uuid(), code: z.string(), name: z.string(), status: z.enum(["ACTIVE", "SUSPENDED"]),
-  tax_code: z.string().nullish(), address: z.union([z.string(), z.record(z.unknown())]).nullish(),
+  tax_code: z.string().nullish(), address: supplierAddressSchema.nullish(),
+  photo: z.object({ mime: z.enum(["image/jpeg", "image/png", "image/webp"]), size_bytes: z.number().int().min(1).max(5242880), updated_at: z.string().datetime() }).nullish(),
+  contact_name: z.string().max(150).nullish(), contact_phone: z.string().max(20).nullish(),
+  contact_email: z.string().max(254).nullish(), note: z.string().max(2000).nullish(),
   material_categories: z.array(z.string()).nullish().transform(items => items ?? []),
+  material_category_codes: z.array(z.string()).optional(), category_migration_required: z.boolean().optional(),
   food_safety_credential_media_ref: z.string().nullable().optional(), rating_grade: z.string().optional(),
   created_at: z.string().optional(), updated_at: z.string().optional(),
 });
 export type Supplier = z.infer<typeof supplierSchema>;
-export type SupplierInput = { code: string; name: string; tax_code?: string; material_categories: string[] };
+export type SupplierInput = {
+  code: string; name: string; tax_code?: string; material_categories?: string[];
+  address?: z.infer<typeof supplierAddressSchema>;
+  contact_name?: string; contact_phone?: string; contact_email?: string; note?: string;
+  material_category_codes?: string[];
+};
 export const supplierPageSchema = z.object({ items: z.array(supplierSchema).nullable().transform(items => items ?? []), next_cursor: z.string().nullish().transform(value => value ?? "") });
 export type SupplierPage = z.infer<typeof supplierPageSchema>;
 

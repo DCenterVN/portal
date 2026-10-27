@@ -1,5 +1,7 @@
 import { afterEach, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
+import { readFileSync } from "node:fs";
+import { OPERATIONS } from "@/lib/contracts/operations.generated";
 import * as suppliers from "@/app/api/inventory/suppliers/route";
 import * as detail from "@/app/api/inventory/suppliers/[id]/route";
 import * as suspend from "@/app/api/inventory/suppliers/[id]/suspend/route";
@@ -10,8 +12,24 @@ import * as presign from "@/app/api/inventory/suppliers/[id]/contract-documents/
 import * as finalize from "@/app/api/inventory/suppliers/[id]/contract-documents/finalize/route";
 import * as download from "@/app/api/inventory/suppliers/[id]/contract-documents/[documentId]/download/route";
 import * as receipts from "@/app/api/inventory/goods-receipts/route";
+import * as history from "@/app/api/inventory/suppliers/[id]/goods-receipts/route";
 import { supplierID, agreementID, documentID } from "@/mocks/supplier-contract";
 afterEach(() => vi.unstubAllGlobals());
+it("metadata taxonomy sinh từ inventory và snapshot giữ nguyên bytes", () => {
+  expect(OPERATIONS).toHaveProperty("listMaterialCategories", { service: "inventory", method: "GET", path: "/inventory/material-categories", actionKey: "inventory:supplier:read", scope: "none" });
+  expect(readFileSync("contracts/inventory.public.yaml")).toEqual(readFileSync("../inventory/api/openapi.public.yaml"));
+  expect(JSON.parse(readFileSync("../inventory/api/permissions.json", "utf8"))).toMatchObject({ permissions: expect.arrayContaining([expect.objectContaining({ action_key: "inventory:supplier:read", operations: expect.arrayContaining(["listMaterialCategories"]) })]) });
+});
+it("history BFF truyền abort signal và giữ 403/no-store", async () => {
+  const fetch = vi.fn().mockResolvedValue(Response.json({ errors: { error_code: "FORBIDDEN" } }, { status: 403 }));
+  vi.stubGlobal("fetch", fetch);
+  const request = new NextRequest("http://portal.test/api/inventory?cursor=next&branch_ref=forged", { headers: { cookie: "access_token=test-only" } });
+  const response = await history.GET(request, context);
+  expect(response.status).toBe(403);
+  expect(response.headers.get("cache-control")).toBe("no-store");
+  expect(fetch.mock.calls[0][1].signal).toBe(request.signal);
+  expect(String(fetch.mock.calls[0][0])).not.toContain("branch_ref");
+});
 const context = { params: Promise.resolve({ id: supplierID, agreementId: agreementID, documentId: documentID }) };
 const cases = [
   ["POST", suppliers.POST, "/suppliers"], ["PATCH", detail.PATCH, `/suppliers/${supplierID}`],
@@ -45,4 +63,25 @@ it("multipart metadata endpoint và request thiếu cookie bị chặn trước 
   expect((await presign.POST(new NextRequest("http://portal.test", { method: "POST", headers: { cookie: "access_token=test-only" }, body: form }), context)).status).toBe(400);
   expect((await finalize.POST(new NextRequest("http://portal.test", { method: "POST", body: "{}" }), context)).status).toBe(401);
   expect(fetch).not.toHaveBeenCalled();
+});
+
+it("bổ sung chứng từ dùng quyền supplier:update và metadata sinh từ contract", () => {
+  expect(OPERATIONS).toHaveProperty("attachSupplierAgreementDocument", {
+    service: "inventory", method: "POST", path: "/inventory/suppliers/{supplier_id}/agreements/{agreement_id}/documents", actionKey: "inventory:supplier:update", scope: "none",
+  });
+  expect(JSON.parse(readFileSync("../inventory/api/permissions.json", "utf8"))).toMatchObject({ permissions: expect.arrayContaining([expect.objectContaining({ action_key: "inventory:supplier:update", operations: expect.arrayContaining(["attachSupplierAgreementDocument"]) })]) });
+});
+
+it("ảnh NCC có đủ operations và quyền sinh từ contract", () => {
+  for (const [operation, method, suffix, action] of [
+    ["presignSupplierPhoto", "POST", "presign", "update"],
+    ["finalizeSupplierPhoto", "POST", "finalize", "update"],
+    ["downloadSupplierPhoto", "GET", "download", "read"],
+  ]) {
+    expect(OPERATIONS).toHaveProperty(operation, {
+      service: "inventory", method, path: `/inventory/suppliers/{supplier_id}/photo/${suffix}`,
+      actionKey: `inventory:supplier:${action}`, scope: "none",
+    });
+    expect(JSON.parse(readFileSync("../inventory/api/permissions.json", "utf8"))).toMatchObject({ permissions: expect.arrayContaining([expect.objectContaining({ action_key: `inventory:supplier:${action}`, operations: expect.arrayContaining([operation]) })]) });
+  }
 });

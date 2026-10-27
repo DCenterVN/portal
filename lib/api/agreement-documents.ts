@@ -23,7 +23,7 @@ export async function fileSHA256(file: File): Promise<string> {
   const bytes = await crypto.subtle.digest("SHA-256", await file.arrayBuffer());
   return Array.from(new Uint8Array(bytes), byte => byte.toString(16).padStart(2, "0")).join("");
 }
-export async function uploadDocument(target: DocumentUpload, file: File): Promise<void> {
+export async function uploadDocument(target: Pick<DocumentUpload, "upload_url" | "form_fields">, file: File): Promise<void> {
   const form = new FormData();
   for (const [key, value] of Object.entries(target.form_fields)) form.append(key, value);
   form.append("file", file);

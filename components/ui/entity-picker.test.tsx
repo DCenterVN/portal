@@ -99,7 +99,7 @@ describe("EntityPicker filter (FR-12)", () => {
     const { html, options } = view();
     expect(options).toHaveLength(0);
     expect(html).toContain("Không tìm thấy");
-    expect(view().box.props["aria-expanded"]).toBe(false);
+    expect(view().box.props["aria-expanded"]).toBe(true);
   });
 
   it("a custom filter replaces the default one", () => {
@@ -220,7 +220,7 @@ describe("EntityPicker states fail closed", () => {
     props = { ...props, status: "error" };
     type("da lat");
     key("ArrowDown");
-    expect(key("Enter")).not.toHaveBeenCalled();
+    expect(key("Enter")).toHaveBeenCalled();
     const { html, tree, options } = view();
     expect(options).toHaveLength(0);
     expect(onChange).not.toHaveBeenCalled();
@@ -255,7 +255,7 @@ describe("EntityPicker required + no raw id on screen", () => {
 
   it("the id rides only in the hidden input; nothing visible shows it", () => {
     props = { ...props, value: COMPANIES[0].id };
-    type("c");
+    call(view().box, "onFocus");
     const { html } = view();
     const ids = COMPANIES.map((company) => company.id);
     for (const id of ids) expect(visibleText(html)).not.toContain(id);
@@ -264,8 +264,64 @@ describe("EntityPicker required + no raw id on screen", () => {
     const combobox = html.match(/<input[^>]*role="combobox"[^>]*>/)?.[0] ?? "";
     expect(combobox).not.toMatch(/\bname=/);
     const shown = [...combobox.matchAll(/(?:placeholder|value)="([^"]*)"/g)].map((match) => match[1]);
-    expect(shown).toEqual(["Tìm theo tên hoặc mã công ty", "c"]);
+    expect(shown).toEqual(["Tìm theo tên hoặc mã công ty", "Công ty Đà Lạt Xanh"]);
     for (const text of shown) expect(text).not.toMatch(/UUID|\bID\b|\bref\b/i);
+  });
+});
+
+
+describe("picker UX click and validation", () => {
+  it("focus and click open the complete list without required errors", () => {
+    call(view().box, "onFocus");
+    expect(view().options).toHaveLength(3);
+    expect(view().html).not.toContain('aria-invalid="true"');
+    key("Escape");
+    call(view().box, "onClick");
+    expect(view().options).toHaveLength(3);
+  });
+
+  it("chevron opens without submitting or blurring the field", () => {
+    const toggle = findAll(view().tree, node => node.props["aria-haspopup"] === "listbox")[0];
+    expect(toggle).toBeDefined();
+    expect(toggle.props.type).toBe("button");
+    const preventDefault = vi.fn();
+    call(toggle, "onMouseDown", { preventDefault });
+    expect(preventDefault).toHaveBeenCalled();
+    call(toggle, "onClick");
+    expect(view().options).toHaveLength(3);
+    expect(view().html).not.toContain('aria-invalid="true"');
+  });
+
+  it("editing a selection invalidates its ID immediately, including controlled state", () => {
+    props = { ...props, value: COMPANIES[0].id };
+    type("bep");
+    expect(onChange).toHaveBeenCalledWith(null);
+    expect(hiddenValue(view().html)).toBe("");
+    key("Escape");
+    expect(view().box.props.value).not.toBe(COMPANIES[0].name);
+  });
+
+  it("Tab closes without picking and Enter never submits free text", () => {
+    type("zzz");
+    expect(key("Enter")).toHaveBeenCalled();
+    expect(onChange).not.toHaveBeenCalled();
+    key("Tab");
+    expect(view().box.props["aria-expanded"]).toBe(false);
+  });
+
+  it("stale data cannot be selected after the status changes", () => {
+    type("bep");
+    const stale = view().options[0];
+    props = { ...props, status: "error" };
+    expect(view().options).toHaveLength(0);
+    key("Enter");
+    expect(onChange).not.toHaveBeenCalled();
+    expect(stale).toBeDefined();
+  });
+
+  it("serializeValue=false omits the hidden ID input", () => {
+    props = { ...props, serializeValue: false, value: COMPANIES[0].id };
+    expect(hiddenValue(view().html)).toBeUndefined();
   });
 });
 

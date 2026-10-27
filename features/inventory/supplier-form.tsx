@@ -1,68 +1,82 @@
 "use client";
 
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import type { ChangeEvent } from "react";
 import { Button } from "@/components/ui/button";
-import { Field, TextInput, Checkbox } from "@/components/ui/field";
+import { Field, TextInput, Textarea } from "@/components/ui/field";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, ConfirmDialog } from "@/components/ui/dialog";
 import { EmptyState, ErrorState, Skeleton } from "@/components/ui/state";
-import { getMaterials, type MaterialPage } from "@/lib/api/sales";
-import { createSupplier, updateSupplier, type Supplier } from "@/lib/api/suppliers";
-import { useAccess } from "@/lib/access-boundary";
+import { SupplierCategoryPicker } from "./supplier-category-picker";
+import { SupplierPhotoField } from "./supplier-photo-field";
+import { supplierFieldLimits, type useSupplierForm, type SupplierFormField } from "./use-supplier-form";
 
-export function SupplierForm({ supplier, onClose, onSaved }: { supplier?: Supplier; onClose: () => void; onSaved: (supplier: Supplier) => void }) {
-  const { can } = useAccess();
-  const allowed = can(supplier ? "inventory:supplier:update" : "inventory:supplier:create");
-  const [name, setName] = useState(supplier?.name ?? "");
-  const [code, setCode] = useState(supplier?.code ?? "");
-  const [tax, setTax] = useState(supplier?.tax_code ?? "");
-  const [selected, setSelected] = useState(supplier?.material_categories ?? []);
-  const [categories, setCategories] = useState<MaterialPage["categories"] | null>(null);
-  const [lookupError, setLookupError] = useState(false);
-  const [error, setError] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [dirty, setDirty] = useState(false);
-  const [discard, setDiscard] = useState(false);
-  const [attempt, setAttempt] = useState(0);
-  const command = useRef({ body: "", key: "" });
-  useEffect(() => {
-    if (!allowed) return;
-    let live = true;
-    getMaterials().then(page => { if (live) { setCategories(page.categories); setLookupError(false); } }).catch(() => { if (live) setLookupError(true); });
-    return () => { live = false; };
-  }, [allowed, attempt]);
-  const valid = allowed && name.trim() && code.trim() && categories !== null && !lookupError && selected.every(id => categories.some(category => category.id === id));
+type SupplierProfileFieldProps = { form: ReturnType<typeof useSupplierForm>; field: SupplierFormField; label: string; edit?: boolean };
+function SupplierProfileField({ form, field, label, edit }: SupplierProfileFieldProps) {
+  const props = {
+    id: `supplier-${field}`, value: form.values[field], maxLength: supplierFieldLimits[field],
+    disabled: form.busy || form.photoPending || (field === "code" && edit),
+    onChange: (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => form.change(field, event.target.value),
+    onBlur: () => form.touch(field),
+  };
+  return <Field label={label} htmlFor={props.id} error={form.fieldError(field)} hint={field === "code" ? form.t("codeHint") : undefined}>
+    {field === "note" ? <Textarea {...props} /> : <TextInput {...props} autoFocus={field === "name"} required={field === "code" || field === "name"} type={field === "email" ? "email" : field === "phone" ? "tel" : "text"} />}
+  </Field>;
+}
 
-  async function submit(event: FormEvent) {
-    event.preventDefault();
-    if (!valid || busy) return;
-    const body = { code: code.trim(), name: name.trim(), tax_code: tax.trim(), material_categories: selected };
-    const encoded = JSON.stringify(body);
-    if (command.current.body !== encoded) command.current = { body: encoded, key: crypto.randomUUID() };
-    setBusy(true); setError("");
-    try {
-      const saved = supplier ? await updateSupplier(supplier.id, { name: body.name, tax_code: body.tax_code, material_categories: selected }, command.current.key) : await createSupplier(body, command.current.key);
-      onSaved(saved);
-    } catch (cause) { setError(cause instanceof Error ? cause.message : "Không lưu được nhà cung cấp"); }
-    finally { setBusy(false); }
-  }
-
+type SupplierFormProps = { form: ReturnType<typeof useSupplierForm>; edit: boolean; onDiscard: () => void };
+export function SupplierForm({ form, edit, onDiscard }: SupplierFormProps) {
+  const { t } = form;
   return <>
-    <Dialog open onOpenChange={open => { if (!open && !busy) { if (dirty) setDiscard(true); else onClose(); } }}>
-      <DialogContent variant="sheet" className="md:fixed md:right-0 md:top-0 md:h-dvh md:rounded-none overflow-y-auto">
-        <DialogHeader><DialogTitle>{supplier ? "Sửa nhà cung cấp" : "Thêm nhà cung cấp"}</DialogTitle><DialogDescription>Mã giữ nguyên sau khi tạo. Nhóm nguyên liệu lấy từ danh mục hiện có.</DialogDescription></DialogHeader>
-        {!allowed ? <ErrorState denied title="Bạn không có quyền lưu nhà cung cấp" /> : <form onSubmit={submit} onChange={() => setDirty(true)} className="grid gap-4">
-          <Field label="Mã nhà cung cấp" htmlFor="supplier-code" hint={supplier ? "Mã không thay đổi sau tạo." : "Ví dụ NCC-GAO-AN-BINH"}><TextInput id="supplier-code" value={code} onChange={event => setCode(event.target.value)} required disabled={Boolean(supplier) || busy} autoFocus /></Field>
-          <Field label="Tên nhà cung cấp" htmlFor="supplier-name"><TextInput id="supplier-name" value={name} onChange={event => setName(event.target.value)} required disabled={busy} /></Field>
-          <Field label="Mã số thuế" htmlFor="supplier-tax"><TextInput id="supplier-tax" value={tax} onChange={event => setTax(event.target.value)} disabled={busy} /></Field>
-          <fieldset disabled={busy} className="grid gap-2"><legend>Nhóm nguyên liệu</legend>
-            {lookupError ? <ErrorState title="Không tải được danh mục nhóm nguyên liệu" onRetry={() => setAttempt(value => value + 1)} /> : categories === null ? <Skeleton title="Đang tải nhóm nguyên liệu" /> : categories.length === 0 ? <EmptyState title="Danh mục chưa có nhóm nguyên liệu" /> : categories.map(category => <Checkbox key={category.id} label={category.name} checked={selected.includes(category.id)} onChange={event => setSelected(items => event.target.checked ? [...items, category.id] : items.filter(id => id !== category.id))} />)}
+    <Dialog open onOpenChange={open => { if (!open) form.close(); }}>
+      <DialogContent variant="sheet" className="fixed inset-y-0 right-0 flex max-w-md flex-col overflow-hidden rounded-none">
+        <DialogHeader className="shrink-0">
+          <DialogTitle>{t(edit ? "edit" : "create")}</DialogTitle>
+          <DialogDescription>{t("description")}</DialogDescription>
+          {form.dirty && <p role="status" className="text-xs text-fg-3">{t("unsaved")}</p>}
+        </DialogHeader>
+        {!form.allowed ? <ErrorState denied title={t("denied")} /> : <form onSubmit={form.submit} noValidate className="flex min-h-0 flex-1 flex-col">
+          <div className="grid flex-1 gap-6 overflow-y-auto pb-4 pr-1">
+          <SupplierPhotoField form={form} />
+          <fieldset className="grid gap-4 border-b border-line pb-6">
+            <legend className="mb-2 font-semibold">{t("general")}</legend>
+            <p className="text-xs text-fg-3">{t("generalHint")}</p>
+            <SupplierProfileField form={form} field="name" label={t("name")} />
+            <SupplierProfileField form={form} field="code" label={t("code")} edit={edit} />
+            <SupplierProfileField form={form} field="tax" label={t("tax")} />
           </fieldset>
-          {error && <p role="alert">{error}</p>}
-          {!valid && <p className="text-sm text-fg-3">Nhập mã, tên và chờ danh mục nhóm nguyên liệu tải xong để lưu.</p>}
-          <DialogFooter><Button type="button" variant="outline" disabled={busy} onClick={() => dirty ? setDiscard(true) : onClose()}>Huỷ</Button><Button type="submit" disabled={!valid || busy}>{busy ? "Đang lưu…" : "Lưu nhà cung cấp"}</Button></DialogFooter>
+          <fieldset className="grid gap-4 border-b border-line pb-6">
+            <legend className="mb-2 font-semibold">{t("address")}</legend>
+            <p className="text-xs text-fg-3">{t("addressHint")}</p>
+            <SupplierProfileField form={form} field="line" label={t("line")} />
+            <SupplierProfileField form={form} field="province" label={t("province")} />
+            <SupplierProfileField form={form} field="ward" label={t("ward")} />
+          </fieldset>
+          <fieldset className="grid gap-4 border-b border-line pb-6">
+            <legend className="mb-2 font-semibold">{t("contact")}</legend>
+            <p className="text-xs text-fg-3">{t("contactHint")}</p>
+            <SupplierProfileField form={form} field="contactName" label={t("contactName")} />
+            <SupplierProfileField form={form} field="phone" label={t("phone")} />
+            <SupplierProfileField form={form} field="email" label={t("email")} />
+          </fieldset>
+          <fieldset disabled={form.busy || form.photoPending} className="grid gap-3">
+            <legend className="mb-2 font-semibold">{t("groups")}</legend>
+            <p className="text-xs text-fg-3">{t("groupsHint")}</p>
+            {form.legacy && <p role="status" className="rounded-lg border border-line p-3 text-sm">{t("legacy")}. {t("legacyHint")}</p>}
+            {form.lookupError ? <ErrorState title={t("loadError")} onRetry={form.retry} /> : form.categories === null ? <Skeleton title={t("loading")} /> : form.categories.length === 0 ? <EmptyState title={t("empty")} /> : <SupplierCategoryPicker categories={form.categories} selected={form.selected} onChange={form.select} disabled={form.busy} />}
+          </fieldset>
+          <details className="rounded-lg border border-line p-4">
+            <summary className="cursor-pointer font-semibold">{t("note")}</summary>
+            <div className="mt-3"><SupplierProfileField form={form} field="note" label={t("note")} /></div>
+          </details>
+          </div>
+          {form.error && <p role="alert" className="text-sm text-danger">{form.error}</p>}
+          <DialogFooter className="mt-0 shrink-0 flex-col bg-l1 sm:flex-col sm:space-x-0">
+            {!form.valid && <p className="mb-2 text-xs text-fg-3">{form.missing}</p>}
+            <Button type="button" variant="outline" className="w-full" disabled={form.busy} onClick={form.close}>{t("cancel")}</Button>
+            <Button type="submit" className="w-full" disabled={!form.valid || form.busy}>{t(form.busy ? "saving" : form.photoPending ? "photoRetry" : "save")}</Button>
+          </DialogFooter>
         </form>}
       </DialogContent>
     </Dialog>
-    <ConfirmDialog open={discard} onOpenChange={setDiscard} title="Bỏ thay đổi nhà cung cấp?" description="Các thông tin chưa lưu sẽ bị bỏ." confirmLabel="Bỏ thay đổi" onConfirm={onClose} />
+    <ConfirmDialog open={form.discard} onOpenChange={form.setDiscard} title={t("discardTitle")} description={t("discardHint")} confirmLabel={t("discard")} onConfirm={onDiscard} />
   </>;
 }

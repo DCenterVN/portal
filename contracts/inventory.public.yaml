@@ -3,6 +3,56 @@ info:
   title: inventory public API
   version: 0.1.0
 paths:
+  /inventory/material-categories:
+    get:
+      x-action-key: inventory:supplier:read
+      x-scope: none
+      x-exposure: public
+      operationId: listMaterialCategories
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MaterialCategoryTreeEnvelope200'
+        '400':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '401':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '422':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '503':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+      summary: Danh mục nhóm nguyên liệu hai cấp
   /inventory/suppliers:
     post:
       x-action-key: inventory:supplier:create
@@ -373,9 +423,74 @@ paths:
       x-scope: none
       x-exposure: public
       operationId: listSupplierGoodsReceipts
+      parameters:
+        - name: supplier_id
+          in: path
+          required: true
+          schema: {type: string, format: uuid}
+        - name: page_size
+          in: query
+          schema: {type: integer, minimum: 1, maximum: 100, default: 20}
+        - name: cursor
+          in: query
+          schema: {type: string}
+        - name: from
+          in: query
+          description: Inclusive creation date in Asia/Ho_Chi_Minh.
+          schema: {type: string, format: date}
+        - name: to
+          in: query
+          description: Inclusive creation date in Asia/Ho_Chi_Minh.
+          schema: {type: string, format: date}
       responses:
         '200':
-          description: List goods receipts
+          description: Receipt page scoped to verified branch; total is the number of receipts in this page.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupplierReceiptHistoryEnvelope'
+        '400':
+          description: Invalid supplier ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Forbidden or missing verified branch
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '404':
+          description: Supplier not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '422':
+          description: Invalid filter or cursor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '503':
+          description: Dependency unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /inventory/goods-receipts:
     post:
       x-action-key: inventory:goods_receipt:create
@@ -1395,6 +1510,95 @@ paths:
       responses:
         '200':
           description: List shelf placements
+  /inventory/suppliers/{supplier_id}/agreements/{agreement_id}/documents:
+    post:
+      operationId: attachSupplierAgreementDocument
+      x-action-key: inventory:supplier:update
+      x-scope: none
+      x-exposure: public
+      security:
+      - bearerJWT: []
+      parameters:
+      - in: path
+        name: supplier_id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: path
+        name: agreement_id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: header
+        name: Idempotency-Key
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          pattern: \S
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AttachAgreementDocumentRequest'
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttachAgreementDocumentResponseEnvelope201'
+        '400':
+          description: Invalid JSON
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '409':
+          description: State or idempotency conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '422':
+          description: Validation or media failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '503':
+          description: Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /inventory/suppliers/{supplier_id}/agreements:
     post:
       operationId: createSupplierAgreement
@@ -2330,6 +2534,226 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorEnvelope'
+  /inventory/suppliers/{supplier_id}/photo/presign:
+    post:
+      x-action-key: inventory:supplier:update
+      x-scope: none
+      x-exposure: public
+      operationId: presignSupplierPhoto
+      parameters:
+      - name: supplier_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: header
+        name: Idempotency-Key
+        required: true
+        schema:
+          type: string
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PresignSupplierPhotoResponseEnvelope201'
+        '400':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '401':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '404':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '409':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '422':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '503':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PresignSupplierPhotoRequest'
+  /inventory/suppliers/{supplier_id}/photo/finalize:
+    post:
+      x-action-key: inventory:supplier:update
+      x-scope: none
+      x-exposure: public
+      operationId: finalizeSupplierPhoto
+      parameters:
+      - name: supplier_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: header
+        name: Idempotency-Key
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinalizedSupplierPhotoResponseEnvelope200'
+        '400':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '401':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '404':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '409':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '422':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '503':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FinalizeSupplierPhotoRequest'
+  /inventory/suppliers/{supplier_id}/photo/download:
+    get:
+      x-action-key: inventory:supplier:read
+      x-scope: none
+      x-exposure: public
+      operationId: downloadSupplierPhoto
+      parameters:
+      - name: supplier_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupplierPhotoDownloadEnvelope200'
+        '400':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '401':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '404':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '422':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '503':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
 components:
   securitySchemes:
     bearerJWT:
@@ -2337,6 +2761,60 @@ components:
       scheme: bearer
       bearerFormat: JWT
   schemas:
+    SupplierReceiptHistoryEnvelope:
+      type: object
+      additionalProperties: false
+      required: [code, status, message, data]
+      properties:
+        code: {type: integer}
+        status: {type: string}
+        message: {type: string}
+        data:
+          $ref: '#/components/schemas/SupplierReceiptHistoryResponse'
+    SupplierReceiptHistoryResponse:
+      type: object
+      additionalProperties: false
+      required: [items, total, next_cursor]
+      properties:
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/SupplierReceiptHistoryItem'
+        total:
+          type: integer
+          description: Number of receipts in this page, retained for legacy clients.
+        next_cursor: {type: string}
+    SupplierReceiptHistoryItem:
+      type: object
+      additionalProperties: false
+      required: [id, branch_ref, supplier_ref, status, created_at, expected_at, completed_at, total_amount_vnd, lines]
+      properties:
+        id: {type: string, format: uuid}
+        branch_ref: {type: string, format: uuid}
+        supplier_ref: {type: string, format: uuid}
+        status: {type: string, enum: [DRAFT, RECEIVING, COMPLETED]}
+        created_at: {type: string, format: date-time}
+        expected_at: {type: string, format: date-time}
+        completed_at: {type: string, format: date-time, nullable: true}
+        total_amount_vnd: {type: integer, format: int64}
+        lines:
+          type: array
+          items:
+            $ref: '#/components/schemas/SupplierReceiptHistoryLine'
+    SupplierReceiptHistoryLine:
+      type: object
+      additionalProperties: false
+      required: [receipt_line_ref, sku_ref, uom, expected_quantity, actual_quantity, unit_cost_vnd, expected_amount_vnd, actual_amount_vnd]
+      properties:
+        receipt_line_ref: {type: string, format: uuid}
+        sku_ref: {type: string, format: uuid}
+        uom: {type: string}
+        expected_quantity: {type: string, pattern: '^[0-9]+\.[0-9]{3}$'}
+        actual_quantity: {type: string, pattern: '^[0-9]+\.[0-9]{3}$'}
+        unit_cost_vnd: {type: integer, format: int64, nullable: true}
+        expected_amount_vnd: {type: integer, format: int64, nullable: true}
+        actual_amount_vnd: {type: integer, format: int64, nullable: true}
     CreateSupplierRequest:
       type: object
       additionalProperties: false
@@ -2348,8 +2826,27 @@ components:
         tax_code:
           type: string
         address:
-          type: object
-          additionalProperties: true
+          $ref: '#/components/schemas/SupplierAddress'
+        contact_name:
+          type: string
+          maxLength: 150
+        contact_phone:
+          type: string
+          maxLength: 20
+          pattern: '^(|0[0-9]{9}|\+84[0-9]{9})$'
+        contact_email:
+          type: string
+          maxLength: 254
+        note:
+          type: string
+          maxLength: 2000
+        material_category_codes:
+          type: array
+          maxItems: 100
+          uniqueItems: true
+          items:
+            type: string
+            pattern: '^[A-Z][A-Z0-9_]{0,63}$'
         material_categories:
           type: array
           items:
@@ -2369,8 +2866,27 @@ components:
         tax_code:
           type: string
         address:
-          type: object
-          additionalProperties: true
+          $ref: '#/components/schemas/SupplierAddress'
+        contact_name:
+          type: string
+          maxLength: 150
+        contact_phone:
+          type: string
+          maxLength: 20
+          pattern: '^(|0[0-9]{9}|\+84[0-9]{9})$'
+        contact_email:
+          type: string
+          maxLength: 254
+        note:
+          type: string
+          maxLength: 2000
+        material_category_codes:
+          type: array
+          maxItems: 100
+          uniqueItems: true
+          items:
+            type: string
+            pattern: '^[A-Z][A-Z0-9_]{0,63}$'
         material_categories:
           type: array
           items:
@@ -2393,10 +2909,22 @@ components:
       required:
       - operation
       - reason
+    SupplierAddress:
+      type: object
+      additionalProperties: false
+      properties:
+        line: {type: string, maxLength: 300}
+        ward: {type: string, maxLength: 120}
+        province: {type: string, maxLength: 120}
+      required: [line, ward, province]
     SupplierResponse:
       type: object
       additionalProperties: false
       properties:
+        photo:
+          allOf:
+          - $ref: '#/components/schemas/SupplierPhotoResponse'
+          nullable: true
         id:
           type: string
           format: uuid
@@ -2407,11 +2935,39 @@ components:
         tax_code:
           type: string
         address:
-          anyOf:
-          - type: object
-            additionalProperties: true
-          - type: string
-          - type: 'null'
+          allOf:
+          - $ref: '#/components/schemas/SupplierAddress'
+          nullable: true
+        contact_name:
+          type: string
+          maxLength: 150
+          nullable: true
+        contact_phone:
+          type: string
+          maxLength: 20
+          nullable: true
+        contact_email:
+          type: string
+          maxLength: 254
+          nullable: true
+        note:
+          type: string
+          maxLength: 2000
+          nullable: true
+        material_category_codes:
+          type: array
+          maxItems: 100
+          uniqueItems: true
+          items:
+            type: string
+            pattern: '^[A-Z][A-Z0-9_]{0,63}$'
+        material_category_labels:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/SupplierCategoryLabel'
+        category_migration_required:
+          type: boolean
         material_categories:
           type: array
           items:
@@ -2439,6 +2995,15 @@ components:
       - code
       - name
       - status
+    SupplierCategoryLabel:
+      type: object
+      additionalProperties: false
+      required: [code, name, parent_code, parent_name]
+      properties:
+        code: {type: string}
+        name: {type: string}
+        parent_code: {type: string}
+        parent_name: {type: string}
     SupplierPage:
       type: object
       additionalProperties: false
@@ -2883,6 +3448,15 @@ components:
         document_ref:
           type: string
           format: uuid
+          nullable: true
+        primary_document_ref:
+          type: string
+          format: uuid
+          nullable: true
+        document_attached_at:
+          type: string
+          format: date-time
+          nullable: true
         lines:
           type: array
           items:
@@ -2897,6 +3471,8 @@ components:
       - valid_from
       - valid_to
       - document_ref
+      - primary_document_ref
+      - document_attached_at
       - lines
       - created_at
     SupplierAgreementPage:
@@ -2926,7 +3502,12 @@ components:
         uom:
           type: string
           minLength: 1
-        unit_cost_vnd: *id006
+        unit_cost_vnd:
+          type: integer
+          format: int64
+          minimum: 0
+          maximum: 9223372036854775807
+          description: Optional actual unit cost; omitted differs from zero.
         agreement_version_ref:
           type: string
           format: uuid
@@ -2937,8 +3518,6 @@ components:
       - sku_ref
       - expected_quantity
       - uom
-      - agreement_version_ref
-      - price_line_ref
     CreateGoodsReceiptRequest:
       type: object
       additionalProperties: false
@@ -3891,3 +4470,251 @@ components:
       - status
       - message
       - data
+    MaterialCategoryLeaf:
+      type: object
+      additionalProperties: false
+      required:
+      - code
+      - name
+      - children
+      properties:
+        code: &materialCategoryCode
+          type: string
+          pattern: ^[A-Z][A-Z0-9_]{0,63}$
+        name: &materialCategoryName
+          type: string
+          minLength: 1
+          maxLength: 150
+        children:
+          type: array
+          maxItems: 0
+          items: {}
+    MaterialCategoryParent:
+      type: object
+      additionalProperties: false
+      required:
+      - code
+      - name
+      - children
+      properties:
+        code: *materialCategoryCode
+        name: *materialCategoryName
+        children:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/MaterialCategoryLeaf'
+    MaterialCategoryTreeResponse:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      properties:
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/MaterialCategoryParent'
+    MaterialCategoryTreeEnvelope200:
+      type: object
+      additionalProperties: false
+      properties:
+        code:
+          type: integer
+          const: 200
+        status:
+          type: string
+          const: success
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/MaterialCategoryTreeResponse'
+      required:
+      - code
+      - status
+      - message
+      - data
+    AttachAgreementDocumentRequest:
+      type: object
+      additionalProperties: false
+      required: [document_ref]
+      properties:
+        document_ref:
+          type: string
+          format: uuid
+    AttachAgreementDocumentResponse:
+      type: object
+      additionalProperties: false
+      required: [primary_document_ref, document_attached_at]
+      properties:
+        primary_document_ref:
+          type: string
+          format: uuid
+        document_attached_at:
+          type: string
+          format: date-time
+    AttachAgreementDocumentResponseEnvelope201:
+      type: object
+      additionalProperties: false
+      required: [code, status, message, data]
+      properties:
+        code:
+          type: integer
+          enum: [201]
+        status:
+          type: string
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/AttachAgreementDocumentResponse'
+
+    PresignSupplierPhotoRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        filename:
+          type: string
+          minLength: 1
+          maxLength: 255
+        content_type:
+          type: string
+          enum:
+          - image/jpeg
+          - image/png
+          - image/webp
+        size_bytes:
+          type: integer
+          minimum: 1
+          maximum: 5242880
+        sha256:
+          type: string
+          pattern: ^[a-f0-9]{64}$
+      required:
+      - filename
+      - content_type
+      - size_bytes
+
+    FinalizeSupplierPhotoRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        upload_id:
+          type: string
+          format: uuid
+      required:
+      - upload_id
+
+    PresignSupplierPhotoResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        upload_id:
+          type: string
+          format: uuid
+        upload_url:
+          type: string
+          format: uri
+        form_fields:
+          type: object
+          additionalProperties:
+            type: string
+        expires_in:
+          type: integer
+          minimum: 1
+          maximum: 300
+      required:
+      - upload_id
+      - upload_url
+      - form_fields
+      - expires_in
+
+    SupplierPhotoDownload:
+      type: object
+      additionalProperties: false
+      properties:
+        url:
+          type: string
+          format: uri
+        expires_in:
+          type: integer
+          const: 300
+      required:
+      - url
+      - expires_in
+
+    PresignSupplierPhotoResponseEnvelope201:
+      type: object
+      additionalProperties: false
+      properties:
+        code:
+          type: integer
+          const: 201
+        status:
+          type: string
+          const: success
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/PresignSupplierPhotoResponse'
+      required:
+      - code
+      - status
+      - message
+      - data
+
+    FinalizedSupplierPhotoResponseEnvelope200:
+      type: object
+      additionalProperties: false
+      properties:
+        code:
+          type: integer
+          const: 200
+        status:
+          type: string
+          const: success
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/FinalizedSupplierPhotoResponse'
+      required:
+      - code
+      - status
+      - message
+      - data
+
+    SupplierPhotoDownloadEnvelope200:
+      type: object
+      additionalProperties: false
+      properties:
+        code:
+          type: integer
+          const: 200
+        status:
+          type: string
+          const: success
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/SupplierPhotoDownload'
+      required:
+      - code
+      - status
+      - message
+      - data
+    SupplierPhotoResponse:
+      type: object
+      additionalProperties: false
+      required: [mime, size_bytes, updated_at]
+      properties:
+        mime: {type: string, enum: [image/jpeg, image/png, image/webp]}
+        size_bytes: {type: integer, minimum: 1, maximum: 5242880}
+        updated_at: {type: string, format: date-time}
+    FinalizedSupplierPhotoResponse:
+      type: object
+      additionalProperties: false
+      required: [upload_id, mime, size_bytes, updated_at]
+      properties:
+        upload_id: {type: string, format: uuid}
+        mime: {type: string, enum: [image/jpeg, image/png, image/webp]}
+        size_bytes: {type: integer, minimum: 1, maximum: 5242880}
+        updated_at: {type: string, format: date-time}

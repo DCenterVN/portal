@@ -1,5 +1,5 @@
-import { GoodsReceiptForm } from "@/features/inventory/goods-receipt-form";
+import { GoodsReceiptPage } from "@/features/inventory/goods-receipt-container";
 
 export default function NewGoodsReceiptPage() {
-  return <GoodsReceiptForm />;
+  return <GoodsReceiptPage />;
 }

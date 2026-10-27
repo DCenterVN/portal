@@ -42,6 +42,7 @@ export async function forwardService(request: NextRequest, options: ForwardServi
   try {
     const upstream = await fetch(`${options.baseUrl}${options.path}`, {
       method: options.method,
+      signal: request.signal,
       headers,
       ...(body ? { body } : {}),
       cache: "no-store",

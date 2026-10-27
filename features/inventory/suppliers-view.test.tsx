@@ -52,3 +52,18 @@ it("tìm 250ms và bỏ response của lần tải đã hủy", async () => {
   expect(render()).toContain("Chưa có nhà cung cấp phù hợp");
   expect(render()).not.toContain("Gạo An Bình</a>");
 });
+
+it("list has six columns, contact and ACTIVE default without fake counts", () => {
+ const html=renderToStaticMarkup(<AccessProvider value={{plane:"company",root:"",actions:new Set(["inventory:supplier:read"])}}><SuppliersView initialPage={{items:[supplier],next_cursor:""}} /></AccessProvider>);
+ expect(html.match(/<th /g)).toHaveLength(6);
+ expect(html).toContain("Nhóm NL cha");
+ expect(html).toContain("Nguyễn An");
+ expect(html).toContain('href="tel:0901234567"');
+ expect(html).toContain('value="ACTIVE" selected');
+ expect(html).not.toContain("Bảng giá (0)");
+});
+it("filtered empty state offers clear filters, not a misleading create prompt", () => {
+ const html=renderToStaticMarkup(<AccessProvider value={{plane:"company",root:"",actions:new Set(["inventory:supplier:read"])}}><SuppliersView initialPage={{items:[],next_cursor:""}} /></AccessProvider>);
+ expect(html).toContain("Xoá lọc");
+ expect(html).not.toContain(">Thêm nhà cung cấp<");
+});

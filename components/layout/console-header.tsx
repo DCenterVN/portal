@@ -32,7 +32,7 @@ function AccountMenu({ user, accountHref, onLogout }: Pick<Props, "user" | "onLo
           <span aria-hidden="true" className="grid size-8 place-items-center rounded-full border border-p bg-p-soft text-xs font-extrabold text-p-text">
             {user.name.trim().charAt(0).toUpperCase()}
           </span>
-          <span className="max-w-40 truncate text-left">
+          <span className="hidden max-w-40 truncate text-left sm:block">
             {user.name}
             {user.detail && <span className="block truncate text-xs font-normal text-fg-3">{user.detail}</span>}
           </span>

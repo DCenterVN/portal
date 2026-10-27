@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { useAccess } from "@/lib/access-boundary";
 import { getSuppliers, type SupplierPage } from "@/lib/api/suppliers";
+import { getMaterialCategories } from "@/lib/api/material-categories";
+import type { MaterialCategory } from "@/lib/api/inventory/types";
 
 export function useSuppliers(initialPage?: SupplierPage) {
   const { can } = useAccess();
@@ -11,7 +13,7 @@ export function useSuppliers(initialPage?: SupplierPage) {
   const [loading, setLoading] = useState(!initialPage);
   const [error, setError] = useState("");
   const [q, setQ] = useState("");
-  const [status, setStatus] = useState("");
+  const [status, setStatus] = useState("ACTIVE");
   const [cursors, setCursors] = useState([""]);
   const [create, setCreate] = useState(false);
   const [revision, setRevision] = useState(0);
@@ -25,5 +27,19 @@ export function useSuppliers(initialPage?: SupplierPage) {
     }, 250);
     return () => { live = false; clearTimeout(timer); };
   }, [q, status, cursor, read, revision]);
-  return { can, read, page, loading, error, q, status, cursors, create, setCreate, setQ, setStatus, setCursors, setRevision };
+  const [categories, setCategories] = useState<MaterialCategory[]>([]);
+  const [categoryState, setCategoryState] = useState("loading");
+  const [categoryRevision, setCategoryRevision] = useState(0);
+  useEffect(() => {
+    if (!read) return;
+    let live = true;
+    setCategoryState("loading");
+    getMaterialCategories().then(items => { if (live) { setCategories(items); setCategoryState("ready"); } }).catch(() => { if (live) setCategoryState("error"); });
+    return () => { live = false; };
+  }, [read, categoryRevision]);
+  const rows = page?.items.map(supplier => ({
+    ...supplier,
+    parentNames: categories.filter(parent => parent.children.some(child => supplier.material_category_codes?.includes(child.code))).map(parent => parent.name),
+  }));
+  return { can, read, page, rows, categoryState, setCategoryRevision, loading, error, q, status, cursors, create, setCreate, setQ, setStatus, setCursors, setRevision };
 }

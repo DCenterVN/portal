@@ -2,7 +2,7 @@ export const supplierID = "01960000-0000-7000-8000-000000000001";
 export const agreementID = "01960000-0000-7000-8000-000000000002";
 export const materialID = "01960000-0000-7000-8000-000000000003";
 export const documentID = "01960000-0000-7000-8000-000000000004";
-export const supplier = { id: supplierID, code: "NCC-GAO", name: "Gạo An Bình", status: "ACTIVE" as const, tax_code: "", material_categories: [], rating_grade: "B" };
+export const supplier = { id: supplierID, code: "NCC-GAO", name: "Gạo An Bình", status: "ACTIVE" as const, tax_code: "", contact_name: "Nguyễn An", contact_phone: "0901234567", material_category_codes: ["RICE"], material_categories: [], rating_grade: "B" };
 export const agreement = {
   agreement_id: agreementID, version_id: documentID, version: 1, code: "HD-GAO", status: "DRAFT" as const,
   effective_status: "DRAFT", valid_from: "2026-11-01", valid_to: "2026-11-30", document_ref: documentID,

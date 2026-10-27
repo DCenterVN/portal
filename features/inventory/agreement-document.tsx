@@ -16,8 +16,8 @@ export function AgreementDocument({ supplierId, documentRef, filename, file, onS
     finally { setBusy(false); }
   }
   return <section aria-label="Chứng từ hợp đồng" aria-busy={busy} className="grid gap-3 rounded-lg border border-line p-4">
-    <h3 className="font-semibold">Chứng từ chính</h3>
-    {file ? <p>{file.name} · {Math.ceil(file.size / 1024)} KiB</p> : documentRef ? <p>{filename || "Đã gắn chứng từ hợp đồng"}</p> : <EmptyState title="Chưa gắn chứng từ" description="Cần một chứng từ đã hoàn tất trước khi áp dụng bảng giá." />}
+    <h3 className="font-semibold">Chứng từ tùy chọn</h3>
+    {file ? <p>{file.name} · {Math.ceil(file.size / 1024)} KiB</p> : documentRef ? <p>{filename || "Đã gắn chứng từ hợp đồng"}</p> : <EmptyState title="Chưa gắn chứng từ" description="Có thể áp dụng bảng giá và gắn chứng từ sau." />}
     {onSelect && <><label htmlFor="agreement-file">Chọn PDF hoặc ảnh, tối đa 5 MiB</label><input id="agreement-file" type="file" accept="application/pdf,image/jpeg,image/png,image/webp" disabled={disabled} onChange={event => {
       const next = event.target.files?.[0] ?? null;
       if (next && !validContractFile(next)) { setError("Chỉ nhận PDF, JPEG, PNG, WebP từ 1 byte đến 5 MiB"); event.target.value = ""; return; }

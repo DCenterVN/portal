@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { inventoryMutation, inventoryRequest, inventoryPages } from "./suppliers";
 import { getMaterials, type Material } from "./sales";
+import { FetchError } from "@/lib/fetcher";
 
 export const agreementLineSchema = z.object({
   sku_ref: z.string().uuid(), uom: z.string(), unit_price_vnd: z.number().int().nonnegative(),
@@ -11,7 +12,10 @@ export const agreementLineSchema = z.object({
 export const agreementSchema = z.object({
   agreement_id: z.string().uuid(), version_id: z.string().uuid(), version: z.number().int().positive(),
   code: z.string(), status: z.enum(["DRAFT", "ACTIVE", "SUSPENDED", "EXPIRED"]), effective_status: z.string().optional(),
-  valid_from: z.string(), valid_to: z.string(), document_ref: z.string().uuid().nullish(),
+  valid_from: z.string(), valid_to: z.string(),
+  // ponytail: inventory trả nil UUID (D-307), gỡ khi inventory trả null
+  document_ref: z.string().uuid().nullish().transform(value => value === "00000000-0000-0000-0000-000000000000" ? null : value),
+  primary_document_ref: z.string().uuid().nullish(), document_attached_at: z.string().datetime().nullish(),
   status_reason: z.string().nullish(), created_at: z.string(), lines: z.array(agreementLineSchema),
 });
 export type Agreement = z.infer<typeof agreementSchema>;
@@ -31,13 +35,29 @@ export const saveAgreementVersion = (supplier: string, id: string, version: numb
 export function agreementInput(agreement: Agreement, status: AgreementInput["status"], reason?: string): AgreementInput {
   return { code: agreement.code, status, valid_from: agreement.valid_from, valid_to: agreement.valid_to, document_ref: agreement.document_ref,
     ...(reason === undefined ? {} : { status_reason: reason }), dataset_mode: agreement.lines[0]?.dataset_mode ?? "REAL",
-    lines: agreement.lines.map(({ price_line_ref: _ref, ...line }) => line) };
+    lines: agreement.lines.map(({ dataset_mode: _mode, price_line_ref: _ref, ...line }) => line) };
 }
 
-export function resolveAgreementPrice(agreements: Agreement[], { sku, uom, date }: { sku: string; uom: string; date: string }): (AgreementLine & { agreement_version_ref: string }) | null {
-  const matches = agreements.filter(agreement => agreement.status === "ACTIVE" && (!agreement.effective_status || agreement.effective_status === "ACTIVE") && Boolean(agreement.document_ref) && agreement.valid_from <= date && agreement.valid_to >= date)
+export type AgreementPriceScope = { sku: string; uom: string; date: string };
+export type ResolvedAgreementPrice = AgreementLine & { agreement_version_ref: string };
+export type ReceiptReferencePrice = { found: false } | { found: true; price: ResolvedAgreementPrice };
+function agreementPriceMatches(agreements: Agreement[], { sku, uom, date }: AgreementPriceScope): ResolvedAgreementPrice[] {
+  return agreements.filter(agreement => agreement.status === "ACTIVE" && (!agreement.effective_status || agreement.effective_status === "ACTIVE") && agreement.valid_from <= date && agreement.valid_to >= date)
     .flatMap(agreement => agreement.lines.filter(line => line.sku_ref === sku && line.uom === uom && line.valid_from <= date && line.valid_to >= date).map(line => ({ ...line, agreement_version_ref: agreement.version_id })));
+}
+export function resolveAgreementPrice(agreements: Agreement[], scope: AgreementPriceScope): ResolvedAgreementPrice | null {
+  const matches = agreementPriceMatches(agreements.filter(agreement => Boolean(agreement.document_ref)), scope);
   return matches.length === 1 ? matches[0] : null;
+}
+
+export function resolveReceiptReferencePrice(agreements: Agreement[], scope: AgreementPriceScope): ReceiptReferencePrice {
+  const matches = agreementPriceMatches(agreements, scope);
+  if (matches.length > 1) {
+    const error = new FetchError("Có nhiều bảng giá cùng hiệu lực. Tải lại để kiểm tra.", 409);
+    error.code = "STATE_CONFLICT";
+    throw error;
+  }
+  return matches.length ? { found: true, price: matches[0] } : { found: false };
 }
 
 export const getContractMaterials = (): Promise<Material[]> => inventoryPages(cursor => getMaterials(new URLSearchParams({ cursor }).toString()));

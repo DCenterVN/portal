@@ -48,7 +48,7 @@ export function useSupplierAgreement({ supplierId, agreement, onClose, onSaved, 
 
   async function documentRef(): Promise<string | null | undefined> {
     if (attachment.kind === "finalized") return attachment.document.document_id;
-    if (attachment.kind === "empty") return agreement?.document_ref;
+    if (attachment.kind === "empty") return agreement?.primary_document_ref ?? agreement?.document_ref;
     let uploaded = attachment;
     if (uploaded.kind === "selected") {
       const target = await presignDocument(supplierId, uploaded.file, await fileSHA256(uploaded.file), uploaded.key);
@@ -66,7 +66,6 @@ export function useSupplierAgreement({ supplierId, agreement, onClose, onSaved, 
     setBusy(true); setError("");
     try {
       const ref = await documentRef();
-      if (status === "ACTIVE" && !ref) { setError("Chọn chứng từ chính trước khi áp dụng."); return; }
       const input: AgreementInput = { code: code.trim(), status, valid_from: from, valid_to: to, document_ref: ref, dataset_mode: agreement?.lines[0]?.dataset_mode ?? "REAL", lines: lines.map(({ price_line_ref: _ref, dataset_mode: _mode, ...line }) => line) };
       const encoded = JSON.stringify(input);
       command.current = nextAgreementCommand(command.current, encoded);

@@ -14,7 +14,7 @@ type SupplierAgreementFormProps = ReturnType<typeof useSupplierAgreement>;
 export function SupplierAgreementForm({ draftNotice, supplierId, agreement, onClose, allowed, code, setCode, from, to, lines, setLines, materials, lookupError, attachment, setAttachment, busy, dirty, setDirty, discard, setDiscard, error, setRetry, form, valid, priceDirty, save, updateLine, submit, changeFrom, changeTo }: SupplierAgreementFormProps) {
   return <>
     <Dialog open onOpenChange={open => { if (!open && !busy) { if (dirty) setDiscard(true); else onClose(); } }}><DialogContent size={lines.length > 1 ? "full" : "xl"} variant="sheet" className="max-h-dvh overflow-y-auto sm:max-w-screen-lg">
-      <DialogTitle>{agreement ? "Sửa bản nháp bảng giá" : "Lập bảng giá mới"}</DialogTitle><DialogDescription>Giá VND nguyên, không quy đổi đơn vị. Sau áp dụng, nội dung và chứng từ được giữ nguyên.</DialogDescription>
+      <DialogTitle>{agreement ? "Sửa bản nháp bảng giá" : "Lập bảng giá mới"}</DialogTitle><DialogDescription>Giá VND nguyên, không quy đổi đơn vị. Sau áp dụng, giá và hiệu lực được giữ nguyên. Chứng từ có thể bổ sung sau.</DialogDescription>
       {!allowed ? <ErrorState denied title="Bảng giá không còn cho phép sửa" /> : <form ref={form} onSubmit={submit} onChange={() => setDirty(true)} className="grid gap-4">
         <p role="status">{dirty ? "Chưa lưu lên hệ thống" : agreement ? `Đã lưu nháp phiên bản ${agreement.version}` : "Chưa lưu lên hệ thống"}</p>
         {draftNotice && <p role="status">{draftNotice}</p>}
@@ -32,7 +32,7 @@ export function SupplierAgreementForm({ draftNotice, supplierId, agreement, onCl
           </details><Button type="button" variant="outline" disabled={lines.length === 1} onClick={() => { setDirty(true); setLines(items => items.filter((_, i) => i !== index)); }}>Bỏ dòng giá {index + 1}</Button>
         </fieldset></TableCell></TableRow>)}</TableBody></Table>
         <Button type="button" variant="outline" disabled={busy} onClick={() => { setDirty(true); setLines(items => [...items, { sku_ref: "", uom: "", unit_price_vnd: Number.NaN, valid_from: from, valid_to: to, tax_treatment: "VAT_INCLUDED", delivery_treatment: "DELIVERED" }]); }}>Thêm dòng giá</Button>
-        <AgreementDocument supplierId={supplierId} documentRef={attachment.kind === "finalized" ? attachment.document.document_id : agreement?.document_ref} filename={attachment.kind === "finalized" ? attachment.document.display_name : undefined} file={attachment.kind === "selected" ? attachment.file : null} disabled={busy} onSelect={file => { setDirty(true); setAttachment(file ? { kind: "selected", file, key: crypto.randomUUID() } : { kind: "empty" }); }} />
+        <AgreementDocument supplierId={supplierId} documentRef={attachment.kind === "finalized" ? attachment.document.document_id : agreement?.primary_document_ref ?? agreement?.document_ref} filename={attachment.kind === "finalized" ? attachment.document.display_name : undefined} file={attachment.kind === "selected" ? attachment.file : null} disabled={busy} onSelect={file => { setDirty(true); setAttachment(file ? { kind: "selected", file, key: crypto.randomUUID() } : { kind: "empty" }); }} />
         {attachment.kind === "uploaded" && <p role="status">Tệp đã tải lên. Thử lại sẽ hoàn tất cùng phiên tải, không tải bytes lần nữa.</p>}
         {error && <p role="alert">{error}</p>}
         {!valid && <p>Nhập mã, ngày hợp lệ và chọn nguyên liệu/giá cho mọi dòng để lưu.</p>}

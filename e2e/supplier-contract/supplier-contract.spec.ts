@@ -1,10 +1,8 @@
 import { readFileSync } from "node:fs";
-import { homedir } from "node:os";
 import { randomBytes } from "node:crypto";
 import { test, expect, type Page } from "@playwright/test";
-import messages from "../../messages/vi.json" with { type: "json" };
 
-test.use({ trace: "off", video: "off", screenshot: "off" });
+test.use({ storageState: process.env.PORTAL_WAREHOUSE_STATE ?? "/home/dawn/work/ticket/.cache/tmp/supplier-bf3-storage.json", trace: "off", video: "off", screenshot: "off" });
 
 function fixture() {
   const path = process.env.SUPPLIER_CONTRACT_CONTEXT;
@@ -14,18 +12,6 @@ function fixture() {
   };
 }
 
-test.beforeEach(async ({ page }) => {
-  const path = (process.env.QA_ROLE_ENV || `${homedir()}/.local/state/dcentervn/qa/role-accounts.env`).replace(/^~\//, `${homedir()}/`);
-  const accounts = Object.fromEntries(readFileSync(path, "utf8").split(/\r?\n/).filter(line => line && !line.startsWith("#") && line.includes("=")).map(line => [line.slice(0, line.indexOf("=")), line.slice(line.indexOf("=") + 1)]));
-  if (!accounts.ROLE_WAREHOUSE_EMAIL || !accounts.ROLE_WAREHOUSE_PASSWORD) throw new Error("Thiếu role-WAREHOUSE.");
-  await page.goto("/staff/login");
-  await page.getByLabel(messages.employeeAuth.identifier, { exact: true }).fill(accounts.ROLE_WAREHOUSE_EMAIL);
-  await page.getByLabel(messages.employeeAuth.password, { exact: true }).fill(accounts.ROLE_WAREHOUSE_PASSWORD).catch(() => { throw new Error("Không nhập được mật khẩu QA."); });
-  const login = page.waitForResponse(response => new URL(response.url()).pathname === "/api/auth/staff/login" && response.request().method() === "POST");
-  await page.getByRole("button", { name: messages.employeeAuth.login, exact: true }).click();
-  expect((await login).status(), "Đăng nhập WAREHOUSE qua BFF thật").toBe(200);
-  await page.waitForURL(/\/console$/);
-});
 
 async function pick(page: Page, label: string, name: string) {
   const input = page.getByRole("combobox", { name: label, exact: true });
@@ -35,7 +21,7 @@ async function pick(page: Page, label: string, name: string) {
   await expect(input).toHaveValue(name);
 }
 
-test("TC-01/03/04/10/11: NCC, nháp, tệp, áp dụng và ngừng dùng bằng UI", async ({ page }) => {
+test("TC-01/03/04/10/11: NCC, nháp, tệp, áp dụng và ngừng dùng bằng UI", async ({ page }, info) => {
   test.setTimeout(120_000);
   const { fixture: seed } = fixture();
   const suffix = randomBytes(2).toString("hex").toUpperCase();
@@ -60,13 +46,14 @@ test("TC-01/03/04/10/11: NCC, nháp, tệp, áp dụng và ngừng dùng bằng 
   await page.getByLabel("Tìm nhà cung cấp theo tên hoặc mã").fill(code);
   await page.getByRole("link", { name, exact: true }).click();
   await expect(page.getByRole("heading", { name, exact: true })).toBeVisible();
-  await page.getByRole("tab", { name: "Hợp đồng", exact: true }).click();
-  await page.getByRole("button", { name: "Lập hợp đồng mới", exact: true }).click();
-  await page.getByLabel("Mã hợp đồng", { exact: true }).fill(agreementCode);
+  await page.getByRole("tab", { name: "Bảng giá", exact: true }).click();
+  await page.getByRole("button", { name: "Lập bảng giá mới", exact: true }).click();
+  await page.getByLabel("Mã bảng giá", { exact: true }).fill(agreementCode);
   await page.getByLabel("Hiệu lực từ", { exact: true }).fill(seed.valid_from);
   await page.getByLabel("Hiệu lực đến", { exact: true }).fill(seed.valid_to);
   await pick(page, "Nguyên liệu", seed.material_name);
   await page.getByLabel("Giá VND / đơn vị", { exact: true }).fill("25000");
+  await page.getByText("Hiệu lực riêng, thuế và giao hàng", { exact: true }).click();
   await page.getByLabel("Dòng giá từ ngày", { exact: true }).fill(seed.valid_from);
   await page.getByLabel("Dòng giá đến ngày", { exact: true }).fill(seed.valid_to);
   const pdf = { name: `DEMO-hop-dong-${suffix}.pdf`, mimeType: "application/pdf", buffer: Buffer.from("%PDF-1.4\n% DEMO TEST ONLY\n1 0 obj<</Type/Catalog>>endobj\n%%EOF\n") };
@@ -79,12 +66,18 @@ test("TC-01/03/04/10/11: NCC, nháp, tệp, áp dụng và ngừng dùng bằng 
   await page.getByRole("button", { name: "Lưu nháp", exact: true }).click();
   expect((await draft).status()).toBe(201);
   const card = page.getByRole("article").filter({ hasText: agreementCode });
-  await expect(card).toContainText("Bản nháp");
+  await expect(card).toContainText("Nháp");
   await card.getByRole("button", { name: "Mở bản nháp", exact: true }).click();
   await page.getByRole("button", { name: "Áp dụng bảng giá", exact: true }).click();
-  await expect(page.getByRole("alert")).toContainText("Chọn chứng từ chính trước khi áp dụng");
+  await expect(page.getByRole("alert").filter({ hasText: "Chọn chứng từ chính trước khi áp dụng" })).toBeVisible();
+  await page.screenshot({ path: `.aidlc/runs/PORTAL-INVENTORY-UX-001/artifacts/e2e-web/repeat-${info.repeatEachIndex}/missing-document.png`, fullPage: true });
   expect(presigns).toBe(0);
   await page.getByLabel("Chọn PDF hoặc ảnh, tối đa 5 MiB").setInputFiles(pdf);
+  await expect(page.getByRole("button", { name: "Áp dụng bảng giá", exact: true })).toBeDisabled();
+  const attached = page.waitForResponse(response => /\/versions$/.test(new URL(response.url()).pathname) && response.request().method() === "POST");
+  await page.getByRole("button", { name: "Lưu nháp", exact: true }).click();
+  expect((await attached).status()).toBe(201);
+  await card.getByRole("button", { name: "Mở bản nháp", exact: true }).click();
   const applied = page.waitForResponse(response => /\/versions$/.test(new URL(response.url()).pathname) && response.request().method() === "POST");
   await page.getByRole("button", { name: "Áp dụng bảng giá", exact: true }).click();
   expect((await applied).status()).toBe(201);
@@ -101,8 +94,10 @@ test("TC-01/03/04/10/11: NCC, nháp, tệp, áp dụng và ngừng dùng bằng 
   await page.getByLabel("Lý do ngừng dùng", { exact: true }).fill("DEMO kiểm tra giữ lịch sử");
   const stopped = page.waitForResponse(response => /\/versions$/.test(new URL(response.url()).pathname) && response.request().method() === "POST");
   await page.getByRole("button", { name: "Xác nhận ngừng dùng", exact: true }).click();
-  expect((await stopped).status()).toBe(201);
+  const stoppedResponse = await stopped;
+  expect(stoppedResponse.status(), await stoppedResponse.text()).toBe(201);
   await expect(card).toContainText("Đã ngừng dùng");
   await expect(card).toContainText("25.000");
   await expect(card.getByRole("button", { name: "Mở bản nháp", exact: true })).toHaveCount(0);
+  await page.screenshot({ path: `.aidlc/runs/PORTAL-INVENTORY-UX-001/artifacts/e2e-web/repeat-${info.repeatEachIndex}/suspended.png`, fullPage: true });
 });
