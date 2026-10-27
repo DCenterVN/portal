@@ -6,3 +6,5 @@
 
 - US-UI-001: Operator portal UI and auth screens
 - US-UI-002: As a customer, employee, or organization owner I want separate API-backed journeys for shopping, branch work, and organization administration so I can complete my tasks with no cross-scope access (specs: ../sales/.aidlc/specs/order-lifecycle.md, ../org/.aidlc/specs/org-admin.md, ../org/.aidlc/specs/employee-onboard.md).
+
+- US-INVENTORY-UX-001: Nhân viên kho chọn đúng nhà cung cấp và nguyên liệu, đọc được tổng phiếu nhập và thông tin NCC để lập phiếu không phụ thuộc hợp đồng bắt buộc (plan: .aidlc/runs/PORTAL-INVENTORY-UX-001/plan.md).

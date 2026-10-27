@@ -1,0 +1,3035 @@
+{
+  "config": {
+    "argv": [
+      "/home/dawn/.local/share/mise/installs/node/22.23.1/bin/node",
+      "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/node_modules/@playwright/test/cli.js",
+      "test",
+      "--config",
+      ".aidlc/runs/PORTAL-INVENTORY-UX-001/tests/playwright.config.ts",
+      "--project",
+      "desktop",
+      "--repeat-each=1",
+      "--retries=0",
+      "--workers=1",
+      "--reporter=list,json"
+    ],
+    "configFile": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/.aidlc/runs/PORTAL-INVENTORY-UX-001/tests/playwright.config.ts",
+    "rootDir": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/.aidlc/runs/PORTAL-INVENTORY-UX-001/artifacts/e2e-web/results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/inventory-ux/*.spec.ts",
+          "**/supplier-contract/*.spec.ts"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/.aidlc/runs/PORTAL-INVENTORY-UX-001/artifacts/e2e-web/results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "desktop",
+        "name": "desktop",
+        "testDir": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "none",
+    "updateSourceMethod": "patch",
+    "version": "1.63.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "catalog-split/catalog-split.spec.ts",
+      "file": "catalog-split/catalog-split.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "AC-1 /products là catalog của khách",
+          "file": "catalog-split/catalog-split.spec.ts",
+          "line": 67,
+          "column": 6,
+          "specs": [
+            {
+              "title": "anonymous không thấy control nhân viên",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop",
+                  "projectName": "desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 613,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-27T06:41:49.220Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9ec65c7a07beddf97f36-38150cd651c9106cd1f4",
+              "file": "catalog-split/catalog-split.spec.ts",
+              "line": 68,
+              "column": 3
+            },
+            {
+              "title": "anonymous thấy card có tên + giá, không thấy UUID",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "Stack chưa có món ACTIVE để hiện card; cần dữ liệu SALES-FLOW-001.",
+                      "location": {
+                        "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/catalog-split/catalog-split.spec.ts",
+                        "line": 73,
+                        "column": 10
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "desktop",
+                  "projectName": "desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "skipped",
+                      "duration": 562,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-27T06:41:49.955Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "Stack chưa có món ACTIVE để hiện card; cần dữ liệu SALES-FLOW-001.",
+                          "location": {
+                            "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/catalog-split/catalog-split.spec.ts",
+                            "line": 73,
+                            "column": 10
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "9ec65c7a07beddf97f36-8cb1f72fa2593505d7e2",
+              "file": "catalog-split/catalog-split.spec.ts",
+              "line": 72,
+              "column": 3
+            },
+            {
+              "title": "khách đã đăng nhập cũng không thấy control nhân viên",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop",
+                  "projectName": "desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3790,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-27T06:41:50.524Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9ec65c7a07beddf97f36-ee00bb219d507579c0aa",
+              "file": "catalog-split/catalog-split.spec.ts",
+              "line": 80,
+              "column": 3
+            },
+            {
+              "title": "AC-2 chi tiết món công khai không có nút kích hoạt, SKU, barcode",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "Stack chưa có món ACTIVE; cần dữ liệu SALES-FLOW-001.",
+                      "location": {
+                        "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/catalog-split/catalog-split.spec.ts",
+                        "line": 86,
+                        "column": 10
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "desktop",
+                  "projectName": "desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "skipped",
+                      "duration": 556,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-27T06:41:54.320Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "Stack chưa có món ACTIVE; cần dữ liệu SALES-FLOW-001.",
+                          "location": {
+                            "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/catalog-split/catalog-split.spec.ts",
+                            "line": 86,
+                            "column": 10
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "9ec65c7a07beddf97f36-52cde16d65edf0d2f3f7",
+              "file": "catalog-split/catalog-split.spec.ts",
+              "line": 85,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "AC-3/AC-4 /sales/products trong console",
+          "file": "catalog-split/catalog-split.spec.ts",
+          "line": 95,
+          "column": 6,
+          "specs": [
+            {
+              "title": "staff có sales:product:read thấy menu Sản phẩm và màn quản trị",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop",
+                  "projectName": "desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 1741,
+                      "error": {
+                        "message": "Error: Đọc quyền qua /api/auth/context\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m401\u001b[39m",
+                        "stack": "Error: Đọc quyền qua /api/auth/context\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m401\u001b[39m\n    at permissionsOf (/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/catalog-split/catalog-split.spec.ts:39:64)\n    at /home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/catalog-split/catalog-split.spec.ts:98:17",
+                        "location": {
+                          "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/catalog-split/catalog-split.spec.ts",
+                          "column": 64,
+                          "line": 39
+                        },
+                        "snippet": "  37 | async function permissionsOf(page: Page): Promise<string[]> {\n  38 |   const response = await page.request.get(\"/api/auth/context\");\n> 39 |   expect(response.status(), \"Đọc quyền qua /api/auth/context\").toBe(200);\n     |                                                                ^\n  40 |   return (await response.json()).permissions ?? [];\n  41 | }\n  42 |"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/catalog-split/catalog-split.spec.ts",
+                            "column": 64,
+                            "line": 39
+                          },
+                          "message": "Error: Đọc quyền qua /api/auth/context\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m401\u001b[39m\n\n  37 | async function permissionsOf(page: Page): Promise<string[]> {\n  38 |   const response = await page.request.get(\"/api/auth/context\");\n> 39 |   expect(response.status(), \"Đọc quyền qua /api/auth/context\").toBe(200);\n     |                                                                ^\n  40 |   return (await response.json()).permissions ?? [];\n  41 | }\n  42 |\n    at permissionsOf (/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/catalog-split/catalog-split.spec.ts:39:64)\n    at /home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/catalog-split/catalog-split.spec.ts:98:17"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-27T06:41:54.888Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/.aidlc/runs/PORTAL-INVENTORY-UX-001/artifacts/e2e-web/results/catalog-split-catalog-spli-333ed-nu-Sản-phẩm-và-màn-quản-trị-desktop/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/catalog-split/catalog-split.spec.ts",
+                        "column": 64,
+                        "line": 39
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "9ec65c7a07beddf97f36-285d0198820b673a3d39",
+              "file": "catalog-split/catalog-split.spec.ts",
+              "line": 96,
+              "column": 3
+            },
+            {
+              "title": "staff không có quyền đọc không thấy menu, vào URL trực tiếp bị chặn và không gọi staff list",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop",
+                  "projectName": "desktop",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 1069,
+                      "error": {
+                        "message": "Error: Đọc quyền qua /api/auth/context\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m401\u001b[39m",
+                        "stack": "Error: Đọc quyền qua /api/auth/context\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m401\u001b[39m\n    at permissionsOf (/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/catalog-split/catalog-split.spec.ts:39:64)\n    at firstStaffWithout (/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/catalog-split/catalog-split.spec.ts:47:11)\n    at /home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/catalog-split/catalog-split.spec.ts:109:18",
+                        "location": {
+                          "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/catalog-split/catalog-split.spec.ts",
+                          "column": 64,
+                          "line": 39
+                        },
+                        "snippet": "  37 | async function permissionsOf(page: Page): Promise<string[]> {\n  38 |   const response = await page.request.get(\"/api/auth/context\");\n> 39 |   expect(response.status(), \"Đọc quyền qua /api/auth/context\").toBe(200);\n     |                                                                ^\n  40 |   return (await response.json()).permissions ?? [];\n  41 | }\n  42 |"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/catalog-split/catalog-split.spec.ts",
+                            "column": 64,
+                            "line": 39
+                          },
+                          "message": "Error: Đọc quyền qua /api/auth/context\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m401\u001b[39m\n\n  37 | async function permissionsOf(page: Page): Promise<string[]> {\n  38 |   const response = await page.request.get(\"/api/auth/context\");\n> 39 |   expect(response.status(), \"Đọc quyền qua /api/auth/context\").toBe(200);\n     |                                                                ^\n  40 |   return (await response.json()).permissions ?? [];\n  41 | }\n  42 |\n    at permissionsOf (/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/catalog-split/catalog-split.spec.ts:39:64)\n    at firstStaffWithout (/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/catalog-split/catalog-split.spec.ts:47:11)\n    at /home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/catalog-split/catalog-split.spec.ts:109:18"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-27T06:41:56.939Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/.aidlc/runs/PORTAL-INVENTORY-UX-001/artifacts/e2e-web/results/catalog-split-catalog-spli-016b0-hặn-và-không-gọi-staff-list-desktop/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/catalog-split/catalog-split.spec.ts",
+                        "column": 64,
+                        "line": 39
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "9ec65c7a07beddf97f36-4d223530eb04e56910af",
+              "file": "catalog-split/catalog-split.spec.ts",
+              "line": 108,
+              "column": 3
+            },
+            {
+              "title": "khách không vào được /sales/products",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop",
+                  "projectName": "desktop",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1412,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-27T06:41:58.470Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9ec65c7a07beddf97f36-4630c506056b81bf9630",
+              "file": "catalog-split/catalog-split.spec.ts",
+              "line": 120,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "AC-6 bố cục",
+          "file": "catalog-split/catalog-split.spec.ts",
+          "line": 128,
+          "column": 6,
+          "specs": [
+            {
+              "title": "không tràn ngang ở /products",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop",
+                  "projectName": "desktop",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 534,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-27T06:42:00.007Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9ec65c7a07beddf97f36-65c56d283ac5fed53aa8",
+              "file": "catalog-split/catalog-split.spec.ts",
+              "line": 129,
+              "column": 3
+            },
+            {
+              "title": "mobile 390: bộ lọc mở bằng sheet, Esc đóng, không tràn ngang",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "Chỉ chạy ở project mobile 390.",
+                      "location": {
+                        "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/catalog-split/catalog-split.spec.ts",
+                        "line": 136,
+                        "column": 10
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "desktop",
+                  "projectName": "desktop",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "skipped",
+                      "duration": 72,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-27T06:42:00.551Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "Chỉ chạy ở project mobile 390.",
+                          "location": {
+                            "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/catalog-split/catalog-split.spec.ts",
+                            "line": 136,
+                            "column": 10
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "9ec65c7a07beddf97f36-0af62632e75c5f290002",
+              "file": "catalog-split/catalog-split.spec.ts",
+              "line": 135,
+              "column": 3
+            },
+            {
+              "title": "desktop: bộ lọc nằm sẵn trong trang, không phải sheet",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop",
+                  "projectName": "desktop",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 606,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-27T06:42:00.631Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9ec65c7a07beddf97f36-1b355ca758cd8c841b59",
+              "file": "catalog-split/catalog-split.spec.ts",
+              "line": 153,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "AC-6 catalog khách: bố cục, sheet lọc (phần tử đã có)",
+          "file": "catalog-split/catalog-split.spec.ts",
+          "line": 171,
+          "column": 6,
+          "specs": [
+            {
+              "title": "không tràn ngang ở 375px, light; sheet lọc có Esc/focus/control ≥44px",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop",
+                  "projectName": "desktop",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 683,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-27T06:42:01.242Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9ec65c7a07beddf97f36-c25852f2474654added8",
+              "file": "catalog-split/catalog-split.spec.ts",
+              "line": 173,
+              "column": 5
+            },
+            {
+              "title": "không tràn ngang ở 375px, dark; sheet lọc có Esc/focus/control ≥44px",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop",
+                  "projectName": "desktop",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 699,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-27T06:42:01.931Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9ec65c7a07beddf97f36-f7051f5f968fc5cb83f1",
+              "file": "catalog-split/catalog-split.spec.ts",
+              "line": 173,
+              "column": 5
+            },
+            {
+              "title": "không tràn ngang ở 768px, light; sheet lọc có Esc/focus/control ≥44px",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop",
+                  "projectName": "desktop",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 780,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-27T06:42:02.637Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9ec65c7a07beddf97f36-5947b4de8e9c238176d9",
+              "file": "catalog-split/catalog-split.spec.ts",
+              "line": 173,
+              "column": 5
+            },
+            {
+              "title": "không tràn ngang ở 768px, dark; sheet lọc có Esc/focus/control ≥44px",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop",
+                  "projectName": "desktop",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 682,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-27T06:42:03.424Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9ec65c7a07beddf97f36-eee43f599f32fc633c4a",
+              "file": "catalog-split/catalog-split.spec.ts",
+              "line": 173,
+              "column": 5
+            },
+            {
+              "title": "không tràn ngang ở 1024px, light; sheet lọc có Esc/focus/control ≥44px",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop",
+                  "projectName": "desktop",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 625,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-27T06:42:04.115Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9ec65c7a07beddf97f36-44559ca7762773b3a78d",
+              "file": "catalog-split/catalog-split.spec.ts",
+              "line": 173,
+              "column": 5
+            },
+            {
+              "title": "không tràn ngang ở 1024px, dark; sheet lọc có Esc/focus/control ≥44px",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop",
+                  "projectName": "desktop",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 621,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-27T06:42:04.748Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9ec65c7a07beddf97f36-5fba524a70de98904c41",
+              "file": "catalog-split/catalog-split.spec.ts",
+              "line": 173,
+              "column": 5
+            },
+            {
+              "title": "không tràn ngang ở 1440px, light; sheet lọc có Esc/focus/control ≥44px",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop",
+                  "projectName": "desktop",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 611,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-27T06:42:05.377Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9ec65c7a07beddf97f36-c225ed641888690c194e",
+              "file": "catalog-split/catalog-split.spec.ts",
+              "line": 173,
+              "column": 5
+            },
+            {
+              "title": "không tràn ngang ở 1440px, dark; sheet lọc có Esc/focus/control ≥44px",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop",
+                  "projectName": "desktop",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 588,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-27T06:42:05.992Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9ec65c7a07beddf97f36-a8f3046f608bc02fab8c",
+              "file": "catalog-split/catalog-split.spec.ts",
+              "line": 173,
+              "column": 5
+            },
+            {
+              "title": "mở sheet và gõ lọc không làm dịch bố cục trang",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop",
+                  "projectName": "desktop",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 686,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-27T06:42:06.586Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9ec65c7a07beddf97f36-092d88c83ae31980c4f8",
+              "file": "catalog-split/catalog-split.spec.ts",
+              "line": 199,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "AC-7 #019 và sửa wrap/icon ở console /sales/products",
+          "file": "catalog-split/catalog-split.spec.ts",
+          "line": 214,
+          "column": 6,
+          "specs": [
+            {
+              "title": "ba nút trạng thái giữ #019, chọn đơn và aria-pressed đúng",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop",
+                  "projectName": "desktop",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 755,
+                      "error": {
+                        "message": "Error: Đọc quyền qua /api/auth/context\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m401\u001b[39m",
+                        "stack": "Error: Đọc quyền qua /api/auth/context\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m401\u001b[39m\n    at permissionsOf (/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/catalog-split/catalog-split.spec.ts:39:64)\n    at openConsole (/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/catalog-split/catalog-split.spec.ts:218:17)\n    at /home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/catalog-split/catalog-split.spec.ts:225:5",
+                        "location": {
+                          "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/catalog-split/catalog-split.spec.ts",
+                          "column": 64,
+                          "line": 39
+                        },
+                        "snippet": "  37 | async function permissionsOf(page: Page): Promise<string[]> {\n  38 |   const response = await page.request.get(\"/api/auth/context\");\n> 39 |   expect(response.status(), \"Đọc quyền qua /api/auth/context\").toBe(200);\n     |                                                                ^\n  40 |   return (await response.json()).permissions ?? [];\n  41 | }\n  42 |"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/catalog-split/catalog-split.spec.ts",
+                            "column": 64,
+                            "line": 39
+                          },
+                          "message": "Error: Đọc quyền qua /api/auth/context\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m401\u001b[39m\n\n  37 | async function permissionsOf(page: Page): Promise<string[]> {\n  38 |   const response = await page.request.get(\"/api/auth/context\");\n> 39 |   expect(response.status(), \"Đọc quyền qua /api/auth/context\").toBe(200);\n     |                                                                ^\n  40 |   return (await response.json()).permissions ?? [];\n  41 | }\n  42 |\n    at permissionsOf (/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/catalog-split/catalog-split.spec.ts:39:64)\n    at openConsole (/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/catalog-split/catalog-split.spec.ts:218:17)\n    at /home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/catalog-split/catalog-split.spec.ts:225:5"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-27T06:42:07.278Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/.aidlc/runs/PORTAL-INVENTORY-UX-001/artifacts/e2e-web/results/catalog-split-catalog-spli-cb0a7-ọn-đơn-và-aria-pressed-đúng-desktop/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/catalog-split/catalog-split.spec.ts",
+                        "column": 64,
+                        "line": 39
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "9ec65c7a07beddf97f36-0134ebbe81655ee14739",
+              "file": "catalog-split/catalog-split.spec.ts",
+              "line": 224,
+              "column": 3
+            },
+            {
+              "title": "icon tìm kiếm căn giữa ô nhập và không tràn ngang ở 375px",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop",
+                  "projectName": "desktop",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 884,
+                      "error": {
+                        "message": "Error: Đọc quyền qua /api/auth/context\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m401\u001b[39m",
+                        "stack": "Error: Đọc quyền qua /api/auth/context\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m401\u001b[39m\n    at permissionsOf (/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/catalog-split/catalog-split.spec.ts:39:64)\n    at openConsole (/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/catalog-split/catalog-split.spec.ts:218:17)\n    at /home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/catalog-split/catalog-split.spec.ts:240:7",
+                        "location": {
+                          "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/catalog-split/catalog-split.spec.ts",
+                          "column": 64,
+                          "line": 39
+                        },
+                        "snippet": "  37 | async function permissionsOf(page: Page): Promise<string[]> {\n  38 |   const response = await page.request.get(\"/api/auth/context\");\n> 39 |   expect(response.status(), \"Đọc quyền qua /api/auth/context\").toBe(200);\n     |                                                                ^\n  40 |   return (await response.json()).permissions ?? [];\n  41 | }\n  42 |"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/catalog-split/catalog-split.spec.ts",
+                            "column": 64,
+                            "line": 39
+                          },
+                          "message": "Error: Đọc quyền qua /api/auth/context\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m401\u001b[39m\n\n  37 | async function permissionsOf(page: Page): Promise<string[]> {\n  38 |   const response = await page.request.get(\"/api/auth/context\");\n> 39 |   expect(response.status(), \"Đọc quyền qua /api/auth/context\").toBe(200);\n     |                                                                ^\n  40 |   return (await response.json()).permissions ?? [];\n  41 | }\n  42 |\n    at permissionsOf (/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/catalog-split/catalog-split.spec.ts:39:64)\n    at openConsole (/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/catalog-split/catalog-split.spec.ts:218:17)\n    at /home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/catalog-split/catalog-split.spec.ts:240:7"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-27T06:42:08.302Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/.aidlc/runs/PORTAL-INVENTORY-UX-001/artifacts/e2e-web/results/catalog-split-catalog-spli-b5138-và-không-tràn-ngang-ở-375px-desktop/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/catalog-split/catalog-split.spec.ts",
+                        "column": 64,
+                        "line": 39
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "9ec65c7a07beddf97f36-a6b9418c318dda9038d4",
+              "file": "catalog-split/catalog-split.spec.ts",
+              "line": 239,
+              "column": 5
+            },
+            {
+              "title": "icon tìm kiếm căn giữa ô nhập và không tràn ngang ở 768px",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop",
+                  "projectName": "desktop",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 798,
+                      "error": {
+                        "message": "Error: Đọc quyền qua /api/auth/context\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m401\u001b[39m",
+                        "stack": "Error: Đọc quyền qua /api/auth/context\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m401\u001b[39m\n    at permissionsOf (/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/catalog-split/catalog-split.spec.ts:39:64)\n    at openConsole (/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/catalog-split/catalog-split.spec.ts:218:17)\n    at /home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/catalog-split/catalog-split.spec.ts:240:7",
+                        "location": {
+                          "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/catalog-split/catalog-split.spec.ts",
+                          "column": 64,
+                          "line": 39
+                        },
+                        "snippet": "  37 | async function permissionsOf(page: Page): Promise<string[]> {\n  38 |   const response = await page.request.get(\"/api/auth/context\");\n> 39 |   expect(response.status(), \"Đọc quyền qua /api/auth/context\").toBe(200);\n     |                                                                ^\n  40 |   return (await response.json()).permissions ?? [];\n  41 | }\n  42 |"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/catalog-split/catalog-split.spec.ts",
+                            "column": 64,
+                            "line": 39
+                          },
+                          "message": "Error: Đọc quyền qua /api/auth/context\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m401\u001b[39m\n\n  37 | async function permissionsOf(page: Page): Promise<string[]> {\n  38 |   const response = await page.request.get(\"/api/auth/context\");\n> 39 |   expect(response.status(), \"Đọc quyền qua /api/auth/context\").toBe(200);\n     |                                                                ^\n  40 |   return (await response.json()).permissions ?? [];\n  41 | }\n  42 |\n    at permissionsOf (/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/catalog-split/catalog-split.spec.ts:39:64)\n    at openConsole (/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/catalog-split/catalog-split.spec.ts:218:17)\n    at /home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/catalog-split/catalog-split.spec.ts:240:7"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-27T06:42:09.615Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/.aidlc/runs/PORTAL-INVENTORY-UX-001/artifacts/e2e-web/results/catalog-split-catalog-spli-3d299-và-không-tràn-ngang-ở-768px-desktop/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/catalog-split/catalog-split.spec.ts",
+                        "column": 64,
+                        "line": 39
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "9ec65c7a07beddf97f36-9be96ac2c884c387a006",
+              "file": "catalog-split/catalog-split.spec.ts",
+              "line": 239,
+              "column": 5
+            },
+            {
+              "title": "icon tìm kiếm căn giữa ô nhập và không tràn ngang ở 1024px",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop",
+                  "projectName": "desktop",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 772,
+                      "error": {
+                        "message": "Error: Đọc quyền qua /api/auth/context\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m401\u001b[39m",
+                        "stack": "Error: Đọc quyền qua /api/auth/context\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m401\u001b[39m\n    at permissionsOf (/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/catalog-split/catalog-split.spec.ts:39:64)\n    at openConsole (/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/catalog-split/catalog-split.spec.ts:218:17)\n    at /home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/catalog-split/catalog-split.spec.ts:240:7",
+                        "location": {
+                          "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/catalog-split/catalog-split.spec.ts",
+                          "column": 64,
+                          "line": 39
+                        },
+                        "snippet": "  37 | async function permissionsOf(page: Page): Promise<string[]> {\n  38 |   const response = await page.request.get(\"/api/auth/context\");\n> 39 |   expect(response.status(), \"Đọc quyền qua /api/auth/context\").toBe(200);\n     |                                                                ^\n  40 |   return (await response.json()).permissions ?? [];\n  41 | }\n  42 |"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/catalog-split/catalog-split.spec.ts",
+                            "column": 64,
+                            "line": 39
+                          },
+                          "message": "Error: Đọc quyền qua /api/auth/context\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m401\u001b[39m\n\n  37 | async function permissionsOf(page: Page): Promise<string[]> {\n  38 |   const response = await page.request.get(\"/api/auth/context\");\n> 39 |   expect(response.status(), \"Đọc quyền qua /api/auth/context\").toBe(200);\n     |                                                                ^\n  40 |   return (await response.json()).permissions ?? [];\n  41 | }\n  42 |\n    at permissionsOf (/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/catalog-split/catalog-split.spec.ts:39:64)\n    at openConsole (/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/catalog-split/catalog-split.spec.ts:218:17)\n    at /home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/catalog-split/catalog-split.spec.ts:240:7"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-27T06:42:10.847Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/.aidlc/runs/PORTAL-INVENTORY-UX-001/artifacts/e2e-web/results/catalog-split-catalog-spli-777bb-à-không-tràn-ngang-ở-1024px-desktop/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/catalog-split/catalog-split.spec.ts",
+                        "column": 64,
+                        "line": 39
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "9ec65c7a07beddf97f36-6d19d92072df666cd801",
+              "file": "catalog-split/catalog-split.spec.ts",
+              "line": 239,
+              "column": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "fooddev-pack/fooddev-pack.spec.ts",
+      "file": "fooddev-pack/fooddev-pack.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "FOODDEV-PACK E1 QA thật",
+          "file": "fooddev-pack/fooddev-pack.spec.ts",
+          "line": 259,
+          "column": 6,
+          "specs": [
+            {
+              "title": "FOOD_DEV soạn gói/set, đổi nhãn, pin 100 suất 80/20; WAREHOUSE đọc oracle và write403",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 420000,
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/fooddev-pack/fooddev-pack.spec.ts",
+                        "line": 259,
+                        "column": 6
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop",
+                  "projectName": "desktop",
+                  "results": [
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 8180,
+                      "error": {
+                        "message": "Error: response.json: Protocol error (Network.getResponseBody): No resource with given identifier found\nResponse body is not available for a response that was navigated away from. Read response.body() before triggering any navigation.",
+                        "stack": "Error: response.json: Protocol error (Network.getResponseBody): No resource with given identifier found\nResponse body is not available for a response that was navigated away from. Read response.body() before triggering any navigation.\n    at decoded (/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/fooddev-pack/fooddev-pack.spec.ts:81:40)\n    at createFamilyAndTarget (/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/fooddev-pack/fooddev-pack.spec.ts:117:24)\n    at /home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/fooddev-pack/fooddev-pack.spec.ts:268:34",
+                        "location": {
+                          "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/fooddev-pack/fooddev-pack.spec.ts",
+                          "column": 40,
+                          "line": 81
+                        },
+                        "snippet": "  79 | async function decoded<T>(response: Response, schema: { parse(value: unknown): T }, status: number): Promise<T> {\n  80 |   expect(response.status(), \"HTTP response\").toBe(status);\n> 81 |   return decodePlatform(await response.json(), schema);\n     |                                        ^\n  82 | }\n  83 | async function read<T>(request: APIRequestContext, path: string, schema: { parse(value: unknown): T }): Promise<T> {\n  84 |   const response = await request.get(path);"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/fooddev-pack/fooddev-pack.spec.ts",
+                            "column": 40,
+                            "line": 81
+                          },
+                          "message": "Error: response.json: Protocol error (Network.getResponseBody): No resource with given identifier found\nResponse body is not available for a response that was navigated away from. Read response.body() before triggering any navigation.\n\n  79 | async function decoded<T>(response: Response, schema: { parse(value: unknown): T }, status: number): Promise<T> {\n  80 |   expect(response.status(), \"HTTP response\").toBe(status);\n> 81 |   return decodePlatform(await response.json(), schema);\n     |                                        ^\n  82 | }\n  83 | async function read<T>(request: APIRequestContext, path: string, schema: { parse(value: unknown): T }): Promise<T> {\n  84 |   const response = await request.get(path);\n    at decoded (/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/fooddev-pack/fooddev-pack.spec.ts:81:40)\n    at createFamilyAndTarget (/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/fooddev-pack/fooddev-pack.spec.ts:117:24)\n    at /home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/fooddev-pack/fooddev-pack.spec.ts:268:34"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-27T06:42:14.335Z",
+                      "annotations": [
+                        {
+                          "type": "serial",
+                          "location": {
+                            "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/fooddev-pack/fooddev-pack.spec.ts",
+                            "line": 259,
+                            "column": 6
+                          }
+                        }
+                      ],
+                      "attachments": [
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/.aidlc/runs/PORTAL-INVENTORY-UX-001/artifacts/e2e-web/results/fooddev-pack-fooddev-pack--cc574-OUSE-đọc-oracle-và-write403-desktop/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/fooddev-pack/fooddev-pack.spec.ts",
+                        "column": 40,
+                        "line": 81
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "d7f303e788007bdf0a0f-879447086f9f5b3967c2",
+              "file": "fooddev-pack/fooddev-pack.spec.ts",
+              "line": 261,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "fooddev-set/fooddev-set.spec.ts",
+      "file": "fooddev-set/fooddev-set.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "FOODDEV-SET E1 QA thật",
+          "file": "fooddev-set/fooddev-set.spec.ts",
+          "line": 68,
+          "column": 6,
+          "specs": [
+            {
+              "title": "FOOD_DEV tạo và sửa set; kho chỉ đọc; revoke có hiệu lực ngay và restore đúng snapshot",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/fooddev-set/fooddev-set.spec.ts",
+                        "line": 68,
+                        "column": 6
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop",
+                  "projectName": "desktop",
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 3323,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m401\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m401\u001b[39m\n    at warehouseGrants (/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/fooddev-set/fooddev-set.spec.ts:51:27)\n    at /home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/fooddev-set/fooddev-set.spec.ts:82:22",
+                        "location": {
+                          "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/fooddev-set/fooddev-set.spec.ts",
+                          "column": 27,
+                          "line": 51
+                        },
+                        "snippet": "  49 | async function warehouseGrants(request: APIRequestContext) {\n  50 |   const result = await request.get(matrixPath);\n> 51 |   expect(result.status()).toBe(200);\n     |                           ^\n  52 |   const matrix = decodePlatform(await result.json(), roleMatrixSchema);\n  53 |   expect(matrix.WAREHOUSE, \"Baseline phải có WAREHOUSE\").toBeDefined();\n  54 |   return matrix.WAREHOUSE;"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/fooddev-set/fooddev-set.spec.ts",
+                            "column": 27,
+                            "line": 51
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m401\u001b[39m\n\n  49 | async function warehouseGrants(request: APIRequestContext) {\n  50 |   const result = await request.get(matrixPath);\n> 51 |   expect(result.status()).toBe(200);\n     |                           ^\n  52 |   const matrix = decodePlatform(await result.json(), roleMatrixSchema);\n  53 |   expect(matrix.WAREHOUSE, \"Baseline phải có WAREHOUSE\").toBeDefined();\n  54 |   return matrix.WAREHOUSE;\n    at warehouseGrants (/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/fooddev-set/fooddev-set.spec.ts:51:27)\n    at /home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/fooddev-set/fooddev-set.spec.ts:82:22"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-27T06:42:22.960Z",
+                      "annotations": [
+                        {
+                          "type": "serial",
+                          "location": {
+                            "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/fooddev-set/fooddev-set.spec.ts",
+                            "line": 68,
+                            "column": 6
+                          }
+                        }
+                      ],
+                      "attachments": [
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/.aidlc/runs/PORTAL-INVENTORY-UX-001/artifacts/e2e-web/results/fooddev-set-fooddev-set-FO-69630-ay-và-restore-đúng-snapshot-desktop/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/fooddev-set/fooddev-set.spec.ts",
+                        "column": 27,
+                        "line": 51
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "0fa0439d41b37ef7eb3b-82420e8a7c784038070d",
+              "file": "fooddev-set/fooddev-set.spec.ts",
+              "line": 70,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "inventory-ux/inventory-ux.spec.ts",
+      "file": "inventory-ux/inventory-ux.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "TC-07: hai dòng, ngày Việt, tổng hợp đồng và tạo nháp đọc lại",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 9,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4709,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T06:42:26.700Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2a779d0b400c366c8eee-10f6dbec372d4eb40d44",
+          "file": "inventory-ux/inventory-ux.spec.ts",
+          "line": 27,
+          "column": 1
+        },
+        {
+          "title": "TC-08: không tìm thấy và ngày sai không tạo phiếu",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 9,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1114,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T06:42:31.543Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2a779d0b400c366c8eee-01d410a78195bef4dafc",
+          "file": "inventory-ux/inventory-ux.spec.ts",
+          "line": 71,
+          "column": 1
+        },
+        {
+          "title": "TC-07/12: list ACTIVE, hồ sơ chip và bảng không tràn sáng tối",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 9,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 5152,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T06:42:32.665Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2a779d0b400c366c8eee-a4bf9902fcbba79ec3df",
+          "file": "inventory-ux/inventory-ux.spec.ts",
+          "line": 86,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "rbac/rbac.spec.ts",
+      "file": "rbac/rbac.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "RBAC trên stack thật",
+          "file": "rbac/rbac.spec.ts",
+          "line": 153,
+          "column": 6,
+          "specs": [
+            {
+              "title": "1. ADMIN tắt rồi bật sales:product:read bằng ma trận",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/rbac/rbac.spec.ts",
+                        "line": 153,
+                        "column": 6
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop",
+                  "projectName": "desktop",
+                  "results": [
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 0,
+                      "error": {
+                        "message": "Error: Đọc ma trận qua BFF\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m401\u001b[39m",
+                        "stack": "Error: Đọc ma trận qua BFF\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m401\u001b[39m\n    at grants (/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/rbac/rbac.spec.ts:60:52)\n    at /home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/rbac/rbac.spec.ts:161:22",
+                        "location": {
+                          "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/rbac/rbac.spec.ts",
+                          "column": 52,
+                          "line": 60
+                        },
+                        "snippet": "  58 | async function grants(request: APIRequestContext) {\n  59 |   const response = await request.get(matrixPath);\n> 60 |   expect(response.status(), \"Đọc ma trận qua BFF\").toBe(200);\n     |                                                    ^\n  61 |   return decodePlatform(await response.json(), roleMatrixSchema).SALES;\n  62 | }\n  63 |"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/rbac/rbac.spec.ts",
+                            "column": 52,
+                            "line": 60
+                          },
+                          "message": "Error: Đọc ma trận qua BFF\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m401\u001b[39m\n\n  58 | async function grants(request: APIRequestContext) {\n  59 |   const response = await request.get(matrixPath);\n> 60 |   expect(response.status(), \"Đọc ma trận qua BFF\").toBe(200);\n     |                                                    ^\n  61 |   return decodePlatform(await response.json(), roleMatrixSchema).SALES;\n  62 | }\n  63 |\n    at grants (/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/rbac/rbac.spec.ts:60:52)\n    at /home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/rbac/rbac.spec.ts:161:22"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-27T06:42:37.856Z",
+                      "annotations": [
+                        {
+                          "type": "serial",
+                          "location": {
+                            "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/rbac/rbac.spec.ts",
+                            "line": 153,
+                            "column": 6
+                          }
+                        }
+                      ],
+                      "attachments": [
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/.aidlc/runs/PORTAL-INVENTORY-UX-001/artifacts/e2e-web/results/rbac-rbac-RBAC-trên-stack--e1d7d-s-product-read-bằng-ma-trận-desktop/error-context.md"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/.aidlc/runs/PORTAL-INVENTORY-UX-001/artifacts/e2e-web/results/rbac-rbac-RBAC-trên-stack--e1d7d-s-product-read-bằng-ma-trận-desktop/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/rbac/rbac.spec.ts",
+                        "column": 52,
+                        "line": 60
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "1f7fe901727779741979-f4c9c3f4d054f127dbd0",
+              "file": "rbac/rbac.spec.ts",
+              "line": 178,
+              "column": 3
+            },
+            {
+              "title": "2. SALES đang đăng nhập bị chặn rồi truy cập lại với cùng phiên",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/rbac/rbac.spec.ts",
+                        "line": 153,
+                        "column": 6
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop",
+                  "projectName": "desktop",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-27T06:42:38.788Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1f7fe901727779741979-b0f12079d86c258b5822",
+              "file": "rbac/rbac.spec.ts",
+              "line": 189,
+              "column": 3
+            },
+            {
+              "title": "3. CUSTOMER không mở được khu quản trị và ma trận",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/rbac/rbac.spec.ts",
+                        "line": 153,
+                        "column": 6
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop",
+                  "projectName": "desktop",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-27T06:42:38.788Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1f7fe901727779741979-731414ce77f50c1efe08",
+              "file": "rbac/rbac.spec.ts",
+              "line": 203,
+              "column": 3
+            },
+            {
+              "title": "4. ADMIN khoá rồi mở membership SALES bằng UI",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/rbac/rbac.spec.ts",
+                        "line": 153,
+                        "column": 6
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop",
+                  "projectName": "desktop",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-27T06:42:38.788Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1f7fe901727779741979-b741c0b718c8ad1ad775",
+              "file": "rbac/rbac.spec.ts",
+              "line": 215,
+              "column": 3
+            },
+            {
+              "title": "5. ADMIN tạo SALES với mật khẩu và nhân viên đăng nhập ngay",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/rbac/rbac.spec.ts",
+                        "line": 153,
+                        "column": 6
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop",
+                  "projectName": "desktop",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-27T06:42:38.788Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1f7fe901727779741979-da32fe640aa10d0cb93a",
+              "file": "rbac/rbac.spec.ts",
+              "line": 226,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "supplier-contract/permissions.spec.ts",
+      "file": "supplier-contract/permissions.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "TC-09: thu hồi quyền WAREHOUSE chặn API, menu và deep link trong cùng phiên",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 10,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3274,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T06:42:39.019Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d41fa04ee4c49be077a0-9ce04eb7acf8f704a9cb",
+          "file": "supplier-contract/permissions.spec.ts",
+          "line": 15,
+          "column": 1
+        },
+        {
+          "title": "TC-09: khách và anonymous không được đọc/ghi hợp đồng qua BFF",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 10,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1255,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T06:42:42.420Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d41fa04ee4c49be077a0-03fba8de955352323247",
+          "file": "supplier-contract/permissions.spec.ts",
+          "line": 67,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "supplier-contract/receipt-gate.spec.ts",
+      "file": "supplier-contract/receipt-gate.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "TC-05/10/16: picker tên, giá chỉ đọc và ngày ngoài hợp đồng chặn tạo phiếu",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 10,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1303,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T06:42:43.692Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "7dcf3705fe1053566510-2dd85136c7eed9ca9f47",
+          "file": "supplier-contract/receipt-gate.spec.ts",
+          "line": 6,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "supplier-contract/supplier-contract.spec.ts",
+      "file": "supplier-contract/supplier-contract.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "TC-01/03/04/10/11: NCC, nháp, tệp, áp dụng và ngừng dùng bằng UI",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 10,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 5012,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T06:42:45.007Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "534420298f406e28413c-52bb9a09f1af8ac868d6",
+          "file": "supplier-contract/supplier-contract.spec.ts",
+          "line": 24,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "visual/preview.spec.ts",
+      "file": "visual/preview.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "tokens",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 6,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 678,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T06:42:12.020Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "57f4602f2518f4883b4c-e579dd84ef852c8bfb89",
+          "file": "visual/preview.spec.ts",
+          "line": 30,
+          "column": 1
+        },
+        {
+          "title": "Main",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "skip",
+                  "description": "Main là trang token, đã so qua test tokens",
+                  "location": {
+                    "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/preview.spec.ts",
+                    "line": 74,
+                    "column": 10
+                  }
+                }
+              ],
+              "expectedStatus": "skipped",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 6,
+                  "parallelIndex": 0,
+                  "status": "skipped",
+                  "duration": 54,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T06:42:12.818Z",
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "Main là trang token, đã so qua test tokens",
+                      "location": {
+                        "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/preview.spec.ts",
+                        "line": 74,
+                        "column": 10
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "57f4602f2518f4883b4c-813b1d04da700ea0f74e",
+          "file": "visual/preview.spec.ts",
+          "line": 71,
+          "column": 3
+        },
+        {
+          "title": "Landing",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "skip",
+                  "description": "chưa có baseline canvas: /home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/baseline/screens/Landing-desktop.png",
+                  "location": {
+                    "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/preview.spec.ts",
+                    "line": 76,
+                    "column": 10
+                  }
+                }
+              ],
+              "expectedStatus": "skipped",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 6,
+                  "parallelIndex": 0,
+                  "status": "skipped",
+                  "duration": 52,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T06:42:12.878Z",
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "chưa có baseline canvas: /home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/baseline/screens/Landing-desktop.png",
+                      "location": {
+                        "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/preview.spec.ts",
+                        "line": 76,
+                        "column": 10
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "57f4602f2518f4883b4c-a42b7a7cdd04e6354df2",
+          "file": "visual/preview.spec.ts",
+          "line": 71,
+          "column": 3
+        },
+        {
+          "title": "LandingMobile",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "skip",
+                  "description": "chỉ chụp ở mobile",
+                  "location": {
+                    "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/preview.spec.ts",
+                    "line": 72,
+                    "column": 10
+                  }
+                }
+              ],
+              "expectedStatus": "skipped",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 6,
+                  "parallelIndex": 0,
+                  "status": "skipped",
+                  "duration": 56,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T06:42:12.935Z",
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "chỉ chụp ở mobile",
+                      "location": {
+                        "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/preview.spec.ts",
+                        "line": 72,
+                        "column": 10
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "57f4602f2518f4883b4c-39e82bab1f13e9e0ae70",
+          "file": "visual/preview.spec.ts",
+          "line": 71,
+          "column": 3
+        },
+        {
+          "title": "StoreHome",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "skip",
+                  "description": "chưa có baseline canvas: /home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/baseline/screens/StoreHome-desktop.png",
+                  "location": {
+                    "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/preview.spec.ts",
+                    "line": 76,
+                    "column": 10
+                  }
+                }
+              ],
+              "expectedStatus": "skipped",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 6,
+                  "parallelIndex": 0,
+                  "status": "skipped",
+                  "duration": 54,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T06:42:12.995Z",
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "chưa có baseline canvas: /home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/baseline/screens/StoreHome-desktop.png",
+                      "location": {
+                        "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/preview.spec.ts",
+                        "line": 76,
+                        "column": 10
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "57f4602f2518f4883b4c-63095ad65473715dcf85",
+          "file": "visual/preview.spec.ts",
+          "line": 71,
+          "column": 3
+        },
+        {
+          "title": "StoreHomeMobile",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "skip",
+                  "description": "chỉ chụp ở mobile",
+                  "location": {
+                    "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/preview.spec.ts",
+                    "line": 72,
+                    "column": 10
+                  }
+                }
+              ],
+              "expectedStatus": "skipped",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 6,
+                  "parallelIndex": 0,
+                  "status": "skipped",
+                  "duration": 71,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T06:42:13.053Z",
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "chỉ chụp ở mobile",
+                      "location": {
+                        "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/preview.spec.ts",
+                        "line": 72,
+                        "column": 10
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "57f4602f2518f4883b4c-4e4a8f794d5449a3f00e",
+          "file": "visual/preview.spec.ts",
+          "line": 71,
+          "column": 3
+        },
+        {
+          "title": "StoreCatalog",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "skip",
+                  "description": "chưa có baseline canvas: /home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/baseline/screens/StoreCatalog-desktop.png",
+                  "location": {
+                    "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/preview.spec.ts",
+                    "line": 76,
+                    "column": 10
+                  }
+                }
+              ],
+              "expectedStatus": "skipped",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 6,
+                  "parallelIndex": 0,
+                  "status": "skipped",
+                  "duration": 53,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T06:42:13.129Z",
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "chưa có baseline canvas: /home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/baseline/screens/StoreCatalog-desktop.png",
+                      "location": {
+                        "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/preview.spec.ts",
+                        "line": 76,
+                        "column": 10
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "57f4602f2518f4883b4c-3b77e615cc1177eb1d64",
+          "file": "visual/preview.spec.ts",
+          "line": 71,
+          "column": 3
+        },
+        {
+          "title": "StoreCatalogMobile",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "skip",
+                  "description": "chỉ chụp ở mobile",
+                  "location": {
+                    "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/preview.spec.ts",
+                    "line": 72,
+                    "column": 10
+                  }
+                }
+              ],
+              "expectedStatus": "skipped",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 6,
+                  "parallelIndex": 0,
+                  "status": "skipped",
+                  "duration": 54,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T06:42:13.187Z",
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "chỉ chụp ở mobile",
+                      "location": {
+                        "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/preview.spec.ts",
+                        "line": 72,
+                        "column": 10
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "57f4602f2518f4883b4c-171a562b4bcc8003411a",
+          "file": "visual/preview.spec.ts",
+          "line": 71,
+          "column": 3
+        },
+        {
+          "title": "StoreProduct",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "skip",
+                  "description": "chưa có baseline canvas: /home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/baseline/screens/StoreProduct-desktop.png",
+                  "location": {
+                    "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/preview.spec.ts",
+                    "line": 76,
+                    "column": 10
+                  }
+                }
+              ],
+              "expectedStatus": "skipped",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 6,
+                  "parallelIndex": 0,
+                  "status": "skipped",
+                  "duration": 55,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T06:42:13.246Z",
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "chưa có baseline canvas: /home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/baseline/screens/StoreProduct-desktop.png",
+                      "location": {
+                        "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/preview.spec.ts",
+                        "line": 76,
+                        "column": 10
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "57f4602f2518f4883b4c-0fd76e252e4df294d78e",
+          "file": "visual/preview.spec.ts",
+          "line": 71,
+          "column": 3
+        },
+        {
+          "title": "StoreProductMobile",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "skip",
+                  "description": "chỉ chụp ở mobile",
+                  "location": {
+                    "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/preview.spec.ts",
+                    "line": 72,
+                    "column": 10
+                  }
+                }
+              ],
+              "expectedStatus": "skipped",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 6,
+                  "parallelIndex": 0,
+                  "status": "skipped",
+                  "duration": 55,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T06:42:13.306Z",
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "chỉ chụp ở mobile",
+                      "location": {
+                        "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/preview.spec.ts",
+                        "line": 72,
+                        "column": 10
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "57f4602f2518f4883b4c-318e6124f2efdd6cec19",
+          "file": "visual/preview.spec.ts",
+          "line": 71,
+          "column": 3
+        },
+        {
+          "title": "StoreCheckout",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "skip",
+                  "description": "chưa có baseline canvas: /home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/baseline/screens/StoreCheckout-desktop.png",
+                  "location": {
+                    "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/preview.spec.ts",
+                    "line": 76,
+                    "column": 10
+                  }
+                }
+              ],
+              "expectedStatus": "skipped",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 6,
+                  "parallelIndex": 0,
+                  "status": "skipped",
+                  "duration": 53,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T06:42:13.367Z",
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "chưa có baseline canvas: /home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/baseline/screens/StoreCheckout-desktop.png",
+                      "location": {
+                        "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/preview.spec.ts",
+                        "line": 76,
+                        "column": 10
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "57f4602f2518f4883b4c-10c9ca45aa6d18ab4dea",
+          "file": "visual/preview.spec.ts",
+          "line": 71,
+          "column": 3
+        },
+        {
+          "title": "StoreCheckoutMobile",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "skip",
+                  "description": "chỉ chụp ở mobile",
+                  "location": {
+                    "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/preview.spec.ts",
+                    "line": 72,
+                    "column": 10
+                  }
+                }
+              ],
+              "expectedStatus": "skipped",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 6,
+                  "parallelIndex": 0,
+                  "status": "skipped",
+                  "duration": 53,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T06:42:13.426Z",
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "chỉ chụp ở mobile",
+                      "location": {
+                        "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/preview.spec.ts",
+                        "line": 72,
+                        "column": 10
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "57f4602f2518f4883b4c-537df4231b5bbcc98973",
+          "file": "visual/preview.spec.ts",
+          "line": 71,
+          "column": 3
+        },
+        {
+          "title": "StoreAuth",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "skip",
+                  "description": "chưa có baseline canvas: /home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/baseline/screens/StoreAuth-desktop.png",
+                  "location": {
+                    "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/preview.spec.ts",
+                    "line": 76,
+                    "column": 10
+                  }
+                }
+              ],
+              "expectedStatus": "skipped",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 6,
+                  "parallelIndex": 0,
+                  "status": "skipped",
+                  "duration": 51,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T06:42:13.486Z",
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "chưa có baseline canvas: /home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/baseline/screens/StoreAuth-desktop.png",
+                      "location": {
+                        "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/preview.spec.ts",
+                        "line": 76,
+                        "column": 10
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "57f4602f2518f4883b4c-e0b9be19e8291b644cb8",
+          "file": "visual/preview.spec.ts",
+          "line": 71,
+          "column": 3
+        },
+        {
+          "title": "StoreAuthMobile",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "skip",
+                  "description": "chỉ chụp ở mobile",
+                  "location": {
+                    "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/preview.spec.ts",
+                    "line": 72,
+                    "column": 10
+                  }
+                }
+              ],
+              "expectedStatus": "skipped",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 6,
+                  "parallelIndex": 0,
+                  "status": "skipped",
+                  "duration": 54,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T06:42:13.543Z",
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "chỉ chụp ở mobile",
+                      "location": {
+                        "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/preview.spec.ts",
+                        "line": 72,
+                        "column": 10
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "57f4602f2518f4883b4c-f5bf642d90017db43252",
+          "file": "visual/preview.spec.ts",
+          "line": 71,
+          "column": 3
+        },
+        {
+          "title": "ConsoleDashboard",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "skip",
+                  "description": "chưa có baseline canvas: /home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/baseline/screens/ConsoleDashboard-desktop.png",
+                  "location": {
+                    "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/preview.spec.ts",
+                    "line": 76,
+                    "column": 10
+                  }
+                }
+              ],
+              "expectedStatus": "skipped",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 6,
+                  "parallelIndex": 0,
+                  "status": "skipped",
+                  "duration": 55,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T06:42:13.602Z",
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "chưa có baseline canvas: /home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/baseline/screens/ConsoleDashboard-desktop.png",
+                      "location": {
+                        "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/preview.spec.ts",
+                        "line": 76,
+                        "column": 10
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "57f4602f2518f4883b4c-6cbeb30b35d020af69f6",
+          "file": "visual/preview.spec.ts",
+          "line": 71,
+          "column": 3
+        },
+        {
+          "title": "ConsoleTable",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "skip",
+                  "description": "chưa có baseline canvas: /home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/baseline/screens/ConsoleTable-desktop.png",
+                  "location": {
+                    "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/preview.spec.ts",
+                    "line": 76,
+                    "column": 10
+                  }
+                }
+              ],
+              "expectedStatus": "skipped",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 6,
+                  "parallelIndex": 0,
+                  "status": "skipped",
+                  "duration": 52,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T06:42:13.663Z",
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "chưa có baseline canvas: /home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/baseline/screens/ConsoleTable-desktop.png",
+                      "location": {
+                        "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/preview.spec.ts",
+                        "line": 76,
+                        "column": 10
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "57f4602f2518f4883b4c-41c2d4be9654df72e633",
+          "file": "visual/preview.spec.ts",
+          "line": 71,
+          "column": 3
+        },
+        {
+          "title": "ConsoleRecord",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "skip",
+                  "description": "chưa có baseline canvas: /home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/baseline/screens/ConsoleRecord-desktop.png",
+                  "location": {
+                    "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/preview.spec.ts",
+                    "line": 76,
+                    "column": 10
+                  }
+                }
+              ],
+              "expectedStatus": "skipped",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 6,
+                  "parallelIndex": 0,
+                  "status": "skipped",
+                  "duration": 52,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T06:42:13.723Z",
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "chưa có baseline canvas: /home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/baseline/screens/ConsoleRecord-desktop.png",
+                      "location": {
+                        "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/preview.spec.ts",
+                        "line": 76,
+                        "column": 10
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "57f4602f2518f4883b4c-66cbafc5773abf85fcc8",
+          "file": "visual/preview.spec.ts",
+          "line": 71,
+          "column": 3
+        },
+        {
+          "title": "ConsoleForm",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "skip",
+                  "description": "chưa có baseline canvas: /home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/baseline/screens/ConsoleForm-desktop.png",
+                  "location": {
+                    "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/preview.spec.ts",
+                    "line": 76,
+                    "column": 10
+                  }
+                }
+              ],
+              "expectedStatus": "skipped",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 6,
+                  "parallelIndex": 0,
+                  "status": "skipped",
+                  "duration": 52,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T06:42:13.783Z",
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "chưa có baseline canvas: /home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/baseline/screens/ConsoleForm-desktop.png",
+                      "location": {
+                        "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/preview.spec.ts",
+                        "line": 76,
+                        "column": 10
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "57f4602f2518f4883b4c-b1eeebd342ba78b100bb",
+          "file": "visual/preview.spec.ts",
+          "line": 71,
+          "column": 3
+        },
+        {
+          "title": "ConsoleLogin",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "skip",
+                  "description": "chưa có baseline canvas: /home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/baseline/screens/ConsoleLogin-desktop.png",
+                  "location": {
+                    "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/preview.spec.ts",
+                    "line": 76,
+                    "column": 10
+                  }
+                }
+              ],
+              "expectedStatus": "skipped",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 6,
+                  "parallelIndex": 0,
+                  "status": "skipped",
+                  "duration": 53,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T06:42:13.843Z",
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "chưa có baseline canvas: /home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/baseline/screens/ConsoleLogin-desktop.png",
+                      "location": {
+                        "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/preview.spec.ts",
+                        "line": 76,
+                        "column": 10
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "57f4602f2518f4883b4c-3f78038379c554ba93b6",
+          "file": "visual/preview.spec.ts",
+          "line": 71,
+          "column": 3
+        },
+        {
+          "title": "States",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "skip",
+                  "description": "chưa có baseline canvas: /home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/baseline/screens/States-desktop.png",
+                  "location": {
+                    "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/preview.spec.ts",
+                    "line": 76,
+                    "column": 10
+                  }
+                }
+              ],
+              "expectedStatus": "skipped",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 6,
+                  "parallelIndex": 0,
+                  "status": "skipped",
+                  "duration": 52,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T06:42:13.902Z",
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "chưa có baseline canvas: /home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/baseline/screens/States-desktop.png",
+                      "location": {
+                        "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/preview.spec.ts",
+                        "line": 76,
+                        "column": 10
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "57f4602f2518f4883b4c-330fe85f8c94a4f76aee",
+          "file": "visual/preview.spec.ts",
+          "line": 71,
+          "column": 3
+        },
+        {
+          "title": "StatesMobile",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "skip",
+                  "description": "chỉ chụp ở mobile",
+                  "location": {
+                    "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/preview.spec.ts",
+                    "line": 72,
+                    "column": 10
+                  }
+                }
+              ],
+              "expectedStatus": "skipped",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 6,
+                  "parallelIndex": 0,
+                  "status": "skipped",
+                  "duration": 60,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-27T06:42:13.959Z",
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "chỉ chụp ở mobile",
+                      "location": {
+                        "file": "/home/dawn/work/ticket/.cache/worktrees/price-a/portal/e2e/visual/preview.spec.ts",
+                        "line": 72,
+                        "column": 10
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "57f4602f2518f4883b4c-1200b6a6be3d665460c2",
+          "file": "visual/preview.spec.ts",
+          "line": 71,
+          "column": 3
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-27T06:41:48.772Z",
+    "duration": 61308.152,
+    "expected": 22,
+    "skipped": 27,
+    "unexpected": 9,
+    "flaky": 0
+  }
+}
