@@ -1,6 +1,8 @@
 import { z } from "zod";
 import { decodePlatform } from "@/lib/api/platform-contract";
 import { apiFetch } from "@/lib/fetcher";
+export { getMaterials, createMaterial, getRawLabels, updateRawLabels } from "./sales-materials";
+export type { Material, MaterialPage, CreateMaterialInput, ExistingMaterial, RawAllergens, RawLabelsView, UpdateRawLabelsRequest } from "./sales-materials";
 
 export interface Product { id: string; sku_code: string; name: string; description?: string; barcode?: string; uom: string; base_price_vnd?: number; status: "DRAFT" | "ACTIVE" | "SUSPENDED"; created_at: string; updated_at?: string; sku_ref?: string; branch_ref?: string; image_urls?: string[]; available_quantity?: number; }
 export interface CreateProductInput { sku_code: string; name: string; description?: string; uom: string; base_price_vnd: number; }
@@ -256,23 +258,6 @@ export function clearCart(): void {
 const vndFormatter = new Intl.NumberFormat("vi-VN");
 export function formatVND(amount: number | undefined): string { return amount === undefined ? "Chưa có giá" : vndFormatter.format(amount) + " ₫"; }
 
-export interface Material {
-  id: string; sku_code: string; name: string; category_ref?: string;
-  uom_code: string; selectable: boolean; season_months: number[] | null;
-  season_note: string | null; reference_price_vnd: number | null;
-  reference_pack_quantity: string | null; reference_pack_uom: string | null;
-  reference_observed_at: string | null; normalized_unit_price: string | null;
-  price_source: string;
-}
-export interface MaterialPage {
-  items: Material[]; categories: Array<{ id: string; slug: string; name: string; parent_ref: string }>;
-  next_cursor: string; season_message: string;
-}
-export async function getMaterials(query = ""): Promise<MaterialPage> {
-  const res = await apiFetch(`/api/sales/skus?kind=RAW_MATERIAL&limit=20&${query}`);
-  if (!res.ok) throw new Error(await errorMessage(res, `Không tải được nguyên liệu (${res.status})`));
-  return responseData<MaterialPage>(res);
-}
 export interface DraftProduct { id: string; name: string; status: string; }
 export async function getDraftProducts(): Promise<DraftProduct[]> {
   const products: DraftProduct[] = [];
@@ -294,20 +279,10 @@ export async function createDraftProduct(input: { name: string; slug: string }):
 
 // PACK schemas follow sales/api/openapi.public.yaml.
 const FoodPackageSchema = z.object({
-  id: z.string().uuid(),
-  org_ref: z.string().uuid(),
-  branch_ref: z.string().uuid(),
-  product_ref: z.string().uuid(),
-  code: z.string().min(1),
-  name: z.string().min(1),
-  variant_label: z.string().min(1),
-  net_weight_g: z.number().int().min(1).max(2147483647),
-  uom_code: z.enum(["EA"]),
-  temperature_regime: z.string().min(1),
-  kind: z.enum(["PRODUCED_VARIANT"]),
-  sellable: z.literal(false),
-  status: z.string(),
-  updated_at: z.string().datetime({ offset: true })
+  id: z.string().uuid(), org_ref: z.string().uuid(), branch_ref: z.string().uuid(), product_ref: z.string().uuid(), code: z.string().min(1),
+  name: z.string().min(1), variant_label: z.string().min(1), net_weight_g: z.number().int().min(1).max(2147483647),
+  uom_code: z.enum(["EA"]), temperature_regime: z.string().min(1), kind: z.enum(["PRODUCED_VARIANT"]), sellable: z.literal(false),
+  status: z.string(), updated_at: z.string().datetime({ offset: true })
 }).strict();
 
 const ManualHashtagsSchema = z.array(z.string().regex(new RegExp("^[a-z0-9]+(-[a-z0-9]+)*$"))).min(3).max(8).refine(items => new Set(items).size === items.length, "Duplicate values");
@@ -315,114 +290,52 @@ const ManualHashtagsSchema = z.array(z.string().regex(new RegExp("^[a-z0-9]+(-[a
 const FoodSlotSchema = z.enum(["TINH_BOT", "DAM", "RAU", "COT", "NUOC_CHAM", "GIA_VI_THEM"]);
 
 const SetOptionSchema = z.object({
-  sku_ref: z.string().uuid(),
-  quantity: z.number().int().min(1),
-  is_default: z.boolean()
+  sku_ref: z.string().uuid(), quantity: z.number().int().min(1), is_default: z.boolean()
 }).strict();
 
 const SetSlotSchema = z.object({
-  slot: FoodSlotSchema,
-  swappable: z.boolean(),
-  removable: z.boolean(),
-  options: z.array(SetOptionSchema).min(1)
+  slot: FoodSlotSchema, swappable: z.boolean(), removable: z.boolean(), options: z.array(SetOptionSchema).min(1)
 }).strict();
 
 const FoodSetSchema = z.object({
-  id: z.string().uuid(),
-  org_ref: z.string().uuid(),
-  branch_ref: z.string().uuid(),
-  product_ref: z.string().uuid(),
-  code: z.string().min(1),
-  name: z.string().min(1),
-  variant_label: z.string().min(1),
-  net_weight_g: z.number().int().min(1).max(2147483647),
-  uom_code: z.enum(["EA"]),
-  temperature_regime: z.string().min(1),
-  kind: z.enum(["COMMERCIAL_SET"]),
-  sku_type: z.enum(["SET"]),
-  sellable: z.literal(false),
-  status: z.string(),
-  tags: ManualHashtagsSchema,
-  system_hashtags: z.array(z.string()),
-  slots: z.array(SetSlotSchema).max(6),
-  updated_at: z.string().datetime({ offset: true })
-}).strict();
-
-const RawAllergensSchema = z.object({
-  known: z.boolean(),
-  contains: z.array(z.enum(["GLUTEN", "CRUSTACEANS", "EGGS", "FISH", "PEANUTS", "SOYBEANS", "MILK", "TREE_NUTS", "CELERY", "MUSTARD", "SESAME", "SULPHITES", "LUPIN", "MOLLUSCS"])).refine(items => new Set(items).size === items.length, "Duplicate values")
-}).strict().refine(value => value.known || value.contains.length === 0, "Unknown allergens must have empty contains");
-
-const RawLabelsViewSchema = z.object({
-  sku_ref: z.string().uuid(),
-  allergen_summary: RawAllergensSchema,
-  avoidance_flags: z.array(z.enum(["PORK", "BEEF", "ANIMAL", "ALCOHOL", "MSG", "SPICY", "NGU_VI_TAN"])).refine(items => new Set(items).size === items.length, "Duplicate values"),
-  diet_flags: z.array(z.enum(["VEGETARIAN", "VEGAN"])).refine(items => new Set(items).size === items.length, "Duplicate values").nullable(),
-  updated_at: z.string().datetime({ offset: true })
+  id: z.string().uuid(), org_ref: z.string().uuid(), branch_ref: z.string().uuid(), product_ref: z.string().uuid(), code: z.string().min(1),
+  name: z.string().min(1), variant_label: z.string().min(1), net_weight_g: z.number().int().min(1).max(2147483647),
+  uom_code: z.enum(["EA"]), temperature_regime: z.string().min(1), kind: z.enum(["COMMERCIAL_SET"]), sku_type: z.enum(["SET"]),
+  sellable: z.literal(false), status: z.string(), tags: ManualHashtagsSchema, system_hashtags: z.array(z.string()),
+  slots: z.array(SetSlotSchema).max(6), updated_at: z.string().datetime({ offset: true })
 }).strict();
 
 const CreatePackageRequestSchema = z.object({
-  product_ref: z.string().uuid(),
-  code: z.string().min(1).max(56, "Mã gói tối đa 56 ký tự"),
-  name: z.string().min(1),
-  variant_label: z.string().min(1),
-  net_weight_g: z.number().int().min(1).max(2147483647),
-  uom_code: z.enum(["EA"]),
+  product_ref: z.string().uuid(), code: z.string().min(1).max(56, "Mã gói tối đa 56 ký tự"), name: z.string().min(1),
+  variant_label: z.string().min(1), net_weight_g: z.number().int().min(1).max(2147483647), uom_code: z.enum(["EA"]),
   temperature_regime: z.string().min(1)
 }).strict();
 
 const UpdatePackageRequestSchema = z.object({
-  product_ref: z.string().uuid(),
-  code: z.string().min(1).max(56, "Mã gói tối đa 56 ký tự"),
-  name: z.string().min(1),
-  variant_label: z.string().min(1),
-  net_weight_g: z.number().int().min(1).max(2147483647),
-  uom_code: z.enum(["EA"]),
-  temperature_regime: z.string().min(1),
-  expected_updated_at: z.string().datetime({ offset: true })
+  product_ref: z.string().uuid(), code: z.string().min(1).max(56, "Mã gói tối đa 56 ký tự"), name: z.string().min(1),
+  variant_label: z.string().min(1), net_weight_g: z.number().int().min(1).max(2147483647), uom_code: z.enum(["EA"]),
+  temperature_regime: z.string().min(1), expected_updated_at: z.string().datetime({ offset: true })
 }).strict();
 
 const CreateFoodSetRequestSchema = z.object({
-  product_ref: z.string().uuid(),
-  code: z.string().min(1),
-  name: z.string().min(1),
-  variant_label: z.string().min(1),
-  net_weight_g: z.number().int().min(1).max(2147483647),
-  uom_code: z.enum(["EA"]),
-  temperature_regime: z.string().min(1),
+  product_ref: z.string().uuid(), code: z.string().min(1), name: z.string().min(1), variant_label: z.string().min(1),
+  net_weight_g: z.number().int().min(1).max(2147483647), uom_code: z.enum(["EA"]), temperature_regime: z.string().min(1),
   tags: ManualHashtagsSchema
 }).strict();
 
 const ReplaceFoodSetRequestSchema = z.object({
-  tags: ManualHashtagsSchema,
-  slots: z.array(SetSlotSchema).min(2).max(6),
-  expected_updated_at: z.string().datetime({ offset: true })
-}).strict();
-
-const UpdateRawLabelsRequestSchema = z.object({
-  allergen_summary: RawAllergensSchema,
-  avoidance_flags: z.array(z.enum(["PORK", "BEEF", "ANIMAL", "ALCOHOL", "MSG", "SPICY", "NGU_VI_TAN"])).refine(items => new Set(items).size === items.length, "Duplicate values"),
-  diet_flags: z.array(z.enum(["VEGETARIAN", "VEGAN"])).refine(items => new Set(items).size === items.length, "Duplicate values").nullable(),
-  expected_updated_at: z.string().datetime({ offset: true })
+  tags: ManualHashtagsSchema, slots: z.array(SetSlotSchema).min(2).max(6), expected_updated_at: z.string().datetime({ offset: true })
 }).strict();
 
 const FoodPackagePageEnvelopeSchema = z.object({
-  code: z.number().int(),
-  status: z.string(),
-  message: z.string(),
-  data: z.object({
-  items: z.array(FoodPackageSchema),
-  next_cursor: z.string().nullable()
+  code: z.number().int(), status: z.string(), message: z.string(), data: z.object({
+  items: z.array(FoodPackageSchema), next_cursor: z.string().nullable()
 }).strict()
 }).strict();
 
 const FoodSetPageEnvelopeSchema = z.object({
-  code: z.number().int(),
-  status: z.string(),
-  message: z.string(),
-  data: z.object({
-  items: z.array(FoodSetSchema),
-  next_cursor: z.string().nullable()
+  code: z.number().int(), status: z.string(), message: z.string(), data: z.object({
+  items: z.array(FoodSetSchema), next_cursor: z.string().nullable()
 }).strict()
 }).strict();
 
@@ -432,13 +345,10 @@ export type FoodSlot = z.infer<typeof FoodSlotSchema>;
 export type SetOption = z.infer<typeof SetOptionSchema>;
 export type SetSlot = z.infer<typeof SetSlotSchema>;
 export type FoodSet = z.infer<typeof FoodSetSchema>;
-export type RawAllergens = z.infer<typeof RawAllergensSchema>;
-export type RawLabelsView = z.infer<typeof RawLabelsViewSchema>;
 export type CreatePackageRequest = z.infer<typeof CreatePackageRequestSchema>;
 export type UpdatePackageRequest = z.infer<typeof UpdatePackageRequestSchema>;
 export type CreateFoodSetRequest = z.infer<typeof CreateFoodSetRequestSchema>;
 export type ReplaceFoodSetRequest = z.infer<typeof ReplaceFoodSetRequestSchema>;
-export type UpdateRawLabelsRequest = z.infer<typeof UpdateRawLabelsRequestSchema>;
 
 async function salesPackRequest<T>(path: string, schema: z.ZodType<T>, method = "GET", input?: unknown): Promise<T> {
   const res = await apiFetch(`/api/food-packs/sales${path}`, {
@@ -484,7 +394,3 @@ export function updateFoodSet(id: string, input: ReplaceFoodSetRequest) {
   return salesPackRequest(`/sets/${encodeURIComponent(id)}`, FoodSetSchema, "PUT", ReplaceFoodSetRequestSchema.parse(input));
 }
 export function retireFoodSet(id: string) { return retireSalesPack(`/sets/${encodeURIComponent(id)}`); }
-export function getRawLabels(id: string) { return salesPackRequest(`/skus/${encodeURIComponent(id)}/labels`, RawLabelsViewSchema); }
-export function updateRawLabels(id: string, input: UpdateRawLabelsRequest) {
-  return salesPackRequest(`/skus/${encodeURIComponent(id)}/labels`, RawLabelsViewSchema, "PATCH", UpdateRawLabelsRequestSchema.parse(input));
-}

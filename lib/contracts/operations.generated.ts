@@ -142,6 +142,7 @@ export const OPERATIONS = {
   getSalesproductsproductidvariants: { service: "sales", method: "GET", path: "/sales/products/{product_id}/variants", actionKey: "sales:variant:read", scope: "none" },
   getSalesproductsproductidvariantsvariantid: { service: "sales", method: "GET", path: "/sales/products/{product_id}/variants/{variant_id}", actionKey: "sales:variant:read", scope: "none" },
   listFoodSets: { service: "sales", method: "GET", path: "/sales/sets", actionKey: "sales:variant:read", scope: "none" },
+  createMaterial: { service: "sales", method: "POST", path: "/sales/skus", actionKey: "sales:product:create", scope: "none" },
   listMaterialCatalog: { service: "sales", method: "GET", path: "/sales/skus", actionKey: "sales:product:read", scope: "none" },
   salesListOrders: { service: "sales", method: "GET", path: "/sales/orders", actionKey: "sales:order:read", scope: "none" },
   listPackages: { service: "sales", method: "GET", path: "/sales/packages", actionKey: "sales:variant:read", scope: "none" },

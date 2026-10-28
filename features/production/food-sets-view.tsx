@@ -15,13 +15,13 @@ import { evaluateFoodSet, getProductionContext, type EvaluatedFoodSet, type Slot
 
 export const FOOD_SLOTS: { id: FoodSlot; name: string }[] = [
   { id: "TINH_BOT", name: "Tinh bột" }, { id: "DAM", name: "Đạm" }, { id: "RAU", name: "Rau" },
-  { id: "COT", name: "Cốt" }, { id: "NUOC_CHAM", name: "Nước chấm" }, { id: "GIA_VI_THEM", name: "Gia vị thêm" },
+  { id: "COT", name: "Cốt (gia vị)" }, { id: "NUOC_CHAM", name: "Nước chấm (gia vị)" }, { id: "GIA_VI_THEM", name: "Gia vị thêm" },
 ];
 export const packMessage = (error: unknown) => error instanceof Error ? error.message : "Không tải được dữ liệu";
 export const isStale = (error: unknown) => (typeof error === "object" && error !== null && "status" in error && error.status === 409) || /409|stale|changed|conflict|đã.*đổi|xung đột/i.test(packMessage(error));
-const initialMetadata: CreateFoodSetRequest = { product_ref: "", code: "", name: "", variant_label: "Tiêu chuẩn", net_weight_g: 100, uom_code: "EA", temperature_regime: "CHILLED", tags: [] };
+const initialMetadata: CreateFoodSetRequest = { product_ref: "", code: "", name: "", variant_label: "2 người", net_weight_g: 100, uom_code: "EA", temperature_regime: "CHILLED", tags: [] };
 const normalizeFilterTag = (value: string) => value.trim().replace(/^#+/, "").trim().toLowerCase();
-const nonRemovable = (slot: FoodSlot) => ["TINH_BOT", "DAM", "COT"].includes(slot);
+const isSpice = (slot: FoodSlot) => ["COT", "NUOC_CHAM", "GIA_VI_THEM"].includes(slot);
 
 export async function loadPackOptions() {
   const items: FoodPackage[] = [];
@@ -52,6 +52,7 @@ export function FoodSetsView() {
   const [editing, setEditing] = useState(false);
   const [metadata, setMetadata] = useState(initialMetadata);
   const [tagText, setTagText] = useState("");
+  const [touched, setTouched] = useState(false);
   const [slots, setSlots] = useState<SetSlot[]>([]);
   const [selections, setSelections] = useState<SlotSelection[]>([]);
   const [evaluation, setEvaluation] = useState<EvaluatedFoodSet | null>(null);
@@ -80,7 +81,7 @@ export function FoodSetsView() {
       const page = await listFoodSets({ q: search, tags: filterTags, cursor, limit: 20 });
       if (request !== loadRequest.current) return;
       setRows(page.items); setNext(page.next_cursor);
-      setSeenFilterTags(current => [...new Set([...current, ...page.items.flatMap(row => row.tags)])]);
+      setSeenFilterTags(current => [...new Set([...current, ...page.items.flatMap(row => [...row.tags, ...row.system_hashtags])])]);
     } catch (e) { if (request === loadRequest.current) setError(packMessage(e)); }
     finally { if (request === loadRequest.current) setBusy(false); }
   };
@@ -108,7 +109,7 @@ export function FoodSetsView() {
     finally { if (mounted.current) setDetailBusy(false); }
   };
   const begin = async (create: boolean) => {
-    setDetailBusy(true); setError("");
+    setDetailBusy(true); setError(""); setTouched(false);
     try {
       const [families, options] = await Promise.all([getDraftProducts(), loadPackOptions()]);
       if (!mounted.current) return;
@@ -120,10 +121,12 @@ export function FoodSetsView() {
   };
   const tags = tagText.split(/[,\s]+/).filter(Boolean);
   const tagError = tags.length < 3 || tags.length > 8 ? "Cần 3–8 hashtag." : new Set(tags).size !== tags.length ? "Hashtag bị trùng." : tags.some(tag => selected?.system_hashtags.includes(tag) || ["vegetarian", "vegan"].includes(tag)) ? "Hashtag trùng hashtag hệ thống hoặc chế độ ăn." : tags.some(tag => !/^[a-z0-9]+(-[a-z0-9]+)*$/.test(tag)) ? "Hashtag chỉ dùng chữ thường không dấu, số và dấu gạch nối." : "";
-  const validSlots = slots.length >= 2 && ["TINH_BOT", "DAM"].every(slot => slots.some(row => row.slot === slot)) && slots.every(slot => slot.options.length > 0 && slot.options.filter(option => option.is_default).length === 1 && (slot.swappable || slot.options.length === 1) && slot.options.every(option => Number.isInteger(option.quantity) && option.quantity > 0));
+  const slotCountError = slots.length < 2 || slots.length > 6 ? `Set cần 2–6 ô, đang có ${slots.length}` : "";
+  const validSlots = !slotCountError && slots.some(slot => isSpice(slot.slot) && !slot.removable) && slots.every(slot => !(slot.slot === "COT" && slot.removable) && slot.options.length > 0 && slot.options.filter(option => option.is_default).length === 1 && (slot.swappable || slot.options.length === 1) && slot.options.every(option => Number.isInteger(option.quantity) && option.quantity > 0));
+  const nonRemovable = (slot: SetSlot) => isSpice(slot.slot) && !slot.removable && slots.filter(row => isSpice(row.slot) && !row.removable).length === 1;
   const valid = !tagError && (selected ? validSlots : !!metadata.product_ref && !!metadata.code.trim() && !!metadata.name.trim() && !!metadata.variant_label.trim() && metadata.net_weight_g > 0 && !!metadata.temperature_regime.trim());
   const save = async (event: FormEvent) => {
-    event.preventDefault(); if (!valid || detailBusy || (selected ? !canUpdate : !canCreate)) return;
+    event.preventDefault(); setTouched(true); if (!valid || detailBusy || (selected ? !canUpdate : !canCreate)) return;
     setDetailBusy(true); setError("");
     try {
       const saved = selected ? await updateFoodSet(selected.id, { tags, slots, expected_updated_at: selected.updated_at }) : await createFoodSet({ ...metadata, tags });
@@ -166,7 +169,7 @@ export function FoodSetsView() {
   const clearTagFilters = () => {
     setCursor(undefined); setFilterTags([]); setFilterTagDraft("");
   };
-  const availableTags = [...new Set([...seenFilterTags, ...filterTags, ...(selected?.tags ?? [])])].sort();
+  const availableTags = [...new Set([...seenFilterTags, ...filterTags, ...(selected?.tags ?? []), ...(selected?.system_hashtags ?? [])])].sort();
   return <section aria-label="Set" className="space-y-4">
     <div className="flex flex-wrap items-end justify-between gap-3"><div><h2 className="text-xl font-bold">Set món ăn</h2><p className="text-sm text-muted-foreground">Ghép gói theo từng ô, xem nhãn trên đúng lựa chọn dùng cho bữa ăn.</p></div>{canCreate && <Button disabled={detailBusy} onClick={() => void begin(true)}>Tạo set món</Button>}</div>
     <form className="flex gap-3" onSubmit={e => { e.preventDefault(); setCursor(undefined); setSearch(query); }}><label className="flex-1">Tìm set theo tên<Input value={query} onChange={e => setQuery(e.target.value)} /></label><Button type="submit" variant="outline" disabled={busy}>Tìm set</Button></form>
@@ -183,7 +186,7 @@ export function FoodSetsView() {
       <div className="flex flex-wrap gap-2">{filterTags.map(tag => <Button key={tag} type="button" variant="outline" aria-pressed={true} aria-label={`Bỏ lọc hashtag ${tag}`} onClick={() => toggleFilterTag(tag)}>#{tag} <span aria-hidden="true">×</span></Button>)}{filterTags.length >= 2 && <Button type="button" variant="outline" onClick={clearTagFilters}>Xoá lọc</Button>}</div>
     </div>
     <Card><CardContent className="space-y-3 pt-6" aria-busy={busy}>
-      {busy ? <Skeleton title="Đang tải danh sách set…" /> : error ? <ErrorState title="Không tải được set" description={error} onRetry={() => void load()} /> : rows.length === 0 ? <EmptyState title={filterTags.length ? `Không có set nào có hashtag ${filterTags.map(tag => `#${tag}`).join(", ")}` : "Chưa có set món ăn"} description={filterTags.length ? "Bỏ hashtag để xem thêm set món ăn." : "Tạo set nháp, sau đó ghép các gói vào ô tinh bột và đạm."} action={filterTags.length ? <Button onClick={clearTagFilters}>Xoá lọc</Button> : canCreate ? <Button onClick={() => void begin(true)}>Tạo set món</Button> : undefined} /> : <Table><TableHeader><TableRow><TableHead>Tên set</TableHead><TableHead>Trạng thái</TableHead><TableHead>Số ô</TableHead><TableHead>Chi tiết</TableHead></TableRow></TableHeader><TableBody>{rows.map(row => <TableRow key={row.id}><TableCell>{row.name}</TableCell><TableCell>{row.status}</TableCell><TableCell>{row.slots.length}</TableCell><TableCell><Button variant="outline" disabled={detailBusy} onClick={() => void open(row)}>Xem {row.name}</Button></TableCell></TableRow>)}</TableBody></Table>}
+      {busy ? <Skeleton title="Đang tải danh sách set…" /> : error ? <ErrorState title="Không tải được set" description={error} onRetry={() => void load()} /> : rows.length === 0 ? <EmptyState title={filterTags.length ? `Không có set nào có hashtag ${filterTags.map(tag => `#${tag}`).join(", ")}` : "Chưa có set món ăn"} description={filterTags.length ? "Bỏ hashtag để xem thêm set món ăn." : "Tạo set nháp, sau đó thêm nguyên liệu và ít nhất một gói gia vị không được bỏ."} action={filterTags.length ? <Button onClick={clearTagFilters}>Xoá lọc</Button> : canCreate ? <Button onClick={() => void begin(true)}>Tạo set món</Button> : undefined} /> : <Table><TableHeader><TableRow><TableHead>Tên set</TableHead><TableHead>Trạng thái</TableHead><TableHead>Số ô</TableHead><TableHead>Chi tiết</TableHead></TableRow></TableHeader><TableBody>{rows.map(row => <TableRow key={row.id}><TableCell>{row.name}</TableCell><TableCell>{row.status}</TableCell><TableCell>{row.slots.length}</TableCell><TableCell><Button variant="outline" disabled={detailBusy} onClick={() => void open(row)}>Xem {row.name}</Button></TableCell></TableRow>)}</TableBody></Table>}
       <div className="flex gap-3"><Button variant="outline" disabled={busy || !cursor} onClick={() => setCursor(undefined)}>Trang đầu</Button><Button variant="outline" disabled={busy || !next} onClick={() => setCursor(next ?? undefined)}>Trang tiếp</Button></div>
     </CardContent></Card>
     {detailBusy && <Skeleton title="Đang tải hoặc lưu set…" />}
@@ -204,17 +207,18 @@ export function FoodSetsView() {
       </div>}
       <p className="text-sm text-muted-foreground">Nhãn là khai báo của FOOD_DEV, không phải chứng nhận. Có thể xảy ra nhiễm chéo trong bảo quản và chế biến.</p>
     </CardContent></Card>}
-    {editing && (selected ? canUpdate : canCreate) && <Card><CardContent className="pt-6"><form aria-label="Biên tập set món" onSubmit={save} className="space-y-4">
+    {editing && (selected ? canUpdate : canCreate) && <Card><CardContent className="pt-6"><form aria-label="Biên tập set món" onBlur={() => setTouched(true)} onSubmit={save} className="space-y-4">
       {!selected && <><EntityPicker name="set-family" label="Họ món" value={metadata.product_ref || null} onChange={id => setMetadata(current => ({ ...current, product_ref: id ?? "" }))} items={products} status="ready" getId={item => item.id} getLabel={item => item.name} />
-        <div className="grid gap-3 md:grid-cols-2">{([['code', 'Mã set'], ['name', 'Tên set'], ['variant_label', 'Quy cách'], ['temperature_regime', 'Chế độ nhiệt']] satisfies [keyof Pick<CreateFoodSetRequest, 'code' | 'name' | 'variant_label' | 'temperature_regime'>, string][]).map(([key, label]) => <label key={key}>{label}<Input required value={metadata[key]} onChange={e => setMetadata(current => ({ ...current, [key]: e.target.value }))} /></label>)}<label>Khối lượng tịnh (g)<Input type="number" min="1" max="2147483647" value={metadata.net_weight_g} onChange={e => setMetadata(current => ({ ...current, net_weight_g: Number(e.target.value) }))} /></label></div></>}
-      <label className="block">Hashtag tay<Input aria-describedby="set-tags-help" aria-invalid={!!tagError} value={tagText} onChange={e => setTagText(e.target.value)} /></label><p id="set-tags-help" role={tagError ? "alert" : "status"}>{tags.length}/8 hashtag · 3–8, cách nhau bằng dấu phẩy. {tagError}</p>
+        <label>Khẩu phần<Select value={metadata.variant_label} onChange={e => setMetadata(current => ({ ...current, variant_label: e.target.value }))}>{[1, 2, 3, 4, 6].map(count => <option key={count} value={`${count} người`}>{count} người</option>)}</Select></label>
+        <div className="grid gap-3 md:grid-cols-2">{([['code', 'Mã set'], ['name', 'Tên set'], ['temperature_regime', 'Chế độ nhiệt']] satisfies [keyof Pick<CreateFoodSetRequest, 'code' | 'name' | 'variant_label' | 'temperature_regime'>, string][]).map(([key, label]) => <label key={key}>{label}<Input required value={metadata[key]} onChange={e => setMetadata(current => ({ ...current, [key]: e.target.value }))} /></label>)}<label>Khối lượng tịnh (g)<Input type="number" min="1" max="2147483647" value={metadata.net_weight_g} onChange={e => setMetadata(current => ({ ...current, net_weight_g: Number(e.target.value) }))} /></label></div></>}
+      <label className="block">Hashtag tay<Input aria-describedby="set-tags-help" list="food-set-tag-suggestions" aria-invalid={touched && !!tagError} value={tagText} onChange={e => setTagText(e.target.value)} /></label><datalist id="food-set-tag-suggestions">{availableTags.map(tag => <option key={tag} value={tagText.includes(",") ? `${tagText.slice(0, tagText.lastIndexOf(",") + 1)} ${tag}` : tag} />)}</datalist><p id="set-tags-help" role={touched && tagError ? "alert" : "status"}>{tags.length}/8 hashtag · 3–8, cách nhau bằng dấu phẩy. {touched && tagError}</p>
       {!selected && <p>Lưu nháp trước, sau đó thêm ô và gói.</p>}
-      {selected && <><p>Mỗi ô có đúng một gói mặc định. Tinh bột, đạm và cốt không được bỏ; ô cố định chỉ có một lựa chọn.</p>{slots.map((slot, index) => <fieldset key={slot.slot} className="space-y-3 rounded-xl border p-4"><legend>{FOOD_SLOTS.find(item => item.id === slot.slot)?.name}</legend>
-        <Checkbox label="Cho đổi gói" checked={slot.swappable} onChange={e => changeSlot(index, { swappable: e.target.checked })} /><Checkbox label="Cho bỏ ô" disabled={nonRemovable(slot.slot)} checked={slot.removable} onChange={e => changeSlot(index, { removable: e.target.checked })} />
+      {selected && <><p>Mỗi ô có đúng một gói mặc định. Món cần ít nhất một gói gia vị không được bỏ; ô cố định chỉ có một lựa chọn.</p>{slots.map((slot, index) => <fieldset key={slot.slot} className="space-y-3 rounded-xl border p-4"><legend>{FOOD_SLOTS.find(item => item.id === slot.slot)?.name}</legend>
+        <Checkbox label="Cho đổi gói" checked={slot.swappable} onChange={e => changeSlot(index, { swappable: e.target.checked })} /><Checkbox label="Cho bỏ ô" disabled={slot.slot === "COT" || nonRemovable(slot)} checked={slot.removable} onChange={e => changeSlot(index, { removable: e.target.checked })} />
         {slot.options.map((option, optionIndex) => <div key={option.sku_ref} className="grid gap-3 md:grid-cols-3"><p>{packages.find(item => item.id === option.sku_ref)?.name ?? "Gói đã chọn"}</p><label>Số gói<Input type="number" min="1" value={option.quantity} onChange={e => changeSlot(index, { options: slot.options.map((row, i) => i === optionIndex ? { ...row, quantity: Number(e.target.value) } : row) })} /></label><Checkbox label="Mặc định" checked={option.is_default} onChange={() => changeSlot(index, { options: slot.options.map((row, i) => ({ ...row, is_default: i === optionIndex })) })} /><Button type="button" variant="outline" onClick={() => changeSlot(index, { options: slot.options.filter((_, i) => i !== optionIndex) })}>Bỏ gói {optionIndex + 1}</Button></div>)}
         <EntityPicker name={`set-pack-${slot.slot}`} label="Thêm gói theo tên" items={packages.filter(item => !slot.options.some(option => option.sku_ref === item.id))} status="ready" value={null} getId={item => item.id} getLabel={item => item.name} onChange={id => { if (id) changeSlot(index, { options: [...slot.options, { sku_ref: id, quantity: 1, is_default: slot.options.length === 0 }] }); }} />
-        <Button type="button" variant="outline" onClick={() => setSlots(current => current.filter((_, i) => i !== index))}>Xóa ô</Button>
-      </fieldset>)}<label>Thêm ô<Select value="" onChange={e => { const slot = FOOD_SLOTS.find(item => item.id === e.target.value); if (slot) setSlots(current => [...current, { slot: slot.id, swappable: false, removable: false, options: [] }]); }}><option value="">Chọn loại ô</option>{FOOD_SLOTS.filter(item => !slots.some(slot => slot.slot === item.id)).map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</Select></label>{!validSlots && <p role="alert">Cần ô tinh bột và đạm, mỗi ô có gói với số lượng dương và đúng một mặc định.</p>}</>}
+        <Button type="button" variant="outline" disabled={nonRemovable(slot)} onClick={() => setSlots(current => current.filter((_, i) => i !== index))}>Xóa ô</Button>
+      </fieldset>)}<label>Thêm ô<Select value="" onChange={e => { const slot = FOOD_SLOTS.find(item => item.id === e.target.value); if (slot) setSlots(current => [...current, { slot: slot.id, swappable: false, removable: false, options: [] }]); }}><option value="">Chọn loại ô</option>{FOOD_SLOTS.filter(item => !slots.some(slot => slot.slot === item.id)).map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</Select></label>{touched && !validSlots && <p role="alert">{slotCountError || (!slots.some(slot => isSpice(slot.slot) && !slot.removable) ? "Món cần ít nhất một gói gia vị không được bỏ" : "Mỗi ô cần gói với số lượng dương và đúng một mặc định.")}</p>}</>}
       <div className="flex gap-3"><Button type="submit" disabled={detailBusy || !valid}>{detailBusy ? "Đang lưu…" : "Lưu set món"}</Button><Button type="button" variant="outline" onClick={() => setEditing(false)}>Hủy</Button></div>
     </form></CardContent></Card>}
   </section>;

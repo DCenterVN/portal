@@ -144,6 +144,7 @@ const fooddevHarness = vi.hoisted(() => ({ slots: [] as unknown[], cursor: 0, ef
 vi.mock("react", async original => {
   const actual = await original<typeof import("react")>();
   return { ...actual,
+    useId: () => "fooddev-harness",
     useState: (initial: unknown) => {
       const index = fooddevHarness.cursor++;
       if (!(index in fooddevHarness.slots)) fooddevHarness.slots[index] = typeof initial === "function" ? initial() : initial;
@@ -258,7 +259,7 @@ describe("FOODDEV forms and warehouse", () => {
   });
   it("shows material loading then filtered empty results while retaining season information", async () => {
     let resolveMaterials: (value: Response) => void = () => {};
-    vi.stubGlobal("fetch", vi.fn(() => new Promise<Response>(resolve => { resolveMaterials = resolve; })));
+    vi.stubGlobal("fetch", vi.fn(url => String(url).includes("/sales/skus") ? new Promise<Response>(resolve => { resolveMaterials = resolve; }) : Promise.resolve(json({ items: [], permissions: [] }))));
     const props = { onSelect: vi.fn() };
     let tree = render(MaterialPicker, props);
     expect(node(tree, n => n.type === Skeleton)).toBeDefined();
@@ -340,26 +341,26 @@ describe("FOODDEV forms and warehouse", () => {
     tree = render(TargetsView, props);
     expect(renderToStaticMarkup(tree)).toContain("Tạo sản phẩm nháp");
     await invoke(node(tree, n => n.props.label === "Tên sản phẩm"), "onChange", "Canh chua cá 4 suất");
-    await invoke(node(tree, n => n.props.label === "Slug sản phẩm"), "onChange", "canh-chua-ca");
     tree = render(TargetsView, props); await invoke(node(tree, named("Tạo product DRAFT")), "onClick");
     tree = render(TargetsView, props);
     await invoke(node(tree, n => n.props.label === "Tiêu đề"), "onChange", "Set bữa trưa");
     tree = render(TargetsView, props);
     await invoke(node(tree, n => n.type === "form"), "onSubmit", { preventDefault() {} });
-    expect(requests.find(r => r.path === "/api/sales/products" && r.method === "POST")?.body).toEqual({ name: "Canh chua cá 4 suất", slug: "canh-chua-ca" });
+    expect(requests.find(r => r.path === "/api/sales/products" && r.method === "POST")?.body).toEqual({ name: "Canh chua cá 4 suất", slug: "canh-chua-ca-4-suat" });
     expect(requests.find(r => r.path === "/api/production/targets" && r.method === "POST")?.body.lines).toEqual([{ product_ref: product.id, target_quantity: "4", uom: "EA" }]);
     expect(renderToStaticMarkup(render(TargetsView, props))).toContain("APPROVED");
   });
   it("FOOD_DEV creates and edits PREPARATION with exact decimal and the revision fetched from server", async () => {
     const { requests } = api(); const props = { initialPlans: [plan], targetId: target.id };
+    const setList = vi.spyOn(salesApi, "listFoodSets").mockResolvedValue({ items: [packSet], next_cursor: null });
+    const setDetail = vi.spyOn(salesApi, "getFoodSet").mockResolvedValue(packSet);
+    const packages = vi.spyOn(salesApi, "listPackages").mockResolvedValue({ items: [packRow], next_cursor: null });
     let tree = render(FoodPlansView, props); await effects(); tree = render(FoodPlansView, props);
     expect(renderToStaticMarkup(tree)).not.toMatch(/Thẩm định|Publish BOM|Kiểm tra &amp; handoff/);
     await invoke(node(tree, named("Tạo set")), "onClick"); tree = render(FoodPlansView, props);
     await invoke(node(tree, n => n.type === EntityPicker), "onChange", product.id);
-    for (const [label, value] of [["Mã set", "CANH"], ["Khẩu phần", "1 suất"]]) {
-      const field = node(tree, n => n.type === "label" && React.Children.toArray(n.props.children).includes(label));
-      await invoke(node(field, n => n.type === Input), "onChange", { target: { value } });
-    }
+    tree = render(FoodPlansView, props);
+    await invoke(node(tree, n => n.type === EntityPicker && n.props.label === "Mã set"), "onChange", packSet.id);
     await invoke(node(tree, n => n.type === MaterialPicker), "onSelect", material);
     tree = render(FoodPlansView, props);
     await invoke(node(tree, n => n.type === "form"), "onSubmit", { preventDefault() {} });
@@ -371,6 +372,7 @@ describe("FOODDEV forms and warehouse", () => {
     await invoke(node(tree, n => n.type === "form"), "onSubmit", { preventDefault() {} });
     expect(requests.find(r => r.method === "PUT")?.body).toMatchObject({ expected_revision: 7, planned_quantity: "4", components: [{ sku_ref: material.id, quantity: "0.999", uom: "KG" }] });
     expect(renderToStaticMarkup(render(FoodPlansView, props))).toContain("8");
+    setList.mockRestore(); setDetail.mockRestore(); packages.mockRestore();
   });
   it("a user without write permissions sees no product, target or set write controls", async () => {
     api([]);
@@ -448,7 +450,7 @@ describe("FOODDEV forms and warehouse", () => {
     const props = { onSelect: vi.fn() }; render(MaterialPicker, props); await effects();
     let tree = render(MaterialPicker, props);
     expect(renderToStaticMarkup(tree)).toContain("chưa có dữ liệu mùa");
-    await invoke(node(tree, n => n.type === Button && Array.isArray(n.props.children) && n.props.children.includes(material.name)), "onClick");
+    await invoke(node(tree, n => n.type === EntityPicker && n.props.label === "Nguyên liệu"), "onChange", material.id);
     expect(props.onSelect).toHaveBeenCalledWith(material);
     await invoke(node(tree, named("Trang sau")), "onClick");
     expect(requests.filter(r => r.path === "/api/sales/skus")).toHaveLength(2);
@@ -512,7 +514,7 @@ const packRow: salesApi.FoodPackage = { id: "pack-beef", org_ref: "org", branch_
 const mushroom: salesApi.FoodPackage = { ...packRow, id: "pack-mushroom", code: "COT-NAM", name: "Cốt nấm" };
 const starchPack = { ...packRow, id: "pack-starch", name: "Bún tươi" };
 const tofuPack = { ...packRow, id: "pack-tofu", name: "Đậu" };
-const packSet: salesApi.FoodSet = { ...packRow, id: "set-bun", name: "Bún", code: "BUN", kind: "COMMERCIAL_SET", sku_type: "SET", tags: ["bun", "mua-he", "bua-trua"], system_hashtags: ["ho-bun"], slots: [
+const packSet: salesApi.FoodSet = { ...packRow, id: "set-bun", name: "Bún", code: "BUN", variant_label: "4 người", kind: "COMMERCIAL_SET", sku_type: "SET", tags: ["bun", "mua-he", "bua-trua"], system_hashtags: ["ho-bun"], slots: [
   { slot: "TINH_BOT", swappable: false, removable: false, options: [{ sku_ref: starchPack.id, quantity: 1, is_default: true }] },
   { slot: "DAM", swappable: false, removable: false, options: [{ sku_ref: tofuPack.id, quantity: 1, is_default: true }] },
   { slot: "COT", swappable: true, removable: false, options: [{ sku_ref: packRow.id, quantity: 1, is_default: true }, { sku_ref: mushroom.id, quantity: 1, is_default: false }] },
@@ -536,8 +538,8 @@ async function openPackPlan() {
   paint(FoodPlansView, props); await effects();
   await invoke(node(paint(FoodPlansView, props), named("Tạo set")), "onClick");
   let tree = paint(FoodPlansView, props);
-  await invoke(labelControl(tree, "Mã set"), "onChange", { target: { value: "BUN" } });
-  await invoke(labelControl(tree, "Khẩu phần"), "onChange", { target: { value: "1 suất" } });
+  await invoke(node(tree, n => n.type === EntityPicker && n.props.label === "Mã set"), "onChange", packSet.id);
+  tree = paint(FoodPlansView, props);
   await invoke(labelControl(tree, "Nguồn định mức"), "onChange", { target: { value: "pack" } });
   tree = paint(FoodPlansView, props);
   await invoke(node(tree, n => n.type === EntityPicker && n.props.name === "plan-food-set"), "onChange", packSet.id);
@@ -581,7 +583,8 @@ describe("FOODDEV PACK UI", () => {
   it("set_tags_counter", async () => {
     let tree: React.ReactNode = await openSetEditor();
     for (const value of ["bun, trua", "a,b,c,d,e,f,g,h,i", "bun, trua, ho-bun"]) {
-      await invoke(labelControl(tree, "Hashtag tay"), "onChange", { target: { value } }); tree = paint(FoodSetsView, {});
+      await invoke(labelControl(tree, "Hashtag tay"), "onChange", { target: { value } });
+      await invoke(node(paint(FoodSetsView, {}), n => n.type === "form" && n.props["aria-label"] === "Biên tập set món"), "onBlur"); tree = paint(FoodSetsView, {});
       expect(node(tree, named("Lưu set món")).props.disabled).toBe(true);
       expect(renderToStaticMarkup(tree)).toContain(value.includes("ho-bun") ? "trùng hashtag hệ thống" : "3–8");
     }
@@ -591,7 +594,7 @@ describe("FOODDEV PACK UI", () => {
     paint(FoodSetsView, {}); await effects();
     expect(productionApi.evaluateFoodSet).toHaveBeenLastCalledWith(packSet.id, { expected_updated_at: packTime, selections: [] });
     vi.mocked(productionApi.evaluateFoodSet).mockResolvedValue({ ...packEvaluation, avoidance_flags: [], diet_flags: ["VEGETARIAN"], derived_hashtags: ["vegetarian"] });
-    const tree = paint(FoodSetsView, {}); await invoke(labelControl(tree, "Cốt"), "onChange", { target: { value: mushroom.id } });
+    const tree = paint(FoodSetsView, {}); await invoke(labelControl(tree, "Cốt (gia vị)"), "onChange", { target: { value: mushroom.id } });
     paint(FoodSetsView, {}); await effects();
     expect(productionApi.evaluateFoodSet).toHaveBeenLastCalledWith(packSet.id, { expected_updated_at: packTime, selections: [{ slot: "COT", sku_ref: mushroom.id }] });
     expect(renderToStaticMarkup(paint(FoodSetsView, {}))).toContain("Chay");
@@ -847,15 +850,13 @@ describe("FOODDEV PACK UI", () => {
       await invoke(labelControl(paint(PackagesView, {}), "Tên gói"), "onChange", { target: { value: "Gói bún" } });
     }
     let tree = paint(PackagesView, {});
-    expect(labelControl(tree, "Mã gói").props.maxLength).toBe(56);
-    await invoke(labelControl(tree, "Mã gói"), "onChange", { target: { value: "ế".repeat(57) } });
+    expect(node(tree, n => n.type === "output" && n.props["aria-label"] === "Mã gói")).toBeDefined();
+    await invoke(labelControl(tree, "Tên gói"), "onChange", { target: { value: "ế".repeat(57) } });
     tree = paint(PackagesView, {});
-    expect(node(tree, named("Lưu gói")).props.disabled).toBe(true);
-    expect(renderToStaticMarkup(tree)).toContain("Mã gói tối đa 56 ký tự");
-    await invoke(labelControl(tree, "Mã gói"), "onChange", { target: { value: "ế".repeat(56) } });
-    tree = paint(PackagesView, {});
+    const generated = String(node(tree, n => n.type === "output" && n.props["aria-label"] === "Mã gói").props.children);
+    expect(generated.length).toBeLessThanOrEqual(56);
+    if (operation === "create") expect(generated).toMatch(/^[A-Z0-9-]+-[A-F0-9]{4}$/);
     expect(node(tree, named("Lưu gói")).props.disabled).toBe(false);
-    expect(renderToStaticMarkup(tree)).not.toContain("Mã gói tối đa 56 ký tự");
 
     const id = "01955700-0000-7000-8000-000000000075";
     const input = { product_ref: id, code: "ế".repeat(56), name: "Gói bún", variant_label: "100g", net_weight_g: 100, uom_code: "EA", temperature_regime: "CHILLED" } satisfies salesApi.CreatePackageRequest;
@@ -932,12 +933,12 @@ describe("FOODDEV PACK UI", () => {
     const props = await openPackPlan();
     let tree = paint(FoodPlansView, props);
     for (const [ref, value] of [[packRow.id, "80"], [mushroom.id, "20"]]) {
-      await invoke(node(tree, n => n.type === Input && n.props["aria-label"] === `Tỉ lệ Cốt ${ref === packRow.id ? packRow.name : mushroom.name}`), "onChange", { target: { value } }); tree = paint(FoodPlansView, props);
+      await invoke(node(tree, n => n.type === Input && n.props["aria-label"] === `Tỉ lệ Cốt (gia vị) ${ref === packRow.id ? packRow.name : mushroom.name}`), "onChange", { target: { value } }); tree = paint(FoodPlansView, props);
     }
     expect(node(tree, named("Lưu set")).props.disabled).toBe(false);
-    await invoke(node(tree, n => n.type === Input && n.props["aria-label"] === `Tỉ lệ Cốt ${mushroom.name}`), "onChange", { target: { value: "30" } }); tree = paint(FoodPlansView, props);
+    await invoke(node(tree, n => n.type === Input && n.props["aria-label"] === `Tỉ lệ Cốt (gia vị) ${mushroom.name}`), "onChange", { target: { value: "30" } }); tree = paint(FoodPlansView, props);
     expect(renderToStaticMarkup(tree)).toContain("Tổng phải bằng 100%"); expect(node(tree, named("Lưu set")).props.disabled).toBe(true);
-    await invoke(node(tree, n => n.type === Input && n.props["aria-label"] === `Tỉ lệ Cốt ${mushroom.name}`), "onChange", { target: { value: "20" } });
+    await invoke(node(tree, n => n.type === Input && n.props["aria-label"] === `Tỉ lệ Cốt (gia vị) ${mushroom.name}`), "onChange", { target: { value: "20" } });
     tree = paint(FoodPlansView, props); await invoke(node(tree, n => n.type === Input && n.props["aria-label"] === `Tỉ lệ Rau ${mushroom.name}`), "onChange", { target: { value: "0" } });
     tree = paint(FoodPlansView, props); await invoke(node(tree, n => n.type === Input && n.props["aria-label"] === "Tỉ lệ Rau để trống"), "onChange", { target: { value: "100" } });
     expect(node(paint(FoodPlansView, props), named("Lưu set")).props.disabled).toBe(false);
@@ -1048,8 +1049,8 @@ describe("FOODDEV PACK UI", () => {
     for (const [label, percent] of [
       [`Tỉ lệ Tinh bột ${starchPack.name}`, "100.0000"],
       [`Tỉ lệ Đạm ${tofuPack.name}`, "100.0000"],
-      [`Tỉ lệ Cốt ${packRow.name}`, "14.6333"],
-      [`Tỉ lệ Cốt ${mushroom.name}`, "85.3667"],
+      [`Tỉ lệ Cốt (gia vị) ${packRow.name}`, "14.6333"],
+      [`Tỉ lệ Cốt (gia vị) ${mushroom.name}`, "85.3667"],
       [`Tỉ lệ Rau ${mushroom.name}`, "75.0000"],
       ["Tỉ lệ Rau để trống", "25.0000"],
     ]) {
@@ -1064,8 +1065,8 @@ describe("FOODDEV PACK UI", () => {
     const props = { initialPlans: [pinned], targetId: target.id };
     paint(FoodPlansView, props); await effects(); await invoke(node(paint(FoodPlansView, props), named("Sửa set")), "onClick");
     const tree = paint(FoodPlansView, props);
-    expect(node(tree, n => n.type === Input && n.props["aria-label"] === `Tỉ lệ Cốt ${packRow.name}`).props.value).toBe("14.6333");
-    expect(node(tree, n => n.type === Input && n.props["aria-label"] === `Tỉ lệ Cốt ${mushroom.name}`).props.value).toBe("85.3667");
+    expect(node(tree, n => n.type === Input && n.props["aria-label"] === `Tỉ lệ Cốt (gia vị) ${packRow.name}`).props.value).toBe("14.6333");
+    expect(node(tree, n => n.type === Input && n.props["aria-label"] === `Tỉ lệ Cốt (gia vị) ${mushroom.name}`).props.value).toBe("85.3667");
     expect(node(tree, named("Lưu set")).props.disabled).toBe(false);
     vi.mocked(salesApi.getFoodSet).mockResolvedValue({ ...packSet, updated_at: "2026-10-22T00:00:00Z" });
     await invoke(node(paint(FoodPlansView, props), named("Sửa set")), "onClick");

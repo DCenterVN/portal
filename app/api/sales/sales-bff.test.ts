@@ -84,3 +84,15 @@ describe("AC-5 BFF giỏ hàng forward branch_id", () => {
     expect(new URL(upstreamUrl()).searchParams.get("branch_id")).toBe(branch);
   });
 });
+
+it("forwards material creation and preserves duplicate details and idempotency", async () => {
+  const { POST } = await import("./skus/route");
+  const existing = { id: "hidden", code: "NL-ABC123", name: "Me chua" };
+  global.fetch = vi.fn().mockResolvedValue(Response.json({ error: "duplicate_resource", existing }, { status: 409 }));
+  const req = request("/api/sales/skus", JSON.stringify({ name: "Me chua" }));
+  req.headers.set("Idempotency-Key", "material-key");
+  const response = await POST(req);
+  expect(response.status).toBe(409);
+  expect(await response.json()).toMatchObject({ existing });
+  expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining("/sales/skus"), expect.objectContaining({ method: "POST", headers: expect.objectContaining({ "Idempotency-Key": "material-key" }) }));
+});

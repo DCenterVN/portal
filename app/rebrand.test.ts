@@ -759,7 +759,7 @@ describe("S7 rendered target, cart, orders and product creation roles", () => {
       expect(classesFor(html, "button", 'type="submit"')).toContain("bg-[var(--primary)]");
       expect(html).toContain("Lưu chỉ tiêu");
       expect(html).toContain('aria-label="Xóa dòng"');
-      expect(html.match(/required=""/g)).toHaveLength(5);
+      expect(html.match(/required=""/g)).toHaveLength(4);
       expect(html).toContain('aria-required="true"');
     }
   });

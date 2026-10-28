@@ -33,7 +33,6 @@ export function FoodPlansView({ initialPlans, targetId }: { initialPlans: FoodPr
   const [chosenSet, setChosenSet] = useState<FoodSet | null>(null);
   const [ratios, setRatios] = useState<Record<string, string>>({});
   const [setCursor, setSetCursor] = useState<string | null>(null);
-  const [setQuery, setSetQuery] = useState("");
   const [plans, setPlans] = useState(initialPlans);
   const [permissions, setPermissions] = useState<string[]>([]);
   const [targets, setTargets] = useState<ProductionTarget[]>([]);
@@ -44,7 +43,7 @@ export function FoodPlansView({ initialPlans, targetId }: { initialPlans: FoodPr
   const [code, setCode] = useState("");
   const [servingSize, setServingSize] = useState("");
   const [kits, setKits] = useState("1");
-  const [servings, setServings] = useState("4");
+  const [servings, setServings] = useState("");
   const [components, setComponents] = useState<ComponentLine[]>([]);
   const [busy, setBusy] = useState(true);
   const [error, setError] = useState("");
@@ -68,12 +67,14 @@ export function FoodPlansView({ initialPlans, targetId }: { initialPlans: FoodPr
   const availableProducts = products.filter(p => target?.lines.some(line => line.product_ref === p.id));
   const validCounts = /^[1-9]\d*$/.test(kits) && /^[1-9]\d*$/.test(servings);
   const total = validCounts ? (BigInt(kits) * BigInt(servings)).toString() : "";
-  const validRatios = !!chosenSet && chosenSet.slots.length >= 2 && chosenSet.slots.every(slot => ratioTotal(slot.options.map(option => ratios[`${slot.slot}:${option.sku_ref}`] ?? "0").concat(slot.removable ? [ratios[`${slot.slot}:empty`] ?? "0"] : [])) === 1000000n);
+  const slotCountError = chosenSet && (chosenSet.slots.length < 2 || chosenSet.slots.length > 6) ? `Set cần 2–6 ô, đang có ${chosenSet.slots.length}` : "";
+  const validRatios = !!chosenSet && !slotCountError && chosenSet.slots.every(slot => ratioTotal(slot.options.map(option => ratios[`${slot.slot}:${option.sku_ref}`] ?? "0").concat(slot.removable ? [ratios[`${slot.slot}:empty`] ?? "0"] : [])) === 1000000n);
   const valid = !!total && BigInt(total) <= 1000000n && !!productRef && !!code.trim() && !!servingSize.trim() && (mode === "pack" ? validRatios : components.length > 0 && components.length <= 100 && components.every(c => positive(c.quantity)));
   const begin = async (plan?: FoodProductPlan) => {
     setError(""); setNotice(""); setBusy(true);
     try {
       const current = plan ? await getFoodPlan(plan.id) : null;
+      if (!current) await loadSets();
       const requirements = current ? await getMaterialRequirements("food-plans", current.id) : null;
       const pinned = pinnedPlanSchema.parse(current ?? {}).pack_plan;
       setMode(pinned ? "pack" : "raw"); setChosenSet(null); setRatios({});
@@ -89,8 +90,8 @@ export function FoodPlansView({ initialPlans, targetId }: { initialPlans: FoodPr
       }
       setEditing(current); setProductRef(current?.product_ref ?? availableProducts[0]?.id ?? "");
       setCode(current?.variant_sku_code ?? ""); setServingSize(current?.serving_size ?? "");
-      const count = current?.servings_per_set ?? 4;
-      setServings(String(count));
+      const count = current ? current.servings_per_set ?? 4 : 0;
+      setServings(count ? String(count) : "");
       setKits(current ? (BigInt(String(current.planned_quantity).replace(/\.0+$/, "")) / BigInt(count)).toString() : "1");
       setComponents(pinned ? [] : current?.components.map(c => ({ ...c, quantity: String(c.quantity), name: requirements?.all_lines.find(row => row.sku_ref === c.sku_ref)?.name ?? "Nguyên liệu đã chọn" })) ?? []);
       setShowForm(true);
@@ -99,7 +100,7 @@ export function FoodPlansView({ initialPlans, targetId }: { initialPlans: FoodPr
   };
   const save = async (event: FormEvent) => {
     event.preventDefault();
-    if (!targetId || !valid || (editing ? !canUpdate : !canCreate)) return;
+    if (busy || !targetId || !valid || (editing ? !canUpdate : !canCreate)) return;
     setBusy(true); setError("");
     const common = { product_ref: productRef, variant_sku_code: code.trim(), planned_quantity: total, uom: "EA", serving_size: servingSize, servings_per_set: Number(servings), nutrition_snapshot: editing?.nutrition_snapshot ?? {} };
     const input: PreparationPlanInput = mode === "pack" && chosenSet ? { ...common, pack_plan: {
@@ -123,17 +124,24 @@ export function FoodPlansView({ initialPlans, targetId }: { initialPlans: FoodPr
     finally { setBusy(false); }
   };
   const chooseSet = async (id: string | null) => {
-    if (!id) { setChosenSet(null); return; }
+    setChosenSet(null);
+    if (!editing) { setCode(""); setServingSize(""); setServings(""); }
+    if (!id) return;
     setBusy(true); setError("");
     try {
       const [definition, options] = await Promise.all([getFoodSet(id), loadPackOptions()]);
+      if (definition.product_ref !== productRef) throw new Error("Chọn set thuộc sản phẩm trong chỉ tiêu.");
+      if (editing && definition.code !== code) throw new Error("Mã set giữ nguyên khi sửa định mức.");
+      const count = /^([12346]) người$/.exec(definition.variant_label)?.[1];
+      if (definition.slots.length < 2 || definition.slots.length > 6) throw new Error(`Set cần 2–6 ô, đang có ${definition.slots.length}`);
+      if (!editing) { setCode(definition.code); setServingSize(count ? definition.variant_label : ""); setServings(count ?? ""); }
       setChosenSet(definition); setPacks(options);
       setRatios(Object.fromEntries(definition.slots.flatMap(slot => slot.options.map(option => [`${slot.slot}:${option.sku_ref}`, option.is_default ? "100" : "0"]))));
     } catch (e) { setError(message(e)); } finally { setBusy(false); }
   };
   const loadSets = async (append = false) => {
     setBusy(true); setError("");
-    try { const page = await listFoodSets({ q: setQuery, cursor: append ? setCursor ?? undefined : undefined }); setSets(current => append ? [...current, ...page.items] : page.items); setSetCursor(page.next_cursor); }
+    try { const page = await listFoodSets({ cursor: append ? setCursor ?? undefined : undefined }); setSets(current => append ? [...current, ...page.items] : page.items); setSetCursor(page.next_cursor); }
     catch (e) { setError(message(e)); } finally { setBusy(false); }
   };
   return <PageShell>
@@ -145,17 +153,19 @@ export function FoodPlansView({ initialPlans, targetId }: { initialPlans: FoodPr
     {!targetId && <Card><CardContent><p>Chọn chỉ tiêu để xem và lập set.</p><ul>{targets.map(t => <li key={t.id}><Link href={`/production/food-plans?target_id=${encodeURIComponent(t.id)}`}>{t.title}</Link></li>)}</ul><Link href="/production/targets">Danh sách chỉ tiêu</Link></CardContent></Card>}
     {showForm && (editing ? canUpdate : canCreate) && <Card><CardContent className="space-y-4 pt-6">
       <form onSubmit={save} className="space-y-4" aria-label={editing ? "Sửa set" : "Tạo set"}>
-        {editing ? <p>Sản phẩm: {products.find(p => p.id === editing.product_ref)?.name ?? "Sản phẩm trong chỉ tiêu"}. Sản phẩm, mã set và khẩu phần giữ nguyên khi sửa định mức.</p> : <EntityPicker name="product_ref" label="Sản phẩm thuộc chỉ tiêu" value={productRef || null} onChange={id => { setProductRef(id ?? ""); setChosenSet(null); }} items={availableProducts} status={ready ? "ready" : "loading"} getId={p => p.id} getLabel={p => p.name} />}
+        {editing ? <p>Sản phẩm: {products.find(p => p.id === editing.product_ref)?.name ?? "Sản phẩm trong chỉ tiêu"}. Sản phẩm, mã set và khẩu phần giữ nguyên khi sửa định mức.</p> : <EntityPicker name="product_ref" label="Sản phẩm thuộc chỉ tiêu" value={productRef || null} onChange={id => { setProductRef(id ?? ""); setChosenSet(null); setCode(""); setServingSize(""); setServings(""); }} items={availableProducts} status={ready ? "ready" : "loading"} getId={p => p.id} getLabel={p => p.name} />}
         <div className="grid gap-3 md:grid-cols-2">
-          <label>Mã set<Input value={editing ? variantLabel(code) : code} readOnly={!!editing} required onChange={e => setCode(e.target.value)} /></label>
-          <label>Khẩu phần<Input value={servingSize} readOnly={!!editing} required onChange={e => setServingSize(e.target.value)} /></label>
+          {editing ? <label>Mã set<output aria-label="Mã set" className="block">{variantLabel(code)}</output></label> : <EntityPicker name="plan-variant" label="Mã set" required items={sets.filter(set => set.product_ref === productRef && set.slots.length >= 2 && set.slots.length <= 6)} status={busy ? "loading" : "ready"} value={chosenSet?.id ?? null} getId={set => set.id} getLabel={set => set.code} getMeta={set => `${set.name} · ${set.variant_label}`} onChange={id => void chooseSet(id)} />}
+          {!editing && setCursor && <Button type="button" variant="outline" disabled={busy} onClick={() => void loadSets(true)}>Thêm biến thể từ trang sau</Button>}
+          {!editing && chosenSet && !/^([12346]) người$/.test(chosenSet.variant_label) ? <label>Khẩu phần<Select required value={servingSize} onChange={e => { setServingSize(e.target.value); setServings(/^([12346]) người$/.exec(e.target.value)?.[1] ?? ""); }}><option value="">Chọn khẩu phần</option>{[1, 2, 3, 4, 6].map(count => <option key={count} value={`${count} người`}>{count} người</option>)}</Select></label> : <label>Khẩu phần<output aria-label="Khẩu phần" className="block">{servingSize || "Chọn mã set"}</output></label>}
           <label>Số kit<Input inputMode="numeric" value={kits} pattern="[1-9][0-9]*" required onChange={e => setKits(e.target.value)} /></label>
-          <label>Số suất mỗi kit<Input inputMode="numeric" value={servings} pattern="[1-9][0-9]*" required onChange={e => setServings(e.target.value)} /></label>
+          <label>Số suất mỗi kit<output aria-label="Số suất mỗi kit" className="block">{servings || "Chọn mã set"}</output></label>
         </div>
+        {slotCountError && <p role="alert">{slotCountError}</p>}
         <p>Tổng suất: {total || "Chưa hợp lệ"} EA. Tối đa 1.000.000 suất.</p>
-        <label>Nguồn định mức<Select value={mode} onChange={e => { setMode(e.target.value); if (e.target.value === "pack") void loadSets(); }}><option value="raw">Nguyên liệu trực tiếp</option><option value="pack">Theo set và gói</option></Select></label>
-        {mode === "pack" && <div className="space-y-4"><div className="flex gap-3"><label className="flex-1">Tìm set món<Input value={setQuery} onChange={e => setSetQuery(e.target.value)} /></label><Button type="button" variant="outline" disabled={busy} onClick={() => void loadSets()}>Tìm set</Button></div>
-          <EntityPicker name="plan-food-set" label="Set món trong họ món" items={sets.filter(set => set.product_ref === productRef && set.slots.length >= 2)} status={busy ? "loading" : "ready"} value={chosenSet?.id ?? null} getId={set => set.id} getLabel={set => set.name} onChange={id => void chooseSet(id)} />
+        <label>Nguồn định mức<Select value={mode} onChange={e => { setMode(e.target.value); if (e.target.value === "pack" && !sets.length) void loadSets(); }}><option value="raw">Nguyên liệu trực tiếp</option><option value="pack">Theo set và gói</option></Select></label>
+        {mode === "pack" && <div className="space-y-4">
+          <EntityPicker name="plan-food-set" label="Set món trong họ món" items={sets.filter(set => set.product_ref === productRef && set.slots.length >= 2 && set.slots.length <= 6 && (!editing || set.code === code))} status={busy ? "loading" : "ready"} value={chosenSet?.id ?? null} getId={set => set.id} getLabel={set => `${set.name} · ${set.variant_label}`} onChange={id => void chooseSet(id)} />
           {setCursor && <Button type="button" variant="outline" disabled={busy} onClick={() => void loadSets(true)}>Thêm set từ trang sau</Button>}
           {chosenSet?.slots.map(slot => {
             const values = slot.options.map(option => ratios[`${slot.slot}:${option.sku_ref}`] ?? "0").concat(slot.removable ? [ratios[`${slot.slot}:empty`] ?? "0"] : []);
@@ -173,7 +183,7 @@ export function FoodPlansView({ initialPlans, targetId }: { initialPlans: FoodPr
           <Button type="button" variant="outline" onClick={() => setComponents(current => current.filter((_, index) => index !== i))}>Bỏ nguyên liệu {i + 1}</Button>
         </div>)}
         <p>Nhập lượng dương, tối đa 3 số lẻ theo đơn vị đã chọn.</p>
-        {!valid && <p role="alert">Chọn họ món, mã, khẩu phần và định mức hợp lệ. Theo set: tổng tỉ lệ mỗi ô phải bằng 100%.</p>}
+        {!valid && <p>Chọn sản phẩm, mã set và định mức hợp lệ. Theo set: tổng tỉ lệ mỗi ô phải bằng 100%.</p>}
         <div className="flex gap-3"><Button type="submit" disabled={busy || !valid}>{busy ? "Đang lưu…" : "Lưu set"}</Button><Button type="button" variant="outline" onClick={() => setShowForm(false)}>Hủy</Button></div>
       </form>
       {mode === "raw" && <MaterialPicker onSelect={m => setComponents(current => current.some(c => c.sku_ref === m.id) ? current : [...current, { sku_ref: m.id, name: m.name, quantity: "0.200", uom: m.uom_code }])} />}

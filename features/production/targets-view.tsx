@@ -12,7 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useToast } from "@/components/ui/toast";
 import { approveTarget, createTarget, getProductionContext, ProductionTarget } from "@/lib/api/production";
 import { Input } from "@/components/ui/input";
-import { EntityPicker } from "@/components/ui/entity-picker";
+import { EntityPicker, fold } from "@/components/ui/entity-picker";
 import { getDraftProducts, createDraftProduct, type DraftProduct, type DataResult } from "@/lib/api/sales";
 
 type TargetLine = { product_ref: string; target_quantity: string; uom: string };
@@ -55,7 +55,7 @@ export function TargetsView({ initialTargets, initialShowCreate = false }: { ini
   }, []);
 
   const [productName, setProductName] = useState("");
-  const [productSlug, setProductSlug] = useState("");
+  const productSlug = fold(productName).trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
   const [productError, setProductError] = useState("");
   const availableProducts = products?.data;
   const addProduct = async () => {
@@ -64,7 +64,7 @@ export function TargetsView({ initialTargets, initialShowCreate = false }: { ini
       const product = await createDraftProduct({ name: productName.trim(), slug: productSlug.trim() });
       setProducts(current => ({ data: [...(current?.data ?? []), product], source: "api" }));
       setLines(current => current.map((line, index) => index === 0 ? { ...line, product_ref: product.id } : line));
-      setProductName(""); setProductSlug("");
+      setProductName("");
     } catch (e) { setProductError(messageOf(e)); }
     finally { setLoading(false); }
   };
@@ -114,7 +114,7 @@ export function TargetsView({ initialTargets, initialShowCreate = false }: { ini
     {canCreate && showCreate && <Card className="mb-6 border-[var(--color-line)] bg-[var(--color-surface)]"><CardContent className="pt-6"><form onSubmit={handleCreate} className="space-y-4">
       {permissions.includes("sales:product:create") && <fieldset className="space-y-2 rounded-xl border border-line p-4"><legend>Tạo sản phẩm nháp</legend>
         <Field label="Tên sản phẩm" value={productName} onChange={setProductName} />
-        <Field label="Slug sản phẩm" value={productSlug} onChange={setProductSlug} />
+        <label>Slug sản phẩm<output aria-label="Slug sản phẩm" className="block">{productSlug || "Tự tạo từ tên sản phẩm"}</output></label>
         {productError && <p role="alert">{productError}</p>}
         <Button type="button" variant="outline" disabled={loading || !productName.trim() || !productSlug.trim()} onClick={() => void addProduct()}>Tạo product DRAFT</Button>
       </fieldset>}
@@ -148,7 +148,7 @@ export function TargetsView({ initialTargets, initialShowCreate = false }: { ini
               placeholder="Tìm theo tên hoặc SKU"
             />
           <Field label="Tổng suất chỉ tiêu" value={String(line.target_quantity)} onChange={(value) => updateLine(index, { target_quantity: value })} type="number" required />
-          <Field label="Đơn vị" value={line.uom} onChange={(value) => updateLine(index, { uom: value })} required />
+          <label>Đơn vị<output aria-label="Đơn vị" className="block">suất</output></label>
           <Button aria-label="Xóa dòng" className="mt-6" type="button" size="icon" variant="ghost" disabled={lines.length === 1} onClick={() => setLines((current) => current.filter((_, lineIndex) => lineIndex !== index))}><Trash2 className="h-4 w-4" /></Button>
         </div>)}
       </div>

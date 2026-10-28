@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox, Select } from "@/components/ui/field";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { EntityPicker } from "@/components/ui/entity-picker";
+import { EntityPicker, fold } from "@/components/ui/entity-picker";
 import { EmptyState, ErrorState, Skeleton } from "@/components/ui/state";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/components/ui/toast";
@@ -17,6 +17,7 @@ import { isStale, packMessage } from "./food-sets-view";
 
 const allergens = ["GLUTEN", "CRUSTACEANS", "EGGS", "FISH", "PEANUTS", "SOYBEANS", "MILK", "TREE_NUTS", "CELERY", "MUSTARD", "SESAME", "SULPHITES", "LUPIN", "MOLLUSCS"] satisfies RawLabelsView["allergen_summary"]["contains"];
 const avoidance = ["PORK", "BEEF", "ANIMAL", "ALCOHOL", "MSG", "SPICY", "NGU_VI_TAN"] satisfies RawLabelsView["avoidance_flags"];
+const packageCode = (name: string) => `${fold(name).replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 51).toUpperCase() || "GOI"}-${crypto.randomUUID().slice(0, 4).toUpperCase()}`;
 const initialMetadata: CreatePackageRequest = { product_ref: "", code: "", name: "", variant_label: "Tiêu chuẩn", net_weight_g: 100, uom_code: "EA", temperature_regime: "CHILLED" };
 const positive = (value: string) => /^(?!0(?:\.0{1,3})?$)(0|[1-9][0-9]*)(\.[0-9]{1,3})?$/.test(value);
 const yieldValid = (value: string) => /^(100(\.0{1,3})?|[1-9][0-9]?(\.[0-9]{1,3})?|0\.(?!0{1,3}$)[0-9]{1,3})$/.test(value);
@@ -79,7 +80,10 @@ export function PackagesView() {
     try {
       const saved = selected ? await updatePackage(selected.id, { ...input, expected_updated_at: selected.updated_at }) : await createPackage(input);
       setSelected(saved); setEditing(false); setRecipe(null); toast.success("Đã lưu gói"); await load(); await open(saved);
-    } catch (e) { await failed(e); }
+    } catch (e) {
+      if (!selected && isStale(e)) { setMetadata(current => ({ ...current, code: packageCode(current.name) })); setError("Mã gói đã có, đã tạo mã mới. Hãy lưu lại."); }
+      else await failed(e);
+    }
     finally { setDetailBusy(false); }
   };
   const failed = async (error: unknown) => {
@@ -151,9 +155,15 @@ export function PackagesView() {
     </CardContent></Card>}
     {editing && (selected ? has("sales:variant:update") : has("sales:variant:create")) && <Card><CardContent className="pt-6"><form aria-label="Biên tập gói" onSubmit={save} className="space-y-4">
       <EntityPicker name="package-family" label="Họ món của gói" items={products} status="ready" value={metadata.product_ref || null} getId={item => item.id} getLabel={item => item.name} onChange={id => setMetadata(current => ({ ...current, product_ref: id ?? "" }))} />
-      <div className="grid gap-3 md:grid-cols-2">{([['code', 'Mã gói'], ['name', 'Tên gói'], ['variant_label', 'Quy cách gói'], ['temperature_regime', 'Chế độ nhiệt']] satisfies [keyof Pick<CreatePackageRequest, 'code' | 'name' | 'variant_label' | 'temperature_regime'>, string][]).map(([key, label]) => <label key={key}>{label}<Input required maxLength={key === "code" ? 56 : undefined} aria-invalid={key === "code" && !!codeError} value={metadata[key]} onChange={e => setMetadata(current => ({ ...current, [key]: e.target.value }))} /></label>)}<label>Khối lượng gói (g)<Input type="number" min="1" max="2147483647" value={metadata.net_weight_g} onChange={e => setMetadata(current => ({ ...current, net_weight_g: Number(e.target.value) }))} /></label></div>
+      <div className="grid gap-3 md:grid-cols-2">
+        <label>Mã gói<output className="block" aria-label="Mã gói">{metadata.code || "Tự tạo từ tên gói"}</output></label>
+        <label>Tên gói<Input required value={metadata.name} onChange={e => { const name = e.target.value; setMetadata(current => ({ ...current, name, code: selected ? current.code : packageCode(name) })); }} /></label>
+        <label>Quy cách gói<Input required value={metadata.variant_label} onChange={e => setMetadata(current => ({ ...current, variant_label: e.target.value }))} /></label>
+        <label>Chế độ nhiệt<Select value={metadata.temperature_regime} onChange={e => setMetadata(current => ({ ...current, temperature_regime: e.target.value }))}><option value="CHILLED">Mát 0–4 °C</option><option value="FROZEN">Đông lạnh</option><option value="AMBIENT">Nhiệt độ thường</option></Select></label>
+        <label>Khối lượng gói (g)<Input type="number" min="1" max="2147483647" value={metadata.net_weight_g} onChange={e => setMetadata(current => ({ ...current, net_weight_g: Number(e.target.value) }))} /></label>
+      </div>
       {codeError && <p role="alert">{codeError}</p>}
-      {!validMetadata && <p>Chọn họ món, nhập mã, tên, quy cách, chế độ nhiệt và khối lượng nguyên dương.</p>}<div className="flex gap-3"><Button type="submit" disabled={detailBusy || !validMetadata}>{detailBusy ? "Đang lưu…" : "Lưu gói"}</Button><Button type="button" variant="outline" onClick={() => setEditing(false)}>Hủy</Button></div>
+      {!validMetadata && <p>Chọn họ món, nhập tên, quy cách và khối lượng nguyên dương.</p>}<div className="flex gap-3"><Button type="submit" disabled={detailBusy || !validMetadata}>{detailBusy ? "Đang lưu…" : "Lưu gói"}</Button><Button type="button" variant="outline" onClick={() => setEditing(false)}>Hủy</Button></div>
     </form></CardContent></Card>}
     {recipeEditing && selected && (recipe ? has("production:recipe:update") : has("production:recipe:create")) && <Card><CardContent className="space-y-4 pt-6"><form aria-label="Biên tập công thức" onSubmit={saveRecipe} className="space-y-4">
       <p>Định lượng hữu ích cho 1 EA. Yield lớn hơn 0 và không quá 100%, tối đa 3 số lẻ. Mã BOM do máy chủ tạo.</p>
