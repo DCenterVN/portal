@@ -31,6 +31,29 @@ const find = (errs: ReturnType<typeof validateDish>, field: string, r?: string) 
 describe("validateDish", () => {
   it("M1 hợp lệ -> 0 lỗi", () => expect(validateDish(m1(), ctx())).toEqual([]));
 
+  it("nhóm rỗng -> lỗi theo dòng, không thêm ngăn", () => {
+    const content = m1({ ingredients: [m1().ingredients[0]] });
+    const emptyGroups: ValidateCtx["skuGroups"][] = [{}, { "sku-trau": null }, { "sku-trau": "" }];
+    for (const skuGroups of emptyGroups) {
+      const errs = validateDish(content, ctx({ skuGroups }));
+      expect(find(errs, "sku_ref")).toEqual([{
+        field: "sku_ref", row: "r1",
+        message: "Nguyên liệu chưa thuộc nhóm hợp lệ — gán nhóm ở kho trước khi hoàn tất",
+      }]);
+      expect(find(errs, "slots")).toHaveLength(1);
+    }
+  });
+
+  it("mã nhóm lạ -> lỗi theo dòng, không thêm ngăn", () => {
+    const content = m1({ ingredients: [m1().ingredients[0]] });
+    const errs = validateDish(content, ctx({ skuGroups: { "sku-trau": "UNKNOWN" } }));
+    expect(find(errs, "sku_ref")).toEqual([{
+      field: "sku_ref", row: "r1",
+      message: "Nguyên liệu chưa thuộc nhóm hợp lệ — gán nhóm ở kho trước khi hoàn tất",
+    }]);
+    expect(find(errs, "slots")).toHaveLength(1);
+  });
+
   it("tên 1..150", () => {
     expect(find(validateDish(m1({ name: "" }), ctx()), "name")).toHaveLength(1);
     expect(find(validateDish(m1({ name: "a".repeat(151) }), ctx()), "name")).toHaveLength(1);
