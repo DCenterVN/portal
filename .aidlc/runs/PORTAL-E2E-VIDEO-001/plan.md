@@ -53,6 +53,7 @@
 - e2e/inventory-ux/inventory-ux.spec.ts
 - e2e/rbac/rbac.spec.ts
 - e2e/fooddev-pack/fooddev-pack.spec.ts
+- e2e/fooddev-set/fooddev-set.spec.ts
 - .aidlc/runs/PORTAL-E2E-VIDEO-001/ket-qua.md
 
 ## Tests planned
@@ -64,7 +65,7 @@ Mỗi slice dừng chờ Dawn xem.
 - [ ] S0: rà hành trình chức năng ↔ use case ↔ ca e2e, chỉ đọc code/spec (files: .aidlc/runs/PORTAL-E2E-VIDEO-001/hanh-trinh.md; test: test -s .aidlc/runs/PORTAL-E2E-VIDEO-001/hanh-trinh.md)
 - [ ] S1a: cờ ghi hình có hiệu lực ở MỌI bộ: bỏ `trace/video: "off"` cứng ở supplier-contract.spec + config riêng fooddev-v2 (đọc `E2E_RECORD`), đổi đích DEV qua `E2E_BASE_URL`, lệnh e2e:record (files: playwright.config.ts, package.json, .gitignore, e2e/fooddev-v2/playwright.fooddev-v2.config.ts, e2e/supplier-contract/supplier-contract.spec.ts; test: npx playwright test --list --project=desktop)
 - [ ] S1b: bỏ `trace/video: "off"` ở 6 spec còn lại, chỉ sửa dòng `test.use`, không đổi bước test (files: e2e/supplier-contract/permissions.spec.ts, e2e/supplier-contract/receipt-gate.spec.ts, e2e/inventory-ux/inventory-ux.spec.ts, e2e/rbac/rbac.spec.ts, e2e/fooddev-pack/fooddev-pack.spec.ts; test: npx playwright test --list --project=desktop)
-- [ ] S1c: 1 bước đăng nhập chung: `e2e/setup/login.setup.ts` đăng nhập DEV các vai (kho, quản trị, khách, FOOD_DEV) từ file ngoài repo `~/work/ticket/.cache/e2e/accounts.env` (không commit, không in mật khẩu), ghi storageState vào `.cache/e2e/state/`; các spec đọc biến state như hiện tại. Thiếu tài khoản thì dừng, báo Claude, không tự tạo (files: e2e/setup/login.setup.ts, playwright.config.ts, e2e/README.md; test: npx playwright test e2e/setup --project=setup)
+- [ ] S1c: 1 bước đăng nhập chung: `e2e/setup/login.setup.ts` đăng nhập DEV các vai (kho, quản trị, khách, FOOD_DEV) từ file ngoài repo `~/work/ticket/.cache/e2e/accounts.env` (không commit, không in mật khẩu), ghi storageState vào `.cache/e2e/state/`; các spec đọc biến state như hiện tại. Thiếu tài khoản thì dừng, báo Claude, không tự tạo. Kèm bỏ `trace/video: "off"` ở `fooddev-set.spec.ts:67` (sót ở S1b) (files: e2e/setup/login.setup.ts, playwright.config.ts, e2e/README.md, e2e/fooddev-set/fooddev-set.spec.ts; test: npx playwright test e2e/setup --project=setup)
 - [ ] S2a: kịch bản 1 bộ mẫu `inventory-ux` (3 ca: phiếu nhập nháp nhiều dòng, ngày sai, danh sách + hồ sơ NCC; chỉ cần vai kho — bộ supplier-contract thiếu runner sinh ngữ cảnh) + hướng dẫn xem lại, chạy ghi hình riêng bộ này để Dawn duyệt mẫu (files: e2e/KICH-BAN.md, e2e/README.md; test: npm run e2e:record -- e2e/inventory-ux)
 - [ ] S2b: kịch bản 10 bộ còn lại theo mẫu đã duyệt (files: e2e/KICH-BAN.md; test: npx playwright test --list --project=desktop)
 - [ ] S3: chạy toàn bộ trên DEV có ghi hình, ghi bảng kết quả (files: .aidlc/runs/PORTAL-E2E-VIDEO-001/ket-qua.md; test: npm run e2e:record)
