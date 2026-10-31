@@ -103,6 +103,8 @@ test("KHÁCH + QUẢN TRỊ: kích hoạt email, SALES mất và lấy lại quy
   const salesPage = await sales.newPage();
   const suffix = Date.now();
   const customerEmail = `khach-s6-${suffix}@dcentervn.local`;
+  const customerPhone = `09${String(suffix).slice(-8)}`;
+  const customerName = `Khách S6 ${suffix}`;
   const salesEmail = `sales-s6-${suffix}@dcentervn.local`;
   const initialPassword = `S6-${randomUUID()}!`;
   const chosenPassword = `S6-${randomUUID()}!`;
@@ -121,13 +123,17 @@ test("KHÁCH + QUẢN TRỊ: kích hoạt email, SALES mất và lấy lại quy
     await step("Bước 1: Khách đăng ký bằng email mới và được nhắc kiểm tra hộp thư", async () => {
       await customerPage.goto("/register");
       const form = customerPage.getByRole("dialog");
-      await form.getByLabel(c.displayName, { exact: true }).fill(`Khách S6 ${suffix}`);
+      await form.getByLabel(c.displayName, { exact: true }).fill(customerName);
       await form.getByLabel(c.email, { exact: true }).fill(customerEmail);
+      await form.getByLabel(c.phone, { exact: true }).fill(customerPhone);
       await form.getByLabel(c.password, { exact: true }).fill(initialPassword)
         .catch(() => { throw new Error("Không nhập được mật khẩu đăng ký."); });
+      await info.attach("form-dang-ky", { body: await customerPage.screenshot(), contentType: "image/png" });
       const registered = mutation(customerPage, "/api/auth/register", "POST");
       await form.getByRole("button", { name: c.createAccount, exact: true }).click();
-      expect((await registered).status()).toBe(202);
+      const registeredResponse = await registered;
+      expect(registeredResponse.request().postDataJSON()).toMatchObject({ email: customerEmail, display_name: customerName, phone: customerPhone });
+      expect(registeredResponse.status()).toBe(202);
       await expect(form.getByText(c.checkInbox, { exact: true })).toBeVisible();
       await expect(form).toContainText(customerEmail);
       expect((await customer.cookies()).some(cookie => cookie.name === "access_token")).toBe(false);
@@ -166,6 +172,7 @@ test("KHÁCH + QUẢN TRỊ: kích hoạt email, SALES mất và lấy lại quy
         .catch(() => { throw new Error("Không nhập được mật khẩu kích hoạt."); });
       await customerPage.getByLabel(c.confirmPassword, { exact: true }).fill(chosenPassword)
         .catch(() => { throw new Error("Không nhập được xác nhận mật khẩu."); });
+      await info.attach("form-kich-hoat", { body: await customerPage.screenshot(), contentType: "image/png" });
       const activated = mutation(customerPage, "/api/auth/activate", "POST");
       await customerPage.getByRole("button", { name: c.activationSubmit, exact: true }).click();
       expect((await activated).status()).toBe(200);
@@ -176,7 +183,12 @@ test("KHÁCH + QUẢN TRỊ: kích hoạt email, SALES mất và lấy lại quy
     });
     await step("Bước 4: Khách đăng nhập được bằng mật khẩu vừa đặt, không có quyền quản trị", async () => {
       await login(customerPage, customerEmail, chosenPassword, true);
-      expect((await customer.request.get("/api/auth/me")).status()).toBe(200);
+      const me = await customer.request.get("/api/auth/me");
+      expect(me.status()).toBe(200);
+      const profile = JSON.stringify(await me.json());
+      await info.attach("ho-so-khach", { body: profile, contentType: "application/json" });
+      expect(profile, "Hồ sơ khách phải có tên đã đăng ký").toContain(customerName);
+      expect(profile, "Hồ sơ khách phải có email đã đăng ký").toContain(customerEmail);
       expect((await customer.request.get(membershipsPath)).status()).toBe(403);
     });
     await step("Bước 5: ADMIN tạo nhân viên Bán hàng mới, trạng thái đang hoạt động", async () => {
@@ -189,6 +201,7 @@ test("KHÁCH + QUẢN TRỊ: kích hoạt email, SALES mất và lấy lại quy
       await dialog.getByLabel(t.password, { exact: true }).fill(initialPassword)
         .catch(() => { throw new Error("Không nhập được mật khẩu nhân viên."); });
       await expect(dialog.getByRole("checkbox", { name: t.roleLabels.SALES, exact: true })).toBeChecked();
+      await info.attach("form-nhan-vien", { body: await adminPage.screenshot(), contentType: "image/png" });
       const created = mutation(adminPage, membershipsPath, "POST");
       await dialog.getByRole("button", { name: t.save, exact: true }).click();
       const response = await created;

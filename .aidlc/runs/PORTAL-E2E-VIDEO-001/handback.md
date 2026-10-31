@@ -199,3 +199,65 @@ Giới hạn: bước 9-10 dựa vào DEV có đúng một ADMIN hoạt động 
 ## Việc A (COST-PRICE-LINK-001 S1)
 
 Sửa `features/inventory/supplier-receipts-view.tsx:30`: không DRAFT thì "Tổng thực nhận" = cộng `line.actual_amount_vnd` (null tính 0); DRAFT giữ `total_amount_vnd`. Thêm 1 ca test trong `supplier-receipts-view.test.tsx` (2 dòng 200.000 + 240.000 với total_amount_vnd 450.000, kỳ vọng "Tổng thực nhận: 440.000 VND", không có "450.000"). Vitest file: 6/6 PASS; `tsc --noEmit` sạch; eslint 3 file sạch. Lỗi S4 ở mục `## Lỗi chức năng` đã được sửa phía portal.
+
+## Chạy lại sau fix (1/11/2026, portal :3003)
+
+Lệnh lượt cuối: `E2E_BASE_URL=http://localhost:3003 npm run e2e:record -- e2e/journeys` (cả 3 file một lệnh): khach-quan-tri PASS, kho PASS, mon-ban FAIL ở bước 8. Số lượt: kho 4 lượt riêng (3 lượt đỏ do test của mình: strict-mode ô ghi chú; trường lô đúng là `expires_at` chứ không phải `expiry_date`; hạn sử dụng lô lưu 00:00 giờ Việt Nam = 17:00Z ngày trước) rồi PASS, thêm 2 lượt chung cả 3 file (lần 1 chụp ảnh form, lần 2 thêm ảnh cuộn ô) đều PASS; mon-ban 1 lượt riêng + 2 lượt chung, đều đỏ đúng bước 8; khach-quan-tri 1 lượt riêng + 2 lượt chung, đều PASS. Không sửa app/backend, không nới assert.
+
+### KHO (`e2e/journeys/kho.spec.ts`)
+
+| Bước | Kết quả | Điền đủ ô? |
+|---|---|---|
+| 1. Tạo NCC | PASS | Đủ 12 ô: ảnh, tên, mã, mã số thuế, số nhà/đường, tỉnh, phường, người liên hệ, điện thoại, email, 1 nhóm nguyên liệu, ghi chú. Đọc lại bằng GET NCC + trang chi tiết: đúng từng ô, ảnh image/png đã lưu |
+| 2. Bảng giá 2 dòng | PASS | Đủ: mã, hiệu lực từ/đến, mỗi dòng nguyên liệu + giá + dòng giá từ/đến ngày + thuế + giao hàng (hai dòng chọn khác nhau) + chứng từ. Đọc lại bản ACTIVE: đúng ngày, thuế, giao hàng, có document_ref |
+| 3. Phiếu nhập | PASS | Nhà cung cấp, ngày dự kiến nhập (gõ dd/mm/yyyy), 2 nguyên liệu, SL. Đơn giá KHÔNG gõ tay: tự điền từ hợp đồng, test khẳng định 25.000/40.000, tổng 450.000 |
+| 4. Thiếu ảnh chặn nhận | PASS | Điền lô, lượng, hạn sử dụng, nhiệt độ; nút khoá |
+| 5. Nhận 8 kg + 6 kg | PASS | Đủ 4 ô + 3 ảnh mỗi dòng. Kiểm payload receive và đọc lại lô (mã lô, HSD giờ VN, nhiệt độ 4, lượng 8/6) |
+| 6. Giải trình lệch 14/15 | PASS | Điền giải thích; payload khớp |
+| 7. Tổng thực nhận 440.000 | PASS | Thấy đúng "Tổng thực nhận: 440.000 VND" sau fix af60b57 |
+| 8. Tồn sau QC | PASS nhưng KHÔNG chứng minh tăng tồn | Chưa có màn QC nhập kho: chỉ kiểm lô RECEIVED không cộng tồn (chênh 0). Tồn/giá vốn sau QC: CHƯA KIỂM |
+
+### MÓN → BÁN (`e2e/journeys/mon-ban.spec.ts`)
+
+| Bước | Kết quả | Điền đủ ô? |
+|---|---|---|
+| 1. Nguyên liệu + nháp món | PASS | Form nguyên liệu đủ: tên, nhóm 1/2, đơn vị, dị ứng (SOYBEANS), nhãn kiêng (SPICY), chế độ ăn Chay, tháng 6-7-8; payload khớp. Nháp món: tên, danh mục, hashtag, khẩu phần, lượng 100 g, hao hụt 0% |
+| 2. Kho cấp giá | PASS | NCC đủ 12 ô + bảng giá đủ ô (1 dòng) |
+| 3. Gói gia vị + công thức | PASS | Họ món (chỉ có ô tên); gói: tên, quy cách, chế độ nhiệt, khối lượng; công thức: định lượng, đơn vị, yield, 1 bước chế biến (hướng dẫn + 30 giây). Đọc lại phản hồi |
+| 4. Nguyên liệu chưa nhóm chặn | PASS | |
+| 5. Kho chỉ xem | PASS | |
+| 6. Giá vốn 22.000 | PASS | Hai dòng 20.000 + 2.000 = 22.000, 11.000/suất, hết NO_PRICE: fix giá vốn chạy đúng. Đọc lại nháp: tên, khẩu phần 2, danh mục, hashtag, nguyên liệu, gói gia vị |
+| 7. Hoàn tất món | PASS | Gói RAU 100 g, biến thể 2 người DONE |
+| 8. Mở bán 55.000 | FAIL (lỗi chức năng) | Không có nút "Mở bán" trên màn món: `e2e/journeys/mon-ban.spec.ts:342`. Xem ket-qua.md mục "Mới sau chạy lại 1/11" |
+| 9. Khách thấy giá | CHƯA CHẠY | Dừng sau bước 8 |
+
+### KHÁCH + QUẢN TRỊ (`e2e/journeys/khach-quan-tri.spec.ts`)
+
+| Bước | Kết quả | Điền đủ ô? |
+|---|---|---|
+| 1–4 | PASS | Đăng ký đủ 4 ô (tên hiển thị, email, số điện thoại, mật khẩu; payload có phone). Kích hoạt đủ 2 ô. Đăng nhập; `/me` có tên và email |
+| 5–8 | PASS | Form nhân viên: tên, email, mật khẩu, vai trò (chỉ Bán hàng, mặc định) |
+| 9–10 | PASS | |
+
+### Ô còn bỏ trống và lý do
+
+- Phiếu nhập: UI không có ô ghi chú (API có `notes`); đơn giá không gõ tay (tự điền từ hợp đồng, đúng thiết kế).
+- Dị ứng nguyên liệu: chỉ chọn 1/14; nhãn kiêng 1/7; NCC chỉ chọn 1 nhóm con.
+- Món: chỉ 1 nguyên liệu, 1 gói gia vị; "Loại ô" giữ mặc định "Gia vị thêm"; "Cho bỏ gói" bị khoá theo luật (phải còn ≥1 gói không được bỏ). Họ món chỉ có ô tên.
+- Nhân viên: chỉ vai trò Bán hàng; không kiểm form sửa nhiều vai.
+- Form "Mở bán": UI chưa có nên chưa điền được.
+
+### Đã soi ảnh (Read .png trong `e2e-report/data/`)
+
+- KHO: NCC `c340e297ea49e555f4ec7d79c293cadde2ed7c30.png` (ảnh, tên, mã, thuế), `90207b89292dd306ae0ff5f2cf9c485def02e35c.png` (địa chỉ, liên hệ; ô "Số nhà, đường" bị cuộn khuất, được kiểm bằng payload và trang chi tiết), `5e81566c5c71e5c40983de2c0e954f8ad43882f3.png` (nhóm "Chả, giò" đã tick), bảng giá `99755fed1a1b8d983b4043888133e245bbf0cb6b.png` (chưa soi lại ảnh lượt cuối này; lượt trước đã soi: 2 dòng đủ ngày/thuế/giao hàng) và chứng từ `d1a17b2ce3f5c46142bfc20d2f273d30b14f318e.png`, phiếu nhập `fae9bac42686dfa40b50488727f98d15adbcfa92.png` (chưa soi lại lượt cuối; lượt trước soi: ngày 01/11/2026, 2 dòng, tổng 450.000), nhận hàng dòng 1 `5250a5e5141cee38292a7732c56d15f6da599732.png` (đã soi: lô, 8, 31/12/2027, 4 °C, 3 ảnh "Đã tải lên").
+- MÓN → BÁN (đã soi, lượt cuối): nguyên liệu `a3304e374165bef12241d2f86259a6b432d1ad8b.png` (tên, nhóm 1/2, Kilôgam, đã khai báo + SOYBEANS, SPICY, Chay, tháng 6-7-8), công thức `3c80ba346170f9f546a85d952ff2eb710d49fc69.png` (10 G, yield 100, bước 30 giây), màn món + giá vốn 22.000 `31ea8273e0b8be0c5fb12fa3b638483fceaa3479.png`, NCC `97ba3f7f8025d028b38ebe67f96c353a9514732f.png`. Gói `39b3472c9e74c1307d1143fee7984176c32a31af.png` chưa soi lượt cuối (lượt trước soi: quy cách "Hũ nhỏ 10 g", Nhiệt độ thường, 10 g).
+- KHÁCH: đăng ký `3ce61daa97cd9f3a8a24f2c24d77665c7387b49c.png` (đã soi: 4 ô có giá trị), kích hoạt `68cebd8e2bf01f0314cce1750678b709a95c0a4f.png` (đã soi), nhân viên `4403fca32092e8ab3f812d15254db88b57dcd6aa.png` (chưa soi lượt cuối; lượt trước soi: tên, email, mật khẩu, vai trò Bán hàng).
+- Nhận xét từ ảnh: ở bảng nguyên liệu của màn món, cột "Lượng / suất" bị cắt ("10C" thay vì "100") và ô "Hao hụt %" trông trống dù giá trị là 0 (test khẳng định `toHaveValue("0")`). Đây là lỗi hiển thị cột hẹp, chưa ghi vào Lỗi chức năng.
+
+### Video (bản trong e2e-report, lượt chung cuối; mở `e2e-report/index.html`)
+
+- KHO: `e2e-report/data/d12783c60d5c62cb1200cf65dd95bf142580731a.webm`
+- MÓN → BÁN: FOOD_DEV `e2e-report/data/b9aa4789a85eb34f0fe66babfc45ac64991a7790.webm`, kho `e2e-report/data/d88ee92875db7003c6a464e3195e4a90ea075a92.webm`, khách (trống, bước 9 chưa chạy) `e2e-report/data/88a5d164fdd9e541df18f82fef0d3379f330a068.webm`
+- KHÁCH + QUẢN TRỊ: khách `e2e-report/data/7653560b0635d5a84ca847e396dc9542f57948ae.webm`, admin `e2e-report/data/70f98416b0f41781a05fe44cbc81cfefcf879257.webm`, sales `e2e-report/data/b57dd36e3c905769f543f89a6aa0042e3e229310.webm`
+
+Ghi chú: ràng buộc chỉ cho sửa `*.spec.ts`, nên phần điền NCC/bảng giá được chép trong cả kho.spec.ts và mon-ban.spec.ts (không tạo tệp helper). Đã chạy `git checkout -- .aidlc/runs/PORTAL-INVENTORY-UX-001/artifacts`.

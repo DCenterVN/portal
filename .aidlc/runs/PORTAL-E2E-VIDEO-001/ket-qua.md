@@ -21,7 +21,7 @@ Lượt cuối: 4 setup PASS, 1 hành trình FAIL tại `e2e/journeys/kho.spec.t
 
 ## Lỗi chức năng
 
-### S4: lịch sử nhập hiển thị sai tổng tiền thực nhận
+### S4: lịch sử nhập hiển thị sai tổng tiền thực nhận — ĐÃ SỬA (af60b57), chạy lại 1/11 trên :3003 PASS
 
 - Hành trình: KHO, bước 7; màn `/inventory/suppliers/[id]?tab=receipts`.
 - Mong đợi: dự kiến `10 × 25.000 + 5 × 40.000 = 450.000`; khi nhận `8 kg` và `6 kg`, “Tổng thực nhận: 440.000 VND”, khớp tổng hai dòng `200.000 + 240.000`.
@@ -29,7 +29,7 @@ Lượt cuối: 4 setup PASS, 1 hành trình FAIL tại `e2e/journeys/kho.spec.t
 - Nghi ngờ chính: `features/inventory/supplier-receipts-view.tsx:30` lấy nguyên `receipt.total_amount_vnd` cho nhãn thực nhận; trong khi tiền thực nhận từng dòng đã có ở `features/inventory/supplier-receipts-view.tsx:38`.
 - Đối chiếu backend: `/home/dawn/work/ticket/inventory/internal/store/receipt_evidence.sql.go:56` cộng lượng nhận và đổi trạng thái, không đổi total_amount_vnd; `/home/dawn/work/ticket/inventory/internal/application/supplier_receipts.go:53` trả nguyên tổng này; `/home/dawn/work/ticket/inventory/internal/store/query/supplier_receipts.sql:16` tính riêng actual_amount_vnd theo lượng thực nhận. Chưa kết luận backend phải thay nghĩa trường tổng. Contract màn đọc: `/home/dawn/work/ticket/inventory/.aidlc/specs/inbound-read.md:60` yêu cầu tách thực nhận và dự kiến.
 
-### S5: bảng giá NCC ACTIVE chưa cấp được giá vốn cho món dùng nguyên liệu mới
+### S5: bảng giá NCC ACTIVE chưa cấp được giá vốn cho món dùng nguyên liệu mới — ĐÃ SỬA (inventory 97cdc03 + production d26766c), chạy lại 1/11 PASS
 
 - Hành trình MÓN → BÁN, bước 6; màn `/production/food-plans?tab=dishes&draft=…`. Ca đỏ tại `e2e/journeys/mon-ban.spec.ts:215`, lượt 4/4, ngày 01/11/2026 giờ Việt Nam.
 - Mong đợi theo S5: nguyên liệu mới đã có bảng giá NCC ACTIVE `100000 VND/KG`, hai suất dùng `0,2 KG` trực tiếp và `0,02 KG` qua gói gia vị, hao hụt 0%; giá vốn đầy đủ `20000 + 2000 = 22000 VND/kit`, `11000 VND/suất`.
@@ -38,9 +38,16 @@ Lượt cuối: 4 setup PASS, 1 hành trình FAIL tại `e2e/journeys/kho.spec.t
 - Đây là chỗ thiếu nối nguồn giá của hành trình S5, không kết luận inventory lưu sai bảng giá hoặc portal tính sai lượng. `production/.aidlc/specs/recipe-cost-preview.md:10` định nghĩa tra PriceSource và thiếu quote thì báo thiếu giá; implementation riêng này chỉ dùng giá seed. Kết quả chưa chứng minh giá vốn kế toán sau QC hay giá sàn bán hàng. Không đổi kỳ vọng sang 0, không thêm seed bằng API, không sửa app/backend.
 - Video FOOD_DEV: `e2e-report/data/a300455f00a24e152ac6cc0f8f9ed4d2cd8fc9a7.webm`; video kho: `e2e-report/data/71607e1dfd91de7928fad31d6da0cb161e6290c7.webm`. Trace: `node_modules/.cache/playwright-results/journeys-mon-ban-MÓN-→-BÁN-28c02-i-mở-bán-đúng-giá-cho-khách-desktop/trace.zip`. Trong trace có attachment JSON của versions và cost-preview để đối chiếu cùng SKU.
 
+### Mới sau chạy lại 1/11: không có thao tác "Mở bán" cho món đã hoàn tất
+
+- Hành trình MÓN → BÁN, bước 8; ca đỏ tại `e2e/journeys/mon-ban.spec.ts:342` (lượt cuối, chạy cả 3 file).
+- Mong đợi: sau bước 7 (món DONE, biến thể 2 người) người dùng bấm nút mở bán, nhập giá 55.000 ₫ và xác nhận; biến thể thành "Đang bán"; khách xem được món ở bước 9.
+- Thực tế: trên màn món không có nút "Mở bán" (không tìm thấy phần tử, hết 5 giây). Đường duy nhất tới giá bán là `/sales/pricing`, bắt người dùng gõ UUID sản phẩm, biến thể, định mức, bảng giá (`features/sales/pricing-floor-view.tsx:110`–`114`, đề xuất giá dòng 128), không phải đường mở bán từ món. Bước 9 chưa chạy được.
+- Đây là lệch L11 đã ghi trong `hanh-trinh.md` mục 5.12 (chưa có thao tác kích hoạt mở bán). Không đổi kỳ vọng, không gọi API ghi để vượt.
+
 ### Giới hạn chưa kiểm: tồn khả dụng và giá vốn sau QC
 
-Theo `inventory/.aidlc/specs/inbound-receiving.md`, lot chưa `APPROVED` không tăng tồn khả dụng. `inventory/.aidlc/specs/receipt-cost-lineage.md` chỉ cho fact của lot đạt QC đóng góp vào giá vốn. Code nhận hàng tạo lot `RECEIVED` tại `inventory/internal/application/goods_receipt_receive.go:138`; stock projection chạy theo sự kiện duyệt lot tại `inventory/internal/application/stock_projection_service.go:16`. Hành trình hiện chỉ thao tác nhận hàng, chưa có thao tác QC qua UI. Bước 8 chưa chạy vì lỗi tiền ở bước 7; không ghi đây là lỗi cộng tồn backend, không gọi API ghi để vượt gate QC. Thành tiền nhập 440.000 cũng chưa chứng minh giá vốn đủ điều kiện QC hoặc công thức bình quân theo lượng nhận.
+Theo `inventory/.aidlc/specs/inbound-receiving.md`, lot chưa `APPROVED` không tăng tồn khả dụng. `inventory/.aidlc/specs/receipt-cost-lineage.md` chỉ cho fact của lot đạt QC đóng góp vào giá vốn. Code nhận hàng tạo lot `RECEIVED` tại `inventory/internal/application/goods_receipt_receive.go:138`; stock projection chạy theo sự kiện duyệt lot tại `inventory/internal/application/stock_projection_service.go:16`. Hành trình hiện chỉ thao tác nhận hàng, chưa có thao tác QC qua UI. Cập nhật chạy lại 1/11: bước 7 đã PASS nên bước 8 chạy, nhưng chưa có màn QC nhập kho (features/inventory không có màn duyệt lô; phía inventory chỉ có API `qc-decisions`), nên bước 8 chỉ chứng minh lô RECEIVED KHÔNG làm tăng tồn (chênh 0 ở cả hai SKU). Tồn tăng 8 kg/6 kg và giá vốn sau QC: CHƯA KIỂM, chưa có màn. Không ghi đây là lỗi cộng tồn backend, không gọi API ghi để vượt gate QC. Thành tiền nhập 440.000 cũng chưa chứng minh giá vốn đủ điều kiện QC hoặc công thức bình quân theo lượng nhận.
 
 ## S5
 

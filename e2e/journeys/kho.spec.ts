@@ -8,7 +8,7 @@ import { supplierSchema } from "../../lib/api/suppliers";
 const idSchema = z.object({ id: z.string().uuid() });
 const numeric = z.union([z.number(), z.string().regex(/^\d+(?:\.\d+)?$/)]).transform(Number);
 const stockSchema = z.object({ items: z.array(z.object({ sku_ref: z.string().uuid(), uom: z.string(), on_hand_quantity: numeric, available_quantity: numeric })).nullable() });
-const lotsSchema = z.object({ items: z.array(z.object({ id: z.string().uuid(), goods_receipt_ref: z.string().uuid(), goods_receipt_line_id: z.string().uuid(), initial_quantity: numeric, remaining_quantity: numeric, status: z.string() })).nullable() });
+const lotsSchema = z.object({ items: z.array(z.object({ id: z.string().uuid(), supplier_lot_code: z.string(), expires_at: z.string(), received_temperature_celsius: numeric, storage_location_code: z.string().optional(), goods_receipt_ref: z.string().uuid(), goods_receipt_line_id: z.string().uuid(), initial_quantity: numeric, remaining_quantity: numeric, status: z.string() })).nullable() });
 
 function png(red: number) {
   function chunk(type: string, data: Buffer) {
@@ -64,9 +64,18 @@ test("KHO: bảng giá hai dòng, nhận lệch có ảnh, kiểm lượng tồn
     });
   }
   const suffix = Date.now().toString();
+  async function shot(target: Page | Locator, name: string) {
+    const body = "goto" in target ? await target.screenshot({ fullPage: true }) : await target.screenshot();
+    await info.attach(name, { body, contentType: "image/png" });
+  }
   const supplierName = `Kho hành trình ${suffix}`;
   const code = `KHO-${suffix}`;
   const agreementCode = `HD-KHO-${suffix}`;
+  const profile = {
+    tax_code: `03${suffix.slice(-8)}`, address: { line: "12 Nguyễn Huệ", ward: "Bến Nghé", province: "TP. Hồ Chí Minh" },
+    contact_name: "Trần Văn Kho", contact_phone: `09${suffix.slice(-8)}`, contact_email: `ncc-${suffix}@example.vn`,
+    note: "Giao buổi sáng, gọi trước 30 phút.",
+  };
   const prices = [25000, 40000];
   const expected = [10, 5];
   const actual = [8, 6];
@@ -108,27 +117,69 @@ test("KHO: bảng giá hai dòng, nhận lệch có ảnh, kiểm lượng tồn
     await result(await finalized, z.object({ status: z.literal("FINALIZED") }), 200);
   }
   try {
-    await step("Bước 1: Kho tạo nhà cung cấp mới", async () => {
+    await step("Bước 1: Kho tạo nhà cung cấp mới, điền đủ hồ sơ, ảnh và nhóm nguyên liệu", async () => {
       await page.goto("/inventory/suppliers");
       await page.getByRole("button", { name: "Thêm nhà cung cấp", exact: true }).click();
-      await page.getByLabel("Mã nhà cung cấp", { exact: true }).fill(code);
-      await page.getByLabel("Tên nhà cung cấp", { exact: true }).fill(supplierName);
+      const dialog = page.getByRole("dialog");
+      await dialog.getByLabel("Chọn ảnh", { exact: true }).setInputFiles(png(20));
+      await dialog.getByLabel("Mã nhà cung cấp", { exact: true }).fill(code);
+      await dialog.getByLabel("Tên nhà cung cấp", { exact: true }).fill(supplierName);
+      await dialog.getByLabel("Mã số thuế", { exact: true }).fill(profile.tax_code);
+      await dialog.getByLabel("Số nhà, đường", { exact: true }).fill(profile.address.line);
+      await dialog.getByLabel("Tỉnh, thành phố", { exact: true }).fill(profile.address.province);
+      await dialog.getByLabel("Phường, xã", { exact: true }).fill(profile.address.ward);
+      await dialog.getByLabel("Người liên hệ", { exact: true }).fill(profile.contact_name);
+      await dialog.getByLabel("Điện thoại", { exact: true }).fill(profile.contact_phone);
+      await dialog.getByLabel("Email", { exact: true }).fill(profile.contact_email);
+      await dialog.getByRole("checkbox").nth(1).check();
+      await expect(dialog.getByText("Đã chọn 1 nhóm con", { exact: true })).toBeVisible();
+      await dialog.getByText("Ghi chú nội bộ", { exact: true }).first().click();
+      await dialog.getByRole("textbox", { name: "Ghi chú nội bộ", exact: true }).fill(profile.note);
+      await dialog.getByLabel("Chọn ảnh", { exact: true }).scrollIntoViewIfNeeded();
+      await shot(dialog, "form-ncc-1-anh-ten-ma-thue");
+      await dialog.getByLabel("Người liên hệ", { exact: true }).scrollIntoViewIfNeeded();
+      await shot(dialog, "form-ncc-2-dia-chi-lien-he");
+      await dialog.getByText("Đã chọn 1 nhóm con", { exact: true }).scrollIntoViewIfNeeded();
+      await shot(dialog, "form-ncc-3-nhom");
+      await dialog.getByRole("textbox", { name: "Ghi chú nội bộ", exact: true }).scrollIntoViewIfNeeded();
+      await shot(dialog, "form-ncc-4-ghi-chu");
       const created = mutation(page, "/api/inventory/suppliers");
-      await page.getByRole("button", { name: "Lưu nhà cung cấp", exact: true }).click();
-      const supplier = await result(await created, supplierSchema);
+      const photoDone = page.waitForResponse(response => /\/photo\/finalize$/.test(new URL(response.url()).pathname) && response.request().method() === "POST");
+      await dialog.getByRole("button", { name: "Lưu nhà cung cấp", exact: true }).click();
+      const response = await created;
+      const submitted = response.request().postDataJSON();
+      const supplier = await result(response, supplierSchema);
       expect(supplier.status).toBe("ACTIVE");
       expect(supplier.name).toBe(supplierName);
+      expect(submitted).toMatchObject({ code, name: supplierName, ...profile });
+      expect(submitted.material_category_codes).toHaveLength(1);
       supplierID = supplier.id;
+      await result(await photoDone, z.object({ mime: z.literal("image/png") }), 200);
+      const stored = await context.request.get(`/api/inventory/suppliers/${supplierID}`);
+      expect(stored.status()).toBe(200);
+      const readBack = supplierSchema.parse(data(await stored.json()));
+      expect(readBack).toMatchObject({ code, name: supplierName, ...profile });
+      expect(readBack.photo?.mime, "Ảnh nhà cung cấp phải lưu được").toBe("image/png");
+      expect(readBack.material_categories.length + (readBack.material_category_codes?.length ?? 0), "Nhóm nguyên liệu phải lưu được").toBeGreaterThan(0);
       await page.getByLabel("Tìm nhà cung cấp theo tên hoặc mã").fill(code);
       await page.getByRole("link", { name: supplierName, exact: true }).click();
+      await expect(page.getByText(profile.contact_phone, { exact: true })).toBeVisible();
+      await expect(page.getByText(profile.contact_email, { exact: true })).toBeVisible();
+      await expect(page.getByText(profile.note, { exact: true })).toBeVisible();
+      await expect(page.getByText(`${profile.address.line}, ${profile.address.ward}, ${profile.address.province}`, { exact: true })).toBeVisible();
+      await expect(page.getByText(profile.tax_code).first()).toBeVisible();
     });
     await step("Bước 2: Lập và áp dụng bảng giá hai nguyên liệu theo kilôgam", async () => {
       await page.getByRole("tab", { name: "Bảng giá", exact: true }).click();
       await page.getByRole("button", { name: "Lập bảng giá mới", exact: true }).click();
       await page.getByLabel("Mã bảng giá", { exact: true }).fill(agreementCode);
       const today = new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Ho_Chi_Minh" }).format(new Date());
+      const nextYear = Number(today.slice(0, 4)) + 1;
+      const lineTo = [`${nextYear}-06-30`, `${nextYear}-12-31`];
+      const tax = ["VAT_EXCLUDED", "VAT_INCLUDED"];
+      const delivery = ["PICKUP", "DELIVERED"];
       await page.getByLabel("Hiệu lực từ", { exact: true }).fill(today);
-      await page.getByLabel("Hiệu lực đến", { exact: true }).fill(`${Number(today.slice(0, 4)) + 1}-12-31`);
+      await page.getByLabel("Hiệu lực đến", { exact: true }).fill(`${nextYear}-12-31`);
       for (let index = 0; index < 2; index++) {
         if (index) await page.getByRole("button", { name: "Thêm dòng giá", exact: true }).click();
         const box = page.getByRole("combobox", { name: "Nguyên liệu", exact: true }).nth(index);
@@ -138,9 +189,18 @@ test("KHO: bảng giá hai dòng, nhận lệch có ảnh, kiểm lượng tồn
         await options.nth(index).click();
         names.push(await box.inputValue());
         await page.getByLabel("Giá VND / đơn vị", { exact: true }).nth(index).fill(String(prices[index]));
+        await page.getByText("Hiệu lực riêng, thuế và giao hàng", { exact: true }).nth(index).click();
+        await page.getByLabel("Dòng giá từ ngày", { exact: true }).nth(index).fill(today);
+        await page.getByLabel("Dòng giá đến ngày", { exact: true }).nth(index).fill(lineTo[index]);
+        await page.getByLabel("Thuế", { exact: true }).nth(index).selectOption(tax[index]);
+        await page.getByLabel("Giao hàng", { exact: true }).nth(index).selectOption(delivery[index]);
       }
       expect(new Set(names).size).toBe(2);
       await page.getByLabel("Chọn PDF hoặc ảnh, tối đa 5 MiB").setInputFiles(png(40));
+      await page.getByLabel("Chọn PDF hoặc ảnh, tối đa 5 MiB").scrollIntoViewIfNeeded();
+      await shot(page, "form-bang-gia-chung-tu");
+      await page.getByLabel("Mã bảng giá", { exact: true }).scrollIntoViewIfNeeded();
+      await shot(page, "form-bang-gia");
       const saved = mutation(page, `/api/inventory/suppliers/${supplierID}/agreements`);
       await page.getByRole("button", { name: "Lưu nháp", exact: true }).click();
       const draft = await result(await saved, agreementSchema);
@@ -152,11 +212,18 @@ test("KHO: bảng giá hai dòng, nhận lệch có ảnh, kiểm lượng tồn
       agreement = await result(await applied, agreementSchema);
       expect(agreement.status).toBe("ACTIVE");
       expect(agreement.lines.map(line => line.unit_price_vnd)).toEqual(prices);
+      expect(agreement.lines.map(line => ({ from: line.valid_from, to: line.valid_to, tax: line.tax_treatment, delivery: line.delivery_treatment }))).toEqual(prices.map((_, index) => ({ from: today, to: lineTo[index], tax: tax[index], delivery: delivery[index] })));
+      expect(agreement.valid_from).toBe(today);
+      expect(agreement.valid_to).toBe(`${nextYear}-12-31`);
+      expect(agreement.document_ref ?? agreement.primary_document_ref, "Chứng từ hợp đồng phải gắn được vào bảng giá").toBeTruthy();
       await expect(card).toContainText("Đã áp dụng");
     });
     await step("Bước 3: Tạo phiếu nhập 10 kg và 5 kg, tự lấy giá hợp đồng, tổng 450.000 đồng", async () => {
       await page.goto("/inventory/goods-receipts/new");
       await pick(page, "Nhà cung cấp", supplierName);
+      const [year, month, day] = new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Ho_Chi_Minh" }).format(new Date()).split("-");
+      await page.getByLabel("Ngày dự kiến nhập", { exact: true }).fill(`${day}/${month}/${year}`);
+      await expect(page.getByLabel("Ngày dự kiến nhập", { exact: true })).toHaveValue(`${day}/${month}/${year}`);
       for (let index = 0; index < 2; index++) {
         if (index) await page.getByRole("button", { name: "Thêm dòng nhập", exact: true }).click();
         await pick(page, `Nguyên liệu dòng ${index + 1}`, names[index]);
@@ -164,6 +231,7 @@ test("KHO: bảng giá hai dòng, nhận lệch có ảnh, kiểm lượng tồn
         await expect(page.getByLabel(`Đơn giá dòng ${index + 1}`, { exact: true })).toHaveValue(String(prices[index]));
       }
       await expect(page.getByLabel("Tổng tiền dự kiến", { exact: true })).toHaveText("450.000 VND");
+      await shot(page, "form-phieu-nhap");
       const created = mutation(page, "/api/inventory/goods-receipts");
       await page.getByRole("button", { name: "Tạo phiếu nhập", exact: true }).click();
       const response = await created;
@@ -171,6 +239,7 @@ test("KHO: bảng giá hai dòng, nhận lệch có ảnh, kiểm lượng tồn
       const receipt = await result(response, idSchema);
       receiptID = receipt.id;
       expect(agreement).toBeDefined();
+      expect(new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Ho_Chi_Minh" }).format(new Date(submitted.expected_at)), "Ngày dự kiến nhập gửi đi").toBe(`${year}-${month}-${day}`);
       expect(submitted.expected_lines).toEqual(agreement?.lines.map((line, index) => ({ sku_ref: line.sku_ref, uom: "KG", expected_quantity: expected[index], unit_cost_vnd: prices[index], agreement_version_ref: agreement?.version_id, price_line_ref: line.price_line_ref })));
       const persisted = await history();
       branchID = persisted.branch_ref;
@@ -202,8 +271,13 @@ test("KHO: bảng giá hai dòng, nhận lệch có ảnh, kiểm lượng tồn
         await expect(button, "Lượng lệch chưa có ảnh giải trình vẫn phải chặn").toBeDisabled();
         await upload(row, "Ảnh lệch số lượng", 100 + index);
         const received = mutation(page, `/api/inventory/goods-receipts/${receiptID}/receive`);
+        await shot(row, `form-nhan-hang-dong-${index + 1}`);
         await button.click();
-        const lot = await result(await received, idSchema.extend({ status: z.literal("RECEIVED") }));
+        const receivedResponse = await received;
+        expect(receivedResponse.request().postDataJSON()).toMatchObject({ supplier_lot_code: `LO-${suffix}-${index}`, initial_quantity: actual[index], received_temperature_celsius: 4, sku_ref: (await history()).lines[index].sku_ref });
+        expect(receivedResponse.request().postDataJSON().expiry_date).toContain(`${new Date().getFullYear() + 1}-12-31`);
+        expect(receivedResponse.request().postDataJSON().evidence_refs, "Ảnh hàng, chứng từ và ảnh lệch đều gắn vào lô").toHaveLength(3);
+        const lot = await result(receivedResponse, idSchema.extend({ status: z.literal("RECEIVED") }));
         lotIDs.push(lot.id);
         await expect(row.getByRole("status")).toContainText(`Đã nhận · ${actual[index]} KG`);
       }
@@ -214,7 +288,7 @@ test("KHO: bảng giá hai dòng, nhận lệch có ảnh, kiểm lượng tồn
       const recorded = mutation(page, `/api/inventory/goods-receipts/${receiptID}/quantity-variances`);
       await page.getByRole("button", { name: "Ghi lệch số lượng", exact: true }).click();
       const response = await recorded;
-      expect(response.request().postDataJSON()).toMatchObject({ expected_quantity: 15, actual_quantity: 14 });
+      expect(response.request().postDataJSON()).toMatchObject({ expected_quantity: 15, actual_quantity: 14, explanation: "Nhà cung cấp giao thiếu dòng một 2 kg, thừa dòng hai 1 kg; đã cân và chụp ảnh." });
       await result(response, idSchema);
       await expect(page.getByRole("status").filter({ hasText: "Đã ghi lệch số lượng" })).toBeVisible();
     });
@@ -230,22 +304,27 @@ test("KHO: bảng giá hai dòng, nhận lệch có ảnh, kiểm lượng tồn
         expect(line.actual_amount_vnd).toBe(actual[index] * prices[index]);
         const lots = await inventoryRead(`inventory-lots?branch_ref=${branchID}&sku_ref=${line.sku_ref}&page_size=1000`, lotsSchema);
         const lot = lots.items?.find(item => item.id === lotIDs[index]);
+        expect(lot?.supplier_lot_code).toBe(`LO-${suffix}-${index}`);
+        expect(new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Ho_Chi_Minh" }).format(new Date(lot?.expires_at ?? "")), "Hạn sử dụng lô (giờ Việt Nam)").toBe(`${new Date().getFullYear() + 1}-12-31`);
+        expect(lot?.received_temperature_celsius, "Nhiệt độ nhận lô").toBe(4);
         expect(lot).toMatchObject({ goods_receipt_ref: receiptID, goods_receipt_line_id: line.receipt_line_ref, initial_quantity: actual[index], remaining_quantity: actual[index], status: "RECEIVED" });
       }
       expect(receipt.lines.reduce((sum, line) => sum + (line.actual_amount_vnd ?? 0), 0)).toBe(440000);
       await page.goto(`/inventory/suppliers/${supplierID}?tab=receipts`);
       await expect(page.getByRole("region", { name: "Lịch sử nhập", exact: true }).getByText("Tổng thực nhận: 440.000 VND", { exact: true })).toBeVisible();
     });
-    await step("Bước 8: Kiểm tồn tăng đúng 8 kg và 6 kg theo hành trình KHO", async () => {
+    await step("Bước 8: Lô vừa nhận chưa qua QC nên chưa được cộng tồn (chưa có màn QC nhập kho để kiểm tồn sau QC)", async () => {
+      // Màn QC nhập kho CHƯA CÓ trong portal (features/inventory không có màn duyệt lô); tồn chỉ tăng khi lô APPROVED.
+      // Bước này chỉ chứng minh lô RECEIVED không làm tăng tồn; KHÔNG chứng minh tồn/giá vốn sau QC.
       const receipt = await history();
       for (let index = 0; index < 2; index++) {
         const sku = receipt.lines[index].sku_ref;
         const before = beforeStocks.get(sku);
         if (!before) throw new Error("Chưa ghi tồn trước nhận");
         const after = await stock(sku);
-        await info.attach(`ton-dong-${index + 1}`, { body: JSON.stringify({ before, after, expectedIncrease: actual[index], note: "Đặc tả yêu cầu QC APPROVED trước khi tăng tồn khả dụng; hành trình UI hiện chỉ có nhận hàng." }), contentType: "application/json" });
-        expect(after.onHand - before.onHand, "S4 yêu cầu tăng tồn; lô RECEIVED chưa có màn QC để duyệt").toBe(actual[index]);
-        expect(after.available - before.available).toBe(actual[index]);
+        await info.attach(`ton-dong-${index + 1}`, { body: JSON.stringify({ before, after, nhanDuoc: actual[index], ghiChu: "Lô RECEIVED chưa qua QC: không cộng tồn. Chưa có màn QC nhập kho." }), contentType: "application/json" });
+        expect(after.onHand - before.onHand, "Lô chưa QC không được cộng tồn").toBe(0);
+        expect(after.available - before.available).toBe(0);
       }
     });
   } finally {
