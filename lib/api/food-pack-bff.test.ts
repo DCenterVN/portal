@@ -40,9 +40,9 @@ describe("food PACK boundary", () => {
   it("allowlist_from_operations", async () => {
     const operations = Object.values(OPERATIONS);
     const expected = operations.filter(op =>
-      (op.service === "sales" && /^\/sales\/(packages(?:\/|$)|sets(?:\/|$)|skus\/[^/]+\/labels$)/.test(op.path)) ||
-      (op.service === "production" && /^\/production\/(packages\/[^/]+\/recipes(?:\/|$)|sets\/[^/]+\/evaluate$)/.test(op.path)));
-    expect(expected).toHaveLength(18);
+      (op.service === "sales" && /^\/sales\/(dish-drafts(?:\/|$)|dishes$|packages(?:\/|$)|sets(?:\/|$)|skus\/[^/]+\/labels$)/.test(op.path)) ||
+      (op.service === "production" && /^\/production\/(recipes\/cost-preview$|packages\/[^/]+\/recipes(?:\/|$)|sets\/[^/]+\/evaluate$)/.test(op.path)));
+    expect(expected).toHaveLength(27);
     const materialize = (path: string) => path.replace(/\{version\}/g, "1").replace(/\{[^}]+\}/g, id);
     const expectedSet = expected.map(op => `${op.method} ${materialize(op.path)}`).sort();
     const candidates = new Set([...operations.map(op => materialize(op.path)), "/sales/pack-outside-registry"]);

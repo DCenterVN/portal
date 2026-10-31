@@ -1,6 +1,8 @@
 "use client";
 
 import { z } from "zod";
+import { DishesContainer } from "./dishes/dishes-container";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -219,9 +221,11 @@ function percentRatio(value: string): string {
   if (amount === null) throw new Error("Tỉ lệ phần trăm không hợp lệ");
   return `${amount / 1000000n}.${(amount % 1000000n).toString().padStart(6, "0")}`;
 }
-export function FoodPackWorkspace({ targetId }: { targetId?: string }) {
-  const [tab, setTab] = useState("sets");
-  return <div className="space-y-6"><Tabs label="Thiết kế món và thực đơn" idPrefix="food-packs" items={[{ id: "sets", label: "Set" }, { id: "packages", label: "Gói + công thức" }, { id: "plans", label: "Thực đơn" }]} value={tab} onChange={setTab}>
+export function FoodPackWorkspace({ targetId, tab: initialTab, mon, mode, draft }: { targetId?: string; tab?: string; mon?: string; mode?: string; draft?: string }) {
+  const router = useRouter();
+  const tab = initialTab || "dishes";
+  return <div className="space-y-6"><Tabs label="Thiết kế món và thực đơn" idPrefix="food-packs" items={[{ id: "dishes", label: "Món" }, { id: "sets", label: "Set (nâng cao)" }, { id: "packages", label: "Gói + công thức" }, { id: "plans", label: "Thực đơn" }]} value={tab} onChange={next => { const query = new URLSearchParams({ tab: String(next) }); if (targetId) query.set("target_id", targetId); router.push(`/production/food-plans?${query}`); }}>
+    {tab === "dishes" && <DishesContainer mon={mon} mode={mode} draft={draft} />}
     <div hidden={tab !== "sets"}><FoodSetsView /></div><div hidden={tab !== "packages"}><PackagesView /></div><div hidden={tab !== "plans"}><FoodPlansView initialPlans={[]} targetId={targetId} /></div>
-  </Tabs><MaterialRequirementsView targetId={targetId} /></div>;
+  </Tabs>{tab !== "dishes" && <MaterialRequirementsView targetId={targetId} />}</div>;
 }

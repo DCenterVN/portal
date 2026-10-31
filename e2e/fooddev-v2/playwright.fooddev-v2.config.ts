@@ -6,7 +6,7 @@ const directory = dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
   testDir: directory,
-  testMatch: 'fooddev-v2.spec.ts',
+  testMatch: '*.spec.ts',
   outputDir: process.env.FOODDEV_EVIDENCE || resolve(directory, '../../../node_modules/.cache/fooddev-v2'),
   reporter: 'list',
   workers: 1,

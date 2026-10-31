@@ -4,6 +4,8 @@ import { OPERATIONS, type OperationId } from "@/lib/contracts/operations.generat
 import { forwardService } from "@/lib/api/service-bff";
 
 const packIds = [
+  "createDishDraft", "listDishDrafts", "getDishDraft", "updateDishDraft", "recordDishDraftProgress",
+  "completeDishDraft", "discardDishDraft", "listDishes", "previewRecipeCost",
   "createPackage", "listPackages", "getPackage", "updatePackage", "retirePackage",
   "createFoodSet", "listFoodSets", "getFoodSet", "updateFoodSet", "retireFoodSet",
   "getRawLabels", "updateRawLabels", "createPackageRecipe", "listPackageRecipes",

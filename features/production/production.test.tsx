@@ -1,5 +1,7 @@
 import { beforeEach, afterEach, describe, it, expect, vi } from "vitest";
 import React from "react";
+const navigation = vi.hoisted(() => ({ push: vi.fn() }));
+vi.mock("next/navigation", () => ({ useRouter: () => navigation }));
 import { renderToStaticMarkup } from "react-dom/server";
 import { ProductionTarget, FoodProductPlan, ProductionOrder, ShelfPlacement, PublicTraceability } from "@/lib/api/production";
 import { TargetsView } from "./targets-view";
@@ -570,15 +572,18 @@ describe("FOODDEV PACK UI", () => {
   it("tabs_render", async () => {
     let tree = paint(FoodPackWorkspace, { targetId: target.id });
     const tabs = node(tree, n => n.type === Tabs);
-    expect(tabs.props.items).toEqual([{ id: "sets", label: "Set" }, { id: "packages", label: "Gói + công thức" }, { id: "plans", label: "Thực đơn" }]);
+    expect(tabs.props.items).toEqual([{ id: "dishes", label: "Món" }, { id: "sets", label: "Set (nâng cao)" }, { id: "packages", label: "Gói + công thức" }, { id: "plans", label: "Thực đơn" }]);
     const setView = node(tree, n => n.type === FoodSetsView);
-    expect(nodes(tree, n => n.type === MaterialRequirementsView)).toHaveLength(1);
-    await invoke(tabs, "onChange", "packages"); tree = paint(FoodPackWorkspace, { targetId: target.id });
+    expect(tabs.props.value).toBe("dishes");
+    expect(nodes(tree, n => n.type === MaterialRequirementsView)).toHaveLength(0);
+    await invoke(tabs, "onChange", "packages");
+    expect(navigation.push).toHaveBeenCalledWith(`/production/food-plans?tab=packages&target_id=${target.id}`);
+    tree = paint(FoodPackWorkspace, { targetId: target.id, tab: "packages" });
     expect(node(tree, n => n.type === "div" && nodes(n, child => child.type === FoodSetsView).length === 1 && n.props.hidden !== undefined).props.hidden).toBe(true);
     expect(node(tree, n => n.type === FoodSetsView).type).toBe(setView.type);
     expect(nodes(tree, n => n.type === FoodPlansView)).toHaveLength(1);
     await invoke(node(tree, n => n.type === Tabs), "onChange", "sets");
-    expect(node(paint(FoodPackWorkspace, { targetId: target.id }), n => n.type === Tabs).props.value).toBe("sets");
+    expect(node(paint(FoodPackWorkspace, { targetId: target.id, tab: "sets" }), n => n.type === Tabs).props.value).toBe("sets");
   });
   it("set_tags_counter", async () => {
     let tree: React.ReactNode = await openSetEditor();

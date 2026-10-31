@@ -1,32 +1,17 @@
 import { test, expect, type Page, type Locator } from '@playwright/test';
 import { z } from 'zod';
+import { login, pick, screen } from './helpers';
 
 const family = process.env.FOODDEV_FAMILY_NAME || 'E2E Họ món';
 const protein = process.env.FOODDEV_PROTEIN_NAME || 'E2E Gói đạm';
 const vegetable = process.env.FOODDEV_VEGETABLE_NAME || 'E2E Gói rau';
 const seasoning = process.env.FOODDEV_SEASONING_NAME || 'E2E Gói gia vị';
 const rule = 'Món cần ít nhất một gói gia vị không được bỏ';
-const uuid = /\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b/i;
 const setSchema = z.object({ id: z.string(), updated_at: z.string(), tags: z.array(z.string()), slots: z.array(z.object({ slot: z.string(), swappable: z.boolean(), removable: z.boolean(), options: z.array(z.object({ sku_ref: z.string(), quantity: z.number(), is_default: z.boolean() })) })) });
 const setResponseSchema = z.union([setSchema, z.object({ data: setSchema }).transform(body => body.data)]);
 let savedSet: z.infer<typeof setSchema>;
 
 test.describe.configure({ mode: 'serial' });
-
-async function screen(page: Page, name: string) {
-  expect(await page.locator('body').innerText(), `UUID trên màn ${name}`).not.toMatch(uuid);
-  await page.screenshot({ path: test.info().outputPath(`${name}.png`), fullPage: true, animations: 'disabled' });
-}
-
-async function pick(scope: Page | Locator, label: string, name: string) {
-  const input = scope.getByRole('combobox', { name: label, exact: true });
-  await input.scrollIntoViewIfNeeded();
-  await input.fill(name);
-  const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  await expect(scope.getByRole('option', { name: new RegExp(`^${escaped}(?:\\s|$)`) })).toBeVisible();
-  await input.press('Enter');
-  await expect(input).toHaveAttribute('aria-expanded', 'false');
-}
 
 async function readonly(scope: Page | Locator, label: string) {
   const field = scope.getByLabel(label, { exact: true });
@@ -36,16 +21,8 @@ async function readonly(scope: Page | Locator, label: string) {
 }
 
 test.beforeEach(async ({ page }) => {
-  const email = process.env.FOODDEV_EMAIL;
-  const password = process.env.FOODDEV_PASSWORD;
-  if (!email || !password) throw new Error('Runner phải cấp FOODDEV_EMAIL và FOODDEV_PASSWORD');
-  await page.goto('/staff/login?redirect=/production/food-plans');
-  await page.locator('input[name="identifier"]').fill(email);
-  await page.locator('input[name="password"]').fill(password);
-  const login = page.waitForResponse(response => new URL(response.url()).pathname === '/api/auth/staff/login' && response.request().method() === 'POST');
-  await page.getByRole('button', { name: 'Đăng nhập nhân viên', exact: true }).click();
-  expect((await login).status()).toBe(200);
-  await page.waitForURL('**/production/food-plans');
+  await login(page);
+  await page.getByRole('tab', { name: 'Set (nâng cao)', exact: true }).click();
   await expect(page.getByRole('region', { name: 'Set', exact: true }).getByRole('button', { name: 'Tạo set món', exact: true }).first()).toBeVisible();
   await screen(page, 'food-dev-login');
 });
