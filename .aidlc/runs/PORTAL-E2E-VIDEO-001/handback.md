@@ -76,3 +76,26 @@ Không chạy `E2E_BASE_URL=http://localhost:3002 npx playwright test --project=
 Số bước tính các dòng đánh số, gồm bước mở trang chung, thao tác gõ/chọn có điều kiện và từng lượt xem sáng/tối ở bốn độ rộng. Dòng “Chưa kiểm” không tính là bước đã chạy. Số dòng Lệch đếm từng hàng có nội dung khác dấu “—”, gồm cả hàng chưa kiểm; tám lượt đổi sáng/tối có cùng giới hạn được đếm thành tám hàng.
 
 Kiểm tra tài liệu: tên ba ca khớp nguyên văn; ba bảng có đủ năm cột; dòng dẫn đặc tả được mở và đối chiếu. Không chạy lại trình duyệt trong S2a này; kết quả chạy có video trên môi trường phát triển là dữ kiện brief đã cung cấp, không phải kết quả kiểm mới. Không sửa kiểm thử, không ghi /tmp, không git add/commit.
+
+## S2b
+
+Đã bổ sung 10 tệp kiểm thử còn lại thành 7 mục theo thư mục thực tế trong `e2e/`, bỏ `setup` và giữ nguyên `inventory-ux`. Con số “10 bộ” trong kế hoạch tương ứng 10 tệp, không phải 10 thư mục. Có 66 ca, gồm tên sinh theo kích thước, giao diện và tên màn; mỗi ca một bảng.
+
+| Bộ | số ca | số bước | số Lệch |
+|---|---:|---:|---:|
+| catalog-split | 23 | 42 | 31 |
+| fooddev-pack | 1 | 11 | 7 |
+| fooddev-set | 1 | 10 | 3 |
+| fooddev-v2 | 11 | 54 | 11 |
+| rbac | 5 | 17 | 3 |
+| supplier-contract | 4 | 23 | 9 |
+| visual | 21 | 22 | 22 |
+| Tổng | 66 | 179 | 86 |
+
+Số bước đếm các hàng đánh số trong bảng đã gộp thao tác lặp, không đếm hàng “Chưa kiểm”; không phải số thao tác trình duyệt thô hoặc số bước đã chạy thành công. Số Lệch đếm hàng có nội dung khác dấu “—”, gồm hàng “Chưa kiểm” và hàng chưa có yêu cầu tương ứng trong hành trình; không phải số lỗi độc lập. Ca bị bỏ qua theo điều kiện vẫn được mô tả và tính một ca.
+
+Kiểm tra tĩnh đạt: 66/66 tên ca khớp nguồn, đủ năm cột mỗi bảng, số bước liên tục, tối đa ba hàng “Chưa kiểm” mỗi ca; mọi Lệch có dẫn chứng file và dòng. Đối chiếu các tên sinh trực tiếp từ vòng lặp và danh sách trong nguồn, không dùng trình chạy kiểm thử. Kiểm tra đường dẫn và số dòng dẫn chứng tồn tại. Phần có sẵn của KICH-BAN.md gồm inventory-ux giữ nguyên toàn bộ 17.992 byte, xác nhận bằng dấu kiểm toàn vẹn trước và sau.
+
+Các lệch đáng chú ý: ca bảng giá bắt chứng từ dù đặc tả hiện cho tùy chọn; ca tạo phiếu bắt giá chỉ đọc và chặn ngoài kỳ; ca gói cũ tự nhập các trường hiện tự sinh và tìm thẻ Set theo tên cũ. Các ca so ảnh chỉ mô tả so ảnh và điều kiện bỏ qua, chưa chứng minh tiền, kho hoặc quyền đúng.
+
+Chỉ sửa `e2e/KICH-BAN.md` và phần bàn giao S2b này. Không sửa test, không chạy Playwright, không ghi /tmp, không git add/commit; giữ các thay đổi khác có sẵn. Bước tiếp theo: điều phối viên duyệt kịch bản S2b trước lượt chạy ghi hình được giao riêng.
