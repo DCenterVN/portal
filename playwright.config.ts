@@ -24,6 +24,7 @@ const executablePath = process.env.PW_BROWSER_PATH || "/opt/brave.com/brave/brav
 // VISUAL_BASELINE=1: shoot file:// previews and rewrite the baseline; otherwise baseline is read-only.
 const baseline = process.env.VISUAL_BASELINE === "1";
 const record = process.env.E2E_RECORD === "1";
+const narratedVideo = { mode: "on" as const, size: { width: 1440, height: 900 }, show: { actions: { duration: 1500, position: "top" as const, fontSize: 22, cursor: "pointer" as const }, test: { level: "step" as const, position: "bottom" as const, fontSize: 22 } } };
 const baseURL = process.env.E2E_BASE_URL || "http://localhost:3000";
 
 export default defineConfig({
@@ -38,8 +39,8 @@ export default defineConfig({
   expect: { toHaveScreenshot: { maxDiffPixelRatio: 0.02, animations: "disabled" } },
   use: {
     baseURL,
-    launchOptions: { executablePath },
-    ...(record && { video: "on", trace: "on", screenshot: "on" }),
+    launchOptions: { executablePath, ...(record && { slowMo: 700 }) },
+    ...(record && { video: narratedVideo, trace: "on", screenshot: "on" }),
   },
   projects: [
     { name: "setup", testMatch: "**/e2e/setup/*.setup.ts", use: { trace: "off", video: "off", screenshot: "off" } },

@@ -20,8 +20,9 @@ export default defineConfig({
     browserName: 'chromium', headless: true, locale: 'vi-VN',
     viewport: { width: 1440, height: 1000 },
     actionTimeout: 15000, navigationTimeout: 20000,
-    trace: record ? 'on' : 'off', video: record ? 'on' : 'off', screenshot: record ? 'on' : 'off',
-    launchOptions: { executablePath: '/opt/brave.com/brave/brave' },
+    trace: record ? 'on' : 'off', screenshot: record ? 'on' : 'off',
+    video: record ? { mode: 'on', size: { width: 1440, height: 1000 }, show: { actions: { duration: 1500, position: 'top', fontSize: 22, cursor: 'pointer' }, test: { level: 'step', position: 'bottom', fontSize: 22 } } } : 'off',
+    launchOptions: { executablePath: '/opt/brave.com/brave/brave', ...(record && { slowMo: 700 }) },
   },
   projects: [{ name: 'desktop' }],
 });
