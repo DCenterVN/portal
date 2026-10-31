@@ -46,6 +46,11 @@ it("phiếu nhận phân biệt dự kiến và thực nhận, không đoán gi�
   expect(html).toContain("1,000"); expect(html).toContain("Chưa có dữ liệu"); expect(html).toContain("Nguyên liệu đã ngừng hoặc chưa tải được tên");
   expect(html.replace(/<[^>]*>/g, " ")).not.toContain(supplierID);
 });
+it("tổng thực nhận cộng thành tiền thực nhận từng dòng, không lấy tổng dự kiến", () => {
+  const lines = [{ ...receipt.lines[0], expected_amount_vnd: 250000, actual_amount_vnd: 200000 }, { ...receipt.lines[0], receipt_line_ref: "l2", expected_amount_vnd: 200000, actual_amount_vnd: 240000 }];
+  const html = render({ page: { items: [{ ...receipt, status: "COMPLETED", total_amount_vnd: 450000, lines }], total: 1, next_cursor: "" } });
+  expect(html).toContain("Tổng thực nhận: 440.000 VND"); expect(html).not.toContain("450.000");
+});
 it("loading, empty, lỗi và deny là trạng thái riêng", () => {
   expect(render()).toContain("Đang tải lịch sử nhập");
   expect(render({ page: { items: [], total: 0, next_cursor: "" } })).toContain("Chưa có phiếu nhập");
