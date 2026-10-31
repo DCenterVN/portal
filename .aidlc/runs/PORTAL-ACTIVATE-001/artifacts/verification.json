@@ -1,0 +1,64 @@
+{
+  "task": "PORTAL-ACTIVATE-001",
+  "actor": "agent:claude-code(171709704+dawnmoriaty@users.noreply.github.com)",
+  "worker": null,
+  "ts": "2026-10-06T06:44:33+00:00",
+  "cwd": "../../../../../home/dawn/orca/workspaces/portal/portal-activate-001",
+  "head": "caf97cb5f7af5e59d34048e1a84d6aa1212ef9ae",
+  "dirty": true,
+  "checks": [
+    {
+      "name": "grader_selftest",
+      "command": "python3 .aidlc/runs/PORTAL-ACTIVATE-001/anti/anti_check.py --self-test",
+      "exit": 0,
+      "status": "PASS",
+      "seconds": 0.4,
+      "log": ".aidlc/runs/PORTAL-ACTIVATE-001/artifacts/logs/grader_selftest.log",
+      "sha256": "651c45f92fb6ae999d30a9c062cbcfa5ea21fc9e76e22f6255192e19e4f44b46",
+      "tail": [
+        "PASS self-test reject postsSent mismatch (JOURNEY-SUCCESS got 2 activates)",
+        "PASS self-test reject CONCURRENT-SUBMIT missing upstream request",
+        "PASS self-test reject Kong status mismatch (JOURNEY-LOGIN-OWNER owner got 500)",
+        "PASS self-test replay S8 out/ fails exactly at 6 flawed cells",
+        "GRADER SELF-TEST: 42/42 PASS (synthetic fixtures verified; NOT an application acceptance PASS)"
+      ]
+    },
+    {
+      "name": "runner_selftest",
+      "command": "python3 .aidlc/runs/PORTAL-ACTIVATE-001/anti/anti_runner_selftest.py",
+      "exit": 0,
+      "status": "PASS",
+      "seconds": 6.5,
+      "log": ".aidlc/runs/PORTAL-ACTIVATE-001/artifacts/logs/runner_selftest.log",
+      "sha256": "e5e6715bfb224e8e28f32e0c72c6b007f27b10b4bde0d8dd4a4a9105b66c63c0",
+      "tail": [
+        "PASS runner missing build",
+        "RUNNER SELF-TEST: 8/9 FAIL (offline synthetic shims only)",
+        "MUTATION: BFF-400 guard removed; self-test exit=1; KILLED",
+        "",
+        "OVERALL SELFTEST: PASS"
+      ]
+    },
+    {
+      "name": "s8_replay_6fail",
+      "command": "python3 .aidlc/runs/PORTAL-ACTIVATE-001/anti/anti_check.py .aidlc/runs/PORTAL-ACTIVATE-001/anti/out | grep -q \"{'PASS': 11, 'FAIL': 6, 'BLOCKED': 0}\"",
+      "exit": 0,
+      "status": "PASS",
+      "seconds": 0.1,
+      "log": ".aidlc/runs/PORTAL-ACTIVATE-001/artifacts/logs/s8_replay_6fail.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tail": []
+    },
+    {
+      "name": "mut_s7b",
+      "command": "python3 /home/dawn/.local/share/sec-fix-coordinator/mut-portal-s7b.py | grep -c KILLED | grep -qx 6",
+      "exit": 0,
+      "status": "PASS",
+      "seconds": 2.3,
+      "log": ".aidlc/runs/PORTAL-ACTIVATE-001/artifacts/logs/mut_s7b.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tail": []
+    }
+  ],
+  "verdict": "PASS"
+}

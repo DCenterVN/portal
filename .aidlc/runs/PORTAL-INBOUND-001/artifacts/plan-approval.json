@@ -1,0 +1,25 @@
+{
+  "task": "PORTAL-INBOUND-001",
+  "actor": "user:171709704+dawnmoriaty@users.noreply.github.com",
+  "worker": null,
+  "ts": "2026-10-31T14:37:22+00:00",
+  "plan_hash": "bbc2af852bd0a15b61b0eeae54ef2f2ae844c18dee930de83626c44ddf0b3f8b",
+  "testkit_hash": null,
+  "files": [
+    "app/api/inventory/goods-receipts/[id]/receive/route.ts",
+    "app/api/inventory/goods-receipts/[id]/quantity-variances/route.ts",
+    "app/api/inventory/goods-receipts/[id]/evidence-uploads/route.ts",
+    "app/api/inventory/goods-receipts/[id]/evidence-uploads/[uploadId]/finalize/route.ts",
+    "lib/api/goods-receipt-receive.ts",
+    "lib/api/goods-receipt-receive.test.ts",
+    "app/(console)/inventory/goods-receipts/[id]/receive/page.tsx",
+    "features/inventory/goods-receipt-receive.tsx",
+    "features/inventory/use-goods-receipt-receive.ts",
+    "features/inventory/receipt-evidence-field.tsx",
+    "features/inventory/supplier-receipts-view.tsx",
+    "features/inventory/goods-receipt-form.tsx",
+    "features/inventory/use-goods-receipt.ts",
+    "e2e/goods-receipt-receive.spec.ts"
+  ],
+  "verdict": "PASS"
+}
