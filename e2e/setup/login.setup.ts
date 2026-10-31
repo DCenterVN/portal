@@ -10,7 +10,7 @@ const accounts: Record<string, string> = {};
 test.beforeAll(() => {
   if (!existsSync(accountsPath)) throw new Error("Thiếu ~/work/ticket/.cache/e2e/accounts.env");
   for (const line of readFileSync(accountsPath, "utf8").split(/\r?\n/)) {
-    const match = line.match(/^\s*([A-Z_]+)=(.*)$/);
+    const match = line.match(/^\s*([A-Z0-9_]+)=(.*)$/);
     if (match) accounts[match[1]] = match[2].trim().replace(/^(['"])(.*)\1$/, "$2");
   }
 });

@@ -7,7 +7,7 @@ const accountsPath = `${e2eDir}/accounts.env`;
 const accounts: Record<string, string> = {};
 if (existsSync(accountsPath)) {
   for (const line of readFileSync(accountsPath, "utf8").split(/\r?\n/)) {
-    const match = line.match(/^\s*([A-Z_]+)=(.*)$/);
+    const match = line.match(/^\s*([A-Z0-9_]+)=(.*)$/);
     if (match) accounts[match[1]] = match[2].trim().replace(/^(['"])(.*)\1$/, "$2");
   }
 }
