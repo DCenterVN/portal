@@ -20,7 +20,7 @@ Hợp đồng backend: [inbound-receiving.md](../../../../inventory/.aidlc/specs
 - FR-2: nhận từng dòng.
 - AC-2: Mỗi dòng nhập: mã lô NCC (bắt buộc), lượng thực nhận (>0, ≤3 số lẻ), HSD (sau hôm nay), nhiệt độ nhận (°C). Nút "Nhận dòng này" tắt cho đến khi đủ trường + đủ ảnh. Thành công → dòng chuyển "Đã nhận", hiện lượng thực nhận.
 - FR-3: ảnh bắt buộc.
-- AC-3: Mỗi dòng có 2 ô: "Ảnh hàng thực nhận" (JPEG/PNG/WebP, purpose `DELIVERED_GOODS`) và "Chứng từ giao hàng" (ảnh hoặc PDF, purpose `DELIVERY_DOCUMENT`). Chọn file → presign → upload → finalize → hiện "Đã tải lên" + ảnh xem trước; lỗi tải hiện tại ô, cho chọn lại. Thiếu một trong hai → không nhận được.
+- AC-3: Mỗi dòng có 2 ô: "Ảnh hàng thực nhận" (JPEG/PNG/WebP, purpose `DELIVERED_GOODS`) và "Chứng từ giao hàng" (ảnh JPEG/PNG/WebP, purpose `DELIVERY_DOCUMENT`; PDF không thay được ảnh chứng từ bắt buộc — `../inventory/.aidlc/specs/inbound-trace-storage.md:122`, backend không đếm PDF `receipt_evidence.go:96-98`; ô PDF bổ sung để task sau). Chọn file → presign → upload → finalize → hiện "Đã tải lên" + ảnh xem trước; lỗi tải hiện tại ô, cho chọn lại. Thiếu một trong hai → không nhận được.
 - FR-4: bấm lại an toàn.
 - AC-4: Mỗi lần nhận dòng có một `receive_attempt_ref` (UUID v4 sinh ở client, giữ trong RAM cho đến khi thành công) và một `Idempotency-Key` cố định theo body; bấm lại / mạng lỗi rồi gửi lại → cùng key, backend trả kết quả cũ, không tạo lô thứ hai.
 - FR-5: lệch số lượng.
@@ -32,7 +32,7 @@ Hợp đồng backend: [inbound-receiving.md](../../../../inventory/.aidlc/specs
 - [frontend.md](../../../../platform-docs/standards/frontend.md), [ui-ux.md](../../../../platform-docs/standards/ui-ux.md), [file-upload.md](../../../../platform-docs/standards/file-upload.md) (luật UP-xx: presign → upload thẳng MinIO → finalize; file không đi qua BFF).
 - Quyền: `inventory:goods_receipt:update` (receive, variance, evidence), `inventory:supplier:read` (đọc phiếu). Kiểm bằng `useAccess().can` như `use-goods-receipt.ts:18`.
 - Reuse, cấm viết lại: `forwardInventory` (`lib/api/inventory-bff.ts:9`); `inventoryRequest`/`inventoryMutation` (`lib/api/suppliers`); SHA-256 + upload form (`lib/api/agreement-documents.ts:23-30`); `getSupplierHistory` (`lib/api/supplier-history`); `getContractMaterials` để lấy tên; UI `Field`, `TextInput`, `Button`, `Table`, `ErrorState`, `Skeleton`, `ReceiptDateInput` (`features/inventory/receipt-date-input.tsx`). Ô chọn file theo mẫu `features/inventory/supplier-photo-field.tsx`.
-- Giới hạn file: ảnh và PDF đều ≤5 MB (`MaxReceiptEvidenceBytes = 5 * 1024 * 1024`, `inventory/internal/domain/receipt_evidence.go:16`); PDF chỉ cho purpose `DELIVERY_DOCUMENT` (`receipt_evidence.go:96`). Trong một lần nhận, 2 file trùng SHA-256 bị từ chối (`receipt_evidence.go:76-79`).
+- Giới hạn file: ảnh và PDF đều ≤5 MB (`MaxReceiptEvidenceBytes = 5 * 1024 * 1024`, `inventory/internal/domain/receipt_evidence.go:16`); màn này không nhận PDF (xem AC-3). Trong một lần nhận, 2 file trùng SHA-256 bị từ chối (`receipt_evidence.go:76-79`).
 
 ## UX
 - Một màn, các dòng phiếu xếp dạng thẻ (mobile được), mỗi thẻ: tên + dự kiến | 4 ô nhập | 2 ô ảnh | nút nhận. Đầu màn: NCC, ngày dự kiến, trạng thái. Cuối màn: tổng dự kiến/thực nhận + mục lệch (chỉ khi cần).
@@ -63,12 +63,13 @@ Hợp đồng backend: [inbound-receiving.md](../../../../inventory/.aidlc/specs
 - features/inventory/supplier-receipts-view.tsx
 - features/inventory/goods-receipt-form.tsx
 - features/inventory/use-goods-receipt.ts
+- lib/fetcher.ts
 - e2e/goods-receipt-receive.spec.ts
 
 ## Tests planned
 - TC-1 | AC-3, AC-4 | unit | `npx vitest run lib/api/goods-receipt-receive.test.ts` (đúng path BFF, body, Idempotency-Key giữ nguyên khi gửi lại, schema từ chối response sai)
 - TC-2 | toàn bộ | type+lint+build | `npx tsc --noEmit && npm run lint && npx next build --webpack`
-- TC-3 | AC-1..AC-5 | e2e DEV, chromium headless workers=1 | `npx playwright test e2e/goods-receipt-receive.spec.ts`: tạo phiếu 1 dòng → nhận với 1 ảnh PNG + 1 PDF → dòng "Đã nhận"; bấm lại không tạo lô thứ hai (kiểm `GET /inventory/inventory-lots`)
+- TC-3 | AC-1..AC-5 | e2e DEV, chromium headless workers=1 | `npx playwright test e2e/goods-receipt-receive.spec.ts`: tạo phiếu 1 dòng → nhận với 2 ảnh PNG khác nhau (hàng + chứng từ) → dòng "Đã nhận"; bấm lại không tạo lô thứ hai (kiểm `GET /inventory/inventory-lots`)
 - Không viết unit test cho component (luật 11/10 "không test thừa").
 
 ## Slices
@@ -77,6 +78,7 @@ Hợp đồng backend: [inbound-receiving.md](../../../../inventory/.aidlc/specs
 - [ ] S3: màn nhận hàng từng dòng kèm 2 ô ảnh (files: app/(console)/inventory/goods-receipts/[id]/receive/page.tsx, features/inventory/goods-receipt-receive.tsx, features/inventory/use-goods-receipt-receive.ts, features/inventory/receipt-evidence-field.tsx; test: npx tsc --noEmit && npm run lint)
 - [ ] S4: mục lệch số lượng >5% (files: features/inventory/goods-receipt-receive.tsx, features/inventory/use-goods-receipt-receive.ts; test: npx tsc --noEmit && npm run lint)
 - [ ] S5: nút "Nhận hàng" ở lịch sử NCC và sau khi tạo phiếu (files: features/inventory/supplier-receipts-view.tsx, features/inventory/goods-receipt-form.tsx, features/inventory/use-goods-receipt.ts; test: npx vitest run features/inventory)
+- [ ] S5b: chứng từ chỉ nhận ảnh (spec inbound-trace-storage.md:122); đăng ký route nhận hàng vào CONSOLE_ROUTES (`lib/fetcher.ts:2`, proxy.test/fetcher.test đang đỏ); bỏ `rounded-2xl` theo ui-rules-gate; Link dùng route có kiểu thay chuỗi (files: features/inventory/goods-receipt-receive.tsx, lib/fetcher.ts, features/inventory/goods-receipt-form.tsx, features/inventory/supplier-receipts-view.tsx; test: npm test && npm run typecheck && npm run lint)
 - [ ] S6: e2e DEV tạo → nhận → kiểm lô (files: e2e/goods-receipt-receive.spec.ts; test: npx playwright test e2e/goods-receipt-receive.spec.ts)
 
 ## Risks / rollback

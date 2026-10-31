@@ -1,7 +1,7 @@
 {
   "id": "PORTAL-INBOUND-001",
   "title": "Nhận hàng phiếu nhập kèm ảnh bằng chứng",
-  "description": "worker: unassigned · story: US-INBOUND-UX-001 · sprint: 01 · slices: 0/6 · next: verification: verification.json missing",
+  "description": "worker: unassigned · story: US-INBOUND-UX-001 · sprint: 01 · slices: 0/7 · next: verification: verdict BLOCKED != PASS",
   "pipeline": "sdlc",
   "agent": null,
   "agents": [
@@ -17,7 +17,7 @@
   "currentStep": 4,
   "status": "in_progress",
   "createdAt": "2026-10-31T14:34:32+00:00",
-  "updatedAt": "2026-10-31T14:37:22+00:00",
+  "updatedAt": "2026-10-31T15:09:56+00:00",
   "stepStates": [
     {
       "agent": "sdlc-discovery",
@@ -70,7 +70,9 @@
       "runStatus": "awaiting_work",
       "startedAt": null,
       "finishedAt": null,
-      "artifactsProduced": []
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-INBOUND-001/handback.md"
+      ]
     },
     {
       "agent": "sdlc-integration",
@@ -79,7 +81,9 @@
       "runStatus": "pending",
       "startedAt": null,
       "finishedAt": null,
-      "artifactsProduced": []
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-INBOUND-001/artifacts/verification.json"
+      ]
     },
     {
       "agent": "sdlc-e2e",
@@ -88,7 +92,9 @@
       "runStatus": "pending",
       "startedAt": null,
       "finishedAt": null,
-      "artifactsProduced": []
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-INBOUND-001/artifacts/verification.json"
+      ]
     },
     {
       "agent": "sdlc-release",

@@ -2,8 +2,8 @@
   "task": "PORTAL-INBOUND-001",
   "actor": "user:171709704+dawnmoriaty@users.noreply.github.com",
   "worker": null,
-  "ts": "2026-10-31T14:37:22+00:00",
-  "plan_hash": "bbc2af852bd0a15b61b0eeae54ef2f2ae844c18dee930de83626c44ddf0b3f8b",
+  "ts": "2026-10-31T15:09:56+00:00",
+  "plan_hash": "7db4c1a980d3bd94416b69dd3a095072d304fb2876483c9921f52462f66609e9",
   "testkit_hash": null,
   "files": [
     "app/api/inventory/goods-receipts/[id]/receive/route.ts",
@@ -19,6 +19,7 @@
     "features/inventory/supplier-receipts-view.tsx",
     "features/inventory/goods-receipt-form.tsx",
     "features/inventory/use-goods-receipt.ts",
+    "lib/fetcher.ts",
     "e2e/goods-receipt-receive.spec.ts"
   ],
   "verdict": "PASS"
