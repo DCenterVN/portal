@@ -11,6 +11,7 @@
 ## Scope
 - Outcome: Dawn mở 1 báo cáo HTML, thấy **mỗi ca e2e** có video trình duyệt, trace từng bước và kịch bản tiếng Việt. Trước 31/10: `playwright.config.ts:12` `reporter: "list"`, không video, không trace, nên Dawn chỉ có chữ PASS do agent báo.
 - Decision: EXTEND cấu hình hiện có bằng cờ `E2E_RECORD=1`. Không ghi video khi cờ tắt, để test hằng ngày vẫn nhanh.
+- Phát hiện 31/10 khi bắt đầu S1: 7 spec + config fooddev-v2 tắt cứng video/trace; mỗi bộ đăng nhập một kiểu (storageState trong `.cache/tmp`, biến môi trường, ID fixture dán tay); runner sinh `SUPPLIER_CONTRACT_CONTEXT` không có trong repo. Nên S1 tách S1a/S1b/S1c.
 - Ngoài phạm vi: sửa ca e2e đang đỏ (chỉ ghi lại, mỗi ca đỏ thành task sau), chạy project mobile (hoãn từ 27/10), visual baseline.
 
 ## Requirements
@@ -44,6 +45,14 @@
 - .gitignore
 - e2e/KICH-BAN.md
 - e2e/README.md
+- e2e/setup/login.setup.ts
+- e2e/fooddev-v2/playwright.fooddev-v2.config.ts
+- e2e/supplier-contract/supplier-contract.spec.ts
+- e2e/supplier-contract/permissions.spec.ts
+- e2e/supplier-contract/receipt-gate.spec.ts
+- e2e/inventory-ux/inventory-ux.spec.ts
+- e2e/rbac/rbac.spec.ts
+- e2e/fooddev-pack/fooddev-pack.spec.ts
 - .aidlc/runs/PORTAL-E2E-VIDEO-001/ket-qua.md
 
 ## Tests planned
@@ -53,8 +62,10 @@
 ## Slices
 Mỗi slice dừng chờ Dawn xem.
 - [ ] S0: rà hành trình chức năng ↔ use case ↔ ca e2e, chỉ đọc code/spec (files: .aidlc/runs/PORTAL-E2E-VIDEO-001/hanh-trinh.md; test: test -s .aidlc/runs/PORTAL-E2E-VIDEO-001/hanh-trinh.md)
-- [ ] S1: cờ ghi video/trace + đổi đích DEV + lệnh e2e:record (files: playwright.config.ts, package.json, .gitignore; test: npx playwright test --list --project=desktop)
-- [ ] S2a: kịch bản 1 bộ mẫu `supplier-contract` (4 ca) + hướng dẫn xem lại, chạy ghi hình riêng bộ này để Dawn duyệt mẫu (files: e2e/KICH-BAN.md, e2e/README.md; test: npm run e2e:record -- e2e/supplier-contract)
+- [ ] S1a: cờ ghi hình có hiệu lực ở MỌI bộ: bỏ `trace/video: "off"` cứng ở supplier-contract.spec + config riêng fooddev-v2 (đọc `E2E_RECORD`), đổi đích DEV qua `E2E_BASE_URL`, lệnh e2e:record (files: playwright.config.ts, package.json, .gitignore, e2e/fooddev-v2/playwright.fooddev-v2.config.ts, e2e/supplier-contract/supplier-contract.spec.ts; test: npx playwright test --list --project=desktop)
+- [ ] S1b: bỏ `trace/video: "off"` ở 6 spec còn lại, chỉ sửa dòng `test.use`, không đổi bước test (files: e2e/supplier-contract/permissions.spec.ts, e2e/supplier-contract/receipt-gate.spec.ts, e2e/inventory-ux/inventory-ux.spec.ts, e2e/rbac/rbac.spec.ts, e2e/fooddev-pack/fooddev-pack.spec.ts; test: npx playwright test --list --project=desktop)
+- [ ] S1c: 1 bước đăng nhập chung: `e2e/setup/login.setup.ts` đăng nhập DEV các vai (kho, quản trị, khách, FOOD_DEV) từ file ngoài repo `~/work/ticket/.cache/e2e/accounts.env` (không commit, không in mật khẩu), ghi storageState vào `.cache/e2e/state/`; các spec đọc biến state như hiện tại. Thiếu tài khoản thì dừng, báo Claude, không tự tạo (files: e2e/setup/login.setup.ts, playwright.config.ts, e2e/README.md; test: npx playwright test e2e/setup --project=setup)
+- [ ] S2a: kịch bản 1 bộ mẫu `inventory-ux` (3 ca: phiếu nhập nháp nhiều dòng, ngày sai, danh sách + hồ sơ NCC; chỉ cần vai kho — bộ supplier-contract thiếu runner sinh ngữ cảnh) + hướng dẫn xem lại, chạy ghi hình riêng bộ này để Dawn duyệt mẫu (files: e2e/KICH-BAN.md, e2e/README.md; test: npm run e2e:record -- e2e/inventory-ux)
 - [ ] S2b: kịch bản 10 bộ còn lại theo mẫu đã duyệt (files: e2e/KICH-BAN.md; test: npx playwright test --list --project=desktop)
 - [ ] S3: chạy toàn bộ trên DEV có ghi hình, ghi bảng kết quả (files: .aidlc/runs/PORTAL-E2E-VIDEO-001/ket-qua.md; test: npm run e2e:record)
 

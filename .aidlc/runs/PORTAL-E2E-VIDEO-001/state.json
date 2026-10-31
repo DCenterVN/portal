@@ -1,7 +1,7 @@
 {
   "id": "PORTAL-E2E-VIDEO-001",
   "title": "E2E có video, trace và kịch bản tiếng Việt để Dawn xem lại",
-  "description": "worker: unassigned · story: US-E2E-VIDEO-001 · sprint: 01 · slices: 0/5 · next: verification: verification.json missing",
+  "description": "worker: unassigned · story: US-E2E-VIDEO-001 · sprint: 01 · slices: 0/7 · next: verification: verification.json missing",
   "pipeline": "sdlc",
   "agent": null,
   "agents": [
@@ -17,7 +17,7 @@
   "currentStep": 4,
   "status": "in_progress",
   "createdAt": "2026-10-31T15:01:37+00:00",
-  "updatedAt": "2026-10-31T15:09:56+00:00",
+  "updatedAt": "2026-10-31T15:37:03+00:00",
   "stepStates": [
     {
       "agent": "sdlc-discovery",

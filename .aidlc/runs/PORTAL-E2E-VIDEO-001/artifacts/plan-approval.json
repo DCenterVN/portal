@@ -2,8 +2,8 @@
   "task": "PORTAL-E2E-VIDEO-001",
   "actor": "user:171709704+dawnmoriaty@users.noreply.github.com",
   "worker": null,
-  "ts": "2026-10-31T15:09:56+00:00",
-  "plan_hash": "7fd3c2d19c9d813e4934608406e8f0c8a8f39357349cf7a2e5a859cf6854d180",
+  "ts": "2026-10-31T15:37:03+00:00",
+  "plan_hash": "fdbc1582aa7ee2adc4065b73a775e58c708f2cf73de46d8c59385c0100157eb4",
   "testkit_hash": null,
   "files": [
     ".aidlc/runs/PORTAL-E2E-VIDEO-001/hanh-trinh.md",
@@ -12,6 +12,14 @@
     ".gitignore",
     "e2e/KICH-BAN.md",
     "e2e/README.md",
+    "e2e/setup/login.setup.ts",
+    "e2e/fooddev-v2/playwright.fooddev-v2.config.ts",
+    "e2e/supplier-contract/supplier-contract.spec.ts",
+    "e2e/supplier-contract/permissions.spec.ts",
+    "e2e/supplier-contract/receipt-gate.spec.ts",
+    "e2e/inventory-ux/inventory-ux.spec.ts",
+    "e2e/rbac/rbac.spec.ts",
+    "e2e/fooddev-pack/fooddev-pack.spec.ts",
     ".aidlc/runs/PORTAL-E2E-VIDEO-001/ket-qua.md"
   ],
   "verdict": "PASS"
