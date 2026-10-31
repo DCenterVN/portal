@@ -63,3 +63,24 @@ Không sửa inventory/Kong, không thêm dependency, không git add/commit. Sym
 - Lấy cách tách lượng dự kiến với lượng nhận theo từng nguyên liệu và kiểm đơn vị trước khi ghi nhận.
 - Lấy ý tưởng kiểm trạng thái phiếu và điều kiện chất lượng trong luồng nhận, giữ backend inventory làm nơi quyết định.
 - Bỏ rejected warehouse, putaway rule, stock posting và các nghiệp vụ ERP khác vì không thuộc S1–S5; không sao chép code hoặc thêm dependency.
+
+## S5b
+
+- Thêm `/inventory/goods-receipts/[id]/receive` vào `CONSOLE_ROUTES`.
+- Hai khối nhận hàng/lệch số lượng dùng `rounded-lg`, cùng kiểu với các khối inventory hiện có; không sửa test hoặc baseline.
+- Link sau tạo phiếu dùng kiểu `Route` của Next theo mẫu có sẵn trong repo; Link ở lịch sử NCC dùng `{ pathname, query }`.
+- Ô "Chứng từ giao hàng" chỉ nhận JPEG/PNG/WebP qua `accept={images}`, bỏ PDF theo AC-3 đã sửa. PDF bổ sung vẫn thuộc task sau; ghi chú PDF trong phần S1–S5 phía trên là trạng thái trước S5b.
+
+Kết quả kiểm tra ngày 31/10/2026:
+
+- `npx next typegen && npm run typecheck`: PASS, exit 0. Hoàn nguyên thay đổi tự sinh ở `next-env.d.ts` để giữ phạm vi bốn file; chạy lại `npm run typecheck` vẫn PASS.
+- `ESBUILD_BINARY_PATH=$HOME/.local/share/esbuild/esbuild-0.21.5 npm test`: đã chạy toàn bộ, không lọc path. Cả bốn ca đỏ trong brief đã PASS: hai ca proxy, một ca failed refresh, một ca UI rules.
+- Toàn bộ suite chưa có tổng kết cuối: runner ngừng xuất output và phải dừng bằng SIGINT, exit 130. Chạy lại toàn bộ bằng Vitest với cùng hai loại trừ E2E của npm script, `--no-cache --minWorkers=1 --maxWorkers=2`, rồi thử thêm `--pool=threads`, vẫn không kết thúc. Lần chạy cuối ghi nhận **1612/1615 test PASS trong 81 file đã hoàn tất**, 3 FAIL; 2/83 file chưa báo kết quả (`lib/api/activation-contract.test.ts`, `app/(auth)/legacy-context.test.ts`). Đây là số đếm từ output đã hoàn tất, không phải tổng kết PASS của toàn bộ suite.
+- Ba test đỏ ngoài phạm vi, giữ nguyên trong `lib/api/supplier-contract-bff.test.ts`:
+  - `metadata taxonomy sinh từ inventory và snapshot giữ nguyên bytes`: ENOENT `../inventory/api/openapi.public.yaml`.
+  - `bổ sung chứng từ dùng quyền supplier:update và metadata sinh từ contract`: ENOENT `../inventory/api/permissions.json`.
+  - `ảnh NCC có đủ operations và quyền sinh từ contract`: ENOENT `../inventory/api/permissions.json`.
+- `node node_modules/eslint/bin/eslint.js --ignore-pattern e2e/dev-walkthrough/ .`: PASS, exit 0.
+- `git diff --check`: PASS.
+
+Chỉ sửa bốn file triển khai được chỉ định và mục handback này. Không thêm helper, không sửa test/baseline, không git add/commit. Chưa xác nhận toàn bộ npm test xanh do các lỗi ngoài phạm vi và runner không kết thúc nêu trên.

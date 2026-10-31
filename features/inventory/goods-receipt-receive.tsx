@@ -19,7 +19,7 @@ function ReceiptLine({ row, model, previous }: { row: Row; model: Model; previou
   const patch = (changes: Partial<Row>) => model.patch(id, changes);
   const evidence = { receipt: model.setup.kind === "ready" ? model.setup.receipt.id : "", line: id, attempt: row.attempt, disabled: locked, onReload: model.onReload };
   const title = model.setup.kind === "ready" ? model.setup.names[row.line.sku_ref] : undefined;
-  return <article className="grid min-w-0 gap-4 rounded-2xl border border-line bg-surface p-6" aria-busy={row.busy}>
+  return <article className="grid min-w-0 gap-4 rounded-lg border border-line bg-surface p-6" aria-busy={row.busy}>
     <h2 className="text-xl font-semibold">{title ?? "Nguyên liệu đã ngừng cung cấp"}</h2>
     <p>Dự kiến: <span className="tabular-nums">{row.line.expected_quantity.replace(".", ",")} {row.line.uom}</span></p>
     {row.done ? <p role="status">Đã nhận · {row.line.actual_quantity.replace(".", ",")} {row.line.uom}</p> : <>
@@ -33,7 +33,7 @@ function ReceiptLine({ row, model, previous }: { row: Row; model: Model; previou
       </fieldset>
       <div className="grid min-w-0 gap-4 sm:grid-cols-2">
         <ReceiptEvidenceField {...evidence} purpose="DELIVERED_GOODS" label="Ảnh hàng thực nhận" accept={images} hashes={[row.document, row.variance].flatMap(item => item ? [item.sha256] : [])} evidence={row.goods} onChange={goods => patch({ goods })} />
-        <ReceiptEvidenceField {...evidence} purpose="DELIVERY_DOCUMENT" label="Chứng từ giao hàng" accept={`${images},application/pdf`} hashes={[row.goods, row.variance].flatMap(item => item ? [item.sha256] : [])} evidence={row.document} previous={previous} onChange={document => patch({ document })} />
+        <ReceiptEvidenceField {...evidence} purpose="DELIVERY_DOCUMENT" label="Chứng từ giao hàng" accept={images} hashes={[row.goods, row.variance].flatMap(item => item ? [item.sha256] : [])} evidence={row.document} previous={previous} onChange={document => patch({ document })} />
       </div>
       {row.quantity && Number(row.quantity.replace(",", ".")) !== Number(row.line.expected_quantity) && <ReceiptEvidenceField {...evidence} purpose="QUANTITY_VARIANCE" label="Ảnh lệch số lượng" accept={images} hashes={[row.goods, row.document].flatMap(item => item ? [item.sha256] : [])} evidence={row.variance} onChange={variance => patch({ variance })} />}
       {row.error && <ErrorState title={row.error} onRetry={row.reload ? model.onReload : () => void model.receive(row)} />}
@@ -48,7 +48,7 @@ function QuantityVariance({ model }: { model: Model }) {
   const row = model.varianceRow;
   if (!row) return null;
   const state = model.varianceState;
-  return <section className="grid gap-4 rounded-2xl border border-line p-6" aria-label="Ghi lệch số lượng" aria-busy={state.busy}>
+  return <section className="grid gap-4 rounded-lg border border-line p-6" aria-label="Ghi lệch số lượng" aria-busy={state.busy}>
     <h2 className="text-xl font-semibold">Ghi lệch số lượng</h2>
     <p>Tổng thực nhận lệch tổng dự kiến hơn 5%. Ghi giải thích và ít nhất một ảnh lệch số lượng.</p>
     {state.done ? <p role="status">Đã ghi lệch số lượng</p> : <>

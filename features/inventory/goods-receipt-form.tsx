@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import type { Route } from "next";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { EntityPicker } from "@/components/ui/entity-picker";
 import { PageShell, PageHeader } from "@/components/ui/page";
@@ -23,7 +24,7 @@ export function GoodsReceiptView(props: GoodsReceiptViewProps) {
     {setupKind === "loading" && <Skeleton title="Đang tải nhà cung cấp, nguyên liệu và chi nhánh" />}
     {setupKind === "error" && <ErrorState title="Không tải được dữ liệu tạo phiếu" onRetry={props.onRetry} />}
     {setupKind === "ready" && suppliers.length === 0 && <EmptyState title="Chưa có nhà cung cấp đang hợp tác" action={<Link href="/inventory/suppliers">Mở nhà cung cấp</Link>} />}
-    {success ? <div className="my-6 grid gap-3"><p role="status">{success}</p>{props.canReceive && props.receiveHref && <Link className={buttonVariants({ variant: "default" })} href={props.receiveHref}>Nhận hàng ngay</Link>}</div> : <form onSubmit={props.onSubmit} className="mt-6 grid min-w-0 gap-4">
+    {success ? <div className="my-6 grid gap-3"><p role="status">{success}</p>{props.canReceive && props.receiveHref && <Link className={buttonVariants({ variant: "default" })} href={props.receiveHref as Route}>Nhận hàng ngay</Link>}</div> : <form onSubmit={props.onSubmit} className="mt-6 grid min-w-0 gap-4">
       <fieldset disabled={busy || setupKind !== "ready"} className="grid min-w-0 gap-4">
         <EntityPicker label="Nhà cung cấp" name="receipt-supplier" serializeValue={false} items={suppliers} status={setupKind}
           getId={item => item.id} getLabel={item => item.name} getMeta={item => item.code} value={supplier} onChange={props.onSupplier} required />
