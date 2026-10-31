@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest, NextResponse } from "next/server";
 vi.mock("server-only", () => ({}));
 import { POST as customer } from "../../app/api/auth/login/route";
+import { POST as activate } from "../../app/api/auth/activate/route";
 import { POST as staff } from "../../app/api/auth/staff/login/route";
 import { customerOperation, acceptStaffInvite, switchStaffContext, safeLanding } from "./auth-journey-bff";
 const reply = (data: unknown, status = 200, cookies: string[] = []) => { const headers = new Headers({"content-type": "application/json"}); cookies.forEach(c => headers.append("set-cookie", c)); return new Response(JSON.stringify(data), {status, headers}); };
@@ -144,7 +145,7 @@ describe("S5 auth client IP forwarding", () => {
   });
   const ops = [
     ["register", {email: "a@example.com", password: "password-1234"}],
-    ["activate", {token: "token"}], ["resend", {email: "a@example.com"}],
+    ["activate", {token: "token", password: "password-1234"}], ["resend", {email: "a@example.com"}],
     ["forgot", {email: "a@example.com"}], ["reset", {token: "token", new_password: "password-1234"}],
   ] as const;
   it.each(ops)("%s sends sanitized IP and preserves 429", async (op, body) => {
@@ -183,5 +184,175 @@ describe("S5 auth client IP forwarding", () => {
   it("unknown mode returns 503 before fetch", async () => {
     vi.stubEnv("PORTAL_CLIENT_IP_SOURCE", "invalid"); const fetch = vi.fn(); vi.stubGlobal("fetch", fetch);
     expect((await customer(edge())).status).toBe(503); expect(fetch).not.toHaveBeenCalled();
+  });
+});
+
+
+describe("S2 customer activation contract", () => {
+  beforeEach(() => vi.stubEnv("PORTAL_CLIENT_IP_SOURCE", undefined));
+  afterEach(() => vi.unstubAllGlobals());
+  const body = {token: "activation-fixture", password: "password-1234"};
+
+  it.each([
+    ["token only", {token: body.token}],
+    ["missing token", {password: body.password}],
+    ["empty token", {...body, token: ""}],
+    ["numeric token", {...body, token: 42}],
+    ["numeric password", {...body, password: 42}],
+    ["null password", {...body, password: null}],
+    ["confirm", {...body, confirm: body.password}],
+    ["new_password", {token: body.token, new_password: body.password}],
+    ["email", {...body, email: "fixture@example.com"}],
+    ["roles", {...body, roles: "ADMIN"}],
+    ["journey", {...body, journey: "employee"}],
+    ["return URL", {...body, return_url: "/console"}],
+  ])("rejects %s before upstream", async (_label, input) => {
+    const fetch = vi.fn().mockResolvedValue(reply({code: 200, status: "success", message: "OK"}));
+    vi.stubGlobal("fetch", fetch);
+    const res = await activate(request(input));
+    expect(res.status).toBe(400);
+    expect(fetch).not.toHaveBeenCalled();
+    expect(res.headers.get("cache-control")).toBe("no-store");
+    expect(res.headers.get("set-cookie")).toBeNull();
+  });
+
+  it.each([
+    ["11 code points", "a".repeat(11)],
+    ["257 ASCII bytes", "a".repeat(257)],
+    ["258 UTF-8 bytes", "é".repeat(129)],
+    ["11 emoji code points", "😀".repeat(11)],
+  ])("rejects password policy boundary %s before upstream", async (_label, password) => {
+    const fetch = vi.fn(); vi.stubGlobal("fetch", fetch);
+    const res = await activate(request({...body, password}));
+    expect(res.status).toBe(400);
+    expect(await res.json()).toMatchObject({error: "VALIDATION_ERROR"});
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["12 code points", "a".repeat(12)],
+    ["256 ASCII bytes", "a".repeat(256)],
+    ["256 UTF-8 bytes", "é".repeat(128)],
+    ["12 emoji code points", "😀".repeat(12)],
+    ["exact whitespace and decomposed Unicode", "  e\u0301".repeat(4)],
+  ])("forwards exact token and password at %s once without a session", async (_label, password) => {
+    const fetch = vi.fn().mockResolvedValue(reply({code: 200, status: "success", message: "OK",
+      access_token: "upstream-private", data: {password: "upstream-private"}}, 200, ["refresh_token=private; HttpOnly"]));
+    vi.stubGlobal("fetch", fetch);
+    const res = await activate(request({...body, password}));
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({status: "success"});
+    expect(fetch).toHaveBeenCalledTimes(1);
+    const [url, init] = fetch.mock.calls[0];
+    expect(url).toMatch(/\/auth\/activate$/);
+    expect(init).toMatchObject({method: "POST", cache: "no-store"});
+    expect(JSON.parse(init.body)).toEqual({...body, password});
+    expect(Object.fromEntries(new Headers(init.headers))).toEqual({"content-type": "application/json"});
+    expect(res.headers.get("cache-control")).toBe("no-store");
+    expect(res.headers.get("set-cookie")).toBeNull();
+  });
+
+  it("S6c forwards twelve spaces without trimming the activation password", async () => {
+    const password = " ".repeat(12);
+    const fetch = vi.fn().mockResolvedValue(reply({code: 200, status: "success", message: "OK"}));
+    vi.stubGlobal("fetch", fetch);
+    const res = await activate(request({...body, password}));
+    expect(res.status).toBe(200);
+    expect(fetch).toHaveBeenCalledOnce();
+    expect(JSON.parse(fetch.mock.calls[0][1].body)).toEqual({...body, password});
+  });
+
+  it.each([null, "<html>Too many requests</html>", "{}", '{"message":"gateway limit","access_token":"private"}', "[]"])(
+    "S6c preserves unstructured 429 (%#) with canonical error and Retry-After", async payload => {
+      const fetch = vi.fn().mockResolvedValue(new Response(payload, {status: 429,
+        headers: {"Retry-After": "30", "Set-Cookie": "refresh_token=private"}}));
+      vi.stubGlobal("fetch", fetch);
+      const res = await activate(request(body));
+      expect(res.status).toBe(429);
+      expect(await res.json()).toEqual({error: "rate_limit_exceeded"});
+      expect(res.headers.get("retry-after")).toBe("30");
+      expect(res.headers.get("cache-control")).toBe("no-store");
+      expect(res.headers.get("set-cookie")).toBeNull();
+      expect(fetch).toHaveBeenCalledOnce();
+    }
+  );
+
+  it("accepts the auth success envelope with no data", async () => {
+    const fetch = vi.fn().mockResolvedValue(reply({code: 200, status: "success", message: "OK"}));
+    vi.stubGlobal("fetch", fetch);
+    const res = await activate(request(body));
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({status: "success"});
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([201, 202])("rejects upstream success status %s instead of claiming activation", async status => {
+    const fetch = vi.fn().mockResolvedValue(reply({code: 200, status: "success", message: "OK"}, status));
+    vi.stubGlobal("fetch", fetch);
+    const res = await activate(request(body));
+    expect(res.status).toBe(503);
+    expect(await res.json()).toMatchObject({error: "INTERNAL_ERROR"});
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it.each(["cross-site", "text/plain", "malformed JSON"])("rejects %s before upstream", async kind => {
+    const req = request(body);
+    if (kind === "cross-site") req.headers.set("sec-fetch-site", "cross-site");
+    if (kind === "text/plain") req.headers.set("content-type", "text/plain");
+    const input = kind === "malformed JSON" ? new NextRequest(req.url, {
+      method: "POST", headers: req.headers, body: "{",
+    }) : req;
+    const fetch = vi.fn(); vi.stubGlobal("fetch", fetch);
+    const res = await activate(input);
+    expect(res.status).toBe(kind === "malformed JSON" ? 400 : 403);
+    expect(fetch).not.toHaveBeenCalled();
+    expect(res.headers.get("cache-control")).toBe("no-store");
+  });
+
+  it.each([
+    [400, "BAD_REQUEST", null], [400, "invalid_token", null],
+    [401, "UNAUTHORIZED", null], [429, "rate_limit_exceeded", "30"],
+    [503, "service_busy", "Wed, 07 Oct 2026 00:00:00 GMT"],
+  ])("preserves upstream %s/%s and retry metadata once", async (status, code, retry) => {
+    const headers = new Headers({"set-cookie": "refresh_token=private; HttpOnly"});
+    if (retry) headers.set("retry-after", retry);
+    const fetch = vi.fn().mockResolvedValue(new Response(JSON.stringify({
+      code: status, status: "error", errors: {error_code: code},
+      retryable: true, retry_after_ms: 1500, access_token: "private", password: "private",
+    }), {status, headers}));
+    vi.stubGlobal("fetch", fetch);
+    const res = await activate(request(body));
+    expect(res.status).toBe(status);
+    expect(await res.json()).toEqual({error: code, retryable: true, retry_after_ms: 1500});
+    expect(res.headers.get("retry-after")).toBe(retry);
+    expect(res.headers.get("cache-control")).toBe("no-store");
+    expect(res.headers.get("set-cookie")).toBeNull();
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([
+    ["missing envelope", {}], ["legacy activated", {status: "activated"}],
+    ["wrong code", {code: 201, status: "success", message: "OK"}],
+    ["error status", {code: 200, status: "error", message: "OK"}],
+    ["wrong message", {code: 200, status: "success", message: "unexpected"}],
+    ["array", []], ["null", null],
+  ])("fails closed for upstream 200 with %s", async (_label, payload) => {
+    const fetch = vi.fn().mockResolvedValue(reply(payload)); vi.stubGlobal("fetch", fetch);
+    const res = await activate(request(body));
+    expect(res.status).toBe(503);
+    expect(await res.json()).toMatchObject({error: "INTERNAL_ERROR"});
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(res.headers.get("cache-control")).toBe("no-store");
+    expect(res.headers.get("set-cookie")).toBeNull();
+  });
+
+  it.each(["network", "invalid JSON"])("fails closed for %s without retrying", async kind => {
+    const fetch = kind === "network" ? vi.fn().mockRejectedValue(new Error("fixture transport"))
+      : vi.fn().mockResolvedValue(new Response("not-json", {status: 200}));
+    vi.stubGlobal("fetch", fetch);
+    const res = await activate(request(body));
+    expect(res.status).toBe(503);
+    expect(await res.json()).toMatchObject({error: "INTERNAL_ERROR"});
+    expect(fetch).toHaveBeenCalledTimes(1);
   });
 });

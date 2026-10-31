@@ -248,3 +248,77 @@ describe("review R3 actual console refresh family", () => {
    await expect(fetcher("/api/auth/login")).rejects.toMatchObject({status,code});
   } finally {global.fetch=original;}
  });
+
+
+describe("S2 activation public transport", () => {
+  afterEach(() => vi.unstubAllGlobals());
+  it.each([
+    "/api/auth/activate", "/api/auth/activate?source=email",
+    new URL("http://localhost/api/auth/activate"),
+    new Request("http://localhost/api/auth/activate", {method: "POST"}),
+  ])("activation 401 never refreshes, replays or redirects (%s)", async url => {
+    const location = {pathname: "/activate", href: ""};
+    vi.stubGlobal("window", {location});
+    const response = new Response(JSON.stringify({error: "UNAUTHORIZED"}), {status: 401});
+    const fetch = vi.fn().mockResolvedValue(response); vi.stubGlobal("fetch", fetch);
+    const init = {method: "POST", body: JSON.stringify({token: "fixture", password: "password-1234"})};
+    expect(await apiFetch(url, init)).toBe(response);
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(fetch).toHaveBeenCalledWith(url, init);
+    expect(location.href).toBe("");
+  });
+
+  it.each([[429, "rate_limit_exceeded", "30"], [503, "service_busy", "Wed, 07 Oct 2026 00:00:00 GMT"]])(
+    "activation %s preserves retry headers and body without replay", async (status, code, retry) => {
+      const response = new Response(JSON.stringify({error: code, retry_after_ms: 1500}), {
+        status, headers: {"Retry-After": retry},
+      });
+      const fetch = vi.fn().mockResolvedValue(response); vi.stubGlobal("fetch", fetch);
+      const res = await apiFetch("/api/auth/activate", {method: "POST"});
+      expect(res.status).toBe(status);
+      expect(res.headers.get("retry-after")).toBe(retry);
+      expect(await res.json()).toEqual({error: code, retry_after_ms: 1500});
+      expect(fetch).toHaveBeenCalledTimes(1);
+    },
+  );
+
+  it("mutationFetcher retains activation error code and body retry delay without redirect", async () => {
+    const location = {pathname: "/activate", href: ""}; vi.stubGlobal("window", {location});
+    const fetch = vi.fn().mockResolvedValue(new Response(JSON.stringify({
+      error: "service_busy", retry_after_ms: 1500, retryable: true,
+    }), {status: 503})); vi.stubGlobal("fetch", fetch);
+    await expect(mutationFetcher("/api/auth/activate", {arg: {token: "fixture", password: "password-1234"}}))
+      .rejects.toMatchObject({status: 503, code: "service_busy", info: {retry_after_ms: 1500, retryable: true}});
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(location.href).toBe("");
+  });
+});
+
+
+describe("S2 activation FetchError retry delay", () => {
+  beforeEach(() => vi.spyOn(Date, "now").mockReturnValue(Date.UTC(2026, 9, 6)));
+  afterEach(() => { vi.restoreAllMocks(); vi.unstubAllGlobals(); });
+  it.each([
+    ["seconds override body", "30", 1500, 30000],
+    ["HTTP date overrides body", "Tue, 06 Oct 2026 00:00:45 GMT", 1500, 45000],
+    ["past date clamps to zero", "Mon, 05 Oct 2026 00:00:00 GMT", 1500, 0],
+    ["zero seconds overrides body", "0", 1500, 0],
+    ["missing header uses milliseconds", null, 1500, 1500],
+    ["invalid header uses milliseconds", "invalid", 1500, 1500],
+    ["negative header uses milliseconds", "-1", 1500, 1500],
+    ["missing metadata", null, undefined, undefined],
+    ["negative body delay", null, -1, undefined],
+    ["string body delay", null, "1500", undefined],
+  ])("%s", async (_label, retry, retry_after_ms, retryAfterMs) => {
+    const headers = new Headers(); if (retry !== null) headers.set("retry-after", retry);
+    const fetch = vi.fn().mockResolvedValue(new Response(JSON.stringify({error: "service_busy", retry_after_ms}), {
+      status: 503, headers,
+    })); vi.stubGlobal("fetch", fetch);
+    const error = await mutationFetcher("/api/auth/activate", {arg: {token: "fixture", password: "password-1234"}})
+      .then(() => { throw new Error("Expected activation failure"); }, error => error);
+    expect(error).toBeInstanceOf(FetchError);
+    expect(error).toMatchObject({status: 503, code: "service_busy"});
+    expect(error.retryAfterMs).toBe(retryAfterMs);
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
+});

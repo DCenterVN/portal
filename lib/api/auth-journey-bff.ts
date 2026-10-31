@@ -89,7 +89,9 @@ async function revoke(req: NextRequest, token: string, cookies: string[]): Promi
 async function upstreamError(upstream: Response): Promise<NextResponse> {
   const data: unknown = await upstream.json().catch(() => null);
   const projected = object(data) ? publicError(data) : null;
-  return projected ? response(projected, upstream.status, upstream.headers.get("retry-after")) : unavailable();
+  if (projected) return response(projected, upstream.status, upstream.headers.get("retry-after"));
+  if (upstream.status === 429) return response({error: "rate_limit_exceeded"}, 429, upstream.headers.get("retry-after"));
+  return unavailable();
 }
 async function loginError(upstream: Response): Promise<NextResponse> {
   const res = await upstreamError(upstream);
@@ -169,17 +171,19 @@ async function authenticateJourney(req: NextRequest, journey: Journey): Promise<
 
 const customerOperations = {
   register: {path: "/auth/register", allowed: ["email", "phone", "password", "display_name"], required: ["password"]},
-  activate: {path: "/auth/activate", allowed: ["token"], required: ["token"]},
+  activate: {path: "/auth/activate", allowed: ["token", "password"], required: ["token", "password"]},
   resend: {path: "/auth/activate/resend", allowed: ["email"], required: ["email"]},
   forgot: {path: "/auth/password/forgot", allowed: ["email"], required: ["email"]},
   reset: {path: "/auth/password/reset", allowed: ["token", "new_password"], required: ["token", "new_password"]},
 } as const;
 export async function customerOperation(req: NextRequest, operation: keyof typeof customerOperations): Promise<NextResponse> {
   const contract = customerOperations[operation];
-  const body = await readFields(req, contract.allowed, contract.required);
+  // Activation password presence and policy are checked below without trimming.
+  const body = await readFields(req, contract.allowed, operation === "activate" ? ["token"] : contract.required);
   if (body instanceof NextResponse) return body;
   if (operation === "register" && ((!body.email && !body.phone) || (typeof body.display_name === "string" && ([...body.display_name].length > 50 || !body.display_name.trim())))) return response({error: "VALIDATION_ERROR", message: "Vui lòng nhập email hoặc số điện thoại và tên tối đa 50 ký tự"}, 400);
-  const password = operation === "register" ? body.password : body.new_password;
+  const password = operation === "register" || operation === "activate" ? body.password : body.new_password;
+  if (operation === "activate" && typeof password !== "string") return response({error: "VALIDATION_ERROR", message: "Vui lòng nhập đầy đủ thông tin"}, 400);
   if (typeof password === "string" && ([...password].length < 12 || new TextEncoder().encode(password).length > 256)) return response({error: "VALIDATION_ERROR", message: "Mật khẩu cần ít nhất 12 ký tự và tối đa 256 byte UTF-8"}, 400);
   try {
     // Auth responses need credential redaction and Retry-After preservation; forwardService lacks both.
@@ -187,6 +191,10 @@ export async function customerOperation(req: NextRequest, operation: keyof typeo
     if (!upstream.ok) return upstreamError(upstream);
     const data: unknown = await upstream.json();
     if (!object(data)) return unavailable();
+    if (operation === "activate") {
+      if (upstream.status !== 200 || data.code !== 200 || data.status !== "success" || data.message !== "OK") return unavailable();
+      return response({status: "success"});
+    }
     return response({...(typeof data.status === "string" ? {status: data.status} : {}), ...(typeof data.message === "string" ? {message: data.message} : {})}, upstream.status, upstream.headers.get("retry-after"));
   } catch { return unavailable(); }
 }

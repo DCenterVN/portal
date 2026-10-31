@@ -6,8 +6,8 @@ export function login(identifier: string, password: string, redirect?: string) {
 export function register(email: string, phone: string, displayName: string, password: string) {
   return mutationFetcher("/api/auth/register", {arg: {...(email ? {email} : {}), ...(phone ? {phone} : {}), ...(displayName ? {display_name: displayName} : {}), password}});
 }
-export function activateAccount(token: string) {
-  return mutationFetcher("/api/auth/activate", {arg: {token}});
+export function activateAccount(token: string, password: string) {
+  return mutationFetcher("/api/auth/activate", {arg: {token, password}});
 }
 export function resendActivation(email: string) {
   return mutationFetcher("/api/auth/activate/resend", {arg: {email}});

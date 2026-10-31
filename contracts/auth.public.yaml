@@ -1,0 +1,665 @@
+openapi: 3.1.0
+info:
+  title: auth public API
+  version: 0.1.0
+paths:
+  /.well-known/jwks.json:
+    get:
+      x-action-key: public
+      x-scope: none
+      x-exposure: public
+      operationId: getJWKS
+      responses:
+        "200": {description: JWKS}
+  /auth/register:
+    post:
+      x-action-key: public
+      x-scope: none
+      x-exposure: public
+      operationId: register
+      description: >-
+        Admission runs before the register handler and password hashing, including
+        valid duplicate registrations. A distinct register bucket uses the
+        canonical trusted client IP, never an untrusted forwarded-header or body
+        value. The independently configurable default is 5 attempts per IP per
+        15 minutes; omitted rules use this default and invalid or partial rules
+        fail configuration validation. Changing identifiers does not reset the
+        IP budget; different IPs and login buckets remain independent. Exhaustion
+        returns 429 with Retry-After seconds; window expiry restores admission.
+        Missing or unavailable admission protection fails closed with 503, without
+        a production in-memory fallback. Rejected requests do no password hashing,
+        challenge issuance, user/audit writes or email scheduling. Admitted valid
+        requests retain generic 202 acceptance and existing password-policy
+        behavior. Per-IP admission does not guarantee protection from distributed
+        botnets or global overload; the bounded hash pool remains shared with login.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/RegisterRequest"}
+      responses:
+        "202": {description: Accepted}
+        "400": {description: Bad Request}
+        "429":
+          description: Registration IP admission budget exhausted (rate_limit_exceeded)
+          headers:
+            Retry-After:
+              description: Positive seconds until registration admission can resume
+              schema: {type: integer, minimum: 1}
+        "503":
+          description: >-
+            Registration limiter missing/unavailable or admission-check error
+            (INTERNAL_ERROR; fail closed before hashing or side effects), or
+            password hashing busy (service_busy; retry after Retry-After seconds).
+          headers:
+            Retry-After:
+              description: Retry delay in seconds when password hashing is busy
+              schema: {type: integer, minimum: 1}
+  /auth/activate:
+    post:
+      x-action-key: public
+      x-scope: none
+      x-exposure: public
+      operationId: activate
+      description: >-
+        Verify email ownership and set the owner's chosen password when activating
+        a self-registered PROVISIONED account. Token and password are required for
+        new, resent and still-live legacy links. Token-only activation cannot
+        activate an account. Replay never replaces an ACTIVE account's password;
+        invite-provisioned accounts must use /auth/invite/accept.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/ActivateRequest"}
+      responses:
+        "200": {description: "Owner password set and account activated; valid ACTIVE idempotence has no credential changes"}
+        "400": {description: "Invalid input or password policy; invalid_token for invalid, expired, wrong-purpose or ineligible activation"}
+        "503": {description: "Password hashing busy (service_busy); retry after Retry-After seconds"}
+  /auth/invite/accept:
+    post:
+      x-action-key: public
+      x-scope: none
+      x-exposure: public
+      operationId: acceptInvite
+      requestBody: {required: true, content: {application/json: {schema: {$ref: "#/components/schemas/AcceptInviteRequest"}}}}
+      responses:
+        "429": {description: Rate Limited}
+        "200": {description: Password set and account activated}
+        "400": {description: invalid_token or password policy}
+        "503": {description: service_busy}
+  /auth/activate/resend:
+    post:
+      x-action-key: public
+      x-scope: none
+      x-exposure: public
+      operationId: resendActivation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/ResendActivationRequest"}
+      responses:
+        "202": {description: Accepted}
+        "400": {description: Bad Request}
+        "429": {description: Rate Limited}
+  /auth/web/login:
+    post:
+      x-action-key: public
+      x-scope: none
+      x-exposure: public
+      operationId: webLogin
+      description: >-
+        Failed authentication for nonexistent identifiers, incorrect passwords,
+        passwordless accounts and locked accounts uses the same generic 401
+        UNAUTHORIZED error envelope and equivalent password verification work.
+        Lock state, lock-until timestamps and remaining attempts stay private;
+        no lock-specific Retry-After header is returned. Locked accounts cannot
+        authenticate even with the correct password. Verification overload keeps
+        the existing 503 service_busy and Retry-After policy.
+      responses:
+        "401":
+          description: >-
+            Generic UNAUTHORIZED error envelope, identical to an ordinary
+            incorrect-password failure; no account existence or lockout details,
+            authentication tokens or refresh cookie.
+        "429": {description: Rate Limited}
+        "200": {description: Access token and refresh cookie}
+        "503": {description: "Password hashing busy (service_busy); retry after Retry-After seconds"}
+  /auth/web/refresh:
+    post:
+      x-action-key: public
+      x-scope: none
+      x-exposure: public
+      operationId: webRefresh
+      parameters:
+        - {$ref: "#/components/parameters/CSRFToken"}
+      responses:
+        "200": {description: Rotated access token and refresh cookie}
+        "503": {description: "Membership service unavailable (service_unavailable); session kept, retry"}
+  /auth/web/logout:
+    post:
+      x-action-key: public
+      x-scope: none
+      x-exposure: public
+      operationId: webLogout
+      parameters:
+        - {$ref: "#/components/parameters/CSRFToken"}
+      responses:
+        "204": {description: Logged out}
+  /auth/native/login:
+    post:
+      x-action-key: public
+      x-scope: none
+      x-exposure: public
+      operationId: nativeLogin
+      description: >-
+        Failed authentication for nonexistent identifiers, incorrect passwords,
+        passwordless accounts and locked accounts uses the same generic 401
+        UNAUTHORIZED error envelope and equivalent password verification work.
+        Lock state, lock-until timestamps and remaining attempts stay private;
+        no lock-specific Retry-After header is returned. Locked accounts cannot
+        authenticate even with the correct password. Verification overload keeps
+        the existing 503 service_busy and Retry-After policy.
+      responses:
+        "401":
+          description: >-
+            Generic UNAUTHORIZED error envelope, identical to an ordinary
+            incorrect-password failure; no account existence or lockout details,
+            authentication tokens or refresh cookie.
+        "429": {description: Rate Limited}
+        "200":
+          description: Access and refresh token body for secure OS storage
+        "503": {description: "Password hashing busy (service_busy); retry after Retry-After seconds"}
+  /auth/native/refresh:
+    post:
+      x-action-key: public
+      x-scope: none
+      x-exposure: public
+      operationId: nativeRefresh
+      responses:
+        "200": {description: Rotated token body}
+        "503": {description: "Membership service unavailable (service_unavailable); session kept, retry"}
+  /auth/native/logout:
+    post:
+      x-action-key: public
+      x-scope: none
+      x-exposure: public
+      operationId: nativeLogout
+      responses:
+        "204": {description: Logged out}
+  /auth/password/forgot:
+    post:
+      x-action-key: public
+      x-scope: none
+      x-exposure: public
+      operationId: forgotPassword
+      responses:
+        "429": {description: Rate Limited}
+        "202": {description: Accepted}
+  /auth/password/reset:
+    post:
+      x-action-key: public
+      x-scope: none
+      x-exposure: public
+      operationId: resetPassword
+      responses:
+        "200": {description: Password reset}
+        "503": {description: "Password hashing busy (service_busy); retry after Retry-After seconds"}
+  /auth/me:
+    get:
+      x-action-key: auth:self:read
+      x-scope: none
+      x-exposure: public
+      operationId: me
+      security: [{bearerAuth: []}]
+      responses:
+        "200":
+          description: Current identity
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/UserProfileResponse"}
+  /auth/profile:
+    patch:
+      x-action-key: auth:self:write
+      x-scope: none
+      x-exposure: public
+      operationId: updateProfile
+      security: [{bearerAuth: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/UpdateProfileRequest"}
+      responses:
+        "200":
+          description: Profile updated
+  /auth/profile/avatar/presign:
+    post:
+      x-action-key: auth:self:write
+      x-scope: none
+      x-exposure: public
+      operationId: presignAvatar
+      security: [{bearerAuth: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/PresignAvatarRequest"}
+      responses:
+        "200":
+          description: Presigned upload policy created
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/PresignAvatarResponse"}
+  /auth/profile/avatar/finalize:
+    post:
+      x-action-key: auth:self:write
+      x-scope: none
+      x-exposure: public
+      operationId: finalizeAvatar
+      security: [{bearerAuth: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/FinalizeAvatarRequest"}
+      responses:
+        "200":
+          description: Avatar upload finalized
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/FinalizeAvatarResponse"}
+  /auth/profile/avatar:
+    delete:
+      x-action-key: auth:self:write
+      x-scope: none
+      x-exposure: public
+      operationId: deleteAvatar
+      security: [{bearerAuth: []}]
+      responses:
+        "200":
+          description: Avatar removed
+  /auth/org-context:
+    post:
+      x-action-key: auth:context:create
+      x-scope: none
+      x-exposure: public
+      operationId: exchangeOrgContext
+      security: [{bearerAuth: []}]
+      responses:
+        "200": {description: Org/branch-scoped access token}
+  /auth/logout-all:
+    post:
+      x-action-key: auth:self:write
+      x-scope: none
+      x-exposure: public
+      operationId: logoutAll
+      security: [{bearerAuth: []}]
+      responses:
+        "204":
+          description: All user sessions and refresh tokens revoked
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal server error
+  /auth/sessions:
+    get:
+      x-action-key: auth:self:read
+      x-scope: none
+      x-exposure: public
+      operationId: listSessions
+      security: [{bearerAuth: []}]
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+      responses:
+        "200":
+          description: List of active sessions for current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SessionListResponse"
+        "401":
+          description: Unauthorized
+  /auth/sessions/{session_id}:
+    delete:
+      x-action-key: auth:self:write
+      x-scope: none
+      x-exposure: public
+      operationId: revokeSession
+      security: [{bearerAuth: []}]
+      parameters:
+        - name: session_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Session revoked
+        "401":
+          description: Unauthorized
+        "404":
+          description: Session not found
+  /auth/password/change:
+    post:
+      x-action-key: auth:self:write
+      x-scope: none
+      x-exposure: public
+      operationId: changePassword
+      security: [{bearerAuth: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/ChangePasswordRequest"}
+      responses:
+        "204":
+          description: Password changed and all user sessions revoked
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "503": {description: "Password hashing busy (service_busy); retry after Retry-After seconds"}
+  /auth/email/change:
+    post:
+      x-action-key: auth:self:write
+      x-scope: none
+      x-exposure: public
+      operationId: requestEmailChange
+      description: >-
+        Both email-change request aliases share one reauthentication budget per
+        authenticated user, independent of client IP, target email or session.
+        The configurable default is 5 attempts per 15 minutes, including correct
+        and incorrect passwords. Exhaustion rejects before password verification
+        or email-change side effects; limiter unavailability fails closed.
+      security: [{bearerAuth: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/RequestEmailChangeRequest"}
+      responses:
+        "202":
+          description: Email verification sent to new address
+        "400":
+          description: Bad Request (invalid email, same email, email taken)
+        "401":
+          description: Unauthorized or incorrect password
+        "429":
+          description: Shared user reauthentication budget exhausted (rate_limit_exceeded)
+          headers:
+            Retry-After:
+              description: Positive delay in seconds until the shared budget allows retry
+              schema: {type: integer, minimum: 1}
+        "503":
+          description: >-
+            Reauthentication limiter unavailable (INTERNAL_ERROR; fail closed),
+            or password hashing busy (service_busy; retry after Retry-After seconds).
+          headers:
+            Retry-After:
+              description: Delay in seconds for service_busy; not guaranteed for limiter unavailability
+              schema: {type: integer, minimum: 1}
+  /auth/email/confirm:
+    post:
+      x-action-key: auth:self:write
+      x-scope: none
+      x-exposure: public
+      operationId: confirmEmailChange
+      security: [{bearerAuth: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/ConfirmEmailChangeRequest"}
+      responses:
+        "200":
+          description: Email changed successfully, all sessions revoked
+        "400":
+          description: Bad Request (invalid token, expired token)
+        "401":
+          description: Unauthorized
+  /auth/account/email:
+    post:
+      deprecated: true
+      x-action-key: auth:self:write
+      x-scope: none
+      x-exposure: public
+      operationId: requestEmailChangeLegacy
+      summary: Legacy alias for /auth/email/change
+      description: >-
+        Both email-change request aliases share one reauthentication budget per
+        authenticated user, independent of client IP, target email or session.
+        The configurable default is 5 attempts per 15 minutes, including correct
+        and incorrect passwords. Exhaustion rejects before password verification
+        or email-change side effects; limiter unavailability fails closed.
+      security: [{bearerAuth: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/RequestEmailChangeRequest"}
+      responses:
+        "202":
+          description: Email verification sent to new address
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized or incorrect password
+        "429":
+          description: Shared user reauthentication budget exhausted (rate_limit_exceeded)
+          headers:
+            Retry-After:
+              description: Positive delay in seconds until the shared budget allows retry
+              schema: {type: integer, minimum: 1}
+        "503":
+          description: >-
+            Reauthentication limiter unavailable (INTERNAL_ERROR; fail closed),
+            or password hashing busy (service_busy; retry after Retry-After seconds).
+          headers:
+            Retry-After:
+              description: Delay in seconds for service_busy; not guaranteed for limiter unavailability
+              schema: {type: integer, minimum: 1}
+  /auth/account/email/confirm:
+    post:
+      deprecated: true
+      x-action-key: auth:self:write
+      x-scope: none
+      x-exposure: public
+      operationId: confirmEmailChangeLegacy
+      summary: Legacy alias for /auth/email/confirm
+      security: [{bearerAuth: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/ConfirmEmailChangeRequest"}
+      responses:
+        "200":
+          description: Email changed successfully, all sessions revoked
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    CSRFToken:
+      name: X-CSRF-Token
+      in: header
+      required: true
+      schema: {type: string, minLength: 16, maxLength: 256}
+  schemas:
+    ActivateRequest:
+      type: object
+      additionalProperties: false
+      required: [token, password]
+      properties:
+        token: {type: string, minLength: 1}
+        password:
+          type: string
+          minLength: 12
+          maxLength: 256
+          description: Password chosen by the email owner at activation, replacing the initial registration hash
+    AcceptInviteRequest:
+      type: object
+      additionalProperties: false
+      required: [token, password]
+      properties:
+        token: {type: string}
+        password: {type: string, minLength: 12, maxLength: 256}
+    RegisterRequest:
+      type: object
+      properties:
+        email: {type: string, format: email}
+        phone: {type: string, maxLength: 32}
+        password: {type: string, minLength: 12, maxLength: 256}
+        display_name: {type: string, maxLength: 50}
+      required: [password]
+    UserProfileResponse:
+      type: object
+      properties:
+        id: {type: string}
+        email: {type: string}
+        phone: {type: string}
+        display_name: {type: string}
+        avatar_key: {type: [string, "null"]}
+        avatar_url: {type: [string, "null"]}
+        status: {type: string}
+        created_at: {type: string, format: date-time}
+        memberships:
+          type: array
+          items: {$ref: "#/components/schemas/MembershipDTO"}
+    MembershipDTO:
+      type: object
+      properties:
+        org_id: {type: string}
+        org_name: {type: string}
+        branch_id: {type: [string, "null"]}
+        branch_name: {type: [string, "null"]}
+        roles: {type: array, items: {type: string}}
+    UpdateProfileRequest:
+      type: object
+      properties:
+        display_name: {type: string, minLength: 1, maxLength: 50}
+      required: [display_name]
+    PresignAvatarRequest:
+      type: object
+      properties:
+        file_name: {type: string}
+        content_type: {type: string}
+        file_size: {type: integer, minimum: 1, maximum: 2097152}
+      required: [file_name, content_type, file_size]
+    PresignAvatarResponse:
+      type: object
+      properties:
+        upload_id: {type: string}
+        upload_url: {type: string}
+        upload_method: {type: string, enum: [POST]}
+        form_fields:
+          type: object
+          additionalProperties: {type: string}
+        expires_in: {type: integer}
+    FinalizeAvatarRequest:
+      type: object
+      properties:
+        upload_id: {type: string}
+      required: [upload_id]
+    FinalizeAvatarResponse:
+      type: object
+      properties:
+        avatar_key: {type: string}
+        avatar_url: {type: string}
+    ResendActivationRequest:
+      type: object
+      required: [email]
+      properties:
+        email: {type: string, format: email}
+    ChangePasswordRequest:
+      type: object
+      required: [current_password, new_password]
+      properties:
+        current_password: {type: string}
+        new_password: {type: string, minLength: 12, maxLength: 256}
+    RequestEmailChangeRequest:
+      type: object
+      required: [new_email, current_password]
+      properties:
+        new_email:
+          type: string
+          format: email
+          description: New email address to change to
+        current_password:
+          type: string
+          description: Current password for verification
+    ConfirmEmailChangeRequest:
+      type: object
+      required: [token]
+      properties:
+        token:
+          type: string
+          description: Verification token received via email
+    ActiveSessionItem:
+      type: object
+      required: [id, user_id, expires_at, created_at, updated_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        user_agent:
+          type: string
+        ip_address:
+          type: string
+        expires_at:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    PaginationMetadata:
+      type: object
+      required: [total_items, total_pages, current_page, limit]
+      properties:
+        total_items:
+          type: integer
+        total_pages:
+          type: integer
+        current_page:
+          type: integer
+        limit:
+          type: integer
+    SessionListResponse:
+      type: object
+      required: [items, pagination]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ActiveSessionItem"
+        pagination:
+          $ref: "#/components/schemas/PaginationMetadata"

@@ -154,3 +154,22 @@ describe("S27 anonymous API boundary", () => {
   expect(res.headers.get("Cache-Control")).toBe("no-store");
  });
 });
+
+describe("S2 customer activation public boundary", () => {
+  it.each(["/activate", "/activate?token=fixture", "/api/auth/activate", "/api/auth/activate/resend"])(
+    "%s stays public with no session or either plane cookie", path => {
+      for (const cookie of [undefined, "access_token=customer", "refresh_token=staff; portal_plane=employee"]) {
+        const res = proxy(request(path, cookie));
+        expect(res.status).toBe(200);
+        expect(res.headers.get("x-middleware-next")).toBe("1");
+        expect(res.headers.get("location")).toBeNull();
+        expect(res.headers.get("set-cookie")).toBeNull();
+      }
+    },
+  );
+  it.each(["/activate-evil"])("lookalike %s still needs a session", path => {
+    const res = proxy(request(path));
+    expect(res.status).toBe(307);
+    expect(res.headers.get("location")).toBe("http://localhost:3000/login?redirect=" + encodeURIComponent(path));
+  });
+});

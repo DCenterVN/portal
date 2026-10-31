@@ -1,7 +1,19 @@
-import { describe, it, expect } from "vitest";
+import { beforeEach, describe, it, expect, vi } from "vitest";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { PasswordInput } from "./password-input";
+
+// SSR has no interactive renderer; retain the hook state across explicit renders.
+const visibility = vi.hoisted(() => ({ shown: false }));
+vi.mock("react", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("react")>();
+  return {
+    ...actual,
+    useState: () => [visibility.shown, (update: (shown: boolean) => boolean) => {
+      visibility.shown = update(visibility.shown);
+    }],
+  };
+});
 
 describe("PasswordInput", () => {
   const html = renderToStaticMarkup(<PasswordInput id="pw" name="password" autoComplete="new-password" aria-describedby="hint" />);
@@ -37,5 +49,54 @@ describe("PasswordInput", () => {
   it("V-01 keeps the 40px hit area while the field reserves room for it", () => {
     expect(html).toMatch(/<button[^>]*class="[^"]*\bsize-10\b/);
     expect(html).toMatch(/<input[^>]*class="[^"]*\bpr-11\b/);
+  });
+
+  beforeEach(() => {
+    visibility.shown = false;
+  });
+
+  it.each([
+    ["Show password", "Hide password"],
+    ["Hiện mật khẩu mới", "Ẩn mật khẩu mới"],
+  ])("toggles with localized names %s / %s without changing the value", (showLabel, hideLabel) => {
+    const props = { showLabel, hideLabel, id: "chosen-password", defaultValue: "fixture password", autoComplete: "new-password" };
+    const hidden = PasswordInput(props);
+    const before = renderToStaticMarkup(hidden);
+    expect(before).toContain(`aria-label="${showLabel}"`);
+    expect(before).not.toMatch(/<input[^>]*(showLabel|hideLabel)=/);
+    expect(before).toContain('aria-pressed="false"');
+    const toggle = hidden.props.children[1];
+    expect(toggle.props.type).toBe("button");
+    toggle.props.onClick();
+    const shown = PasswordInput(props);
+    const after = renderToStaticMarkup(shown);
+    expect(after).toMatch(/<input[^>]*type="text"/);
+    expect(after).toContain(`aria-label="${hideLabel}"`);
+    expect(after).toContain('aria-pressed="true"');
+    expect(after).toContain('value="fixture password"');
+    expect(after).toContain('id="chosen-password"');
+    expect(after).toContain('autoComplete="new-password"');
+    expect(shown.props.children[1].props.type).toBe("button");
+    shown.props.children[1].props.onClick();
+    expect(renderToStaticMarkup(PasswordInput(props))).toContain('type="password"');
+  });
+
+  it("keeps the legacy hide label after toggling", () => {
+    PasswordInput({}).props.children[1].props.onClick();
+    expect(renderToStaticMarkup(PasswordInput({}))).toContain('aria-label="Ẩn mật khẩu"');
+  });
+
+  it("keeps the current 40px scale for the field and toggle", () => {
+    expect(html).toMatch(/<input[^>]*class="[^"]*\bh-10\b/);
+    expect(html).toMatch(/<button[^>]*class="[^"]*\bsize-10\b/);
+  });
+
+  it("keeps the localized field and toggle disabled while visible", () => {
+    visibility.shown = true;
+    const off = renderToStaticMarkup(<PasswordInput disabled showLabel="Show password" hideLabel="Hide password" />);
+    expect(off).toMatch(/<input[^>]*type="text"[^>]*disabled=""/);
+    expect(off).toMatch(/<button[^>]*disabled=""/);
+    expect(off).toContain('aria-label="Hide password"');
+    expect(off).toContain('aria-pressed="true"');
   });
 });

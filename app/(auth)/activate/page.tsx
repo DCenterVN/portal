@@ -5,7 +5,7 @@ import { Suspense } from "react";
 import { AuthHeading } from "@/components/patterns/auth-heading";
 import { ActivateView } from "@/features/customer-auth/activate-view";
 
-export async function generateMetadata() { const t = getTranslations("customerAuth", (await cookies()).get("NEXT_LOCALE")?.value === "en" ? "en" : "vi"); return {title: t("activateTitle")}; }
+export async function generateMetadata() { const t = getTranslations("customerAuth", (await cookies()).get("NEXT_LOCALE")?.value === "en" ? "en" : "vi"); return {title: t("activateTitle"), referrer: "no-referrer"}; }
 
 export default async function Page() { const t = getTranslations("customerAuth", (await cookies()).get("NEXT_LOCALE")?.value === "en" ? "en" : "vi");
   return (

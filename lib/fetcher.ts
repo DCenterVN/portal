@@ -8,14 +8,24 @@ export class FetchError extends Error {
   info: unknown;
   status: number;
   code?: string;
+  retryAfterMs?: number;
 
-  constructor(message: string, status: number, info?: unknown) {
+  constructor(message: string, status: number, info?: unknown, retryAfter?: string | null) {
     super(message);
     this.name = "FetchError";
     this.status = status;
     this.info = info;
     if (info && typeof info === "object" && "error" in info && typeof info.error === "string") {
       this.code = info.error;
+    }
+    const header = retryAfter?.trim();
+    const delay = header && /^\d+$/.test(header) ? Number(header) * 1000
+      : header && /^[A-Za-z]{3},? /.test(header) ? Date.parse(header) - Date.now() : NaN;
+    if (Number.isFinite(delay)) {
+      this.retryAfterMs = Math.min(Number.MAX_SAFE_INTEGER, Math.max(0, delay));
+    } else if (info && typeof info === "object" && "retry_after_ms" in info &&
+      typeof info.retry_after_ms === "number" && Number.isFinite(info.retry_after_ms) && info.retry_after_ms >= 0) {
+      this.retryAfterMs = Math.min(Number.MAX_SAFE_INTEGER, info.retry_after_ms);
     }
   }
 }
@@ -104,7 +114,7 @@ export async function fetcher<T = unknown>(url: string, init?: RequestInit): Pro
       (errorInfo && typeof errorInfo.error === "string" && errorInfo.error) ||
       `An error occurred while fetching data (${res.status})`;
 
-    throw new FetchError(message, res.status, errorInfo);
+    throw new FetchError(message, res.status, errorInfo, res.headers?.get("retry-after"));
   }
 
   return (await res.json()) as T;

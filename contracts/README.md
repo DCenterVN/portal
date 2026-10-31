@@ -29,3 +29,12 @@ Each snapshot should record the source repository and commit SHA in the PR.
 - Platform endpoints use platform-go response.Success/Created envelopes; permissions/me returns bare action_keys. Empty Go slices can serialize as null.
 
 Nguồn token của lượt tiếp2 là `ticket/platform-docs/ui/tokens.json`, SHA256 `4cbc18ee242e11b565e56541d29058b182f00611319c2f8373ac220fc29edf1b`. PRICE worktree còn nguồn xanh cũ; workspace `.cache/tmp/supplier-tiep2/ui-gen` liên kết riêng `platform-docs/ui` đến nguồn main đã duyệt, scripts/contracts vẫn dùng candidate. Không sửa token JSON hoặc CSS/lock bằng tay.
+
+## Customer activation snapshot
+
+- Source: DCenterVN/auth, `sec-fix-auth-001`, commit `86294eecfa9aa8c6513da77f5585d960a557edff`.
+- Captured: 2026-10-06; `auth.public.yaml` is byte-for-byte `api/openapi.public.yaml` from that commit.
+- Activation uses POST `/auth/activate` with `ActivateRequest`: exactly `token` and `password`.
+- OpenAPI 3.1 character limits do not express auth's 256-byte UTF-8 ceiling; the contract oracle checks bytes separately.
+- Activation responses have descriptions, no JSON response schema; wire-envelope checks are independent.
+- This is the secure auth worktree snapshot, not evidence of production deployment; re-pin and verify the release SHA before merge.

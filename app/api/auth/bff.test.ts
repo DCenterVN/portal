@@ -127,17 +127,17 @@ describe("Portal BFF Auth Handlers (9 handlers)", () => {
     expect(res.status).toBe(202);
   });
 
-  it("5. POST /api/auth/activate forwards activate token", async () => {
+  it("5. POST /api/auth/activate forwards activate token and password", async () => {
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
       status: 200,
       headers: new Headers(),
-      json: async () => ({ status: "active" }),
+      json: async () => ({ code: 200, status: "success", message: "OK" }),
     } as unknown as Response);
 
     const req = new NextRequest("http://localhost:3000/api/auth/activate", {
       method: "POST", headers: {"Content-Type":"application/json", "Sec-Fetch-Site":"same-origin"},
-      body: JSON.stringify({ token: "act-tok-123" }),
+      body: JSON.stringify({ token: "act-tok-123", password: "password-1234" }),
     });
 
     const res = await activateHandler(req);
@@ -277,16 +277,17 @@ describe("S6 customer recovery BFF contract", () => {
 
 describe("S7 customer onboarding BFF contract", () => {
   afterEach(() => vi.unstubAllGlobals());
-  it.each([[registerHandler, {email: "a@example.com", password: "password-1234", display_name: "An"}, "/auth/register", 202], [registerHandler, {phone: "0901234567", password: "password-1234"}, "/auth/register", 202], [activateHandler, {token: "activation-proof"}, "/auth/activate", 200], [resendHandler, {email: "a@example.com"}, "/auth/activate/resend", 202]])("forwards only customer DTO/endpoint, preserves accepted status, no credential/cookie leaks", async (handler, body, path, status) => {
-    const fetch = vi.fn().mockResolvedValue(new Response(JSON.stringify({status: "accepted", access_token: "secret", refresh_token: "secret", token: "secret"}), {status, headers: {"Set-Cookie": "refresh_token=secret"}})); vi.stubGlobal("fetch", fetch);
+  it.each([[registerHandler, {email: "a@example.com", password: "password-1234", display_name: "An"}, "/auth/register", 202], [registerHandler, {phone: "0901234567", password: "password-1234"}, "/auth/register", 202], [activateHandler, {token: "activation-proof", password: "password-1234"}, "/auth/activate", 200], [resendHandler, {email: "a@example.com"}, "/auth/activate/resend", 202]])("forwards only customer DTO/endpoint, preserves accepted status, no credential/cookie leaks", async (handler, body, path, status) => {
+    const publicStatus = handler === activateHandler ? "success" : "accepted";
+    const fetch = vi.fn().mockResolvedValue(new Response(JSON.stringify({...(handler === activateHandler ? {code: 200, message: "OK"} : {}), status: publicStatus, access_token: "secret", refresh_token: "secret", token: "secret"}), {status, headers: {"Set-Cookie": "refresh_token=secret"}})); vi.stubGlobal("fetch", fetch);
     const res = await handler(new NextRequest("http://localhost/api/auth/onboard", {method: "POST", headers: {"Content-Type":"application/json", "Sec-Fetch-Site":"same-origin"}, body: JSON.stringify(body)}));
-    expect(res.status).toBe(status); expect(await res.json()).toEqual({status: "accepted"}); expect(res.headers.get("cache-control")).toBe("no-store"); expect(res.headers.get("set-cookie")).toBeNull();
+    expect(res.status).toBe(status); expect(await res.json()).toEqual({status: publicStatus}); expect(res.headers.get("cache-control")).toBe("no-store"); expect(res.headers.get("set-cookie")).toBeNull();
     expect(fetch).toHaveBeenCalledTimes(1); expect(fetch).toHaveBeenCalledWith(expect.stringContaining(path), expect.objectContaining({body: JSON.stringify(body), cache: "no-store"}));
   });
-  it.each([[registerHandler, {}], [registerHandler, {password: "password-1234"}], [registerHandler, {email: "a", password: "short"}], [registerHandler, {email: "a", password: "a".repeat(257)}], [registerHandler, {email: "a", password: "é".repeat(129)}], [registerHandler, {email: [], password: "password-1234"}], [registerHandler, {email: "a", password: "password-1234", display_name: "a".repeat(51)}], [registerHandler, {email: "a", password: "password-1234", roles: ["EMPLOYEE"]}], [registerHandler, {email: "a", password: "password-1234", account_type: "EMPLOYEE"}], [activateHandler, {}], [activateHandler, {token: null}], [activateHandler, {token: "t", purpose: "ACCEPT_INVITE"}], [resendHandler, {}], [resendHandler, {email: "a", journey: "employee"}]])("rejects missing/invalid/forged onboarding fields before auth", async (handler, body) => {
+  it.each([[registerHandler, {}], [registerHandler, {password: "password-1234"}], [registerHandler, {email: "a", password: "short"}], [registerHandler, {email: "a", password: "a".repeat(257)}], [registerHandler, {email: "a", password: "é".repeat(129)}], [registerHandler, {email: [], password: "password-1234"}], [registerHandler, {email: "a", password: "password-1234", display_name: "a".repeat(51)}], [registerHandler, {email: "a", password: "password-1234", roles: ["EMPLOYEE"]}], [registerHandler, {email: "a", password: "password-1234", account_type: "EMPLOYEE"}], [activateHandler, {}], [activateHandler, {token: "t"}], [activateHandler, {token: null}], [activateHandler, {token: "t", purpose: "ACCEPT_INVITE"}], [resendHandler, {}], [resendHandler, {email: "a", journey: "employee"}]])("rejects missing/invalid/forged onboarding fields before auth", async (handler, body) => {
     const fetch = vi.fn(); vi.stubGlobal("fetch", fetch); const res = await handler(new NextRequest("http://localhost", {method: "POST", headers: {"Content-Type":"application/json", "Sec-Fetch-Site":"same-origin"}, body: JSON.stringify(body)})); expect(res.status).toBe(400); expect((await res.json()).error).toMatch(/^(BAD_REQUEST|VALIDATION_ERROR)$/); expect(fetch).not.toHaveBeenCalled();
   });
   it.each([registerHandler, activateHandler, resendHandler])("onboarding malformed JSON yields canonical BAD_REQUEST", async handler => {const fetch = vi.fn(); vi.stubGlobal("fetch", fetch); const res = await handler(new NextRequest("http://localhost", {method: "POST", headers: {"Content-Type":"application/json", "Sec-Fetch-Site":"same-origin"}, body: "{"})); expect(res.status).toBe(400); expect(await res.json()).toMatchObject({error: "BAD_REQUEST"}); expect(fetch).not.toHaveBeenCalled(); });
-  it.each([[400, "invalid_token"], [429, "rate_limit_exceeded"], [503, "service_busy"]])("activation upstream denial/retry metadata survive %s/%s", async (status, error) => {vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify({error}), {status, headers: {"Retry-After": "9"}}))); const res = await activateHandler(new NextRequest("http://localhost", {method: "POST", headers: {"Content-Type":"application/json", "Sec-Fetch-Site":"same-origin"}, body: JSON.stringify({token: "expired-or-replayed"})})); expect(res.status).toBe(status); expect(await res.json()).toEqual({error}); expect(res.headers.get("retry-after")).toBe("9"); expect(res.headers.get("set-cookie")).toBeNull(); });
+  it.each([[400, "invalid_token"], [429, "rate_limit_exceeded"], [503, "service_busy"]])("activation upstream denial/retry metadata survive %s/%s", async (status, error) => {vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify({error}), {status, headers: {"Retry-After": "9"}}))); const res = await activateHandler(new NextRequest("http://localhost", {method: "POST", headers: {"Content-Type":"application/json", "Sec-Fetch-Site":"same-origin"}, body: JSON.stringify({token: "expired-or-replayed", password: "password-1234"})})); expect(res.status).toBe(status); expect(await res.json()).toEqual({error}); expect(res.headers.get("retry-after")).toBe("9"); expect(res.headers.get("set-cookie")).toBeNull(); });
   it("onboarding transport failures have canonical code and no internal detail", async () => {vi.stubGlobal("fetch", vi.fn().mockRejectedValue(Error("secret"))); const res = await registerHandler(new NextRequest("http://localhost", {method: "POST", headers: {"Content-Type":"application/json", "Sec-Fetch-Site":"same-origin"}, body: JSON.stringify({email: "a@example.com", password: "password-1234"})})); expect(res.status).toBe(503); expect(await res.json()).toMatchObject({error: "INTERNAL_ERROR"});  });
 });
