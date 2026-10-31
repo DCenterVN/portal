@@ -1,0 +1,51 @@
+{
+  "task": "PORTAL-E2E-VIDEO-001",
+  "actor": "agent:claude-code(171709704+dawnmoriaty@users.noreply.github.com)",
+  "worker": null,
+  "ts": "2026-10-31T15:44:59+00:00",
+  "cwd": ".",
+  "head": "dbd48614100f035eb67fd992d4bb4787e55dd683",
+  "dirty": true,
+  "checks": [
+    {
+      "name": "unit",
+      "command": "npx playwright test --list --project=desktop",
+      "exit": 0,
+      "status": "PASS",
+      "seconds": 0.5,
+      "log": ".aidlc/runs/PORTAL-E2E-VIDEO-001/artifacts/logs/unit.log",
+      "sha256": "a86b0b4a55458064f08ab8d978bce113257fb318be9a93ef307376cde60a4c2a",
+      "tail": [
+        "  [desktop] › visual/preview.spec.ts:71:3 › ConsoleForm",
+        "  [desktop] › visual/preview.spec.ts:71:3 › ConsoleLogin",
+        "  [desktop] › visual/preview.spec.ts:71:3 › States",
+        "  [desktop] › visual/preview.spec.ts:71:3 › StatesMobile",
+        "Total: 69 tests in 11 files"
+      ]
+    },
+    {
+      "name": "lint",
+      "command": "node node_modules/eslint/bin/eslint.js playwright.config.ts e2e",
+      "exit": 0,
+      "status": "PASS",
+      "seconds": 0.6,
+      "log": ".aidlc/runs/PORTAL-E2E-VIDEO-001/artifacts/logs/lint.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tail": []
+    },
+    {
+      "name": "typecheck",
+      "command": "npm run typecheck",
+      "exit": 0,
+      "status": "PASS",
+      "seconds": 1.3,
+      "log": ".aidlc/runs/PORTAL-E2E-VIDEO-001/artifacts/logs/typecheck.log",
+      "sha256": "c5a440cd52c7fadc3d367658101693af6eb5b85d21dbd518cb3bda67056215e7",
+      "tail": [
+        "> @dcentervn/portal@0.1.0 typecheck",
+        "> node node_modules/typescript/bin/tsc --noEmit"
+      ]
+    }
+  ],
+  "verdict": "PASS"
+}

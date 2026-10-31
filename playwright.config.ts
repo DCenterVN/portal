@@ -1,4 +1,23 @@
 import { defineConfig } from "@playwright/test";
+import { existsSync, readFileSync } from "node:fs";
+import { homedir } from "node:os";
+
+const e2eDir = `${homedir()}/work/ticket/.cache/e2e`;
+const accountsPath = `${e2eDir}/accounts.env`;
+const accounts: Record<string, string> = {};
+if (existsSync(accountsPath)) {
+  for (const line of readFileSync(accountsPath, "utf8").split(/\r?\n/)) {
+    const match = line.match(/^\s*([A-Z_]+)=(.*)$/);
+    if (match) accounts[match[1]] = match[2].trim().replace(/^(['"])(.*)\1$/, "$2");
+  }
+}
+for (const role of ["WAREHOUSE", "ADMIN", "CUSTOMER"]) {
+  process.env[`PORTAL_${role}_STATE`] ??= `${e2eDir}/state/${role.toLowerCase()}.json`;
+}
+for (const field of ["EMAIL", "PASSWORD"]) {
+  const value = accounts[`E2E_FOODDEV_${field}`];
+  if (value !== undefined) process.env[`FOODDEV_${field}`] ??= value;
+}
 
 // Brave binary, not the ~/.local/bin wrapper (it only cleans profile locks + sets FONTCONFIG_FILE).
 const executablePath = process.env.PW_BROWSER_PATH || "/opt/brave.com/brave/brave";
@@ -23,8 +42,9 @@ export default defineConfig({
     ...(record && { video: "on", trace: "on", screenshot: "on" }),
   },
   projects: [
-    { name: "desktop", use: { viewport: { width: 1440, height: 900 } } },
-    { name: "mobile", testIgnore: "**/rbac/**", use: { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 1 } },
+    { name: "setup", testMatch: "**/e2e/setup/*.setup.ts", use: { trace: "off", video: "off", screenshot: "off" } },
+    { name: "desktop", testIgnore: "**/setup/**", ...(record && { dependencies: ["setup"] }), use: { viewport: { width: 1440, height: 900 } } },
+    { name: "mobile", testIgnore: ["**/rbac/**", "**/setup/**"], use: { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 1 } },
   ],
   webServer: baseline || process.env.E2E_BASE_URL ? undefined : {
     command: "npm run dev -- --port 3000",

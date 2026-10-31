@@ -64,7 +64,6 @@ function quantityFor(portions: bigint) {
   return `${thousandths / 1000n}.${String(thousandths % 1000n).padStart(3, "0")}`;
 }
 
-test.use({ trace: "off", screenshot: "off", video: "off" });
 test.describe("FOODDEV-SET E1 QA thật", () => {
   test.describe.configure({ mode: "serial", timeout: 180_000 });
   test("FOOD_DEV tạo và sửa set; kho chỉ đọc; revoke có hiệu lực ngay và restore đúng snapshot", async ({ browser, baseURL, page }) => {

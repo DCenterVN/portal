@@ -1,7 +1,7 @@
 {
   "id": "PORTAL-E2E-VIDEO-001",
   "title": "E2E có video, trace và kịch bản tiếng Việt để Dawn xem lại",
-  "description": "worker: unassigned · story: US-E2E-VIDEO-001 · sprint: 01 · slices: 0/7 · next: verification: verification.json missing",
+  "description": "worker: unassigned · story: US-E2E-VIDEO-001 · sprint: 01 · slices: 0/7 · next: verification: stale (code changed since verify: .gitignore, e2e/fooddev-pack/fooddev-pack.spec.ts, e2e/fooddev-v2/playwright.fooddev-v2.config.ts)",
   "pipeline": "sdlc",
   "agent": null,
   "agents": [
@@ -16,8 +16,8 @@
   ],
   "currentStep": 4,
   "status": "in_progress",
-  "createdAt": "2026-10-31T15:01:37+00:00",
-  "updatedAt": "2026-10-31T15:37:03+00:00",
+  "createdAt": "2026-10-31T15:44:59+00:00",
+  "updatedAt": "2026-10-31T15:50:16+00:00",
   "stepStates": [
     {
       "agent": "sdlc-discovery",
@@ -70,7 +70,9 @@
       "runStatus": "awaiting_work",
       "startedAt": null,
       "finishedAt": null,
-      "artifactsProduced": []
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-E2E-VIDEO-001/handback.md"
+      ]
     },
     {
       "agent": "sdlc-integration",
@@ -79,7 +81,9 @@
       "runStatus": "pending",
       "startedAt": null,
       "finishedAt": null,
-      "artifactsProduced": []
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-E2E-VIDEO-001/artifacts/verification.json"
+      ]
     },
     {
       "agent": "sdlc-e2e",
@@ -88,7 +92,9 @@
       "runStatus": "pending",
       "startedAt": null,
       "finishedAt": null,
-      "artifactsProduced": []
+      "artifactsProduced": [
+        ".aidlc/runs/PORTAL-E2E-VIDEO-001/artifacts/verification.json"
+      ]
     },
     {
       "agent": "sdlc-release",
