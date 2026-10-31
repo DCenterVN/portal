@@ -1,6 +1,8 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { useAccess } from "@/lib/access-boundary";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Field, TextInput } from "@/components/ui/field";
 import { Table, TableHeader, TableHead, TableBody, TableRow, TableCell } from "@/components/ui/table";
 import { EmptyState, ErrorState, Skeleton } from "@/components/ui/state";
@@ -21,8 +23,10 @@ const statuses: Record<string, string> = { DRAFT: "Nháp", IN_PROGRESS: "Đang n
 
 function ReceiptGroup({ receipt, names }: ReceiptGroupProps) {
   const draft = receipt.status === "DRAFT";
+  const { can } = useAccess();
   return <article className="grid gap-3 rounded-lg border border-line p-4">
     <h3 className="font-semibold">{date(receipt.created_at)} · {statuses[receipt.status] ?? "Đang xử lý"}</h3>
+    {["DRAFT", "IN_PROGRESS"].includes(receipt.status) && can("inventory:goods_receipt:update") && <Link className={buttonVariants({ variant: "outline", size: "sm" })} href={`/inventory/goods-receipts/${encodeURIComponent(receipt.id)}/receive?supplier=${encodeURIComponent(receipt.supplier_ref)}`}>Nhận hàng</Link>}
     <p>{draft ? "Tổng dự kiến" : "Tổng thực nhận"}: {money(receipt.total_amount_vnd)} VND</p>
     <Table><TableHeader><TableRow><TableHead>Nguyên liệu</TableHead><TableHead>Số lượng dự kiến</TableHead>{!draft && <TableHead>Số lượng thực nhận</TableHead>}<TableHead>Đơn vị</TableHead><TableHead>Đơn giá VND</TableHead><TableHead>Thành tiền dự kiến</TableHead>{!draft && <TableHead>Thành tiền thực nhận</TableHead>}</TableRow></TableHeader>
       <TableBody>{receipt.lines.map(line => <TableRow key={line.receipt_line_ref}>

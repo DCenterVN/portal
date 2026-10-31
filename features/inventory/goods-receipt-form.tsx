@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { EntityPicker } from "@/components/ui/entity-picker";
 import { PageShell, PageHeader } from "@/components/ui/page";
 import { EmptyState, ErrorState, Skeleton } from "@/components/ui/state";
@@ -9,7 +9,8 @@ import { ReceiptDateInput } from "./receipt-date-input";
 import { ReceiptLinesTable } from "./receipt-lines-table";
 import { useGoodsReceipt } from "./use-goods-receipt";
 
-export type GoodsReceiptViewProps = ReturnType<typeof useGoodsReceipt>;
+type ReceiptModel = ReturnType<typeof useGoodsReceipt>;
+export type GoodsReceiptViewProps = Omit<ReceiptModel, "receiveHref" | "canReceive"> & Partial<Pick<ReceiptModel, "receiveHref" | "canReceive">>;
 
 export function GoodsReceiptForm() {
   return <GoodsReceiptView {...useGoodsReceipt()} />;
@@ -22,7 +23,7 @@ export function GoodsReceiptView(props: GoodsReceiptViewProps) {
     {setupKind === "loading" && <Skeleton title="Đang tải nhà cung cấp, nguyên liệu và chi nhánh" />}
     {setupKind === "error" && <ErrorState title="Không tải được dữ liệu tạo phiếu" onRetry={props.onRetry} />}
     {setupKind === "ready" && suppliers.length === 0 && <EmptyState title="Chưa có nhà cung cấp đang hợp tác" action={<Link href="/inventory/suppliers">Mở nhà cung cấp</Link>} />}
-    {success ? <p role="status" className="my-6">{success}</p> : <form onSubmit={props.onSubmit} className="mt-6 grid min-w-0 gap-4">
+    {success ? <div className="my-6 grid gap-3"><p role="status">{success}</p>{props.canReceive && props.receiveHref && <Link className={buttonVariants({ variant: "default" })} href={props.receiveHref}>Nhận hàng ngay</Link>}</div> : <form onSubmit={props.onSubmit} className="mt-6 grid min-w-0 gap-4">
       <fieldset disabled={busy || setupKind !== "ready"} className="grid min-w-0 gap-4">
         <EntityPicker label="Nhà cung cấp" name="receipt-supplier" serializeValue={false} items={suppliers} status={setupKind}
           getId={item => item.id} getLabel={item => item.name} getMeta={item => item.code} value={supplier} onChange={props.onSupplier} required />

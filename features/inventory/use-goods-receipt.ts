@@ -27,6 +27,7 @@ export function useGoodsReceipt() {
   const [restored, setRestored] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [receiveHref, setReceiveHref] = useState("");
   const [success, setSuccess] = useState("");
   const [reconfirm, setReconfirm] = useState(false);
   const command = useRef({ body: "", key: "" });
@@ -84,6 +85,7 @@ export function useGoodsReceipt() {
     setBusy(true); setError("");
     try {
       const receipt = await createGoodsReceipt(input, command.current.key);
+      setReceiveHref(`/inventory/goods-receipts/${encodeURIComponent(receipt.id)}/receive?supplier=${encodeURIComponent(supplier)}`);
       setSuccess(`Đã tạo phiếu nhập ở trạng thái ${receipt.status === "DRAFT" ? "Nháp" : receipt.status}${receipt.total_amount_vnd === undefined ? "" : `, tổng ${receipt.total_amount_vnd.toLocaleString("vi-VN")} VND`}.`);
       try { sessionStorage.removeItem(storageKey); } catch { /* Không ảnh hưởng phiếu đã tạo. */ }
     } catch (cause) {
@@ -92,7 +94,7 @@ export function useGoodsReceipt() {
     } finally { inFlight.current = false; setBusy(false); }
   }
   return {
-    allowed, setupKind: setup.kind, suppliers, materials, supplier, date, rows, busy, error: error || priceError, success, reconfirm, valid,
+    allowed, setupKind: setup.kind, suppliers, materials, supplier, date, rows, busy, error: error || priceError, success, receiveHref, canReceive: can("inventory:goods_receipt:update"), reconfirm, valid,
     pricesKind: prices.kind, canUpdate: can("inventory:supplier:update"),
     onSupplier: (id: string | null) => { setSupplier(id ?? ""); setLines(items => items.map(({ key, sku, quantity }) => ({ key, sku, quantity }))); setReconfirm(false); setPrices({ kind: "loading" }); },
     onDate: (value: string) => { setDate(value); setLines(items => items.map(({ key, sku, quantity }) => ({ key, sku, quantity }))); setReconfirm(false); },
