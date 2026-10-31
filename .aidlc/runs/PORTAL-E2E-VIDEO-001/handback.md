@@ -170,3 +170,32 @@ Giới hạn: “tạo nguyên liệu + nhóm” hiện là tạo nguyên liệu
 Kiểm tra cuối: TypeScript `tsc --noEmit` PASS, ESLint riêng S5 PASS, `git diff --check` PASS. Không chạy npm test có script ghi /tmp hoặc sửa lỗi ngoài slice. Đã thử đúng `git checkout -- .aidlc/runs/PORTAL-INVENTORY-UX-001/artifacts`; filesystem chặn index.lock ngoài writable root. Đối chiếu không dùng index bằng git ls-files -z/git show HEAD: 212/212 artifact đã khớp HEAD, không cần thay bytes. Giữ nguyên các thay đổi có sẵn ở trace/run bookkeeping/node_modules. Runner đã thay HTML/results S4 bằng S5; đường dẫn S4 trong báo cáo cũ là lịch sử, không phải artifact hiện còn trong báo cáo mới.
 
 Tiếp tục: sửa luồng cấp giá cho nguyên liệu mới bằng task riêng, rồi kiểm lại từ bước 6; chưa được đánh dấu S5 hoàn thành nghiệp vụ. Bàn giao hiện tại giữ ca đỏ và vị trí hỏng để điều phối viên tách việc.
+
+## S6
+
+Hành trình KHÁCH + QUẢN TRỊ: `e2e/journeys/khach-quan-tri.spec.ts`. Chạy 2/4 lượt; lượt 2 PASS (setup 4/4 + hành trình 1/1, 1,3 phút).
+
+Lượt 1 đỏ ở bước 5 vì test viết sai, không phải lỗi chức năng: phiên ADMIN lưu sẵn chưa chọn công ty/chi nhánh nên `/memberships` bị chuyển sang `/staff/switch-org` (proxy.ts:35-39, đúng thiết kế). Đã thêm `enterCompany` (chọn công ty + chi nhánh theo `branch_id` đọc từ danh sách nhân viên, cùng cách `rbac.spec.ts` `openMemberships`). Không nới assert.
+
+| Bước | Kết quả |
+|---|---|
+| 1. Khách đăng ký, thấy nhắc kiểm tra hộp thư, chưa có phiên | PASS (202) |
+| 2. Mailpit nhận mail đúng người, có link `/activate?token=` | PASS |
+| 3. Mở link chưa tự kích hoạt; đặt mật khẩu mới rồi kích hoạt, chưa tự đăng nhập | PASS |
+| 4. Khách đăng nhập bằng mật khẩu vừa đặt; `/me` 200, danh sách nhân viên 403 | PASS |
+| 5. ADMIN tạo nhân viên SALES: 201, role `["SALES"]`, ACTIVE, khớp danh sách | PASS |
+| 6. SALES đăng nhập ngay, thấy "Bảng giá", đọc sản phẩm 200, nhân viên 403 | PASS |
+| 7. ADMIN khoá SALES: cùng phiên đọc sản phẩm 403, menu Bảng giá mất, token giữ nguyên | PASS |
+| 8. ADMIN mở khoá: cùng phiên đọc lại 200, menu Bảng giá có lại, không đăng nhập lại | PASS |
+| 9. Khoá ADMIN cuối cùng: 409, thông báo lastAdmin, dữ liệu giữ nguyên | PASS |
+| 10. Hạ ADMIN cuối xuống Bán hàng: 409, vai trò giữ nguyên | PASS |
+
+Lỗi chức năng tìm được: không có ở S6.
+
+Video (gốc, mỗi vai một file): `node_modules/.cache/playwright-results/journeys-khach-quan-tri-KH-5dcef-lại-quyền-bảo-vệ-ADMIN-cuối-desktop/attachments/video-{khach,admin,sales}-*.webm` (3,9 / 5,1 / 1,7 MB). Bản trong báo cáo HTML: `e2e-report/index.html`, `e2e-report/data/*.webm`. Ảnh cuối mỗi vai: `.../khach-cuoi.png`, `admin-cuoi.png`, `sales-cuoi.png` cùng thư mục.
+
+Giới hạn: bước 9-10 dựa vào DEV có đúng một ADMIN hoạt động (test khẳng định điều này, đỏ nếu DEV có thêm ADMIN). Không in/ghi mật khẩu; tài khoản khách/SALES sinh mới theo hậu tố thời gian, không dọn (không có API xoá). Đã chạy `git checkout -- .aidlc/runs/PORTAL-INVENTORY-UX-001/artifacts`. ESLint file spec PASS.
+
+## Việc A (COST-PRICE-LINK-001 S1)
+
+Sửa `features/inventory/supplier-receipts-view.tsx:30`: không DRAFT thì "Tổng thực nhận" = cộng `line.actual_amount_vnd` (null tính 0); DRAFT giữ `total_amount_vnd`. Thêm 1 ca test trong `supplier-receipts-view.test.tsx` (2 dòng 200.000 + 240.000 với total_amount_vnd 450.000, kỳ vọng "Tổng thực nhận: 440.000 VND", không có "450.000"). Vitest file: 6/6 PASS; `tsc --noEmit` sạch; eslint 3 file sạch. Lỗi S4 ở mục `## Lỗi chức năng` đã được sửa phía portal.
