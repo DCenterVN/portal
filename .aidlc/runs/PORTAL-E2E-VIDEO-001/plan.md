@@ -61,6 +61,9 @@
 - e2e/fooddev-v2/fooddev-v2.spec.ts
 - e2e/fooddev-v2/helpers.ts
 - e2e/setup/data.setup.ts
+- e2e/journeys/kho.spec.ts
+- e2e/journeys/mon-ban.spec.ts
+- e2e/journeys/khach-quan-tri.spec.ts
 
 ## Tests planned
 - TC-1 | AC-1, AC-2 | config | `npx playwright test --list --project=desktop` liệt kê đủ ca, không lỗi config.
@@ -76,14 +79,14 @@ Mỗi slice dừng chờ Dawn xem.
 - [ ] S2b: kịch bản 10 bộ còn lại theo mẫu đã duyệt (files: e2e/KICH-BAN.md; test: npx playwright test --list --project=desktop)
 - [ ] S3: chạy toàn bộ trên DEV có ghi hình, ghi bảng kết quả (files: .aidlc/runs/PORTAL-E2E-VIDEO-001/ket-qua.md; test: npm run e2e:record)
 
-### Lượt 2 (31/10 tối, Dawn: "duyệt 1 lần") — sửa 13 ca đỏ, thuyết minh tiếng Việt, merge
-Kết quả lượt 1: 32 PASS / 13 FAIL / 23 bỏ qua / 5 không chạy. Cả 13 ca đỏ đều do test/dữ liệu, chưa thấy lỗi chức năng. Lượt 2 ĐƯỢC sửa test (khác AC-3/AC-4), nhưng chỉ sửa cách test chuẩn bị dữ liệu và tìm phần tử theo màn hiện tại; KHÔNG nới assert, không bỏ ca, không skip. Không làm theo nhịp dừng từng slice: chạy liền S4→S9, dừng chỉ khi gặp lỗi chức năng thật (ghi vào ket-qua.md, báo Claude).
-- [ ] S4: thuyết minh tiếng Việt trên video: bọc thân mỗi ca bằng `test.step("Bước n: …")` lấy chữ từ e2e/KICH-BAN.md, không đổi lệnh bên trong (files: e2e/inventory-ux/inventory-ux.spec.ts, e2e/catalog-split/catalog-split.spec.ts, e2e/rbac/rbac.spec.ts, e2e/fooddev-pack/fooddev-pack.spec.ts, e2e/fooddev-set/fooddev-set.spec.ts; test: npx playwright test --list --project=desktop)
-- [ ] S5: như S4 cho bộ NCC và Món (files: e2e/supplier-contract/supplier-contract.spec.ts, e2e/supplier-contract/permissions.spec.ts, e2e/supplier-contract/receipt-gate.spec.ts, e2e/fooddev-v2/dishes.spec.ts, e2e/fooddev-v2/fooddev-v2.spec.ts; test: npx playwright test --list --project=desktop)
-- [ ] S6: bước chuẩn bị dữ liệu chung `e2e/setup/data.setup.ts` chạy sau đăng nhập, gọi API DEV qua phiên đã lưu: tạo/tìm NCC + hợp đồng + nguyên liệu và ghi `SUPPLIER_CONTRACT_CONTEXT` (thay runner đã mất), tạo/tìm món mẫu cho biến `FOODDEV_<KEY>_ID`, bảo đảm có thành viên SALES mẫu cho rbac; ghi ra `~/work/ticket/.cache/e2e/state/data.json`, config nạp vào biến môi trường. Chạy lại không tạo trùng (files: e2e/setup/data.setup.ts, playwright.config.ts, e2e/fooddev-v2/helpers.ts, e2e/fooddev-v2/playwright.fooddev-v2.config.ts; test: E2E_BASE_URL=http://localhost:3002 npx playwright test --project=setup)
-- [ ] S7: sửa test Gói/Set và rbac theo màn hiện tại: ô đã đổi thành ô chọn thì chọn thay vì gõ; rbac tìm thành viên SALES mẫu từ S6 (files: e2e/fooddev-pack/fooddev-pack.spec.ts, e2e/fooddev-set/fooddev-set.spec.ts, e2e/rbac/rbac.spec.ts; test: npm run e2e:record -- e2e/fooddev-pack e2e/fooddev-set e2e/rbac)
-- [ ] S8: chạy toàn bộ có ghi hình (kể cả bộ Món bằng config riêng), ghi ket-qua.md: Bộ | Ca | PASS/FAIL | lý do 1 dòng | video (files: .aidlc/runs/PORTAL-E2E-VIDEO-001/ket-qua.md; test: npm run e2e:record)
-- [ ] S9: merge `fix/portal-activate-inbound-261031` + `test/portal-e2e-record` vào main portal và push, sau khi verify toàn bộ (npm test, lint, typecheck, next build) PASS ở checkout chính (files: .aidlc/runs/PORTAL-E2E-VIDEO-001/ket-qua.md; test: git log origin/main -1)
+### Lượt 2 (31/10 tối, Dawn: "nghiệp vụ thì lỗi hết, pass toàn cơ bản"; "duyệt 1 lần")
+Lượt 1: 32 PASS chỉ là đăng nhập, danh sách, giao diện; KHÔNG luồng nghiệp vụ nào chạy hết từ đầu đến cuối. Lượt 2 lấy nghiệp vụ làm thước đo: mỗi hành trình = 1 ca dài chạy trên DEV bằng UI như người dùng, dữ liệu mới tạo trong ca (tên có hậu tố thời gian), mỗi bước `test.step("Bước n: …")` tiếng Việt để video có thuyết minh, kiểm kết quả nghiệp vụ (tiền, số lượng tồn, trạng thái, quyền) chứ không chỉ "thấy trang". Use case lấy từ hanh-trinh.md. Ca đỏ vì chức năng hỏng = ghi lỗi (màn, bước, mong đợi, thực tế, file:line nghi ngờ) vào ket-qua.md, KHÔNG nới test; Claude tách task sửa. Chạy liền S4→S9.
+- [ ] S4: hành trình KHO: kho tạo NCC → hợp đồng/bảng giá áp dụng → phiếu nhập 2 dòng giá theo hợp đồng → nhận hàng có ảnh hàng + ảnh chứng từ, lệch số lượng → tồn kho tăng đúng lượng thực nhận, giá vốn theo lượng thực nhận; thiếu ảnh thì không nhận được (files: e2e/journeys/kho.spec.ts; test: npm run e2e:record -- e2e/journeys/kho.spec.ts)
+- [ ] S5: hành trình MÓN → BÁN: FOOD_DEV tạo nguyên liệu/nhóm, món có định lượng, giá vốn đủ → gói → mở bán có giá → khách (đã đăng nhập) thấy sản phẩm đúng giá; nguyên liệu chưa có nhóm thì không hoàn tất món; vai kho không sửa được món (files: e2e/journeys/mon-ban.spec.ts; test: npm run e2e:record -- e2e/journeys/mon-ban.spec.ts)
+- [ ] S6: hành trình KHÁCH + QUẢN TRỊ: khách đăng ký → email kích hoạt trong Mailpit DEV → đặt mật khẩu → đăng nhập; ADMIN tạo nhân viên SALES, khoá → SALES mất quyền ngay, mở lại → có quyền; không khoá được ADMIN cuối cùng (files: e2e/journeys/khach-quan-tri.spec.ts; test: npm run e2e:record -- e2e/journeys/khach-quan-tri.spec.ts)
+- [ ] S7: sửa 13 ca cũ đang đỏ: bước chuẩn bị dữ liệu chung thay runner NCC đã mất + món mẫu bộ Món; Gói/Set chọn thay vì gõ; rbac dùng thành viên SALES tạo trong ca. Không nới assert (files: e2e/setup/data.setup.ts, playwright.config.ts, e2e/fooddev-v2/helpers.ts, e2e/fooddev-pack/fooddev-pack.spec.ts, e2e/fooddev-set/fooddev-set.spec.ts, e2e/rbac/rbac.spec.ts; test: npm run e2e:record)
+- [ ] S8: chạy toàn bộ có ghi hình, ket-qua.md: hành trình nghiệp vụ lên đầu (bước nào chạy, bước nào hỏng), rồi các bộ cũ; danh sách lỗi chức năng tìm được (files: .aidlc/runs/PORTAL-E2E-VIDEO-001/ket-qua.md, e2e/KICH-BAN.md; test: npm run e2e:record)
+- [ ] S9: merge `fix/portal-activate-inbound-261031` + `test/portal-e2e-record` vào main portal và push sau khi npm test, lint, typecheck, next build PASS ở checkout chính (files: .aidlc/runs/PORTAL-E2E-VIDEO-001/ket-qua.md; test: git log origin/main -1)
 
 ## Risks / rollback
 - Video làm chạy chậm hơn (~1,3 lần). Chỉ bật khi có cờ.
