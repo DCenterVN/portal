@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { randomBytes } from "node:crypto";
 import { test, expect, type Page } from "@playwright/test";
 
-test.use({ storageState: process.env.PORTAL_WAREHOUSE_STATE ?? "/home/dawn/work/ticket/.cache/tmp/supplier-bf3-storage.json", trace: "off", video: "off", screenshot: "off" });
+test.use({ storageState: process.env.PORTAL_WAREHOUSE_STATE ?? "/home/dawn/work/ticket/.cache/tmp/supplier-bf3-storage.json" });
 
 function fixture() {
   const path = process.env.SUPPLIER_CONTRACT_CONTEXT;

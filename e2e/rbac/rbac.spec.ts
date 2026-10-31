@@ -148,7 +148,6 @@ async function changeStatus(page: Page, suspended: boolean) {
   await expect(row.getByText(suspended ? t.SUSPENDED : t.ACTIVE, { exact: true })).toBeVisible();
 }
 
-test.use({ trace: "off", screenshot: "off", video: "off" });
 
 test.describe("RBAC trên stack thật", () => {
   test.describe.configure({ mode: "serial", timeout: 120_000 });

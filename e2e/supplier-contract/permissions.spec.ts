@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { test, expect, type Page } from "@playwright/test";
 import { decodePlatform, roleMatrixSchema } from "../../lib/api/platform-contract";
 
-test.use({ storageState: { cookies: [], origins: [] }, trace: "off", video: "off", screenshot: "off" });
+test.use({ storageState: { cookies: [], origins: [] } });
 
 async function browserRequest(page: Page, path: string, method = "GET", data?: Record<string, string[]>, headers?: Record<string, string>) {
   return page.evaluate(async ({ path, method, data, headers }) => {

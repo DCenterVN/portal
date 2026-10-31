@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { test, expect } from "@playwright/test";
 
-test.use({ storageState: process.env.PORTAL_WAREHOUSE_STATE ?? "/home/dawn/work/ticket/.cache/tmp/supplier-bf3-storage.json", trace: "off", video: "off", screenshot: "off" });
+test.use({ storageState: process.env.PORTAL_WAREHOUSE_STATE ?? "/home/dawn/work/ticket/.cache/tmp/supplier-bf3-storage.json" });
 
 test("TC-05/10/16: picker tên, giá chỉ đọc và ngày ngoài hợp đồng chặn tạo phiếu", async ({ page }) => {
   test.setTimeout(90_000);

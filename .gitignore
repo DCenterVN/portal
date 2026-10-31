@@ -1,5 +1,6 @@
 .next/
 node_modules/
+e2e-report/
 coverage/
 dist/
 *.log

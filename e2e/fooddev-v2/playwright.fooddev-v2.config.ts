@@ -3,6 +3,7 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const directory = dirname(fileURLToPath(import.meta.url));
+const record = process.env.E2E_RECORD === '1';
 
 export default defineConfig({
   testDir: directory,
@@ -19,7 +20,7 @@ export default defineConfig({
     browserName: 'chromium', headless: true, locale: 'vi-VN',
     viewport: { width: 1440, height: 1000 },
     actionTimeout: 15000, navigationTimeout: 20000,
-    trace: 'off', video: 'off', screenshot: 'off',
+    trace: record ? 'on' : 'off', video: record ? 'on' : 'off', screenshot: record ? 'on' : 'off',
     launchOptions: { executablePath: '/opt/brave.com/brave/brave' },
   },
   projects: [{ name: 'desktop' }],

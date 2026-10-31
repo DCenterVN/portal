@@ -255,7 +255,6 @@ async function warehouseDenials(request: APIRequestContext, data: {
   }
 }
 
-test.use({ trace: "off", screenshot: "off", video: "off" });
 test.describe("FOODDEV-PACK E1 QA thật", () => {
   test.describe.configure({ mode: "serial", timeout: 420_000 });
   test("FOOD_DEV soạn gói/set, đổi nhãn, pin 100 suất 80/20; WAREHOUSE đọc oracle và write403", async ({ page, browser, baseURL }) => {

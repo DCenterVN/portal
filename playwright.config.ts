@@ -4,23 +4,29 @@ import { defineConfig } from "@playwright/test";
 const executablePath = process.env.PW_BROWSER_PATH || "/opt/brave.com/brave/brave";
 // VISUAL_BASELINE=1: shoot file:// previews and rewrite the baseline; otherwise baseline is read-only.
 const baseline = process.env.VISUAL_BASELINE === "1";
+const record = process.env.E2E_RECORD === "1";
+const baseURL = process.env.E2E_BASE_URL || "http://localhost:3000";
 
 export default defineConfig({
   testDir: "e2e",
   // ponytail: results under node_modules (git-ignored) until .gitignore lists test-results/.
   outputDir: "node_modules/.cache/playwright-results",
-  reporter: "list",
+  reporter: record ? [["list"], ["html", { outputFolder: "e2e-report", open: "never" }]] : "list",
   fullyParallel: false,
   workers: 1,
   updateSnapshots: baseline ? "all" : "none",
   snapshotPathTemplate: "e2e/visual/baseline/{arg}-{projectName}{ext}",
   expect: { toHaveScreenshot: { maxDiffPixelRatio: 0.02, animations: "disabled" } },
-  use: { baseURL: "http://localhost:3000", launchOptions: { executablePath } },
+  use: {
+    baseURL,
+    launchOptions: { executablePath },
+    ...(record && { video: "on", trace: "on", screenshot: "on" }),
+  },
   projects: [
     { name: "desktop", use: { viewport: { width: 1440, height: 900 } } },
     { name: "mobile", testIgnore: "**/rbac/**", use: { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 1 } },
   ],
-  webServer: baseline ? undefined : {
+  webServer: baseline || process.env.E2E_BASE_URL ? undefined : {
     command: "npm run dev -- --port 3000",
     url: "http://localhost:3000/staff/login",
     reuseExistingServer: true,
