@@ -1,7 +1,7 @@
 {
   "id": "PORTAL-E2E-VIDEO-001",
   "title": "E2E có video, trace và kịch bản tiếng Việt để Dawn xem lại",
-  "description": "worker: unassigned · story: US-E2E-VIDEO-001 · sprint: 01 · slices: 0/7 · next: verification: stale (code changed since verify: .gitignore, e2e/fooddev-pack/fooddev-pack.spec.ts, e2e/fooddev-v2/playwright.fooddev-v2.config.ts)",
+  "description": "worker: unassigned · story: US-E2E-VIDEO-001 · sprint: 01 · slices: 0/7 · next: verification: stale (code changed since verify: .gitignore, e2e/KICH-BAN.md, e2e/README.md)",
   "pipeline": "sdlc",
   "agent": null,
   "agents": [
@@ -17,7 +17,7 @@
   "currentStep": 4,
   "status": "in_progress",
   "createdAt": "2026-10-31T15:44:59+00:00",
-  "updatedAt": "2026-10-31T15:50:16+00:00",
+  "updatedAt": "2026-10-31T16:49:07+00:00",
   "stepStates": [
     {
       "agent": "sdlc-discovery",
