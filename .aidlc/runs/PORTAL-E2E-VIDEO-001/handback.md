@@ -544,3 +544,54 @@ Phạm vi ghi hình desktop thực chạy: 47 ca, 46 ca có video và 47 ca có 
 - Đi tiếp: Coordinator tách sửa 2 lỗi schema app ở `lib/api/production.ts:335` và `features/production/material-requirements-view.tsx:16`; sau sửa chạy lại 3 ca đỏ. Nợ DEV cookie `secure: true` ở `lib/api/auth-journey-bff.ts:164`, kịch bản giá cũ và video TC-09 ghi ở Left over, không lách bằng assert hoặc fixture khác.
 
 Tier 1: tsc PASS · eslint PASS · e2e cũ 44/70 PASS
+
+### Fix inactive
+
+Brief `/home/dawn/work/ticket/.cache/run/brief-recipe-inactive-fix.md`, Dawn duyệt 02/11. S7 Lượt 4 đã commit `8a4a613` trước khi bắt đầu. Bản vá code đã commit `3a2bc2c` với đúng thông điệp brief; không push.
+
+#### Diff
+
+- `lib/api/production.ts:335`: thêm duy nhất `inactive: z.boolean().optional()` vào schema response đang có, giữ request schema strict.
+- `features/production/packages-view.tsx:102`: khi sửa công thức, dòng ghi chỉ lấy `sku_ref`, `quantity`, `uom`, `yield_pct`; tên nguyên liệu giữ riêng để hiển thị, không mang `name`/`inactive` vào PUT.
+- `features/production/material-requirements-view.tsx:16`: thêm đúng `SUPPLIER_PRICE` vào enum nguồn giá, giữ strict và các trường khác.
+- `features/production/production.test.tsx`: thêm 2 regression test. Ca công thức dùng response `inactive: true` và tên thật qua client/schema thật, mở được màn và form sửa, kiểm body PUT thực tế không có hai trường chỉ đọc. Ca nhu cầu kiểm giá `25000 VND/KG` với nguồn `SUPPLIER_PRICE`, không có ErrorState.
+
+#### Vitest và kiểm tra
+
+1. Test trước sửa: 69 PASS, 2 FAIL trên 71 ca production, đúng hai lỗi schema đọc. Log `/home/dawn/work/ticket/.cache/e2e/fix-inactive-vitest-red.log`.
+2. Chỉ sửa schema đọc: 70 PASS, 1 FAIL; công thức mở được nhưng PUT không gửi ra vì request strict chặn `inactive` còn lọt vào dòng sửa. Log `fix-inactive-vitest-serialization-red.log` cùng cache.
+3. Sửa lấy đúng bốn trường ghi: production 71/71 PASS, exit 0. Log `fix-inactive-vitest-green.log`.
+4. `npx tsc --noEmit`: PASS, exit 0; `npx eslint lib/api/production.ts features/production/packages-view.tsx features/production/material-requirements-view.tsx features/production/production.test.tsx`: PASS, exit 0. Log `fix-inactive-tsc.log`, `fix-inactive-eslint.log`.
+5. Đã chạy nguyên lệnh `npx vitest run`: exit 1, 1625/1629 tests PASS và 15 suite Playwright bị Vitest quét nhầm. Bốn test đỏ gồm frame lock và ba test contract dùng đường dẫn tương đối `../inventory` không tồn tại bên cạnh worktree. Log `fix-inactive-vitest-all.log`.
+6. Chạy đủ unit tests bằng Vitest, dùng cwd/root `/home/dawn/work/ticket/portal`, config và `--dir` trỏ chính worktree này, loại đúng các thư mục Playwright như script test hiện có: 82/83 file PASS, 1628/1629 test PASS, exit 1; chỉ còn `app/frame-lock.test.ts` báo lệch `package.json` và `playwright.config.ts`. Hai file đó không đổi trong bản vá. Đã đối chiếu `contracts/inventory.public.yaml` ở hai cwd giống từng byte; ba test contract PASS khi có đúng sibling inventory. Lệnh: `npx vitest run --config /home/dawn/work/ticket/.cache/worktrees/portal-e2e-record/vitest.config.ts --root /home/dawn/work/ticket/portal --dir /home/dawn/work/ticket/.cache/worktrees/portal-e2e-record --exclude "**/e2e/**" --exclude "**/e2e-*/**"`. Log `fix-inactive-vitest-all-unit.log`. Không bỏ qua frame lock để báo xanh.
+
+#### Build và E2E
+
+`npx next build --webpack` hoàn tất, có BUILD_ID và bảng route; log `/home/dawn/work/ticket/.cache/e2e/fix-inactive-build.log`. Coordinator xác nhận đã tự khởi động :3003 bằng build mới lúc 00:21, `/login` trả 307. Sau chỉ đạo đó không kiểm PID, không kill hoặc start server.
+
+Đã chạy đúng 3 ca đỏ có ghi hình, không sửa file E2E: FOODDEV-PACK E1, FOODDEV-SET E1 và AC-4. Project desktop, worker=1, đích :3003. Kết quả 2/3 ca PASS; setup 4/4 và data 6/6 PASS. Tổng runner 12 PASS, 1 FAIL, 0 SKIP, exit 1, 10,9 phút. Log `/home/dawn/work/ticket/.cache/e2e/fix-inactive-e2e.log`.
+
+#### Left over
+
+- Full Vitest còn lỗi frame lock có sẵn, nằm ngoài 4 file được duyệt; cần Coordinator xử lý trong phạm vi khung. Không chỉnh lock hoặc hai file khung.
+- OpenAPI production hiện đọc tại checkout còn enum giá `SEED_RETAIL_REFERENCE|CONTRACT`; thay đổi FE nhận `SUPPLIER_PRICE` theo brief Dawn duyệt và response runtime đã xác nhận ở S7. Chưa sửa contract ngoài phạm vi.
+
+- AC-4 còn đỏ vì false positive của regex test tại `e2e/fooddev-v2/helpers.ts:5`, được gọi từ `e2e/fooddev-v2/fooddev-v2.spec.ts:64`. Mã BOM hợp lệ `GOI-DAM-1793553842165-A051-v1` chứa đoạn `53842165-A051-` khớp regex rút gọn `[0-9a-f]{8}-[0-9a-f]{4}-`, nhưng không khớp UUID đầy đủ. Màn đã đọc và hiển thị công thức/tên nguyên liệu, mở được form sửa và nhóm Thịt/Trâu; dừng ở `screen(groups-thit-trau)` trước bước tạo nguyên liệu 201/trùng tên 409. Không phân loại là lỗi UUID của app, không nới assert, không sửa helper ngoài brief, không đổi tên dữ liệu hoặc ẩn mã BOM để né test.
+
+#### Ba ca E2E trước/sau và video
+
+| Ca | Trước, S7 Lượt 4 | Sau bản vá | Video | Trace |
+|---|---|---|---|---|
+| FOOD_DEV soạn gói/set, đổi nhãn, pin 100 suất 80/20; WAREHOUSE đọc oracle và write403 | FAIL: schema công thức từ chối inactive | PASS: oracle và quyền kho giữ nguyên | `/home/dawn/work/ticket/.cache/e2e/fix-inactive-e2e-results/fooddev-pack-fooddev-pack--cc574-OUSE-đọc-oracle-và-write403-desktop/video.webm` | `/home/dawn/work/ticket/.cache/e2e/fix-inactive-e2e-results/fooddev-pack-fooddev-pack--cc574-OUSE-đọc-oracle-và-write403-desktop/trace.zip` |
+| FOOD_DEV tạo và sửa set; kho chỉ đọc; revoke có hiệu lực ngay và restore đúng snapshot | FAIL: schema giá từ chối SUPPLIER_PRICE | PASS: oracle và quyền kho giữ nguyên | `/home/dawn/work/ticket/.cache/e2e/fix-inactive-e2e-results/fooddev-set-fooddev-set-FO-69630-ay-và-restore-đúng-snapshot-desktop/video.webm` | `/home/dawn/work/ticket/.cache/e2e/fix-inactive-e2e-results/fooddev-set-fooddev-set-FO-69630-ay-và-restore-đúng-snapshot-desktop/trace.zip` |
+| AC-4: nhóm hai cấp, tạo nguyên liệu tại dòng và xử lý trùng tên | FAIL: schema công thức từ chối inactive | FAIL: regex test bắt nhầm mã BOM, lỗi inactive đã qua | `/home/dawn/work/ticket/.cache/e2e/fix-inactive-e2e-results/fooddev-v2-fooddev-v2-AC-4-69640-tại-dòng-và-xử-lý-trùng-tên-desktop/video.webm` | `/home/dawn/work/ticket/.cache/e2e/fix-inactive-e2e-results/fooddev-v2-fooddev-v2-AC-4-69640-tại-dòng-và-xử-lý-trùng-tên-desktop/trace.zip` |
+
+Lệnh ghi hình: `E2E_BASE_URL=http://127.0.0.1:3003 E2E_OUTPUT_DIR=/home/dawn/work/ticket/.cache/e2e/fix-inactive-e2e-results PLAYWRIGHT_HTML_OUTPUT_DIR=/home/dawn/work/ticket/.cache/e2e/fix-inactive-e2e-report PLAYWRIGHT_JSON_OUTPUT_FILE=/home/dawn/work/ticket/.cache/e2e/fix-inactive-e2e.json npm run e2e:record -- e2e/fooddev-pack e2e/fooddev-set e2e/fooddev-v2/fooddev-v2.spec.ts --grep "FOOD_DEV soạn gói/set|FOOD_DEV tạo và sửa set|AC-4: nhóm hai cấp" --reporter=list,html,json`.
+
+Report `/home/dawn/work/ticket/.cache/e2e/fix-inactive-e2e-report/index.html`; JSON `/home/dawn/work/ticket/.cache/e2e/fix-inactive-e2e.json`. Đã kiểm đủ cả 3 video và 3 trace tồn tại. FOODDEV-PACK chạy 7,2 phút, FOODDEV-SET 2,3 phút; không đổi timeout hay assert.
+
+#### Chốt bàn giao
+
+Đã sửa và commit đúng 4 file code/test ở `3a2bc2c`, thêm handback này. Hai lỗi app inactive/SUPPLIER_PRICE được xác nhận đã qua bằng test production và hai hành trình E1 thật. Chưa báo toàn bộ xanh: full Vitest còn frame lock có sẵn, AC-4 cần một brief riêng cho regex E2E. Không đổi server sau chỉ đạo Coordinator, không push, không add ảnh S7, next-env.d.ts hoặc trace.jsonl.
+
+Tier 1: tsc PASS · eslint PASS · vitest 1628/1629 (FAIL frame lock có sẵn) · e2e 3 ca 2/3
