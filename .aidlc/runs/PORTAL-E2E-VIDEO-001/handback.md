@@ -410,10 +410,19 @@ Tiếp tục từ `f80e4e1`, không chạy baseline, giữ DEV `http://127.0.0.1
 | supplier-contract | TC-05/10/16 giá tham chiếu và giá thực tế | PASS | 25.000 tự điền, editable; sửa 26.000 và ngoài kỳ nhập 27.000, API 201 và lịch sử giữ đúng giá/tổng. |
 | supplier-contract | TC-16 giá 0 và ô trống | PASS | Ô trống chặn tạo, giá 0 tạo DRAFT và đọc lại giá/tổng 0. |
 | supplier-contract | TC-01/03/04/10/11 NCC, tệp, áp dụng/ngừng | PASS | Chứng từ tùy chọn; upload và giữ lịch sử vẫn được kiểm. |
+| catalog-split | 23 ca khai báo | 20 PASS, 3 SKIP có sẵn | Cả 6 ca đỏ 401 trước đây đều PASS với sessionApi; ca không có món công khai/mobile giữ skip cũ. |
+| rbac | 1 quyền SALES; 2 cùng phiên; 3 CUSTOMER; 4 khoá/mở; 5 tạo SALES | 5/5 PASS | SALES mới tạo trong ca, API và menu đúng quyền, đổi status qua UI, khôi phục grants và khoá tài khoản thử sau ca. |
+
+Log Catalog/RBAC `/home/dawn/work/ticket/.cache/e2e/s7-l4-catalog-rbac.log`, report `s7-l4-catalog-rbac-report/index.html`, video/trace `s7-l4-catalog-rbac-results/` cùng cache; tổng 25 PASS và 3 SKIP có sẵn, exit 0.
 
 Căn cứ điều chỉnh test: `/home/dawn/work/ticket/inventory/.aidlc/specs/inbound-receiving.md:136` quy định giá integer >= 0, omitted khác 0, giá tay ngoài kỳ hợp lệ; `supplier-contract-document.md:6` và `:10` chốt D-UX-3 chứng từ bảng giá tùy chọn. Không đổi gate ATTP, không nới assert API hoặc giá trị lưu.
 
 Log nhóm NCC: `/home/dawn/work/ticket/.cache/e2e/s7-l4-supplier.log`, report `/home/dawn/work/ticket/.cache/e2e/s7-l4-supplier-report/index.html`, video/trace trong `s7-l4-supplier-results/` cùng thư mục cache. Chạy từng nhóm bằng `npm run e2e:record`, nhóm sau dùng `--no-deps` và manifest từ setup vừa PASS, output riêng; không tái tạo fixture khi các nhóm khác còn đang đọc.
+
+#### S7 lỗi chức năng
+
+- Gói + công thức `/production/food-plans`, FOODDEV-PACK E1: lưu công thức API 201, version=1/BOM/components đều đúng; mong đợi đọc và hiển thị BOM vừa lưu. Thực tế UI báo "Không tải được gói hoặc nguyên liệu", lỗi `Unrecognized key(s) in object: 'inactive'` tại `components[0]`; giữ assert hiển thị BOM đỏ. Nghi `lib/api/production.ts:335` mở rộng response component nhưng vẫn `.strict()` và chưa nhận `inactive`; `features/production/packages-view.tsx:112` đọc lại sau ghi.
+- Cùng lỗi ở AC-4 bộ fooddev-v2 khi mở Gói đạm mẫu: mong đợi mở công thức để tạo nguyên liệu tại dòng; thực tế UI báo "Không tải được công thức gói", `current.components[0].inactive` bị schema từ chối, không có nút Sửa công thức. Không sửa app, không thay fixture bằng gói thiếu công thức để né lỗi. Trace/video nhóm Món còn trong output mặc định `node_modules/.cache/playwright-results/`, nhóm Gói trong `/home/dawn/work/ticket/.cache/e2e/s7-l4-pack-set-results/`.
 
 #### Files changed
 
