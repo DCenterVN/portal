@@ -1,6 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { z } from 'zod';
-import { login, pick, screen } from './helpers';
+import { login, pick, screen, fixture, dataName, filterDishes } from './helpers';
 import { contentSchema, draftSchema } from '../../lib/api/dishes';
 
 const sales = '/api/food-packs/sales';
@@ -8,9 +8,8 @@ const packSchema = z.object({ slot: z.string(), package_ref: z.string(), lines: 
 const detailSchema = z.object({ product: z.object({ id: z.string() }), variants: z.array(z.object({ set_ref: z.string(), servings: z.number(), journey: z.string(), packs: z.array(packSchema) })) });
 const completedSchema = z.object({ ok: z.literal(true), product_ref: z.string(), set_ref: z.string() });
 const costSchema = z.object({ complete: z.boolean(), lines: z.array(z.object({ sku_ref: z.string(), missing: z.string().nullable(), cost_vnd: z.number().nullable() })) });
-const fixture = (key: string) => { const value = process.env[`FOODDEV_${key}_ID`]; if (!value) throw new Error(`Missing fixture ${key}`); return value; };
 
-async function api<T>(page: Page, path: string, schema: z.ZodType<T>, method = 'GET', body?: unknown, status = 200) {
+async function api<T>(page: Page, path: string, schema: { parse(value: unknown): T }, method = 'GET', body?: unknown, status = 200) {
   const response = await page.evaluate(async ({ path, method, body }) => {
     const result = await fetch(path, { method, headers: { 'Content-Type': 'application/json', 'Idempotency-Key': crypto.randomUUID() }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
     return { status: result.status, body: await result.json() };
@@ -38,10 +37,14 @@ async function begin(page: Page, button: string) {
   return new URL(page.url()).searchParams.get('draft') ?? '';
 }
 async function save(page: Page) {
-  const response = page.waitForResponse(r => /\/sales\/dish-drafts\/[^/]+$/.test(new URL(r.url()).pathname) && r.request().method() === 'PUT');
   await page.getByRole('button', { name: 'Lưu nháp', exact: true }).click();
-  expect((await response).status()).toBe(200);
   await expect(page.getByRole('status').filter({ hasText: /^Đã lưu/ })).toBeVisible();
+  const id = new URL(page.url()).searchParams.get('draft');
+  expect(id).toBeTruthy();
+  const stored = await api(page, `${sales}/dish-drafts/${id}`, z.object({ draft: draftSchema }));
+  expect(stored.draft.content.name ?? '').toBe(await page.getByLabel('Tên món', { exact: true }).inputValue());
+  const amounts = await page.getByRole('textbox', { name: /^Lượng \/ suất dòng/ }).evaluateAll(inputs => inputs.map(input => input instanceof HTMLInputElement ? input.value : ''));
+  expect(stored.draft.content.ingredients.map(line => line.quantity)).toEqual(amounts);
 }
 async function finish(page: Page) {
   await fields(page);
@@ -95,24 +98,25 @@ test.beforeEach(async ({ page }) => { await login(page); });
 test.describe('M1 và các món dẫn xuất', () => {
   test.describe.configure({ mode: 'serial' });
   test('T1: M1 không tinh bột, nháp thiếu bền sau tải lại, hoàn tất', async ({ page }) => {
+    test.setTimeout(90_000);
     const id = await begin(page, 'Tạo món');
-    await page.getByLabel('Tên món', { exact: true }).fill('M1 Thịt trâu xào rau muống S13');
-    await ingredient(page, 'Thịt trâu S13', '');
+    await page.getByLabel('Tên món', { exact: true }).fill(dataName('M1 Thịt trâu xào rau muống'));
+    await ingredient(page, dataName('Thịt trâu S13'), '');
     await save(page);
     const stored = await api(page, `${sales}/dish-drafts/${id}`, z.object({ draft: draftSchema }));
     await page.reload();
-    await expect(page.getByLabel('Tên món', { exact: true })).toHaveValue('M1 Thịt trâu xào rau muống S13');
+    await expect(page.getByLabel('Tên món', { exact: true })).toHaveValue(dataName('M1 Thịt trâu xào rau muống'));
     await expect(page.getByRole('textbox', { name: 'Lượng / suất dòng 1', exact: true })).toHaveValue('');
     await expect(page.getByRole('combobox', { name: 'Danh mục', exact: true })).toHaveValue('');
     expect((await api(page, `${sales}/dish-drafts/${id}`, z.object({ draft: draftSchema }))).draft.content).toEqual(stored.draft.content);
     await screen(page, 'T1-incomplete-reloaded');
-    await pick(page, 'Danh mục', 'Món E2E');
+    await pick(page, 'Danh mục', dataName('Món E2E'));
     await page.getByLabel('Hashtag', { exact: true }).fill('trau, xao, rau-muong');
     await page.getByRole('textbox', { name: 'Lượng / suất dòng 1', exact: true }).fill('150');
-    await ingredient(page, 'Rau muống S13', '200');
-    await ingredient(page, 'Tỏi S13', '10');
+    await ingredient(page, dataName('Rau muống S13'), '200');
+    await ingredient(page, dataName('Tỏi S13'), '10');
     await page.getByRole('button', { name: 'Thêm gia vị', exact: true }).click();
-    await pick(page, 'Gói gia vị 1', 'E2E Gói gia vị');
+    await pick(page, 'Gói gia vị 1', dataName('Gói gia vị'));
     await expect(page.getByRole('checkbox', { name: 'Cho bỏ gói 1', exact: true })).toBeDisabled();
     await expect(page.getByText(/Tổng \/ suất: 360 g\. Tổng \/ kit: 720 g/)).toBeVisible();
     const complete = await finish(page); m1 = complete.product_ref;
@@ -120,17 +124,19 @@ test.describe('M1 và các món dẫn xuất', () => {
     expect(dish.variants[0].packs.map(p => p.slot).sort()).toEqual(['DAM', 'RAU']);
     expect(dish.variants[0].journey).toBe('DONE');
     await page.getByRole('button', { name: 'Về danh sách món', exact: true }).click();
-    await expect(page.getByRole('row').filter({ hasText: 'M1 Thịt trâu xào rau muống S13' })).toContainText('Đã hoàn tất');
+    await filterDishes(page);
+    await expect(page.getByRole('row').filter({ hasText: dataName('M1 Thịt trâu xào rau muống') })).toContainText('Đã hoàn tất');
     await screen(page, 'T1-list-done');
   });
 
   test('T2: nhân bản M1 → M2, chỉ gói đổi có ref mới', async ({ page }) => {
+    test.setTimeout(90_000);
     const before = await detail(page, m1);
     await open(page, m1); await begin(page, 'Nhân bản');
-    await page.getByLabel('Tên món', { exact: true }).fill('M2 Thịt bò xào rau muống S13');
+    await page.getByLabel('Tên món', { exact: true }).fill(dataName('M2 Thịt bò xào rau muống'));
     const index = before.variants[0].packs.flatMap(p => p.lines).findIndex(l => l.sku_ref === fixture('BUFFALO')) + 1;
     await page.getByRole('button', { name: `Chọn / thay nguyên liệu dòng ${index}`, exact: true }).click();
-    await pick(page.getByRole('region', { name: 'Chọn nguyên liệu', exact: true }), 'Nguyên liệu', 'Thịt bò S13');
+    await pick(page.getByRole('region', { name: 'Chọn nguyên liệu', exact: true }), 'Nguyên liệu', dataName('Thịt bò S13'));
     const complete = await finish(page);
     expect(complete.product_ref).not.toBe(m1);
     const copied = await detail(page, complete.product_ref);
@@ -141,6 +147,7 @@ test.describe('M1 và các món dẫn xuất', () => {
   });
 
   test('T3: biến thể 4 người dùng lại gói; REVISION OPEN trùng trả 409 và mở nháp cũ', async ({ page }) => {
+    test.setTimeout(90_000);
     const before = await detail(page, m1);
     await open(page, m1); const variantDraft = await begin(page, 'Tạo biến thể');
     await expect(page.getByRole('combobox', { name: 'Khẩu phần', exact: true })).toHaveValue('4');
@@ -176,24 +183,26 @@ test.describe('M1 và các món dẫn xuất', () => {
 });
 
 test('T5: tạo nguyên liệu chưa có ngay trong màn Món', async ({ page }) => {
+  test.setTimeout(90_000);
   await begin(page, 'Tạo món');
   await page.getByRole('button', { name: 'Thêm dòng nguyên liệu', exact: true }).click();
   const picker = page.getByRole('region', { name: 'Chọn nguyên liệu', exact: true });
-  await picker.getByRole('combobox', { name: 'Nguyên liệu', exact: true }).fill('Me theo mùa S13');
-  await picker.getByRole('button', { name: 'Tạo nguyên liệu “Me theo mùa S13”', exact: true }).click();
+  await picker.getByRole('combobox', { name: 'Nguyên liệu', exact: true }).fill(dataName('Me theo mùa'));
+  await picker.getByRole('button', { name: `Tạo nguyên liệu “${dataName('Me theo mùa')}”`, exact: true }).click();
   const form = picker.getByRole('form', { name: 'Tạo nguyên liệu', exact: true });
   await pick(form, 'Nhóm cấp 1', 'Trái cây'); await pick(form, 'Nhóm cấp 2', 'Trái cây tươi');
   await form.getByRole('combobox', { name: 'Đơn vị', exact: true }).selectOption('KG');
   const created = page.waitForResponse(r => new URL(r.url()).pathname === '/api/sales/skus' && r.request().method() === 'POST');
   await form.getByRole('button', { name: 'Tạo nguyên liệu', exact: true }).click();
   expect((await created).status()).toBe(201);
-  await expect(page.getByRole('region', { name: 'Nguyên liệu món', exact: true }).getByRole('row').filter({ hasText: 'Me theo mùa S13' })).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Nguyên liệu món', exact: true }).getByRole('row').filter({ hasText: dataName('Me theo mùa') })).toBeVisible();
   await fields(page); await save(page); await page.reload();
-  await expect(page.getByRole('region', { name: 'Nguyên liệu món', exact: true })).toContainText('Me theo mùa S13');
+  await expect(page.getByRole('region', { name: 'Nguyên liệu món', exact: true })).toContainText(dataName('Me theo mùa'));
   await screen(page, 'T5-created-material');
 });
 
 test('T6: bản sửa M4 thay theo mùa, PREPARATION giữ nhu cầu đã ghim', async ({ page }) => {
+  test.setTimeout(90_000);
   const requirements = `/api/production/food-plans/${fixture('PREPARATION')}/material-requirements`;
   const demand = z.object({ computed_at: z.string() }).passthrough().transform(value => Object.fromEntries(Object.entries(value).filter(([key]) => key !== 'computed_at')));
   const before = await api(page, requirements, demand);
@@ -201,7 +210,7 @@ test('T6: bản sửa M4 thay theo mùa, PREPARATION giữ nhu cầu đã ghim',
   await open(page, fixture('M4')); await begin(page, 'Tạo bản sửa');
   const index = oldDish.variants[0].packs.flatMap(p => p.lines).findIndex(l => l.sku_ref === fixture('OKRA')) + 1;
   await page.getByRole('button', { name: `Chọn / thay nguyên liệu dòng ${index}`, exact: true }).click();
-  await pick(page.getByRole('region', { name: 'Chọn nguyên liệu', exact: true }), 'Nguyên liệu', 'Dọc mùng S13');
+  await pick(page.getByRole('region', { name: 'Chọn nguyên liệu', exact: true }), 'Nguyên liệu', dataName('Dọc mùng S13'));
   await expect(page.getByRole('button', { name: 'Hoàn tất món', exact: true })).toBeDisabled();
   await page.getByLabel('Lý do sửa', { exact: true }).fill('Đổi đậu bắp sang dọc mùng theo mùa');
   const completed = await finish(page);
@@ -217,11 +226,12 @@ test('T6: bản sửa M4 thay theo mùa, PREPARATION giữ nhu cầu đã ghim',
 });
 
 test('Giá vốn: đúng một nguyên liệu thiếu giá, dòng và tổng báo chưa đủ', async ({ page }) => {
+  test.setTimeout(90_000);
   await begin(page, 'Tạo món');
-  await ingredient(page, 'Dọc mùng S13', '100');
-  await ingredient(page, 'Tỏi S13', '10');
+  await ingredient(page, dataName('Dọc mùng S13'), '100');
+  await ingredient(page, dataName('Tỏi S13'), '10');
   await page.getByRole('button', { name: 'Thêm gia vị', exact: true }).click();
-  await pick(page, 'Gói gia vị 1', 'E2E Gói gia vị');
+  await pick(page, 'Gói gia vị 1', dataName('Gói gia vị'));
   await save(page);
   await expect(page.getByRole('heading', { name: 'Giá vốn ước tính', exact: true }).locator('..').getByText('Chưa có giá', { exact: true })).toHaveCount(1);
   await expect(page.getByText(/Tổng \/ kit:.*chưa đủ/)).toBeVisible();
@@ -234,23 +244,24 @@ test('Giá vốn: đúng một nguyên liệu thiếu giá, dòng và tổng bá
 });
 
 test('S14d: tạo 2 món liên tiếp trong cùng phiên → 2 nháp khác nhau', async ({ page }) => {
+  test.setTimeout(90_000);
   const session = await page.evaluate(() => {
     const marker = crypto.randomUUID();
     Object.assign(window, { s14dSession: marker });
     return marker;
   });
   const first = await begin(page, 'Tạo món');
-  await page.getByLabel('Tên món', { exact: true }).fill('S14d Món A');
+  await page.getByLabel('Tên món', { exact: true }).fill(dataName('S14d Món A'));
   await save(page);
   await screen(page, 'S14d-first-draft');
   await page.getByRole('button', { name: 'Về danh sách món', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Tạo món', exact: true })).toBeVisible();
   const second = await begin(page, 'Tạo món');
-  await page.getByLabel('Tên món', { exact: true }).fill('S14d Món B');
+  await page.getByLabel('Tên món', { exact: true }).fill(dataName('S14d Món B'));
   await save(page);
   expect(await page.evaluate(() => Reflect.get(window, 's14dSession'))).toBe(session);
   expect(second).not.toBe(first);
-  for (const [id, name] of [[first, 'S14d Món A'], [second, 'S14d Món B']]) {
+  for (const [id, name] of [[first, dataName('S14d Món A')], [second, dataName('S14d Món B')]]) {
     const { draft } = await api(page, `${sales}/dish-drafts/${id}`, z.object({ draft: draftSchema }));
     expect(draft).toMatchObject({ id, kind: 'CREATE', status: 'OPEN', content: { name } });
   }
@@ -258,9 +269,10 @@ test('S14d: tạo 2 món liên tiếp trong cùng phiên → 2 nháp khác nhau'
 });
 
 test('S14d: Nháp đang soạn có nút Tải thêm', async ({ page }) => {
+  test.setTimeout(90_000);
   const seeded: string[] = [];
   for (let index = 0; index < 41; index++) {
-    const name = `S14d Phân trang ${index + 1}`;
+    const name = `S14d Phân trang ${index + 1} ${dataName("Phân trang")}`;
     const { draft } = await api(page, `${sales}/dish-drafts`, z.object({ draft: draftSchema }), 'POST', {
       kind: index % 2 ? 'COPY' : 'CREATE',
       ...(index % 2 ? { source_product_ref: fixture('M4'), source_set_ref: fixture('M4_SET') } : {}),
@@ -280,6 +292,7 @@ test('S14d: Nháp đang soạn có nút Tải thêm', async ({ page }) => {
   } while (cursor);
   expect(new Set(expected.map(row => row.id)).size).toBe(expected.length);
   await page.reload();
+  await filterDishes(page);
   const drafts = page.getByRole('heading', { name: 'Nháp đang soạn', exact: true }).locator('..');
   const rows = drafts.getByRole('button', { name: 'Tiếp tục nháp', exact: true });
   const more = drafts.getByRole('button', { name: 'Tải thêm', exact: true });

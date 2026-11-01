@@ -1,17 +1,13 @@
 import { test, expect, type Page, type Locator } from '@playwright/test';
 import { z } from 'zod';
-import { login, pick, screen } from './helpers';
+import { login, pick, screen, dataName, pickVariant } from './helpers';
 
-const family = process.env.FOODDEV_FAMILY_NAME || 'E2E Họ món';
-const protein = process.env.FOODDEV_PROTEIN_NAME || 'E2E Gói đạm';
-const vegetable = process.env.FOODDEV_VEGETABLE_NAME || 'E2E Gói rau';
-const seasoning = process.env.FOODDEV_SEASONING_NAME || 'E2E Gói gia vị';
+let family: string, protein: string, vegetable: string, seasoning: string;
 const rule = 'Món cần ít nhất một gói gia vị không được bỏ';
 const setSchema = z.object({ id: z.string(), updated_at: z.string(), tags: z.array(z.string()), slots: z.array(z.object({ slot: z.string(), swappable: z.boolean(), removable: z.boolean(), options: z.array(z.object({ sku_ref: z.string(), quantity: z.number(), is_default: z.boolean() })) })) });
 const setResponseSchema = z.union([setSchema, z.object({ data: setSchema }).transform(body => body.data)]);
 let savedSet: z.infer<typeof setSchema>;
 
-test.describe.configure({ mode: 'serial' });
 
 async function readonly(scope: Page | Locator, label: string) {
   const field = scope.getByLabel(label, { exact: true });
@@ -20,18 +16,45 @@ async function readonly(scope: Page | Locator, label: string) {
   await expect(scope.getByRole('textbox', { name: label, exact: true })).toHaveCount(0);
 }
 
+async function filterSets(page: Page) {
+  const sets = page.getByRole('region', { name: 'Set', exact: true });
+  const query = dataName('Set không tinh bột').split(' ').at(-1);
+  if (!query) throw new Error('Thiếu hậu tố dữ liệu set');
+  const loaded = page.waitForResponse(response => new URL(response.url()).pathname === '/api/food-packs/sales/sets' && new URL(response.url()).searchParams.get('q') === query);
+  await sets.getByLabel('Tìm set theo tên', { exact: true }).fill(query);
+  await sets.getByRole('button', { name: 'Tìm set', exact: true }).click();
+  expect((await loaded).status()).toBe(200);
+  await expect(sets.getByRole('row').filter({ hasText: /[0-9a-f]{8}-[0-9a-f]{4}-/i })).toHaveCount(0);
+}
+
 test.beforeEach(async ({ page }) => {
+  family = dataName("Họ món"); protein = dataName("Gói đạm"); vegetable = dataName("Gói rau"); seasoning = dataName("Gói gia vị");
   await login(page);
   await page.getByRole('tab', { name: 'Set (nâng cao)', exact: true }).click();
   await expect(page.getByRole('region', { name: 'Set', exact: true }).getByRole('button', { name: 'Tạo set món', exact: true }).first()).toBeVisible();
+  await filterSets(page);
   await screen(page, 'food-dev-login');
 });
 
 test('AC-4: nhóm hai cấp, tạo nguyên liệu tại dòng và xử lý trùng tên', async ({ page }) => {
+  test.setTimeout(90_000);
   await page.getByRole('tab', { name: 'Gói + công thức', exact: true }).click();
   const packs = page.getByRole('region', { name: 'Gói và công thức', exact: true });
-  await packs.getByRole('button', { name: `Xem ${protein}`, exact: true }).click();
-  await packs.getByRole('button', { name: /^(Tạo|Sửa) công thức$/ }).click();
+  await expect(packs.getByRole('table')).toBeVisible();
+  const view = packs.getByRole('button', { name: `Xem ${protein}`, exact: true });
+  while (!await view.count()) {
+    const next = packs.getByRole('button', { name: 'Trang tiếp', exact: true });
+    await expect(next, 'Tìm gói mẫu qua phân trang UI').toBeEnabled();
+    const loaded = page.waitForResponse(response => new URL(response.url()).pathname === '/api/food-packs/sales/packages' && response.request().method() === 'GET');
+    await next.click();
+    expect((await loaded).status()).toBe(200);
+    await expect(packs.locator('[aria-busy]').first()).toHaveAttribute('aria-busy', 'false');
+    await expect(packs.getByRole('table')).toBeVisible();
+  }
+  await view.click();
+  const recipeButton = packs.getByRole('button', { name: /^(Tạo|Sửa) công thức$/ });
+  await expect(recipeButton).toBeVisible();
+  await recipeButton.click();
   const picker = packs.getByRole('region', { name: 'Chọn nguyên liệu', exact: true }).first();
   await expect(picker.getByRole('combobox', { name: 'Nhóm cấp 1', exact: true })).toBeVisible();
   await expect(picker.getByRole('combobox', { name: 'Nhóm cấp 2', exact: true })).toBeVisible();
@@ -39,9 +62,9 @@ test('AC-4: nhóm hai cấp, tạo nguyên liệu tại dòng và xử lý trùn
   await picker.getByRole('combobox', { name: 'Nhóm cấp 2', exact: true }).click();
   await expect(picker.getByRole('option', { name: 'Trâu', exact: true })).toBeVisible();
   await screen(page, 'groups-thit-trau');
-  await picker.getByRole('combobox', { name: 'Nguyên liệu', exact: true }).fill('me chua');
+  await picker.getByRole('combobox', { name: 'Nguyên liệu', exact: true }).fill(dataName('me chua'));
   await expect(picker.getByText('Không có nguyên liệu phù hợp', { exact: true })).toBeVisible();
-  await picker.getByRole('button', { name: 'Tạo nguyên liệu “me chua”', exact: true }).click();
+  await picker.getByRole('button', { name: `Tạo nguyên liệu “${dataName('me chua')}”`, exact: true }).click();
   const form = picker.getByRole('form', { name: 'Tạo nguyên liệu', exact: true });
   await pick(form, 'Nhóm cấp 1', 'Trái cây');
   await pick(form, 'Nhóm cấp 2', 'Trái cây tươi');
@@ -50,34 +73,38 @@ test('AC-4: nhóm hai cấp, tạo nguyên liệu tại dòng và xử lý trùn
   const created = page.waitForResponse(response => new URL(response.url()).pathname === '/api/sales/skus' && response.request().method() === 'POST');
   await form.getByRole('button', { name: 'Tạo nguyên liệu', exact: true }).click();
   expect((await created).status()).toBe(201);
-  await expect(packs.getByRole('group', { name: 'me chua', exact: true })).toBeVisible();
+  await expect(packs.getByRole('group', { name: dataName('me chua'), exact: true })).toBeVisible();
   await screen(page, 'material-in-recipe-row');
   await picker.getByRole('combobox', { name: 'Nguyên liệu', exact: true }).fill('nguyên liệu thử trùng');
   await picker.getByRole('button', { name: 'Tạo nguyên liệu “nguyên liệu thử trùng”', exact: true }).click();
-  await form.getByLabel('Tên', { exact: true }).fill('Mè Chua');
+  await form.getByLabel('Tên', { exact: true }).fill(dataName('me chua').replace('me chua', 'Mè Chua'));
   await pick(form, 'Nhóm cấp 1', 'Trái cây');
   await pick(form, 'Nhóm cấp 2', 'Trái cây tươi');
   const duplicate = page.waitForResponse(response => new URL(response.url()).pathname === '/api/sales/skus' && response.request().method() === 'POST');
   await form.getByRole('button', { name: 'Tạo nguyên liệu', exact: true }).click();
   expect((await duplicate).status()).toBe(409);
-  await expect(form.getByRole('status')).toContainText('Đã có me chua');
+  await expect(form.getByRole('status')).toContainText(`Đã có ${dataName('me chua')}`);
   await expect(form.getByRole('button', { name: 'Dùng nguyên liệu đã có', exact: true })).toBeVisible();
   await screen(page, 'duplicate-material');
   await form.getByRole('button', { name: 'Dùng nguyên liệu đã có', exact: true }).click();
   await expect(form).toHaveCount(0);
-  await expect(packs.getByRole('group', { name: 'me chua', exact: true })).toHaveCount(1);
+  await expect(packs.getByRole('group', { name: dataName('me chua'), exact: true })).toHaveCount(1);
   await screen(page, 'existing-material-selected');
 });
 
+test.describe('Set và trường chỉ đọc', () => {
+  test.describe.configure({ mode: 'serial' });
+
 test('AC-5: set Đạm Rau Gia vị không tinh bột; UI và API giữ gia vị bắt buộc', async ({ page }) => {
+  test.setTimeout(90_000);
   const sets = page.getByRole('region', { name: 'Set', exact: true });
   await sets.getByRole('button', { name: 'Tạo set món', exact: true }).first().click();
   const form = sets.getByRole('form', { name: 'Biên tập set món', exact: true });
   await pick(form, 'Họ món', family);
   await expect(form.getByRole('combobox', { name: 'Khẩu phần', exact: true })).toBeVisible();
   await form.getByRole('combobox', { name: 'Khẩu phần', exact: true }).selectOption('2 người');
-  await form.getByLabel('Mã set', { exact: true }).fill('E2E-V2-SET');
-  await form.getByLabel('Tên set', { exact: true }).fill('E2E Set không tinh bột');
+  await form.getByLabel('Mã set', { exact: true }).fill(dataName('SET-V2'));
+  await form.getByLabel('Tên set', { exact: true }).fill(dataName('Set không tinh bột'));
   await form.getByLabel('Hashtag tay', { exact: true }).fill('e2e, fooddev, khong-tinh-bot');
   const draft = page.waitForResponse(response => new URL(response.url()).pathname === '/api/food-packs/sales/sets' && response.request().method() === 'POST');
   await form.getByRole('button', { name: 'Lưu set món', exact: true }).click();
@@ -102,7 +129,8 @@ test('AC-5: set Đạm Rau Gia vị không tinh bột; UI và API giữ gia vị
   savedSet = setResponseSchema.parse(await response.json());
   expect(savedSet.slots.map(slot => slot.slot)).toEqual(['DAM', 'RAU', 'COT']);
   await page.reload();
-  await sets.getByRole('button', { name: 'Xem E2E Set không tinh bột', exact: true }).click();
+  await filterSets(page);
+  await sets.getByRole('button', { name: `Xem ${dataName('Set không tinh bột')}`, exact: true }).click();
   await expect(sets.getByRole('combobox', { name: 'Đạm', exact: true })).toContainText(protein);
   await screen(page, 'set-saved-reloaded');
   const rejected = await page.evaluate(async ({ id, data }) => {
@@ -120,6 +148,7 @@ test('AC-5: set Đạm Rau Gia vị không tinh bột; UI và API giữ gia vị
 });
 
 test('AC-6/7: bảy trường là danh sách/chỉ đọc, không hiện UUID trên mọi màn đã đi', async ({ page }) => {
+  test.setTimeout(90_000);
   await page.getByRole('tab', { name: 'Gói + công thức', exact: true }).click();
   const packs = page.getByRole('region', { name: 'Gói và công thức', exact: true });
   await packs.getByRole('button', { name: 'Tạo gói', exact: true }).first().click();
@@ -138,12 +167,12 @@ test('AC-6/7: bảy trường là danh sách/chỉ đọc, không hiện UUID tr
   await readonly(page, 'Đơn vị');
   await expect(page.getByLabel('Đơn vị', { exact: true })).toHaveText('suất');
   await screen(page, 'target-slug-unit');
-  await page.getByLabel('Tiêu đề', { exact: true }).fill('E2E Chỉ tiêu FOODDEV V2');
+  await page.getByLabel('Tiêu đề', { exact: true }).fill(dataName('Chỉ tiêu V2'));
   await pick(page, 'Sản phẩm', family);
   const target = page.waitForResponse(response => new URL(response.url()).pathname === '/api/production/targets' && response.request().method() === 'POST');
   await page.getByRole('button', { name: 'Lưu chỉ tiêu', exact: true }).click();
   expect((await target).status()).toBe(201);
-  const row = page.getByRole('row').filter({ hasText: 'E2E Chỉ tiêu FOODDEV V2' });
+  const row = page.getByRole('row').filter({ hasText: dataName('Chỉ tiêu V2') });
   await screen(page, 'target-saved');
   await row.getByRole('link', { name: 'Tạo set', exact: true }).click();
   await page.getByRole('tab', { name: 'Thực đơn', exact: true }).click();
@@ -152,8 +181,10 @@ test('AC-6/7: bảy trường là danh sách/chỉ đọc, không hiện UUID tr
   await expect(plan.getByRole('combobox', { name: 'Mã set', exact: true })).toBeVisible();
   await readonly(plan, 'Khẩu phần');
   await readonly(plan, 'Số suất mỗi kit');
-  await pick(plan, 'Mã set', 'E2E-V2-SET');
+  await pickVariant(page, dataName('SET-V2'));
   await expect(plan.getByLabel('Khẩu phần', { exact: true })).toHaveText('2 người');
   await expect(plan.getByLabel('Số suất mỗi kit', { exact: true })).toHaveText('2');
   await screen(page, 'menu-variant-servings-readonly');
+});
+
 });

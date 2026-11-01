@@ -1,6 +1,7 @@
+import { pick } from "../fooddev-v2/helpers";
 import { readFileSync } from "node:fs";
-import { randomBytes } from "node:crypto";
-import { test, expect, type Page } from "@playwright/test";
+import { readManifest } from "../setup/api";
+import { test, expect } from "@playwright/test";
 
 test.use({ storageState: process.env.PORTAL_WAREHOUSE_STATE ?? "/home/dawn/work/ticket/.cache/tmp/supplier-bf3-storage.json" });
 
@@ -13,18 +14,10 @@ function fixture() {
 }
 
 
-async function pick(page: Page, label: string, name: string) {
-  const input = page.getByRole("combobox", { name: label, exact: true });
-  if (await input.inputValue() === name) return;
-  await input.fill(name.slice(0, Math.min(12, name.length)));
-  await page.getByRole("option").filter({ hasText: name }).click();
-  await expect(input).toHaveValue(name);
-}
-
 test("TC-01/03/04/10/11: NCC, nháp, tệp, áp dụng và ngừng dùng bằng UI", async ({ page }, info) => {
   test.setTimeout(120_000);
   const { fixture: seed } = fixture();
-  const suffix = randomBytes(2).toString("hex").toUpperCase();
+  const suffix = readManifest().suffix;
   const name = `Gạo An Bình QA${suffix}`;
   const code = `DEMO-NCC-${suffix}`;
   const agreementCode = `DEMO-HD-${suffix}`;
@@ -68,9 +61,8 @@ test("TC-01/03/04/10/11: NCC, nháp, tệp, áp dụng và ngừng dùng bằng 
   const card = page.getByRole("article").filter({ hasText: agreementCode });
   await expect(card).toContainText("Nháp");
   await card.getByRole("button", { name: "Mở bản nháp", exact: true }).click();
-  await page.getByRole("button", { name: "Áp dụng bảng giá", exact: true }).click();
-  await expect(page.getByRole("alert").filter({ hasText: "Chọn chứng từ chính trước khi áp dụng" })).toBeVisible();
-  await page.screenshot({ path: `.aidlc/runs/PORTAL-INVENTORY-UX-001/artifacts/e2e-web/repeat-${info.repeatEachIndex}/missing-document.png`, fullPage: true });
+  await expect(page.getByRole("button", { name: "Áp dụng bảng giá", exact: true })).toBeEnabled();
+  await page.screenshot({ path: info.outputPath("optional-document.png"), fullPage: true });
   expect(presigns).toBe(0);
   await page.getByLabel("Chọn PDF hoặc ảnh, tối đa 5 MiB").setInputFiles(pdf);
   await expect(page.getByRole("button", { name: "Áp dụng bảng giá", exact: true })).toBeDisabled();

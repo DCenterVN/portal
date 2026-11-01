@@ -1,3 +1,4 @@
+import { sessionApi } from "../setup/api";
 import { readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { test, expect, type Page } from "@playwright/test";
@@ -35,7 +36,7 @@ async function login(page: Page, kind: Kind) {
 }
 
 async function permissionsOf(page: Page): Promise<string[]> {
-  const response = await page.request.get("/api/auth/context");
+  const response = await sessionApi(page.context()).get("/api/auth/context");
   expect(response.status(), "Đọc quyền qua /api/auth/context").toBe(200);
   return (await response.json()).permissions ?? [];
 }

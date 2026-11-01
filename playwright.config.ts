@@ -3,6 +3,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 
 const e2eDir = `${homedir()}/work/ticket/.cache/e2e`;
+process.env.SUPPLIER_CONTRACT_CONTEXT ??= `${e2eDir}/s7-data.json`;
 const accountsPath = `${e2eDir}/accounts.env`;
 const accounts: Record<string, string> = {};
 if (existsSync(accountsPath)) {
@@ -30,7 +31,7 @@ const baseURL = process.env.E2E_BASE_URL || "http://localhost:3000";
 export default defineConfig({
   testDir: "e2e",
   // ponytail: results under node_modules (git-ignored) until .gitignore lists test-results/.
-  outputDir: "node_modules/.cache/playwright-results",
+  outputDir: process.env.E2E_OUTPUT_DIR || "node_modules/.cache/playwright-results",
   reporter: record ? [["list"], ["html", { outputFolder: "e2e-report", open: "never" }]] : "list",
   fullyParallel: false,
   workers: 1,
@@ -43,8 +44,9 @@ export default defineConfig({
     ...(record && { video: narratedVideo, trace: "on", screenshot: "on" }),
   },
   projects: [
-    { name: "setup", testMatch: "**/e2e/setup/*.setup.ts", use: { trace: "off", video: "off", screenshot: "off" } },
-    { name: "desktop", testIgnore: "**/setup/**", ...(record && { dependencies: ["setup"] }), use: { viewport: { width: 1440, height: 900 } } },
+    { name: "setup", testMatch: "**/setup/login.setup.ts", use: { trace: "off", video: "off", screenshot: "off" } },
+    { name: "data", testMatch: "**/setup/data.setup.ts", dependencies: ["setup"], use: { launchOptions: { executablePath, slowMo: 0 }, trace: "on", video: "off" } },
+    { name: "desktop", testIgnore: "**/setup/**", ...(record && { dependencies: ["data"] }), use: { viewport: { width: 1440, height: 900 } } },
     { name: "mobile", testIgnore: ["**/rbac/**", "**/setup/**"], use: { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 1 } },
   ],
   webServer: baseline || process.env.E2E_BASE_URL ? undefined : {

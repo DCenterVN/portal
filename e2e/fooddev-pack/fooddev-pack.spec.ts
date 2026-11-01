@@ -1,7 +1,8 @@
-import { randomInt } from "node:crypto";
+import { pick, pickVariant } from "../fooddev-v2/helpers";
+import { sessionApi, type SessionApi } from "../setup/api";
 import { readFileSync } from "node:fs";
 import { homedir } from "node:os";
-import { test, expect, type APIRequestContext, type Locator, type Page, type Response } from "@playwright/test";
+import { test, expect, type Locator, type Page, type Response } from "@playwright/test";
 import { z } from "zod";
 import { decodePlatform } from "../../lib/api/platform-contract";
 import messages from "../../messages/vi.json" with { type: "json" };
@@ -15,7 +16,7 @@ const packageSchema = metadata.extend({ id: z.string().uuid(), updated_at: z.str
 const optionSchema = z.object({ sku_ref: z.string().uuid(), quantity: z.number().int().positive(), is_default: z.boolean() }).strict();
 const slotSchema = z.object({ slot: z.enum(["TINH_BOT", "DAM", "RAU", "COT", "NUOC_CHAM", "GIA_VI_THEM"]), swappable: z.boolean(), removable: z.boolean(), options: z.array(optionSchema) }).strict();
 const setSchema = packageSchema.extend({ tags: z.array(z.string()), slots: z.array(slotSchema) });
-const componentSchema = z.object({ sku_ref: z.string().uuid(), name: z.string().nullable(), quantity: z.string(), uom: z.string(), yield_pct: z.string() }).strict();
+const componentSchema = z.object({ sku_ref: z.string().uuid(), name: z.string().nullable(), quantity: z.string(), uom: z.string(), yield_pct: z.string(), inactive: z.literal(false).optional() }).strict().transform(({ sku_ref, name, quantity, uom, yield_pct }) => ({ sku_ref, name, quantity, uom, yield_pct }));
 const stepSchema = z.object({ instruction: z.string(), duration_seconds: z.number().int().nonnegative() }).strict();
 const recipeSchema = z.object({ id: z.string().uuid(), output_sku_ref: z.string().uuid(), version: z.number().int().positive(), bom_code: z.string(), components: z.array(componentSchema), prep_steps: z.array(stepSchema) });
 const labelsSchema = z.object({ allergen_summary: z.object({ known: z.boolean(), contains: z.array(z.string()) }), avoidance_flags: z.array(z.string()), diet_flags: z.array(z.string()).nullable(), updated_at: z.string() });
@@ -80,32 +81,19 @@ async function decoded<T>(response: Response, schema: { parse(value: unknown): T
   expect(response.status(), "HTTP response").toBe(status);
   return decodePlatform(await response.json(), schema);
 }
-async function read<T>(request: APIRequestContext, path: string, schema: { parse(value: unknown): T }): Promise<T> {
+async function read<T>(request: SessionApi, path: string, schema: { parse(value: unknown): T }): Promise<T> {
   const response = await request.get(path);
   expect(response.status(), `GET ${path}`).toBe(200);
   return decodePlatform(await response.json(), schema);
 }
-async function pick(scope: Locator, label: string, name: string) {
-  const combobox = scope.getByRole("combobox", { name: label, exact: true });
-  if (await combobox.inputValue() === name) {
-    await expect(combobox).toHaveValue(name);
-    return;
-  }
-  await combobox.fill(name.split(/\s+/).slice(0, 2).join(" "));
-  await scope.getByRole("option", { name, exact: true }).click();
-}
-async function chooseRaw(page: Page, picker: Locator, raw: Raw) {
-  await picker.getByLabel("Tìm nguyên liệu", { exact: true }).fill(raw.name);
-  const loaded = page.waitForResponse(r => new URL(r.url()).pathname === "/api/sales/skus" && new URL(r.url()).searchParams.get("q") === raw.name && r.request().method() === "GET");
-  await picker.getByRole("button", { name: "Lọc nguyên liệu", exact: true }).click();
-  expect((await loaded).status()).toBe(200);
-  await picker.getByRole("button", { name: `Chọn ${raw.name}`, exact: true }).click();
+async function chooseRaw(_page: Page, picker: Locator, raw: Raw) {
+  await pick(picker, "Nguyên liệu", raw.name);
 }
 async function createFamilyAndTarget(page: Page, tag: string) {
   await page.goto("/production/targets");
   await page.getByRole("button", { name: "Tạo chỉ tiêu", exact: true }).first().click();
   await page.getByLabel("Tên sản phẩm", { exact: true }).fill(`Bún Huế ${tag}`);
-  await page.getByLabel("Slug sản phẩm", { exact: true }).fill(`e1-bun-${tag.toLowerCase()}`);
+  await expect(page.getByLabel("Slug sản phẩm", { exact: true })).toHaveText(`bun-hue-${tag.toLowerCase()}`);
   const productResponse = changed(page, "/api/sales/products", "POST");
   await page.getByRole("button", { name: "Tạo product DRAFT", exact: true }).click();
   const family = (await decoded(await productResponse, familySchema, 201)).product;
@@ -139,7 +127,6 @@ async function createPack(page: Page, family: Family, raw: Raw, fixture: Fixture
   await region.getByRole("button", { name: "Tạo gói", exact: true }).first().click();
   const form = region.getByRole("form", { name: "Biên tập gói", exact: true });
   await pick(form, "Họ món của gói", family.name);
-  await form.getByLabel("Mã gói", { exact: true }).fill(`E1-${tag}-${fixture.key}`);
   await form.getByLabel("Tên gói", { exact: true }).fill(`${fixture.label} ${tag}`);
   const saved = changed(page, "/api/food-packs/sales/packages", "POST");
   await form.getByRole("button", { name: "Lưu gói", exact: true }).click();
@@ -148,7 +135,7 @@ async function createPack(page: Page, family: Family, raw: Raw, fixture: Fixture
   const recipeForm = region.getByRole("form", { name: "Biên tập công thức", exact: true });
   await chooseRaw(page, recipeForm.locator("..").getByRole("region", { name: "Chọn nguyên liệu", exact: true }), raw);
   await recipeForm.getByLabel("Định lượng 1", { exact: true }).fill(fixture.quantity);
-  await recipeForm.getByRole("combobox", { name: "Đơn vị 1", exact: true }).selectOption("KG");
+  await recipeForm.getByRole("combobox", { name: /^Đơn vị 1\b/ }).selectOption("KG");
   await recipeForm.getByLabel("Yield % 1", { exact: true }).fill(fixture.yield);
   await recipeForm.getByRole("button", { name: "Thêm bước chế biến", exact: true }).click();
   await recipeForm.getByLabel("Hướng dẫn 1", { exact: true }).fill(`Sơ chế ${fixture.label.toLowerCase()} ${tag}`);
@@ -167,6 +154,7 @@ async function createSet(page: Page, family: Family, packs: Record<string, Pack>
   const form = region.getByRole("form", { name: "Biên tập set món", exact: true });
   await pick(form, "Họ món", family.name);
   await form.getByLabel("Mã set", { exact: true }).fill(`E1-${tag}-set-${vegetarian ? "chay" : "bo"}`);
+  await form.getByRole("combobox", { name: "Khẩu phần", exact: true }).selectOption("4 người");
   await form.getByLabel("Tên set", { exact: true }).fill(`Bún ${vegetarian ? "chay" : "bò"} Huế ${tag}`);
   await form.getByLabel("Hashtag tay", { exact: true }).fill(`qa-pack, ui-e1, run-${tag.toLowerCase()}`);
   const draftResponse = changed(page, "/api/food-packs/sales/sets", "POST");
@@ -175,7 +163,7 @@ async function createSet(page: Page, family: Family, packs: Record<string, Pack>
   await region.getByRole("button", { name: "Sửa set món", exact: true }).click();
   for (const slot of [
     { id: "TINH_BOT", label: "Tinh bột", keys: ["bun"] }, { id: "DAM", label: "Đạm", keys: ["dau"] },
-    { id: "RAU", label: "Rau", keys: ["rau"] }, { id: "COT", label: "Cốt", keys: vegetarian ? ["nam", "bo"] : ["bo", "nam"] },
+    { id: "RAU", label: "Rau", keys: ["rau"] }, { id: "COT", label: "Cốt (gia vị)", keys: vegetarian ? ["nam", "bo"] : ["bo", "nam"] },
   ]) {
     await form.getByRole("combobox", { name: "Thêm ô", exact: true }).selectOption(slot.id);
     const group = form.getByRole("group", { name: slot.label, exact: true });
@@ -199,24 +187,20 @@ async function openSet(page: Page, set: FoodSet) {
   await region.getByRole("button", { name: `Xem ${set.name}`, exact: true }).click();
   return decoded(await evaluated, evaluationSchema, 200);
 }
-async function createPlan(page: Page, targetId: string, family: Family, set: FoodSet, packs: Record<string, Pack>, tag: string) {
+async function createPlan(page: Page, targetId: string, family: Family, set: FoodSet, packs: Record<string, Pack>, _tag: string) {
   await page.getByRole("tab", { name: "Thực đơn", exact: true }).click();
   const panel = page.getByRole("tabpanel", { name: "Thực đơn", exact: true });
   await panel.getByRole("button", { name: "Tạo set", exact: true }).first().click();
   const form = panel.getByRole("form", { name: "Tạo set", exact: true });
   await pick(form, "Sản phẩm thuộc chỉ tiêu", family.name);
-  await form.getByLabel("Mã set", { exact: true }).fill(`E1-PLAN-${tag}`);
-  await form.getByLabel("Khẩu phần", { exact: true }).fill(`100 suất ${tag}`);
+  await pickVariant(page, set.name);
+  await expect(form.getByLabel("Khẩu phần", { exact: true })).toHaveText("4 người");
   await form.getByLabel("Số kit", { exact: true }).fill("25");
-  await form.getByLabel("Số suất mỗi kit", { exact: true }).fill("4");
+  await expect(form.getByLabel("Số suất mỗi kit", { exact: true })).toHaveText("4");
   await form.getByRole("combobox", { name: "Nguồn định mức", exact: true }).selectOption("pack");
-  await form.getByLabel("Tìm set món", { exact: true }).fill(set.name);
-  const loaded = page.waitForResponse(r => new URL(r.url()).pathname === "/api/food-packs/sales/sets" && new URL(r.url()).searchParams.get("q") === set.name);
-  await form.getByRole("button", { name: "Tìm set", exact: true }).click();
-  expect((await loaded).status()).toBe(200);
-  await pick(form, "Set món trong họ món", set.name);
-  await form.getByLabel(`Tỉ lệ Cốt ${packs.bo.value.name}`, { exact: true }).fill("80");
-  await form.getByLabel(`Tỉ lệ Cốt ${packs.nam.value.name}`, { exact: true }).fill("20");
+  await expect(form.getByRole("combobox", { name: "Set món trong họ món", exact: true })).toHaveValue(`${set.name} · ${set.variant_label}`);
+  await form.getByLabel(`Tỉ lệ Cốt (gia vị) ${packs.bo.value.name}`, { exact: true }).fill("80");
+  await form.getByLabel(`Tỉ lệ Cốt (gia vị) ${packs.nam.value.name}`, { exact: true }).fill("20");
   await expect(form.getByText("Tổng suất: 100 EA. Tối đa 1.000.000 suất.", { exact: true })).toBeVisible();
   const saved = changed(page, `/api/production/targets/${targetId}/food-plans`, "POST");
   await form.getByRole("button", { name: "Lưu set", exact: true }).click();
@@ -229,7 +213,7 @@ async function createPlan(page: Page, targetId: string, family: Family, set: Foo
   ]);
   return result;
 }
-async function warehouseDenials(request: APIRequestContext, data: {
+async function warehouseDenials(request: SessionApi, data: {
   family: Family; set: FoodSet; pack: Pack; raw: Raw; labels: z.infer<typeof labelsSchema>;
   plan: z.infer<typeof planSchema>; targetId: string; tag: string;
 }) {
@@ -258,7 +242,7 @@ async function warehouseDenials(request: APIRequestContext, data: {
 test.describe("FOODDEV-PACK E1 QA thật", () => {
   test.describe.configure({ mode: "serial", timeout: 420_000 });
   test("FOOD_DEV soạn gói/set, đổi nhãn, pin 100 suất 80/20; WAREHOUSE đọc oracle và write403", async ({ page, browser, baseURL }) => {
-    const accounts = qaAccounts(), tag = randomInt(36 ** 4).toString(36).padStart(4, "0").toUpperCase();
+    const accounts = qaAccounts(), tag = Date.now().toString();
     const warehouse = await browser.newContext({ baseURL });
     try {
       const warehousePage = await warehouse.newPage();
@@ -269,14 +253,14 @@ test.describe("FOODDEV-PACK E1 QA thật", () => {
       const raws: Record<string, Raw> = {}, packs: Record<string, Pack> = {};
       const declared: Record<string, z.infer<typeof labelsSchema>> = {};
       for (const fixture of fixtures) {
-        const catalog = await read(page.request, `/api/sales/skus?kind=RAW_MATERIAL&q=${fixture.code}`, materialPage);
+        const catalog = await read(sessionApi(page.context()), `/api/sales/skus?kind=RAW_MATERIAL&q=${fixture.code}`, materialPage);
         const raw = catalog.items.find(item => item.sku_code === fixture.code);
         if (!raw || !raw.selectable || raw.uom_code !== "KG") throw new Error(`Thiếu raw KG QA ${fixture.code}; chạy seed thật trước E1.`);
         raws[fixture.key] = raw;
         declared[fixture.key] = await declareLabels(page, raw, fixture.vegan);
       }
       for (const fixture of fixtures) packs[fixture.key] = await createPack(page, family, raws[fixture.key], fixture, tag);
-      await page.getByRole("tab", { name: "Set", exact: true }).click();
+      await page.getByRole("tab", { name: "Set (nâng cao)", exact: true }).click();
       const beef = await createSet(page, family, packs, tag, false);
       const vegetarian = await createSet(page, family, packs, tag, true);
       expect(vegetarian.slots.flatMap(slot => slot.options.map(option => option.sku_ref)).sort())
@@ -287,7 +271,7 @@ test.describe("FOODDEV-PACK E1 QA thật", () => {
       const sets = page.getByRole("region", { name: "Set", exact: true });
       await expect(sets.getByText("Chay", { exact: true })).toHaveCount(0);
       const swappedResponse = changed(page, `/api/food-packs/production/sets/${beef.id}/evaluate`, "POST");
-      await sets.getByRole("combobox", { name: "Cốt", exact: true }).selectOption(packs.nam.value.id);
+      await sets.getByRole("combobox", { name: "Cốt (gia vị)", exact: true }).selectOption(packs.nam.value.id);
       const swapped = await decoded(await swappedResponse, evaluationSchema, 200);
       expect(swapped.diet_flags).toEqual(["VEGETARIAN"]);
       expect(swapped.derived_hashtags).toEqual(["vegetarian"]);
@@ -298,11 +282,11 @@ test.describe("FOODDEV-PACK E1 QA thật", () => {
       await page.reload();
       await page.getByRole("tab", { name: "Thực đơn", exact: true }).click();
       const panel = page.getByRole("tabpanel", { name: "Thực đơn", exact: true });
-      const row = panel.getByRole("row").filter({ hasText: `E1-PLAN-${tag}` });
+      const row = panel.getByRole("row").filter({ hasText: beef.code });
       await expect(row.getByRole("cell", { name: "100.000 EA", exact: true })).toBeVisible();
       await expect(row.getByRole("cell", { name: "1", exact: true })).toBeVisible();
       const planPath = `/api/production/food-plans/${saved.id}`;
-      expect(await read(page.request, planPath, planSchema)).toEqual(saved);
+      expect(await read(sessionApi(page.context()), planPath, planSchema)).toEqual(saved);
       await warehousePage.goto(`/production/material-requirements?target_id=${target.id}`);
       await expect(warehousePage.getByRole("heading", { name: "Nhu cầu nguyên liệu", exact: true })).toBeVisible();
       const oracle = { bun: "20.000", dau: "15.000", rau: "5.000", bo: "10.000", nam: "2.000" };
@@ -311,24 +295,24 @@ test.describe("FOODDEV-PACK E1 QA thật", () => {
         await expect(line.getByRole("cell", { name: `${quantity} KG`, exact: true })).toBeVisible();
       }
       const requirementsPath = `/api/production/targets/${target.id}/material-requirements`;
-      const before = await read(warehouse.request, requirementsPath, requirementSchema);
+      const before = await read(sessionApi(warehouse), requirementsPath, requirementSchema);
       expect(before.total).toBe(5);
       expect(before.plan_revisions[saved.id]).toBe(1);
       for (const [key, quantity] of Object.entries(oracle)) expect(before.all_lines.find(line => line.sku_ref === raws[key].id)?.quantity).toBe(quantity);
-      await warehouseDenials(warehouse.request, { family, set: beef, pack: packs.bun, raw: raws.bun, labels: declared.bun, plan: saved, targetId: target.id, tag });
-      expect(await read(page.request, planPath, planSchema)).toEqual(saved);
-      expect((await read(warehouse.request, requirementsPath, requirementSchema)).all_lines).toEqual(before.all_lines);
-      expect(await read(page.request, `/api/food-packs/sales/sets/${beef.id}`, setSchema)).toEqual(beef);
-      expect(await read(page.request, `/api/food-packs/sales/packages/${packs.bun.value.id}`, packageSchema)).toEqual(packs.bun.value);
-      expect(await read(page.request, `/api/food-packs/production/packages/${packs.bun.value.id}/recipes/1`, recipeSchema)).toEqual(packs.bun.recipe);
-      expect(await read(page.request, `/api/food-packs/sales/skus/${raws.bun.id}/labels`, labelsSchema)).toEqual(declared.bun);
+      await warehouseDenials(sessionApi(warehouse), { family, set: beef, pack: packs.bun, raw: raws.bun, labels: declared.bun, plan: saved, targetId: target.id, tag });
+      expect(await read(sessionApi(page.context()), planPath, planSchema)).toEqual(saved);
+      expect((await read(sessionApi(warehouse), requirementsPath, requirementSchema)).all_lines).toEqual(before.all_lines);
+      expect(await read(sessionApi(page.context()), `/api/food-packs/sales/sets/${beef.id}`, setSchema)).toEqual(beef);
+      expect(await read(sessionApi(page.context()), `/api/food-packs/sales/packages/${packs.bun.value.id}`, packageSchema)).toEqual(packs.bun.value);
+      expect(await read(sessionApi(page.context()), `/api/food-packs/production/packages/${packs.bun.value.id}/recipes/1`, recipeSchema)).toEqual(packs.bun.recipe);
+      expect(await read(sessionApi(page.context()), `/api/food-packs/sales/skus/${raws.bun.id}/labels`, labelsSchema)).toEqual(declared.bun);
       // Exercise the actual re-open UI after persistence and warehouse checks.
       await row.getByRole("button", { name: "Sửa set", exact: true }).click();
       const edit = panel.getByRole("form", { name: "Sửa set", exact: true });
       await expect(edit.getByLabel("Số kit", { exact: true })).toHaveValue("25");
-      await expect(edit.getByLabel("Số suất mỗi kit", { exact: true })).toHaveValue("4");
-      await expect(edit.getByLabel(`Tỉ lệ Cốt ${packs.bo.value.name}`, { exact: true })).toHaveValue("80.0000");
-      await expect(edit.getByLabel(`Tỉ lệ Cốt ${packs.nam.value.name}`, { exact: true })).toHaveValue("20.0000");
+      await expect(edit.getByLabel("Số suất mỗi kit", { exact: true })).toHaveText("4");
+      await expect(edit.getByLabel(`Tỉ lệ Cốt (gia vị) ${packs.bo.value.name}`, { exact: true })).toHaveValue("80.0000");
+      await expect(edit.getByLabel(`Tỉ lệ Cốt (gia vị) ${packs.nam.value.name}`, { exact: true })).toHaveValue("20.0000");
     } finally {
       await warehouse.close();
     }

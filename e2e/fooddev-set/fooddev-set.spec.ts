@@ -1,7 +1,8 @@
-import { randomUUID } from "node:crypto";
+import { sessionApi, readManifest, type SessionApi } from "../setup/api";
 import { readFileSync } from "node:fs";
 import { homedir } from "node:os";
-import { test, expect, type APIRequestContext, type Page } from "@playwright/test";
+import { pick, pickVariant } from "../fooddev-v2/helpers";
+import { test, expect, type Page } from "@playwright/test";
 import { z } from "zod";
 import { decodePlatform, roleMatrixSchema } from "../../lib/api/platform-contract";
 import messages from "../../messages/vi.json" with { type: "json" };
@@ -46,14 +47,14 @@ async function login(page: Page, accounts: Record<string, string>, role: "ADMIN"
   expect((await logged).status(), `Đăng nhập ${role}`).toBe(200);
   await page.waitForURL(/\/(console|platform(?:\/role-matrix)?)$/);
 }
-async function warehouseGrants(request: APIRequestContext) {
+async function warehouseGrants(request: SessionApi) {
   const result = await request.get(matrixPath);
   expect(result.status()).toBe(200);
   const matrix = decodePlatform(await result.json(), roleMatrixSchema);
   expect(matrix.WAREHOUSE, "Baseline phải có WAREHOUSE").toBeDefined();
   return matrix.WAREHOUSE;
 }
-async function readPlan(request: APIRequestContext, path: string) {
+async function readPlan(request: SessionApi, path: string) {
   const result = await request.get(path);
   expect(result.status()).toBe(200);
   return decodePlatform(await result.json(), planSchema);
@@ -78,14 +79,14 @@ test.describe("FOODDEV-SET E1 QA thật", () => {
       await login(page, accounts, "FOOD_DEV");
       await login(warehousePage, accounts, "WAREHOUSE");
       await login(adminPage, accounts, "ADMIN");
-      snapshot = [...await warehouseGrants(admin.request)];
+      snapshot = [...await warehouseGrants(sessionApi(admin))];
       expect(snapshot).toContain(permission);
-      const tag = randomUUID(), name = `E1 product ${tag}`, title = `E1 target ${tag}`, setCode = `E1-${tag}`;
+      const tag = Date.now().toString(), name = `E1 product ${tag}`, title = `E1 target ${tag}`, setCode = `E1-${tag}`;
       await page.goto("/production/targets");
       // PageHeader renders before the optional EmptyState action with the same name.
       await page.getByRole("button", { name: "Tạo chỉ tiêu", exact: true }).first().click();
       await page.getByLabel("Tên sản phẩm", { exact: true }).fill(name);
-      await page.getByLabel("Slug sản phẩm", { exact: true }).fill(`e1-${tag}`);
+      await expect(page.getByLabel("Slug sản phẩm", { exact: true })).toHaveJSProperty("tagName", "OUTPUT");
       const productCreated = page.waitForResponse(r => r.url().endsWith("/api/sales/products") && r.request().method() === "POST");
       await page.getByRole("button", { name: "Tạo product DRAFT", exact: true }).click();
       const productResponse = await productCreated;
@@ -103,8 +104,31 @@ test.describe("FOODDEV-SET E1 QA thật", () => {
       expect(targetResponse.status()).toBe(201);
       const target = decodePlatform(await targetResponse.json(), identity);
       expect(target.status).toBe("APPROVED");
-      const targetRow = page.getByRole("row").filter({ has: page.getByText(title, { exact: true }) });
-      await targetRow.getByRole("link", { name: "Tạo set", exact: true }).click();
+      await page.goto(`/production/food-plans?target_id=${target.id}`);
+      await page.getByRole("tab", { name: "Set (nâng cao)", exact: true }).click();
+      const sets = page.getByRole("region", { name: "Set", exact: true });
+      await sets.getByRole("button", { name: "Tạo set món", exact: true }).first().click();
+      const setForm = sets.getByRole("form", { name: "Biên tập set món", exact: true });
+      await pick(setForm, "Họ món", name);
+      await setForm.getByRole("combobox", { name: "Khẩu phần", exact: true }).selectOption("4 người");
+      await setForm.getByLabel("Mã set", { exact: true }).fill(setCode);
+      await setForm.getByLabel("Tên set", { exact: true }).fill(`Set ${tag}`);
+      await setForm.getByLabel("Hashtag tay", { exact: true }).fill("s7, set-test, oracle");
+      const setCreated = page.waitForResponse(r => new URL(r.url()).pathname === "/api/food-packs/sales/sets" && r.request().method() === "POST");
+      await setForm.getByRole("button", { name: "Lưu set món", exact: true }).click();
+      const definition = await setCreated;
+      expect(definition.status()).toBe(201);
+      const setID = decodePlatform(await definition.json(), identity).id;
+      await sets.getByRole("button", { name: "Sửa set món", exact: true }).click();
+      for (const [slot, label, pack] of [["DAM", "Đạm", "Gói đạm"], ["COT", "Cốt (gia vị)", "Gói gia vị"]]) {
+        await setForm.getByRole("combobox", { name: "Thêm ô", exact: true }).selectOption(slot);
+        await pick(setForm.getByRole("group", { name: label, exact: true }), "Thêm gói theo tên", readManifest().names[pack]);
+      }
+      const setSaved = page.waitForResponse(r => new URL(r.url()).pathname === `/api/food-packs/sales/sets/${setID}` && r.request().method() === "PUT");
+      await setForm.getByRole("button", { name: "Lưu set món", exact: true }).click();
+      expect((await setSaved).status()).toBe(200);
+      await page.goto(`/production/food-plans?target_id=${target.id}`);
+      await page.getByRole("tab", { name: "Thực đơn", exact: true }).click();
       const catalogLoaded = page.waitForResponse(r => new URL(r.url()).pathname === "/api/sales/skus" && r.request().method() === "GET");
       // Header button precedes the EmptyState button with the same name.
       await page.getByRole("button", { name: "Tạo set", exact: true }).first().click();
@@ -112,18 +136,17 @@ test.describe("FOODDEV-SET E1 QA thật", () => {
       expect(catalogResponse.status()).toBe(200);
       const candidates = decodePlatform(await catalogResponse.json(), catalog).items.filter(m => m.selectable && m.uom_code === "KG").slice(0, 3);
       expect(candidates, "Trang picker cần ít nhất 3 nguyên liệu KG để kiểm oracle").toHaveLength(3);
-      await page.getByLabel("Mã set", { exact: true }).fill(setCode);
-      await page.getByLabel("Khẩu phần", { exact: true }).fill(`Khẩu phần ${tag}`);
-      for (const item of candidates) await page.getByRole("button", { name: `Chọn ${item.name}`, exact: true }).click();
+      await pickVariant(page, `Set ${tag}`);
+      await expect(page.getByLabel("Khẩu phần", { exact: true })).toHaveText("4 người");
+      for (const item of candidates) await pick(page.getByRole("region", { name: "Chọn nguyên liệu", exact: true }), "Nguyên liệu", item.name);
       for (let i = 1; i <= 3; i++) await page.getByLabel(`Định lượng ${i}`, { exact: true }).fill("0.333");
       const picker = page.getByRole("region", { name: "Chọn nguyên liệu", exact: true });
-      const category = picker.getByRole("combobox", { name: "Danh mục", exact: true }); // getByLabel text would include the option texts
-      await expect.poll(() => category.locator("option").count(), { timeout: 20000 }).toBeGreaterThan(1);
-      const categorySlug = await category.locator("option").nth(1).getAttribute("value");
-      expect(categorySlug, "Catalog có danh mục thật").toBeTruthy();
-      if (!categorySlug) throw new Error("Thiếu danh mục catalog QA.");
-      await category.selectOption(categorySlug);
-      const categoryFiltered = page.waitForResponse(r => new URL(r.url()).pathname === "/api/sales/skus" && new URL(r.url()).searchParams.get("category_slug") === categorySlug);
+      const category = picker.getByRole("combobox", { name: "Nhóm cấp 1", exact: true });
+      await category.click();
+      const group = picker.getByRole("option").nth(2);
+      await expect(group, "Catalog có nhóm nguyên liệu thật").toBeVisible();
+      await group.click();
+      const categoryFiltered = page.waitForResponse(r => new URL(r.url()).pathname === "/api/sales/skus" && new URL(r.url()).searchParams.has("group_codes"));
       await picker.getByRole("button", { name: "Lọc nguyên liệu", exact: true }).click();
       expect((await categoryFiltered).status()).toBe(200);
       await expect(page.getByLabel("Định lượng 3", { exact: true })).toHaveValue("0.333");
@@ -151,14 +174,14 @@ test.describe("FOODDEV-SET E1 QA thật", () => {
       expect(saved.planned_quantity).toBe("8.000");
       await page.reload();
       await expect(setRow.getByRole("cell", { name: String(saved.revision), exact: true })).toBeVisible();
-      expect(await readPlan(page.request, planPath)).toEqual(saved);
+      expect(await readPlan(sessionApi(page.context()), planPath)).toEqual(saved);
       await warehousePage.goto(`/production/material-requirements?target_id=${target.id}`);
       await expect(warehousePage.getByRole("heading", { name: "Nhu cầu nguyên liệu", exact: true })).toBeVisible();
       for (const item of candidates) {
         const row = warehousePage.getByRole("row").filter({ hasText: item.name }).first();
         await expect(row.getByRole("cell", { name: `${quantityFor(8n)} KG`, exact: true })).toBeVisible();
       }
-      const before = await warehouse.request.get(requirementPath);
+      const before = await sessionApi(warehouse).get(requirementPath);
       expect(before.status()).toBe(200);
       const full = decodePlatform(await before.json(), requirements);
       expect(full.total).toBe(3);
@@ -180,25 +203,25 @@ test.describe("FOODDEV-SET E1 QA thật", () => {
         ["PUT", planPath, { expected_revision: saved.revision, planned_quantity: "12", servings_per_set: 4, components: saved.components }],
         ...["review", "publish", "resume-handoff"].map((action): [string, string, unknown] => ["POST", `${planPath}/${action}`, {}]),
       ] satisfies Array<[string, string, unknown]>) {
-        const denied = await warehouse.request.fetch(path, { method, data });
+        const denied = await sessionApi(warehouse).fetch(path, { method, data });
         expect(denied.status(), `${method} ${path}`).toBe(403);
-        expect(await readPlan(page.request, planPath)).toEqual(saved);
+        expect(await readPlan(sessionApi(page.context()), planPath)).toEqual(saved);
       }
       grantsChanged = true;
-      const revoked = await admin.request.put(`${matrixPath}/roles/WAREHOUSE`, { data: { actions: snapshot.filter(key => key !== permission) } });
+      const revoked = await sessionApi(admin).put(`${matrixPath}/roles/WAREHOUSE`, { data: { actions: snapshot.filter(key => key !== permission) } });
       expect(revoked.status()).toBe(200);
-      expect((await warehouse.request.get(requirementPath)).status(), "Request kế tiếp sau revoke").toBe(403);
+      expect((await sessionApi(warehouse).get(requirementPath)).status(), "Request kế tiếp sau revoke").toBe(403);
     } finally {
       try {
         if (snapshot && grantsChanged) {
-          let restored = await admin.request.put(`${matrixPath}/roles/WAREHOUSE`, { data: { actions: snapshot } });
+          let restored = await sessionApi(admin).put(`${matrixPath}/roles/WAREHOUSE`, { data: { actions: snapshot } });
           if (restored.status() === 401) {
             await login(adminPage, accounts, "ADMIN");
-            restored = await admin.request.put(`${matrixPath}/roles/WAREHOUSE`, { data: { actions: snapshot } });
+            restored = await sessionApi(admin).put(`${matrixPath}/roles/WAREHOUSE`, { data: { actions: snapshot } });
           }
           expect(restored.status(), "Restore grants phải thành công").toBe(200);
-          expect([...(await warehouseGrants(admin.request))].sort()).toEqual([...snapshot].sort());
-          if (requirementPath) expect((await warehouse.request.get(requirementPath)).status(), "Kho đọc lại sau restore").toBe(200);
+          expect([...(await warehouseGrants(sessionApi(admin)))].sort()).toEqual([...snapshot].sort());
+          if (requirementPath) expect((await sessionApi(warehouse).get(requirementPath)).status(), "Kho đọc lại sau restore").toBe(200);
         }
       } finally {
         await warehouse.close();

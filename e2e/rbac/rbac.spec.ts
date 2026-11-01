@@ -1,7 +1,8 @@
+import { sessionApi, type SessionApi } from "../setup/api";
 import { readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { randomUUID } from "node:crypto";
-import { test, expect, type APIRequestContext, type BrowserContext, type Page } from "@playwright/test";
+import { test, expect, type BrowserContext, type Page } from "@playwright/test";
 import { decodeJwt } from "jose";
 import { z } from "zod";
 import { decodePlatform, pageSchema, roleMatrixSchema } from "../../lib/api/platform-contract";
@@ -55,13 +56,13 @@ async function login(page: Page, role: "ADMIN" | "SALES" | "CUSTOMER", email = a
 
 }
 
-async function grants(request: APIRequestContext) {
+async function grants(request: SessionApi) {
   const response = await request.get(matrixPath);
   expect(response.status(), "Đọc ma trận qua BFF").toBe(200);
   return decodePlatform(await response.json(), roleMatrixSchema).SALES;
 }
 
-async function members(request: APIRequestContext) {
+async function members(request: SessionApi) {
   const all: z.infer<typeof memberSchema>[] = [];
   for (let page = 1; ; page++) {
     const response = await request.get(`${membershipsPath}?page=${page}&limit=20`);
@@ -74,24 +75,24 @@ async function members(request: APIRequestContext) {
 
 async function restoreGrants() {
   if (!originalGrants) return;
-  let response = await admin.request.put(`${matrixPath}/roles/SALES`, { data: { actions: originalGrants } });
+  let response = await sessionApi(admin).put(`${matrixPath}/roles/SALES`, { data: { actions: originalGrants } });
   if (response.status() === 401) {
     await login(adminPage, "ADMIN");
-    response = await admin.request.put(`${matrixPath}/roles/SALES`, { data: { actions: originalGrants } });
+    response = await sessionApi(admin).put(`${matrixPath}/roles/SALES`, { data: { actions: originalGrants } });
   }
   expect(response.status(), "Khôi phục grants SALES").toBe(200);
-  expect([...new Set(await grants(admin.request))].sort()).toEqual([...new Set(originalGrants)].sort());
+  expect([...new Set(await grants(sessionApi(admin)))].sort()).toEqual([...new Set(originalGrants)].sort());
 }
 
 async function restoreStatus() {
   if (!originalMember) return;
-  let response = await admin.request.patch(`${membershipsPath}/${originalMember.id}`, { data: { status: originalMember.status } });
+  let response = await sessionApi(admin).patch(`${membershipsPath}/${originalMember.id}`, { data: { status: originalMember.status } });
   if (response.status() === 401) {
     await login(adminPage, "ADMIN");
-    response = await admin.request.patch(`${membershipsPath}/${originalMember.id}`, { data: { status: originalMember.status } });
+    response = await sessionApi(admin).patch(`${membershipsPath}/${originalMember.id}`, { data: { status: originalMember.status } });
   }
   expect(response.status(), "Khôi phục status SALES").toBe(200);
-  expect((await members(admin.request)).find((member) => member.id === originalMember?.id)?.status).toBe(originalMember.status);
+  expect((await members(sessionApi(admin))).find((member) => member.id === originalMember?.id)?.status).toBe(originalMember.status);
 }
 
 async function togglePermission(enabled: boolean) {
@@ -103,7 +104,7 @@ async function togglePermission(enabled: boolean) {
   await adminPage.getByRole("button", { name: "Lưu thay đổi", exact: true }).click();
   expect((await saved).status(), "Lưu ma trận bằng UI").toBe(200);
   await expect(adminPage.getByText("Đã cập nhật quyền của SALES.", { exact: true }).first()).toBeVisible();
-  expect((await grants(admin.request)).includes(permission)).toBe(enabled);
+  expect((await grants(sessionApi(admin))).includes(permission)).toBe(enabled);
 }
 
 async function openMemberships(page: Page) {
@@ -126,12 +127,18 @@ async function openMemberships(page: Page) {
 async function membershipRow(page: Page) {
   if (!originalMember) throw new Error("Chưa có membership SALES gốc.");
   await openMemberships(page);
-  for (;;) {
+  for (let pageNumber = 1; ; pageNumber++) {
     await expect(page.getByRole("heading", { name: t.title, exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: t.editRoles, exact: true }).first()).toBeVisible();
     await expect(page.getByRole("status", { name: t.loading })).toBeHidden();
-    const row = page.getByRole("row").filter({ has: page.getByText(originalMember.user_id, { exact: true }) });
-    if (await row.count()) return row;
+    const response = await sessionApi(page.context()).get(`${membershipsPath}?page=${pageNumber}&limit=20`);
+    expect(response.status()).toBe(200);
+    const result = decodePlatform(await response.json(), pageSchema(memberSchema));
+    const index = result.items.findIndex(member => member.id === originalMember?.id);
+    if (index >= 0) {
+      await expect(page.getByRole("row")).toHaveCount(result.items.length + 1);
+      return page.getByRole("row").nth(index + 1);
+    }
     const next = page.getByRole("button", { name: t.next, exact: true });
     await expect(next, "Tìm membership SALES qua phân trang UI").toBeEnabled();
     const loaded = page.waitForResponse((response) => response.url().includes(`${membershipsPath}?`) && response.request().method() === "GET");
@@ -157,17 +164,39 @@ test.describe("RBAC trên stack thật", () => {
     admin = await browser.newContext({ baseURL });
     adminPage = await admin.newPage();
     await login(adminPage, "ADMIN");
-    originalGrants = await grants(admin.request);
+    originalGrants = await grants(sessionApi(admin));
     expect(originalGrants).toContain(permission);
-    const sales = (await members(admin.request)).filter((member) => member.user_id === accounts.ROLE_SALES_USER_ID);
-    expect(sales, "QA SALES có đúng một membership MAIN").toHaveLength(1);
-    originalMember = sales[0];
+    originalMember = (await members(sessionApi(admin))).find(member => member.status === "ACTIVE");
+    expect(originalMember, "Có chi nhánh để ADMIN tạo SALES").toBeDefined();
+    const suffix = Date.now();
+    accounts.ROLE_SALES_EMAIL = `s7-rbac-${suffix}@dcentervn.local`;
+    accounts.ROLE_SALES_PASSWORD = `S7-${randomUUID()}!`;
+    await openMemberships(adminPage);
+    await adminPage.getByRole("button", { name: t.add, exact: true }).click();
+    const dialog = adminPage.getByRole("dialog");
+    await dialog.getByLabel(t.name, { exact: true }).fill(`SALES S7 ${suffix}`);
+    await dialog.getByLabel(t.email, { exact: true }).fill(accounts.ROLE_SALES_EMAIL);
+    await dialog.getByLabel(t.password, { exact: true }).fill(accounts.ROLE_SALES_PASSWORD)
+      .catch(() => { throw new Error("Không nhập được mật khẩu nhân viên S7."); });
+    await expect(dialog.getByRole("checkbox", { name: t.roleLabels.SALES, exact: true })).toBeChecked();
+    const created = adminPage.waitForResponse(response => response.url().endsWith(membershipsPath) && response.request().method() === "POST");
+    await dialog.getByRole("button", { name: t.save, exact: true }).click();
+    const response = await created;
+    expect(response.status()).toBe(201);
+    originalMember = decodePlatform(await response.json(), memberSchema);
+    expect(originalMember.role_codes).toEqual(["SALES"]);
     expect(originalMember.status).toBe("ACTIVE");
+    await expect(dialog).toBeHidden();
   });
 
   test.afterAll(async () => {
     if (!admin) return;
-    try { await restoreStatus(); }
+    try {
+      if (originalMember) {
+        const locked = await sessionApi(admin).patch(`${membershipsPath}/${originalMember.id}`, { data: { status: "SUSPENDED" } });
+        expect(locked.status(), "Khoá SALES riêng của S7 sau ca").toBe(200);
+      }
+    }
     finally {
       try { await restoreGrants(); }
       finally { await admin.close(); }
@@ -176,12 +205,12 @@ test.describe("RBAC trên stack thật", () => {
 
   test("1. ADMIN tắt rồi bật sales:product:read bằng ma trận", async ({ page }) => {
     await login(page, "SALES");
-    expect((await page.request.get(productPath)).status()).toBe(200);
+    expect((await sessionApi(page.context()).get(productPath)).status()).toBe(200);
     try {
       await togglePermission(false);
-      expect((await page.request.get(productPath)).status(), "Request kế tiếp sau revoke").toBe(403);
+      expect((await sessionApi(page.context()).get(productPath)).status(), "Request kế tiếp sau revoke").toBe(403);
       await togglePermission(true);
-      expect((await page.request.get(productPath)).status(), "Request kế tiếp sau grant").toBe(200);
+      expect((await sessionApi(page.context()).get(productPath)).status(), "Request kế tiếp sau grant").toBe(200);
     } finally { await restoreGrants(); }
   });
 
@@ -191,9 +220,9 @@ test.describe("RBAC trên stack thật", () => {
     expect(Boolean(before), "Phiên SALES có access cookie").toBe(true);
     try {
       await togglePermission(false);
-      expect((await page.request.get(productPath)).status()).toBe(403);
+      expect((await sessionApi(page.context()).get(productPath)).status()).toBe(403);
       await togglePermission(true);
-      expect((await page.request.get(productPath)).status()).toBe(200);
+      expect((await sessionApi(page.context()).get(productPath)).status()).toBe(200);
       const after = (await page.context().cookies()).find((cookie) => cookie.name === "access_token")?.value;
       expect(after === before, "SALES dùng cùng access token, không đăng nhập lại").toBe(true);
     } finally { await restoreGrants(); }
@@ -208,17 +237,17 @@ test.describe("RBAC trên stack thật", () => {
       return redirected || denied;
     }).toBe(true);
     await expect(page.getByRole("heading", { name: "Ma trận quyền", exact: true })).toHaveCount(0);
-    expect((await page.request.get(matrixPath)).status()).toBe(403);
+    expect((await sessionApi(page.context()).get(matrixPath)).status()).toBe(403);
   });
 
   test("4. ADMIN khoá rồi mở membership SALES bằng UI", async ({ page }) => {
     await login(page, "SALES");
-    expect((await page.request.get(productPath)).status()).toBe(200);
+    expect((await sessionApi(page.context()).get(productPath)).status()).toBe(200);
     try {
       await changeStatus(adminPage, true);
-      expect((await page.request.get(productPath)).status(), "SALES mất quyền ngay khi SUSPENDED").toBe(403);
+      expect((await sessionApi(page.context()).get(productPath)).status(), "SALES mất quyền ngay khi SUSPENDED").toBe(403);
       await changeStatus(adminPage, false);
-      expect((await page.request.get(productPath)).status(), "SALES truy cập lại khi ACTIVE").toBe(200);
+      expect((await sessionApi(page.context()).get(productPath)).status(), "SALES truy cập lại khi ACTIVE").toBe(200);
     } finally { await restoreStatus(); }
   });
 
@@ -228,7 +257,7 @@ test.describe("RBAC trên stack thật", () => {
     await openMemberships(adminPage);
     await adminPage.getByRole("button", { name: t.add, exact: true }).click();
     const dialog = adminPage.getByRole("dialog");
-    await dialog.getByLabel(t.name, { exact: true }).fill("S9 SALES");
+    await dialog.getByLabel(t.name, { exact: true }).fill(`S9 SALES ${Date.now()}`);
     await dialog.getByLabel(t.email, { exact: true }).fill(email);
     await dialog.getByLabel(t.password, { exact: true }).fill(password)
       .catch(() => { throw new Error("Không nhập được mật khẩu ban đầu."); });
@@ -245,19 +274,19 @@ test.describe("RBAC trên stack thật", () => {
       await expect(page.getByRole("link", { name: "Bảng giá", exact: true })).toBeVisible();
       await expect(page.getByRole("link", { name: "Thành viên", exact: true })).toHaveCount(0);
       await expect(page.getByRole("link", { name: "Ma trận quyền", exact: true })).toHaveCount(0);
-      expect((await page.request.get(membershipsPath)).status()).toBe(403);
-      expect((await page.request.get(matrixPath)).status()).toBe(403);
-      const persisted = (await members(admin.request)).find((item) => item.id === member.id);
+      expect((await sessionApi(page.context()).get(membershipsPath)).status()).toBe(403);
+      expect((await sessionApi(page.context()).get(matrixPath)).status()).toBe(403);
+      const persisted = (await members(sessionApi(admin))).find((item) => item.id === member.id);
       expect(persisted).toEqual(member);
-      expect([...new Set(await grants(admin.request))].sort()).toEqual([...new Set(originalGrants)].sort());
+      expect([...new Set(await grants(sessionApi(admin)))].sort()).toEqual([...new Set(originalGrants)].sort());
     } finally {
-      let locked = await admin.request.patch(`${membershipsPath}/${member.id}`, { data: { status: "SUSPENDED" } });
+      let locked = await sessionApi(admin).patch(`${membershipsPath}/${member.id}`, { data: { status: "SUSPENDED" } });
       if (locked.status() === 401) {
         await login(adminPage, "ADMIN");
-        locked = await admin.request.patch(`${membershipsPath}/${member.id}`, { data: { status: "SUSPENDED" } });
+        locked = await sessionApi(admin).patch(`${membershipsPath}/${member.id}`, { data: { status: "SUSPENDED" } });
       }
       expect(locked.status(), "Khoá membership SALES vừa tạo").toBe(200);
-      expect((await members(admin.request)).find((item) => item.id === member.id)?.status).toBe("SUSPENDED");
+      expect((await members(sessionApi(admin))).find((item) => item.id === member.id)?.status).toBe("SUSPENDED");
     }
   });
 });
