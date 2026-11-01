@@ -265,40 +265,136 @@ Ghi chú: ràng buộc chỉ cho sửa `*.spec.ts`, nên phần điền NCC/bả
 
 ## S7
 
-Ngày 01/11/2026. Dừng ở kiểm tra đầu vào, chưa sửa test vì DEV trong brief không truy cập được. Không khởi động lại server, không đổi nhánh, không push/merge, không ghi API và không in tài khoản.
+### Lượt tiếp tục sau adf16ed, 01/11/2026
 
-| Bộ | Ca | Trước | Sau | Lý do |
+Đã đọc lại brief `/home/dawn/work/ticket/.cache/run/brief-e2e-s7.md` và phần S7 ở commit adf16ed. DEV `http://127.0.0.1:3003/login` trả 307; không khởi động lại server. Lượt trước chỉ gặp connection refused, không có ca desktop thực thi.
+
+Lượt này chạy baseline có video; dừng sửa TypeScript theo ranh giới whitelist của brief. Đã hỏi qua Orca thread `msg_b5a39af9e5bc` và chờ hai khoảng 600000 ms, chưa có trả lời; không suy diễn việc hết thời gian chờ là cho phép mở phạm vi. Kết quả 4/4 setup PASS; bộ cũ 19/69 PASS, 19 FAIL, 23 skip theo điều kiện có sẵn, 8 không chạy do serial. SKIP/không chạy không tính PASS. Bảng dưới so lượt trước mất kết nối với baseline hiện tại, không phải kết quả sau sửa test.
+
+| Bộ / vị trí | Ca | Trước | Sau (baseline) | Lý do |
 | --- | --- | --- | --- | --- |
-| setup | Đăng nhập WAREHOUSE | FAIL | Chưa chạy lại | `net::ERR_CONNECTION_REFUSED` tại `http://127.0.0.1:3003/staff/login` |
-| setup | Đăng nhập ADMIN | FAIL | Chưa chạy lại | Cùng lỗi kết nối |
-| setup | Đăng nhập CUSTOMER | FAIL | Chưa chạy lại | `net::ERR_CONNECTION_REFUSED` tại `http://127.0.0.1:3003/login` |
-| setup | Đăng nhập FOODDEV | FAIL | Chưa chạy lại | Cùng lỗi kết nối |
-| Các bộ cũ | 69 ca desktop đã chọn, không gồm journeys | Chưa chạy | Chưa chạy | Dependency setup thất bại; chưa có bằng chứng phân loại từng ca |
+| catalog-split/catalog-split.spec.ts:68 | anonymous không thấy control nhân viên | Chưa chạy | PASS | Giữ test, baseline chưa sửa. |
+| catalog-split/catalog-split.spec.ts:72 | anonymous thấy card có tên + giá, không thấy UUID | Chưa chạy | SKIP / không chạy | Điều kiện skip có sẵn hoặc chặn bởi ca serial trước; không thêm skip. |
+| catalog-split/catalog-split.spec.ts:80 | khách đã đăng nhập cũng không thấy control nhân viên | Chưa chạy | PASS | Giữ test, baseline chưa sửa. |
+| catalog-split/catalog-split.spec.ts:85 | AC-2 chi tiết món công khai không có nút kích hoạt, SKU, barcode | Chưa chạy | SKIP / không chạy | Điều kiện skip có sẵn hoặc chặn bởi ca serial trước; không thêm skip. |
+| catalog-split/catalog-split.spec.ts:96 | staff có sales:product:read thấy menu Sản phẩm và màn quản trị | Chưa chạy | FAIL | APIRequestContext HTTP không gửi access_token Secure; GET trả 401, browser fetch cùng phiên trả 200. |
+| catalog-split/catalog-split.spec.ts:108 | staff không có quyền đọc không thấy menu, vào URL trực tiếp bị chặn và không gọi staff list | Chưa chạy | FAIL | APIRequestContext HTTP không gửi access_token Secure; GET trả 401, browser fetch cùng phiên trả 200. |
+| catalog-split/catalog-split.spec.ts:120 | khách không vào được /sales/products | Chưa chạy | PASS | Giữ test, baseline chưa sửa. |
+| catalog-split/catalog-split.spec.ts:129 | không tràn ngang ở /products | Chưa chạy | PASS | Giữ test, baseline chưa sửa. |
+| catalog-split/catalog-split.spec.ts:135 | mobile 390: bộ lọc mở bằng sheet, Esc đóng, không tràn ngang | Chưa chạy | SKIP / không chạy | Điều kiện skip có sẵn hoặc chặn bởi ca serial trước; không thêm skip. |
+| catalog-split/catalog-split.spec.ts:153 | desktop: bộ lọc nằm sẵn trong trang, không phải sheet | Chưa chạy | PASS | Giữ test, baseline chưa sửa. |
+| catalog-split/catalog-split.spec.ts:173 | không tràn ngang ở 1024px, dark; sheet lọc có Esc/focus/control ≥44px | Chưa chạy | PASS | Giữ test, baseline chưa sửa. |
+| catalog-split/catalog-split.spec.ts:173 | không tràn ngang ở 1024px, light; sheet lọc có Esc/focus/control ≥44px | Chưa chạy | PASS | Giữ test, baseline chưa sửa. |
+| catalog-split/catalog-split.spec.ts:173 | không tràn ngang ở 1440px, dark; sheet lọc có Esc/focus/control ≥44px | Chưa chạy | PASS | Giữ test, baseline chưa sửa. |
+| catalog-split/catalog-split.spec.ts:173 | không tràn ngang ở 1440px, light; sheet lọc có Esc/focus/control ≥44px | Chưa chạy | PASS | Giữ test, baseline chưa sửa. |
+| catalog-split/catalog-split.spec.ts:173 | không tràn ngang ở 375px, dark; sheet lọc có Esc/focus/control ≥44px | Chưa chạy | PASS | Giữ test, baseline chưa sửa. |
+| catalog-split/catalog-split.spec.ts:173 | không tràn ngang ở 375px, light; sheet lọc có Esc/focus/control ≥44px | Chưa chạy | PASS | Giữ test, baseline chưa sửa. |
+| catalog-split/catalog-split.spec.ts:173 | không tràn ngang ở 768px, dark; sheet lọc có Esc/focus/control ≥44px | Chưa chạy | PASS | Giữ test, baseline chưa sửa. |
+| catalog-split/catalog-split.spec.ts:173 | không tràn ngang ở 768px, light; sheet lọc có Esc/focus/control ≥44px | Chưa chạy | PASS | Giữ test, baseline chưa sửa. |
+| catalog-split/catalog-split.spec.ts:199 | mở sheet và gõ lọc không làm dịch bố cục trang | Chưa chạy | PASS | Giữ test, baseline chưa sửa. |
+| catalog-split/catalog-split.spec.ts:224 | ba nút trạng thái giữ #019, chọn đơn và aria-pressed đúng | Chưa chạy | FAIL | APIRequestContext HTTP không gửi access_token Secure; GET trả 401, browser fetch cùng phiên trả 200. |
+| catalog-split/catalog-split.spec.ts:239 | icon tìm kiếm căn giữa ô nhập và không tràn ngang ở 1024px | Chưa chạy | FAIL | APIRequestContext HTTP không gửi access_token Secure; GET trả 401, browser fetch cùng phiên trả 200. |
+| catalog-split/catalog-split.spec.ts:239 | icon tìm kiếm căn giữa ô nhập và không tràn ngang ở 375px | Chưa chạy | FAIL | APIRequestContext HTTP không gửi access_token Secure; GET trả 401, browser fetch cùng phiên trả 200. |
+| catalog-split/catalog-split.spec.ts:239 | icon tìm kiếm căn giữa ô nhập và không tràn ngang ở 768px | Chưa chạy | FAIL | APIRequestContext HTTP không gửi access_token Secure; GET trả 401, browser fetch cùng phiên trả 200. |
+| fooddev-v2/dishes.spec.ts:97 | T1: M1 không tinh bột, nháp thiếu bền sau tải lại, hoàn tất | Chưa chạy | FAIL | Timeout tổng 30 s khi ghi hình; chưa chứng minh lỗi chức năng, không tăng timeout. |
+| fooddev-v2/dishes.spec.ts:127 | T2: nhân bản M1 → M2, chỉ gói đổi có ref mới | Chưa chạy | SKIP / không chạy | Điều kiện skip có sẵn hoặc chặn bởi ca serial trước; không thêm skip. |
+| fooddev-v2/dishes.spec.ts:143 | T3: biến thể 4 người dùng lại gói; REVISION OPEN trùng trả 409 và mở nháp cũ | Chưa chạy | SKIP / không chạy | Điều kiện skip có sẵn hoặc chặn bởi ca serial trước; không thêm skip. |
+| fooddev-v2/dishes.spec.ts:178 | T5: tạo nguyên liệu chưa có ngay trong màn Món | Chưa chạy | FAIL | Timeout tổng 30 s khi ghi hình; chưa chứng minh lỗi chức năng, không tăng timeout. |
+| fooddev-v2/dishes.spec.ts:196 | T6: bản sửa M4 thay theo mùa, PREPARATION giữ nhu cầu đã ghim | Chưa chạy | FAIL | Lỗi fixture: thiếu FOODDEV_PREPARATION_ID. |
+| fooddev-v2/dishes.spec.ts:219 | Giá vốn: đúng một nguyên liệu thiếu giá, dòng và tổng báo chưa đủ | Chưa chạy | FAIL | Timeout tổng 30 s khi ghi hình; chưa chứng minh lỗi chức năng, không tăng timeout. |
+| fooddev-v2/dishes.spec.ts:236 | S14d: tạo 2 món liên tiếp trong cùng phiên → 2 nháp khác nhau | Chưa chạy | PASS | Giữ test, baseline chưa sửa. |
+| fooddev-v2/dishes.spec.ts:260 | S14d: Nháp đang soạn có nút Tải thêm | Chưa chạy | FAIL | Lỗi fixture: thiếu FOODDEV_M4_ID. |
+| supplier-contract/permissions.spec.ts:15 | TC-09: thu hồi quyền WAREHOUSE chặn API, menu và deep link trong cùng phiên | Chưa chạy | FAIL | Thiếu SUPPLIER_CONTRACT_CONTEXT; chưa chạy vào nghiệp vụ. |
+| supplier-contract/permissions.spec.ts:67 | TC-09: khách và anonymous không được đọc/ghi hợp đồng qua BFF | Chưa chạy | FAIL | Thiếu SUPPLIER_CONTRACT_CONTEXT; chưa chạy vào nghiệp vụ. |
+| fooddev-pack/fooddev-pack.spec.ts:260 | FOOD_DEV soạn gói/set, đổi nhãn, pin 100 suất 80/20; WAREHOUSE đọc oracle và write403 | Chưa chạy | FAIL | Lỗi test: fill Slug sản phẩm là output tự sinh. |
+| fooddev-set/fooddev-set.spec.ts:69 | FOOD_DEV tạo và sửa set; kho chỉ đọc; revoke có hiệu lực ngay và restore đúng snapshot | Chưa chạy | FAIL | APIRequestContext HTTP không gửi access_token Secure; GET trả 401, browser fetch cùng phiên trả 200. |
+| fooddev-v2/fooddev-v2.spec.ts:30 | AC-4: nhóm hai cấp, tạo nguyên liệu tại dòng và xử lý trùng tên | Chưa chạy | FAIL | Timeout tổng 30 s khi ghi hình; chưa chứng minh lỗi chức năng, không tăng timeout. |
+| fooddev-v2/fooddev-v2.spec.ts:72 | AC-5: set Đạm Rau Gia vị không tinh bột; UI và API giữ gia vị bắt buộc | Chưa chạy | SKIP / không chạy | Điều kiện skip có sẵn hoặc chặn bởi ca serial trước; không thêm skip. |
+| fooddev-v2/fooddev-v2.spec.ts:122 | AC-6/7: bảy trường là danh sách/chỉ đọc, không hiện UUID trên mọi màn đã đi | Chưa chạy | SKIP / không chạy | Điều kiện skip có sẵn hoặc chặn bởi ca serial trước; không thêm skip. |
+| rbac/rbac.spec.ts:177 | 1. ADMIN tắt rồi bật sales:product:read bằng ma trận | Chưa chạy | FAIL | APIRequestContext HTTP không gửi access_token Secure; GET trả 401, browser fetch cùng phiên trả 200. |
+| rbac/rbac.spec.ts:188 | 2. SALES đang đăng nhập bị chặn rồi truy cập lại với cùng phiên | Chưa chạy | SKIP / không chạy | Điều kiện skip có sẵn hoặc chặn bởi ca serial trước; không thêm skip. |
+| rbac/rbac.spec.ts:202 | 3. CUSTOMER không mở được khu quản trị và ma trận | Chưa chạy | SKIP / không chạy | Điều kiện skip có sẵn hoặc chặn bởi ca serial trước; không thêm skip. |
+| rbac/rbac.spec.ts:214 | 4. ADMIN khoá rồi mở membership SALES bằng UI | Chưa chạy | SKIP / không chạy | Điều kiện skip có sẵn hoặc chặn bởi ca serial trước; không thêm skip. |
+| rbac/rbac.spec.ts:225 | 5. ADMIN tạo SALES với mật khẩu và nhân viên đăng nhập ngay | Chưa chạy | SKIP / không chạy | Điều kiện skip có sẵn hoặc chặn bởi ca serial trước; không thêm skip. |
+| supplier-contract/receipt-gate.spec.ts:6 | TC-05/10/16: picker tên, giá chỉ đọc và ngày ngoài hợp đồng chặn tạo phiếu | Chưa chạy | FAIL | Thiếu SUPPLIER_CONTRACT_CONTEXT; chưa chạy vào nghiệp vụ. |
+| supplier-contract/supplier-contract.spec.ts:24 | TC-01/03/04/10/11: NCC, nháp, tệp, áp dụng và ngừng dùng bằng UI | Chưa chạy | FAIL | Thiếu SUPPLIER_CONTRACT_CONTEXT; chưa chạy vào nghiệp vụ. |
+| setup/login.setup.ts:19 | Đăng nhập ADMIN | FAIL kết nối | PASS | Giữ test, baseline chưa sửa. |
+| setup/login.setup.ts:19 | Đăng nhập CUSTOMER | FAIL kết nối | PASS | Giữ test, baseline chưa sửa. |
+| setup/login.setup.ts:19 | Đăng nhập FOODDEV | FAIL kết nối | PASS | Giữ test, baseline chưa sửa. |
+| setup/login.setup.ts:19 | Đăng nhập WAREHOUSE | FAIL kết nối | PASS | Giữ test, baseline chưa sửa. |
+| inventory-ux/inventory-ux.spec.ts:27 | TC-07: hai dòng, ngày Việt, tổng hợp đồng và tạo nháp đọc lại | Chưa chạy | PASS | Giữ test, baseline chưa sửa. |
+| inventory-ux/inventory-ux.spec.ts:71 | TC-08: không tìm thấy và ngày sai không tạo phiếu | Chưa chạy | PASS | Giữ test, baseline chưa sửa. |
+| inventory-ux/inventory-ux.spec.ts:86 | TC-07/12: list ACTIVE, hồ sơ chip và bảng không tràn sáng tối | Chưa chạy | PASS | Giữ test, baseline chưa sửa. |
+| visual/preview.spec.ts:30 | tokens | Chưa chạy | PASS | Giữ test, baseline chưa sửa. |
+| visual/preview.spec.ts:71 | ConsoleDashboard | Chưa chạy | SKIP / không chạy | Điều kiện skip có sẵn hoặc chặn bởi ca serial trước; không thêm skip. |
+| visual/preview.spec.ts:71 | ConsoleForm | Chưa chạy | SKIP / không chạy | Điều kiện skip có sẵn hoặc chặn bởi ca serial trước; không thêm skip. |
+| visual/preview.spec.ts:71 | ConsoleLogin | Chưa chạy | SKIP / không chạy | Điều kiện skip có sẵn hoặc chặn bởi ca serial trước; không thêm skip. |
+| visual/preview.spec.ts:71 | ConsoleRecord | Chưa chạy | SKIP / không chạy | Điều kiện skip có sẵn hoặc chặn bởi ca serial trước; không thêm skip. |
+| visual/preview.spec.ts:71 | ConsoleTable | Chưa chạy | SKIP / không chạy | Điều kiện skip có sẵn hoặc chặn bởi ca serial trước; không thêm skip. |
+| visual/preview.spec.ts:71 | Landing | Chưa chạy | SKIP / không chạy | Điều kiện skip có sẵn hoặc chặn bởi ca serial trước; không thêm skip. |
+| visual/preview.spec.ts:71 | LandingMobile | Chưa chạy | SKIP / không chạy | Điều kiện skip có sẵn hoặc chặn bởi ca serial trước; không thêm skip. |
+| visual/preview.spec.ts:71 | Main | Chưa chạy | SKIP / không chạy | Điều kiện skip có sẵn hoặc chặn bởi ca serial trước; không thêm skip. |
+| visual/preview.spec.ts:71 | States | Chưa chạy | SKIP / không chạy | Điều kiện skip có sẵn hoặc chặn bởi ca serial trước; không thêm skip. |
+| visual/preview.spec.ts:71 | StatesMobile | Chưa chạy | SKIP / không chạy | Điều kiện skip có sẵn hoặc chặn bởi ca serial trước; không thêm skip. |
+| visual/preview.spec.ts:71 | StoreAuth | Chưa chạy | SKIP / không chạy | Điều kiện skip có sẵn hoặc chặn bởi ca serial trước; không thêm skip. |
+| visual/preview.spec.ts:71 | StoreAuthMobile | Chưa chạy | SKIP / không chạy | Điều kiện skip có sẵn hoặc chặn bởi ca serial trước; không thêm skip. |
+| visual/preview.spec.ts:71 | StoreCatalog | Chưa chạy | SKIP / không chạy | Điều kiện skip có sẵn hoặc chặn bởi ca serial trước; không thêm skip. |
+| visual/preview.spec.ts:71 | StoreCatalogMobile | Chưa chạy | SKIP / không chạy | Điều kiện skip có sẵn hoặc chặn bởi ca serial trước; không thêm skip. |
+| visual/preview.spec.ts:71 | StoreCheckout | Chưa chạy | SKIP / không chạy | Điều kiện skip có sẵn hoặc chặn bởi ca serial trước; không thêm skip. |
+| visual/preview.spec.ts:71 | StoreCheckoutMobile | Chưa chạy | SKIP / không chạy | Điều kiện skip có sẵn hoặc chặn bởi ca serial trước; không thêm skip. |
+| visual/preview.spec.ts:71 | StoreHome | Chưa chạy | SKIP / không chạy | Điều kiện skip có sẵn hoặc chặn bởi ca serial trước; không thêm skip. |
+| visual/preview.spec.ts:71 | StoreHomeMobile | Chưa chạy | SKIP / không chạy | Điều kiện skip có sẵn hoặc chặn bởi ca serial trước; không thêm skip. |
+| visual/preview.spec.ts:71 | StoreProduct | Chưa chạy | SKIP / không chạy | Điều kiện skip có sẵn hoặc chặn bởi ca serial trước; không thêm skip. |
+| visual/preview.spec.ts:71 | StoreProductMobile | Chưa chạy | SKIP / không chạy | Điều kiện skip có sẵn hoặc chặn bởi ca serial trước; không thêm skip. |
 
 ### S7 lỗi chức năng
 
-Chưa xác minh được lỗi chức năng mới: DEV từ chối kết nối trước khi có màn hình. Không quy lỗi môi trường thành lỗi chức năng, không đổi assert để làm xanh.
+Chưa xác nhận lỗi chức năng mới trong lượt này. Không coi timeout hoặc fixture thiếu là lỗi sản phẩm, không nới assert, không thêm skip/fixme hoặc tăng timeout.
+
+- Nhóm 401 là tương thích môi trường kiểm thử: DEV HTTP phát cookie access_token với Secure=true. Kiểm tra chỉ metadata cookie, không in token/mật khẩu. Với cùng storageState ADMIN và cùng browser context, browser fetch ba GET `/api/auth/me`, `/api/auth/context`, `/api/org/company/role-matrix` đều 200, trong khi context.request.get tương ứng đều 401. Vì vậy không kết luận chức năng phân quyền hỏng. Nguồn nghi ngờ trong worktree: `lib/api/auth-journey-bff.ts:164` đặt `secure: true` vô điều kiện cho access_token. Chưa sửa app/backend hoặc cookie để làm xanh.
+- Gói: màn tạo chỉ tiêu, bước nhập slug; mong đợi test đọc slug tự sinh và chọn dữ liệu qua UI; thực tế test gọi fill lên output tại `e2e/fooddev-pack/fooddev-pack.spec.ts:108`. Đây là test cũ sai, chưa vào bước chọn Gói/Set.
+- T1 Món: trace có POST draft 201 và các PUT draft 200. Timeout tại helper save sau tổng 30 s không chứng minh lưu nháp hỏng hay matcher sai; chưa tăng timeout.
 
 ### Lượt chạy và dẫn chứng
 
-- Đã dùng 1/4 lượt chạy toàn bộ. Một lần gọi trước đó bị CLI từ chối `--ignore-pattern` trước khi chạy test, không tính thành lượt chạy test.
-- Lệnh thực chạy: `E2E_BASE_URL=http://127.0.0.1:3003 npm run e2e:record -- e2e/catalog-split e2e/fooddev-pack e2e/fooddev-set e2e/fooddev-v2 e2e/inventory-ux e2e/rbac e2e/supplier-contract e2e/visual`.
-- Kết quả: 4 setup FAIL, 69 ca desktop không chạy. Chưa chạy lại riêng nhóm hoặc lượt toàn bộ sau sửa.
-- Log: `/home/dawn/work/ticket/.cache/e2e/s7-before.log`.
-- Báo cáo HTML: `e2e-report/index.html`. Error context: `node_modules/.cache/playwright-results/setup-login.setup.ts-Đăng-nhập-{WAREHOUSE,ADMIN,CUSTOMER,FOODDEV}-setup/error-context.md`.
-- Không có video/trace của ca lỗi kết nối vì project setup đang tắt video/trace theo cấu hình hiện có; 69 ca desktop chưa khởi chạy nên không sinh video/trace.
-- `npx tsc --noEmit`: PASS, exit 0; log `/home/dawn/work/ticket/.cache/e2e/s7-tsc.log`.
-- `npx eslint playwright.config.ts e2e/fooddev-v2/helpers.ts e2e/fooddev-pack/fooddev-pack.spec.ts e2e/fooddev-set/fooddev-set.spec.ts e2e/rbac/rbac.spec.ts`: PASS, exit 0; log `/home/dawn/work/ticket/.cache/e2e/s7-eslint.log`. Đây là kiểm tra baseline, chưa có thay đổi TypeScript.
+- Tổng cộng 2/4 lượt chạy toàn bộ S7, gồm 1 lượt mất kết nối đã ghi ở adf16ed và 1 baseline thành công kết nối lần này. Không chạy riêng nhóm hay lượt toàn bộ sau sửa.
+- Lệnh baseline: `E2E_BASE_URL=http://127.0.0.1:3003 npm run e2e:record -- e2e/catalog-split e2e/fooddev-pack e2e/fooddev-set e2e/fooddev-v2 e2e/inventory-ux e2e/rbac e2e/supplier-contract e2e/visual`.
+- Log: `/home/dawn/work/ticket/.cache/e2e/s7-before-2.log`; HTML `e2e-report/index.html`; kết quả runner exit 1, 6,7 phút. Báo cáo HTML ghi skipped=31, tương ứng CLI 23 skipped + 8 did not run.
+- `npx tsc --noEmit`: PASS, exit 0, log `/home/dawn/work/ticket/.cache/e2e/s7-tsc-2.log`.
+- `npx eslint playwright.config.ts e2e/fooddev-v2/helpers.ts e2e/fooddev-pack/fooddev-pack.spec.ts e2e/fooddev-set/fooddev-set.spec.ts e2e/rbac/rbac.spec.ts`: PASS, exit 0, log `/home/dawn/work/ticket/.cache/e2e/s7-eslint-2.log`. Chưa có data.setup.ts để lint.
+- Đã khôi phục ảnh tracked trong `.aidlc/runs/PORTAL-INVENTORY-UX-001/artifacts` về HEAD sau khi bộ inventory-ux ghi ảnh baseline; trước lượt chạy các ảnh này sạch.
+
+Video/trace của 19 ca đỏ:
+
+- `catalog-split/catalog-split.spec.ts:96` staff có sales:product:read thấy menu Sản phẩm và màn quản trị: video `e2e-report/data/2a44863e0ef4a7b7da2af7ced5799ccbe0169e1c.webm`; trace `e2e-report/data/f08def06d94b83a140a4d6e3c015eb3d2b165b8d.zip`.
+- `catalog-split/catalog-split.spec.ts:108` staff không có quyền đọc không thấy menu, vào URL trực tiếp bị chặn và không gọi staff list: video `e2e-report/data/08a79abd02b81fb7f31575e8805fb4a3ccb60a30.webm`; trace `e2e-report/data/08ed6cb4ed533906b3d994590390e14d4c180d17.zip`.
+- `catalog-split/catalog-split.spec.ts:224` ba nút trạng thái giữ #019, chọn đơn và aria-pressed đúng: video `e2e-report/data/e58d4b740c3679c6df329ce8693f88f52a86df23.webm`; trace `e2e-report/data/b0bd7611d536ad747c5aae626a3a38d23ea3d1f9.zip`.
+- `catalog-split/catalog-split.spec.ts:239` icon tìm kiếm căn giữa ô nhập và không tràn ngang ở 1024px: video `e2e-report/data/b463356dba469c7b96e9001111c76e7929abeafd.webm`; trace `e2e-report/data/2104fe197e5f1a8056bd005ff39bc42ebd51445a.zip`.
+- `catalog-split/catalog-split.spec.ts:239` icon tìm kiếm căn giữa ô nhập và không tràn ngang ở 375px: video `e2e-report/data/a2c142750ac166a7537d69cf7f86c86896085663.webm`; trace `e2e-report/data/b7f2c3ed187ad4fa256346ddb656a4ec969ac0ca.zip`.
+- `catalog-split/catalog-split.spec.ts:239` icon tìm kiếm căn giữa ô nhập và không tràn ngang ở 768px: video `e2e-report/data/420b3627dfce53b30470a006b1f3d8ddbada2822.webm`; trace `e2e-report/data/5cf250639b6b3c1983ee2d8198494591fe5de2b7.zip`.
+- `fooddev-v2/dishes.spec.ts:97` T1: M1 không tinh bột, nháp thiếu bền sau tải lại, hoàn tất: video `e2e-report/data/ff18c15bee54b65a335fea13b8e236bc2c66d570.webm`; trace `e2e-report/data/2ecf793814c489794d2379cb91960b4c59e195aa.zip`.
+- `fooddev-v2/dishes.spec.ts:178` T5: tạo nguyên liệu chưa có ngay trong màn Món: video `e2e-report/data/6e6e1b351d734881ea4b49c3eb336189ca67edf3.webm`; trace `e2e-report/data/1d4f51da76971ab49176652b254426e968746c37.zip`.
+- `fooddev-v2/dishes.spec.ts:196` T6: bản sửa M4 thay theo mùa, PREPARATION giữ nhu cầu đã ghim: video `e2e-report/data/8b6b84b391682528ac625bdafa26fa4689b00505.webm`; trace `e2e-report/data/e2a366e6a788d105335297dd426a49c740ddf933.zip`.
+- `fooddev-v2/dishes.spec.ts:219` Giá vốn: đúng một nguyên liệu thiếu giá, dòng và tổng báo chưa đủ: video `e2e-report/data/4f83039c9fe0ba6e14480673db74ff6ddc93e02d.webm`; trace `e2e-report/data/85670b033d93f17854ce64ab6e257d2987b72fd5.zip`.
+- `fooddev-v2/dishes.spec.ts:260` S14d: Nháp đang soạn có nút Tải thêm: video `e2e-report/data/cd52015583888b9b17ec23fa6b43ada9952b371f.webm`; trace `e2e-report/data/f1af2870bce8947e983a3d470e94b9723c0c5571.zip`.
+- `supplier-contract/permissions.spec.ts:15` TC-09: thu hồi quyền WAREHOUSE chặn API, menu và deep link trong cùng phiên: trace `e2e-report/data/1db41c9d1dbb71e76b18eaa85a7b4dfd894b7e02.zip`.
+- `supplier-contract/permissions.spec.ts:67` TC-09: khách và anonymous không được đọc/ghi hợp đồng qua BFF: video `e2e-report/data/6dab30fcf36cb39e10e0474f39a0981cdb517b15.webm`; trace `e2e-report/data/8e41423ccdb7e38f14b4aa1775dfa3019b10c626.zip`.
+- `fooddev-pack/fooddev-pack.spec.ts:260` FOOD_DEV soạn gói/set, đổi nhãn, pin 100 suất 80/20; WAREHOUSE đọc oracle và write403: video `e2e-report/data/b3486b52316d81d4dc72253e8fd573d59ef29875.webm`; trace `e2e-report/data/dc278aa1a5335bab049d4468564e875393c1faf8.zip`.
+- `fooddev-set/fooddev-set.spec.ts:69` FOOD_DEV tạo và sửa set; kho chỉ đọc; revoke có hiệu lực ngay và restore đúng snapshot: video `e2e-report/data/692e60fa642f70a252ad99216ee89055516b2d2c.webm`; trace `e2e-report/data/da9283f12699f208310d2ff255e6ba253338b1d5.zip`.
+- `fooddev-v2/fooddev-v2.spec.ts:30` AC-4: nhóm hai cấp, tạo nguyên liệu tại dòng và xử lý trùng tên: video `e2e-report/data/2cf2b7b5812b80e6ec33c013890004aaf5709b2d.webm`; trace `e2e-report/data/196f4e894bd5ba5936d070fecc46d476b06e1426.zip`.
+- `rbac/rbac.spec.ts:177` 1. ADMIN tắt rồi bật sales:product:read bằng ma trận: trace `e2e-report/data/1551575c910d8002e81720ad63f1c750c58cf72e.zip`.
+- `supplier-contract/receipt-gate.spec.ts:6` TC-05/10/16: picker tên, giá chỉ đọc và ngày ngoài hợp đồng chặn tạo phiếu: video `e2e-report/data/2cdc520332f445839806812c61af6610baec06b5.webm`; trace `e2e-report/data/bdcf443a778ea505bda600fa509dec0f4f7cea41.zip`.
+- `supplier-contract/supplier-contract.spec.ts:24` TC-01/03/04/10/11: NCC, nháp, tệp, áp dụng và ngừng dùng bằng UI: video `e2e-report/data/09b18bc94dbb08c0b669c5dfbcde491e34f26c5a.webm`; trace `e2e-report/data/7cf81140c03ab7238d35e7b62268c502b4f9946a.zip`.
 
 ## Files changed
 
-- `.aidlc/runs/PORTAL-E2E-VIDEO-001/handback.md`: ghi kết quả S7, blocker và phần chưa làm. Các thay đổi có sẵn ngoài phạm vi được giữ nguyên.
+- `.aidlc/runs/PORTAL-E2E-VIDEO-001/handback.md`: bảng baseline, phân loại lỗi và bằng chứng S7. Không sửa TypeScript; giữ thay đổi có sẵn ở next-env.d.ts, trace.jsonl, run bookkeeping và node_modules.
 
 ## Left over
 
-- Cần coordinator khôi phục DEV `http://127.0.0.1:3003`; đã gửi escalation và câu hỏi qua Orca. Brief cấm worker tự khởi động lại server.
-- Chưa thực hiện bốn nhóm REQUIRED: data.setup và project data, dữ liệu bộ Món qua helpers, bộ Gói/Set chọn danh sách, RBAC tạo SALES mới và tìm qua phân trang.
-- Cần xem lại whitelist trước khi sửa lỗi test khác: `e2e/fooddev-v2/fooddev-v2.spec.ts:42-70` luôn tạo `me chua`, đòi 201, sau đó kiểm tên trùng trả 409. Khi chạy lại trên DEV còn dữ liệu cũ, tên cố định có thể gây 409 ngay lần tạo đầu. Sửa literal tên và assert liên quan cần file ngoài whitelist; chưa xác minh trên DEV do mất kết nối. Brief yêu cầu cần file khác thì dừng và ghi Left over.
-- Sau khi xử lý blocker: chạy baseline đủ ca để phân loại lỗi test/lỗi chức năng, hoàn thành sửa trong phạm vi được duyệt, chạy riêng nhóm, rồi chạy toàn bộ ghi hình và giữ video/trace cho ca còn đỏ. Chưa có cơ sở khẳng định 69 ca xanh.
+- Chưa làm xong bốn nhóm REQUIRED; S7 chưa hoàn thành, không báo 69 ca xanh. Giữ nguyên whitelist và dừng theo câu "Cần file khác → dừng, ghi ## Left over" của brief; bàn giao outcome failed vì phần sửa và kiểm lại chưa hoàn tất.
+- Câu hỏi qua Orca chưa được trả lời về hai file ngoài whitelist `e2e/fooddev-v2/dishes.spec.ts`, `e2e/fooddev-v2/fooddev-v2.spec.ts`: yêu cầu dữ liệu có hậu tố thời gian mâu thuẫn các tên literal dùng trong cả thao tác và assert. Ví dụ dishes.spec.ts:100-110,178-192 dùng tên cố định; fooddev-v2.spec.ts:42-70 tạo me chua rồi đòi 201/409 khi trùng. Không sửa assert gián tiếp qua helper hoặc ghi lại nguồn spec để lách whitelist.
+- Cần xử lý cookie Secure trên DEV HTTP hoặc duyệt cách request đúng môi trường. Sáu ca catalog-split ngoài whitelist cũng bị chặn 401; đã gửi escalation kèm đối chiếu browser 200/request 401 cho coordinator.
+- Tiếp tục trong phạm vi được duyệt: data.setup + project data phụ thuộc setup và cấp SUPPLIER_CONTRACT_CONTEXT; tạo fixture Món/M4/PREPARATION qua nghiệp vụ UI; helpers đọc manifest; Gói/Set chọn dữ liệu theo tên; RBAC tạo SALES trong ca và phân trang UI. Cần chạy riêng nhóm rồi toàn bộ có ghi hình, còn tối đa 2 lượt toàn bộ theo trần 4 của brief.
 
-Tier 1: tsc PASS · eslint PASS · e2e cũ 0/69 PASS
+Tier 1: tsc PASS · eslint PASS · e2e cũ 19/69 PASS
