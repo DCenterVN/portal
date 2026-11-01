@@ -261,3 +261,44 @@ Lệnh lượt cuối: `E2E_BASE_URL=http://localhost:3003 npm run e2e:record --
 - KHÁCH + QUẢN TRỊ: khách `e2e-report/data/7653560b0635d5a84ca847e396dc9542f57948ae.webm`, admin `e2e-report/data/70f98416b0f41781a05fe44cbc81cfefcf879257.webm`, sales `e2e-report/data/b57dd36e3c905769f543f89a6aa0042e3e229310.webm`
 
 Ghi chú: ràng buộc chỉ cho sửa `*.spec.ts`, nên phần điền NCC/bảng giá được chép trong cả kho.spec.ts và mon-ban.spec.ts (không tạo tệp helper). Đã chạy `git checkout -- .aidlc/runs/PORTAL-INVENTORY-UX-001/artifacts`.
+
+
+## S7
+
+Ngày 01/11/2026. Dừng ở kiểm tra đầu vào, chưa sửa test vì DEV trong brief không truy cập được. Không khởi động lại server, không đổi nhánh, không push/merge, không ghi API và không in tài khoản.
+
+| Bộ | Ca | Trước | Sau | Lý do |
+| --- | --- | --- | --- | --- |
+| setup | Đăng nhập WAREHOUSE | FAIL | Chưa chạy lại | `net::ERR_CONNECTION_REFUSED` tại `http://127.0.0.1:3003/staff/login` |
+| setup | Đăng nhập ADMIN | FAIL | Chưa chạy lại | Cùng lỗi kết nối |
+| setup | Đăng nhập CUSTOMER | FAIL | Chưa chạy lại | `net::ERR_CONNECTION_REFUSED` tại `http://127.0.0.1:3003/login` |
+| setup | Đăng nhập FOODDEV | FAIL | Chưa chạy lại | Cùng lỗi kết nối |
+| Các bộ cũ | 69 ca desktop đã chọn, không gồm journeys | Chưa chạy | Chưa chạy | Dependency setup thất bại; chưa có bằng chứng phân loại từng ca |
+
+### S7 lỗi chức năng
+
+Chưa xác minh được lỗi chức năng mới: DEV từ chối kết nối trước khi có màn hình. Không quy lỗi môi trường thành lỗi chức năng, không đổi assert để làm xanh.
+
+### Lượt chạy và dẫn chứng
+
+- Đã dùng 1/4 lượt chạy toàn bộ. Một lần gọi trước đó bị CLI từ chối `--ignore-pattern` trước khi chạy test, không tính thành lượt chạy test.
+- Lệnh thực chạy: `E2E_BASE_URL=http://127.0.0.1:3003 npm run e2e:record -- e2e/catalog-split e2e/fooddev-pack e2e/fooddev-set e2e/fooddev-v2 e2e/inventory-ux e2e/rbac e2e/supplier-contract e2e/visual`.
+- Kết quả: 4 setup FAIL, 69 ca desktop không chạy. Chưa chạy lại riêng nhóm hoặc lượt toàn bộ sau sửa.
+- Log: `/home/dawn/work/ticket/.cache/e2e/s7-before.log`.
+- Báo cáo HTML: `e2e-report/index.html`. Error context: `node_modules/.cache/playwright-results/setup-login.setup.ts-Đăng-nhập-{WAREHOUSE,ADMIN,CUSTOMER,FOODDEV}-setup/error-context.md`.
+- Không có video/trace của ca lỗi kết nối vì project setup đang tắt video/trace theo cấu hình hiện có; 69 ca desktop chưa khởi chạy nên không sinh video/trace.
+- `npx tsc --noEmit`: PASS, exit 0; log `/home/dawn/work/ticket/.cache/e2e/s7-tsc.log`.
+- `npx eslint playwright.config.ts e2e/fooddev-v2/helpers.ts e2e/fooddev-pack/fooddev-pack.spec.ts e2e/fooddev-set/fooddev-set.spec.ts e2e/rbac/rbac.spec.ts`: PASS, exit 0; log `/home/dawn/work/ticket/.cache/e2e/s7-eslint.log`. Đây là kiểm tra baseline, chưa có thay đổi TypeScript.
+
+## Files changed
+
+- `.aidlc/runs/PORTAL-E2E-VIDEO-001/handback.md`: ghi kết quả S7, blocker và phần chưa làm. Các thay đổi có sẵn ngoài phạm vi được giữ nguyên.
+
+## Left over
+
+- Cần coordinator khôi phục DEV `http://127.0.0.1:3003`; đã gửi escalation và câu hỏi qua Orca. Brief cấm worker tự khởi động lại server.
+- Chưa thực hiện bốn nhóm REQUIRED: data.setup và project data, dữ liệu bộ Món qua helpers, bộ Gói/Set chọn danh sách, RBAC tạo SALES mới và tìm qua phân trang.
+- Cần xem lại whitelist trước khi sửa lỗi test khác: `e2e/fooddev-v2/fooddev-v2.spec.ts:42-70` luôn tạo `me chua`, đòi 201, sau đó kiểm tên trùng trả 409. Khi chạy lại trên DEV còn dữ liệu cũ, tên cố định có thể gây 409 ngay lần tạo đầu. Sửa literal tên và assert liên quan cần file ngoài whitelist; chưa xác minh trên DEV do mất kết nối. Brief yêu cầu cần file khác thì dừng và ghi Left over.
+- Sau khi xử lý blocker: chạy baseline đủ ca để phân loại lỗi test/lỗi chức năng, hoàn thành sửa trong phạm vi được duyệt, chạy riêng nhóm, rồi chạy toàn bộ ghi hình và giữ video/trace cho ca còn đỏ. Chưa có cơ sở khẳng định 69 ca xanh.
+
+Tier 1: tsc PASS · eslint PASS · e2e cũ 0/69 PASS
