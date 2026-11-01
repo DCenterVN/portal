@@ -398,3 +398,30 @@ Video/trace của 19 ca đỏ:
 - Tiếp tục trong phạm vi được duyệt: data.setup + project data phụ thuộc setup và cấp SUPPLIER_CONTRACT_CONTEXT; tạo fixture Món/M4/PREPARATION qua nghiệp vụ UI; helpers đọc manifest; Gói/Set chọn dữ liệu theo tên; RBAC tạo SALES trong ca và phân trang UI. Cần chạy riêng nhóm rồi toàn bộ có ghi hình, còn tối đa 2 lượt toàn bộ theo trần 4 của brief.
 
 Tier 1: tsc PASS · eslint PASS · e2e cũ 19/69 PASS
+
+### Lượt 4
+
+Tiếp tục từ `f80e4e1`, không chạy baseline, giữ DEV `http://127.0.0.1:3003`. Kết quả lượt này thay các kết luận chưa triển khai ở Lượt 2 phía trên. Dữ liệu setup qua UI đã PASS 6/6. `tsc` và eslint toàn bộ 12 file TypeScript của S7 PASS, log tại `.cache/e2e/s7-l4-tsc.log` và `s7-l4-eslint.log` của workspace ticket.
+
+| Bộ | Ca | Kết quả | Lý do |
+|---|---|---|---|
+| supplier-contract | TC-09 thu hồi quyền WAREHOUSE | PASS | Cùng phiên mất quyền API/menu/deep link; khôi phục đúng snapshot. |
+| supplier-contract | TC-09 khách và anonymous | PASS | API đọc/ghi trả 403/401 đúng vai. |
+| supplier-contract | TC-05/10/16 giá tham chiếu và giá thực tế | PASS | 25.000 tự điền, editable; sửa 26.000 và ngoài kỳ nhập 27.000, API 201 và lịch sử giữ đúng giá/tổng. |
+| supplier-contract | TC-16 giá 0 và ô trống | PASS | Ô trống chặn tạo, giá 0 tạo DRAFT và đọc lại giá/tổng 0. |
+| supplier-contract | TC-01/03/04/10/11 NCC, tệp, áp dụng/ngừng | PASS | Chứng từ tùy chọn; upload và giữ lịch sử vẫn được kiểm. |
+
+Căn cứ điều chỉnh test: `/home/dawn/work/ticket/inventory/.aidlc/specs/inbound-receiving.md:136` quy định giá integer >= 0, omitted khác 0, giá tay ngoài kỳ hợp lệ; `supplier-contract-document.md:6` và `:10` chốt D-UX-3 chứng từ bảng giá tùy chọn. Không đổi gate ATTP, không nới assert API hoặc giá trị lưu.
+
+Log nhóm NCC: `/home/dawn/work/ticket/.cache/e2e/s7-l4-supplier.log`, report `/home/dawn/work/ticket/.cache/e2e/s7-l4-supplier-report/index.html`, video/trace trong `s7-l4-supplier-results/` cùng thư mục cache. Chạy từng nhóm bằng `npm run e2e:record`, nhóm sau dùng `--no-deps` và manifest từ setup vừa PASS, output riêng; không tái tạo fixture khi các nhóm khác còn đang đọc.
+
+#### Files changed
+
+- `e2e/supplier-contract/receipt-gate.spec.ts`: thêm kiểm giá 0 khác ô trống và đối soát lịch sử thực lưu.
+- `.aidlc/runs/PORTAL-E2E-VIDEO-001/handback.md`: kết quả Lượt 4 và căn cứ spec.
+
+#### Left over
+
+- Đang kiểm các nhóm còn lại, chưa chạy lượt toàn bộ cuối. Log cũ `s7-after-3.log` chứng minh đã có thêm một lượt toàn bộ ngoài hai lượt ghi ở handback trước; lượt cuối của Lượt 4 sẽ là 4/4.
+- Nợ DEV: `lib/api/auth-journey-bff.ts:164` ghi `secure: true` vô điều kiện trên HTTP; chỉ dùng helper cookie phía test, không sửa app.
+- Timeout riêng của Món 90 s có sẵn từ Lượt 3 vì ghi hình slowMo; ca giá 0 mới đặt 60 s để đủ thao tác UI và đối soát lịch sử, không tăng timeout để che lỗi.

@@ -67,3 +67,16 @@ test("TC-05/10/16: picker tên, giá tham chiếu và giá nhập sửa được
   expect(await page.locator("main").innerText()).not.toMatch(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
   expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(0);
 });
+
+test("TC-16: đơn giá 0 hợp lệ, khác ô đơn giá bỏ trống", async ({ page }) => {
+  test.setTimeout(60_000);
+  await start(page, readManifest().fixture.valid_from);
+  const price = page.getByRole("spinbutton", { name: "Đơn giá dòng 1", exact: true });
+  const create = page.getByRole("button", { name: "Tạo phiếu nhập", exact: true });
+  await expect(price).toHaveValue("25000");
+  await price.fill("");
+  await expect(create).toBeDisabled();
+  await price.fill("0");
+  await expect(create).toBeEnabled();
+  await submitAndRead(page, 0);
+});
