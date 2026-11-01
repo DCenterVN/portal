@@ -423,6 +423,9 @@ Log nhóm NCC: `/home/dawn/work/ticket/.cache/e2e/s7-l4-supplier.log`, report `/
 
 - Gói + công thức `/production/food-plans`, FOODDEV-PACK E1: lưu công thức API 201, version=1/BOM/components đều đúng; mong đợi đọc và hiển thị BOM vừa lưu. Thực tế UI báo "Không tải được gói hoặc nguyên liệu", lỗi `Unrecognized key(s) in object: 'inactive'` tại `components[0]`; giữ assert hiển thị BOM đỏ. Nghi `lib/api/production.ts:335` mở rộng response component nhưng vẫn `.strict()` và chưa nhận `inactive`; `features/production/packages-view.tsx:112` đọc lại sau ghi.
 - Cùng lỗi ở AC-4 bộ fooddev-v2 khi mở Gói đạm mẫu: mong đợi mở công thức để tạo nguyên liệu tại dòng; thực tế UI báo "Không tải được công thức gói", `current.components[0].inactive` bị schema từ chối, không có nút Sửa công thức. Không sửa app, không thay fixture bằng gói thiếu công thức để né lỗi. Trace/video nhóm Món còn trong output mặc định `node_modules/.cache/playwright-results/`, nhóm Gói trong `/home/dawn/work/ticket/.cache/e2e/s7-l4-pack-set-results/`.
+- Nhu cầu nguyên liệu `/production/material-requirements?target_id=...`, FOODDEV-SET E1: tạo/sửa/reload set đều đúng revision và tổng 8 suất; mong đợi mỗi nguyên liệu `2.664 KG`. Thực tế UI báo "Không tải được nhu cầu", enum `price.source` từ chối `SUPPLIER_PRICE`, chỉ chấp nhận `SEED_RETAIL_REFERENCE|CONTRACT`. Nghi `features/production/material-requirements-view.tsx:16` (`quoteSchema`), chặn render oracle và các bước quyền kho phía sau. Giữ ca đỏ, không sửa app.
+
+Nhóm Món kết thúc exit 1: 10/11 desktop PASS và 10/10 setup/data PASS; toàn bộ 8 ca `dishes.spec.ts`, AC-5 và AC-6/7 PASS, chỉ AC-4 đỏ do lỗi công thức trên. Bản sao report/results: `/home/dawn/work/ticket/.cache/e2e/s7-l4-fooddev-v2-report/` và `s7-l4-fooddev-v2-results/`. Nhóm Gói/Set exit 1, 0/2 PASS; log `/home/dawn/work/ticket/.cache/e2e/s7-l4-pack-set.log`. Contract production `/home/dawn/work/ticket/production/api/openapi.public.yaml:1443` khai báo `inactive` boolean readOnly trong RecipeComponent, củng cố phân loại lỗi schema app.
 
 #### Files changed
 
@@ -431,6 +434,113 @@ Log nhóm NCC: `/home/dawn/work/ticket/.cache/e2e/s7-l4-supplier.log`, report `/
 
 #### Left over
 
-- Đang kiểm các nhóm còn lại, chưa chạy lượt toàn bộ cuối. Log cũ `s7-after-3.log` chứng minh đã có thêm một lượt toàn bộ ngoài hai lượt ghi ở handback trước; lượt cuối của Lượt 4 sẽ là 4/4.
+- Đã chạy xong toàn bộ 4/4 lượt theo trần brief. Lượt 4 có đúng 1 lượt toàn bộ cuối, không chạy baseline; còn 3 ca đỏ do 2 lỗi app nêu trên, S7 chưa đạt xanh toàn bộ. Log cũ `s7-after-3.log` bổ sung lượt thứ ba vào hai lượt ghi ở handback trước.
 - Nợ DEV: `lib/api/auth-journey-bff.ts:164` ghi `secure: true` vô điều kiện trên HTTP; chỉ dùng helper cookie phía test, không sửa app.
 - Timeout riêng của Món 90 s có sẵn từ Lượt 3 vì ghi hình slowMo; ca giá 0 mới đặt 60 s để đủ thao tác UI và đối soát lịch sử, không tăng timeout để che lỗi.
+- `e2e/KICH-BAN.md:483` vẫn ghi tiêu đề và bước giá chỉ đọc/ngoài kỳ chặn tạo theo spec portal cũ. Cần cập nhật theo D-UX-1/D-UX-3 sau; file ngoài CONSTRAINT nên không sửa trong Lượt 4.
+- TC-09 thu hồi quyền WAREHOUSE (`e2e/supplier-contract/permissions.spec.ts:15`) PASS nhưng context riêng chưa bật recordVideo, chỉ có trace. Trong 47 ca desktop thực chạy, 46 có video, 47 có trace; cả 3 ca đỏ đủ video/trace. Đây là khoảng thiếu ghi hình có sẵn, chưa chỉnh trong lượt sửa ca đỏ.
+
+#### Kết quả toàn bộ Lượt 4
+
+Lệnh cuối: `E2E_BASE_URL=http://127.0.0.1:3003 E2E_OUTPUT_DIR=/home/dawn/work/ticket/.cache/e2e/s7-l4-all-results PLAYWRIGHT_JSON_OUTPUT_FILE=/home/dawn/work/ticket/.cache/e2e/s7-l4-all.json npm run e2e:record -- e2e/catalog-split e2e/fooddev-pack e2e/fooddev-set e2e/fooddev-v2 e2e/inventory-ux e2e/rbac e2e/supplier-contract e2e/visual --reporter=list,html,json`.
+
+Chạy từ 01/11 sang 02/11/2026, 20,3 phút, exit 1. Tổng runner: 54 PASS, 3 FAIL, 23 SKIP, 0 flaky. Setup 4/4 và data 6/6 PASS; riêng desktop thuộc các bộ cũ: 44 PASS, 3 FAIL, 23 SKIP trên 70 ca. Mẫu số 70 gồm 69 ca trước và 1 ca giá 0 bổ sung, không tính setup/data. 23 SKIP giữ nguyên từ trước: 3 catalog và 20 visual; không tính là PASS.
+
+Trong Lượt 4: 4 lệnh chạy nhóm (Món; NCC; Gói/Set; Catalog/RBAC) và 1 lệnh toàn bộ. Tổng toàn bộ S7 là 4/4: lượt mất kết nối, baseline `s7-before-2`, `s7-after-3`, rồi `s7-l4-all`. Không chạy lượt thứ năm.
+
+| Bộ | Ca | Kết quả | Lý do |
+|---|---|---|---|
+| catalog-split/catalog-split.spec.ts:69 | anonymous không thấy control nhân viên | PASS | Assert gốc PASS, không nới hoặc thêm skip. |
+| catalog-split/catalog-split.spec.ts:73 | anonymous thấy card có tên + giá, không thấy UUID | SKIP có sẵn | Skip có sẵn: Stack chưa có món ACTIVE để hiện card; cần dữ liệu SALES-FLOW-001. |
+| catalog-split/catalog-split.spec.ts:81 | khách đã đăng nhập cũng không thấy control nhân viên | PASS | Assert gốc PASS, không nới hoặc thêm skip. |
+| catalog-split/catalog-split.spec.ts:86 | AC-2 chi tiết món công khai không có nút kích hoạt, SKU, barcode | SKIP có sẵn | Skip có sẵn: Stack chưa có món ACTIVE; cần dữ liệu SALES-FLOW-001. |
+| catalog-split/catalog-split.spec.ts:97 | staff có sales:product:read thấy menu Sản phẩm và màn quản trị | PASS | Assert gốc PASS, không nới hoặc thêm skip. |
+| catalog-split/catalog-split.spec.ts:109 | staff không có quyền đọc không thấy menu, vào URL trực tiếp bị chặn và không gọi staff list | PASS | Assert gốc PASS, không nới hoặc thêm skip. |
+| catalog-split/catalog-split.spec.ts:121 | khách không vào được /sales/products | PASS | Assert gốc PASS, không nới hoặc thêm skip. |
+| catalog-split/catalog-split.spec.ts:130 | không tràn ngang ở /products | PASS | Assert gốc PASS, không nới hoặc thêm skip. |
+| catalog-split/catalog-split.spec.ts:136 | mobile 390: bộ lọc mở bằng sheet, Esc đóng, không tràn ngang | SKIP có sẵn | Skip có sẵn: Chỉ chạy ở project mobile 390. |
+| catalog-split/catalog-split.spec.ts:154 | desktop: bộ lọc nằm sẵn trong trang, không phải sheet | PASS | Assert gốc PASS, không nới hoặc thêm skip. |
+| catalog-split/catalog-split.spec.ts:174 | không tràn ngang ở 375px, light; sheet lọc có Esc/focus/control ≥44px | PASS | Assert gốc PASS, không nới hoặc thêm skip. |
+| catalog-split/catalog-split.spec.ts:174 | không tràn ngang ở 375px, dark; sheet lọc có Esc/focus/control ≥44px | PASS | Assert gốc PASS, không nới hoặc thêm skip. |
+| catalog-split/catalog-split.spec.ts:174 | không tràn ngang ở 768px, light; sheet lọc có Esc/focus/control ≥44px | PASS | Assert gốc PASS, không nới hoặc thêm skip. |
+| catalog-split/catalog-split.spec.ts:174 | không tràn ngang ở 768px, dark; sheet lọc có Esc/focus/control ≥44px | PASS | Assert gốc PASS, không nới hoặc thêm skip. |
+| catalog-split/catalog-split.spec.ts:174 | không tràn ngang ở 1024px, light; sheet lọc có Esc/focus/control ≥44px | PASS | Assert gốc PASS, không nới hoặc thêm skip. |
+| catalog-split/catalog-split.spec.ts:174 | không tràn ngang ở 1024px, dark; sheet lọc có Esc/focus/control ≥44px | PASS | Assert gốc PASS, không nới hoặc thêm skip. |
+| catalog-split/catalog-split.spec.ts:174 | không tràn ngang ở 1440px, light; sheet lọc có Esc/focus/control ≥44px | PASS | Assert gốc PASS, không nới hoặc thêm skip. |
+| catalog-split/catalog-split.spec.ts:174 | không tràn ngang ở 1440px, dark; sheet lọc có Esc/focus/control ≥44px | PASS | Assert gốc PASS, không nới hoặc thêm skip. |
+| catalog-split/catalog-split.spec.ts:200 | mở sheet và gõ lọc không làm dịch bố cục trang | PASS | Assert gốc PASS, không nới hoặc thêm skip. |
+| catalog-split/catalog-split.spec.ts:225 | ba nút trạng thái giữ #019, chọn đơn và aria-pressed đúng | PASS | Assert gốc PASS, không nới hoặc thêm skip. |
+| catalog-split/catalog-split.spec.ts:240 | icon tìm kiếm căn giữa ô nhập và không tràn ngang ở 375px | PASS | Assert gốc PASS, không nới hoặc thêm skip. |
+| catalog-split/catalog-split.spec.ts:240 | icon tìm kiếm căn giữa ô nhập và không tràn ngang ở 768px | PASS | Assert gốc PASS, không nới hoặc thêm skip. |
+| catalog-split/catalog-split.spec.ts:240 | icon tìm kiếm căn giữa ô nhập và không tràn ngang ở 1024px | PASS | Assert gốc PASS, không nới hoặc thêm skip. |
+| fooddev-pack/fooddev-pack.spec.ts:244 | FOOD_DEV soạn gói/set, đổi nhãn, pin 100 suất 80/20; WAREHOUSE đọc oracle và write403 | FAIL | Lỗi app: schema response công thức từ chối inactive. |
+| fooddev-set/fooddev-set.spec.ts:70 | FOOD_DEV tạo và sửa set; kho chỉ đọc; revoke có hiệu lực ngay và restore đúng snapshot | FAIL | Lỗi app: price.source không nhận SUPPLIER_PRICE. |
+| fooddev-v2/dishes.spec.ts:185 | T5: tạo nguyên liệu chưa có ngay trong màn Món | PASS | Dữ liệu manifest có hậu tố thời gian; assert nghiệp vụ giữ nguyên. |
+| fooddev-v2/dishes.spec.ts:204 | T6: bản sửa M4 thay theo mùa, PREPARATION giữ nhu cầu đã ghim | PASS | Dữ liệu manifest có hậu tố thời gian; assert nghiệp vụ giữ nguyên. |
+| fooddev-v2/dishes.spec.ts:228 | Giá vốn: đúng một nguyên liệu thiếu giá, dòng và tổng báo chưa đủ | PASS | Dữ liệu manifest có hậu tố thời gian; assert nghiệp vụ giữ nguyên. |
+| fooddev-v2/dishes.spec.ts:246 | S14d: tạo 2 món liên tiếp trong cùng phiên → 2 nháp khác nhau | PASS | Dữ liệu manifest có hậu tố thời gian; assert nghiệp vụ giữ nguyên. |
+| fooddev-v2/dishes.spec.ts:271 | S14d: Nháp đang soạn có nút Tải thêm | PASS | Dữ liệu manifest có hậu tố thời gian; assert nghiệp vụ giữ nguyên. |
+| fooddev-v2/dishes.spec.ts:100 | T1: M1 không tinh bột, nháp thiếu bền sau tải lại, hoàn tất | PASS | Dữ liệu manifest có hậu tố thời gian; assert nghiệp vụ giữ nguyên. |
+| fooddev-v2/dishes.spec.ts:132 | T2: nhân bản M1 → M2, chỉ gói đổi có ref mới | PASS | Dữ liệu manifest có hậu tố thời gian; assert nghiệp vụ giữ nguyên. |
+| fooddev-v2/dishes.spec.ts:149 | T3: biến thể 4 người dùng lại gói; REVISION OPEN trùng trả 409 và mở nháp cũ | PASS | Dữ liệu manifest có hậu tố thời gian; assert nghiệp vụ giữ nguyên. |
+| fooddev-v2/fooddev-v2.spec.ts:39 | AC-4: nhóm hai cấp, tạo nguyên liệu tại dòng và xử lý trùng tên | FAIL | Lỗi app: schema response công thức từ chối inactive. |
+| fooddev-v2/fooddev-v2.spec.ts:98 | AC-5: set Đạm Rau Gia vị không tinh bột; UI và API giữ gia vị bắt buộc | PASS | Dữ liệu manifest có hậu tố thời gian; assert nghiệp vụ giữ nguyên. |
+| fooddev-v2/fooddev-v2.spec.ts:150 | AC-6/7: bảy trường là danh sách/chỉ đọc, không hiện UUID trên mọi màn đã đi | PASS | Dữ liệu manifest có hậu tố thời gian; assert nghiệp vụ giữ nguyên. |
+| inventory-ux/inventory-ux.spec.ts:27 | TC-07: hai dòng, ngày Việt, tổng hợp đồng và tạo nháp đọc lại | PASS | Fixture.lines từ data.setup; assert nghiệp vụ/UI gốc PASS. |
+| inventory-ux/inventory-ux.spec.ts:71 | TC-08: không tìm thấy và ngày sai không tạo phiếu | PASS | Fixture.lines từ data.setup; assert nghiệp vụ/UI gốc PASS. |
+| inventory-ux/inventory-ux.spec.ts:86 | TC-07/12: list ACTIVE, hồ sơ chip và bảng không tràn sáng tối | PASS | Fixture.lines từ data.setup; assert nghiệp vụ/UI gốc PASS. |
+| rbac/rbac.spec.ts:206 | 1. ADMIN tắt rồi bật sales:product:read bằng ma trận | PASS | Fixture SALES tạo trong ca; assert quyền và trạng thái giữ nguyên. |
+| rbac/rbac.spec.ts:217 | 2. SALES đang đăng nhập bị chặn rồi truy cập lại với cùng phiên | PASS | Fixture SALES tạo trong ca; assert quyền và trạng thái giữ nguyên. |
+| rbac/rbac.spec.ts:231 | 3. CUSTOMER không mở được khu quản trị và ma trận | PASS | Fixture SALES tạo trong ca; assert quyền và trạng thái giữ nguyên. |
+| rbac/rbac.spec.ts:243 | 4. ADMIN khoá rồi mở membership SALES bằng UI | PASS | Fixture SALES tạo trong ca; assert quyền và trạng thái giữ nguyên. |
+| rbac/rbac.spec.ts:254 | 5. ADMIN tạo SALES với mật khẩu và nhân viên đăng nhập ngay | PASS | Fixture SALES tạo trong ca; assert quyền và trạng thái giữ nguyên. |
+| supplier-contract/permissions.spec.ts:15 | TC-09: thu hồi quyền WAREHOUSE chặn API, menu và deep link trong cùng phiên | PASS | Assert gốc PASS, không nới hoặc thêm skip. |
+| supplier-contract/permissions.spec.ts:67 | TC-09: khách và anonymous không được đọc/ghi hợp đồng qua BFF | PASS | Assert gốc PASS, không nới hoặc thêm skip. |
+| supplier-contract/receipt-gate.spec.ts:40 | TC-05/10/16: picker tên, giá tham chiếu và giá nhập sửa được trong/ngoài kỳ | PASS | 25.000 tự điền/editable; 26.000 và ngoài kỳ 27.000 lưu đúng. |
+| supplier-contract/receipt-gate.spec.ts:71 | TC-16: đơn giá 0 hợp lệ, khác ô đơn giá bỏ trống | PASS | Giá 0 tạo DRAFT/tổng 0, ô trống bị chặn. |
+| supplier-contract/supplier-contract.spec.ts:17 | TC-01/03/04/10/11: NCC, nháp, tệp, áp dụng và ngừng dùng bằng UI | PASS | D-UX-3 chứng từ tùy chọn; upload, áp dụng/ngừng và lịch sử PASS. |
+| visual/preview.spec.ts:30 | tokens | PASS | Assert gốc PASS, không nới hoặc thêm skip. |
+| visual/preview.spec.ts:71 | Main | SKIP có sẵn | Skip có sẵn: Main là trang token, đã so qua test tokens |
+| visual/preview.spec.ts:71 | Landing | SKIP có sẵn | Skip có sẵn: chưa có baseline canvas: /home/dawn/work/ticket/.cache/worktrees/portal-e2e-record/e2e/visual/baseline/screens/Landing-desktop.png |
+| visual/preview.spec.ts:71 | LandingMobile | SKIP có sẵn | Skip có sẵn: chỉ chụp ở mobile |
+| visual/preview.spec.ts:71 | StoreHome | SKIP có sẵn | Skip có sẵn: chưa có baseline canvas: /home/dawn/work/ticket/.cache/worktrees/portal-e2e-record/e2e/visual/baseline/screens/StoreHome-desktop.png |
+| visual/preview.spec.ts:71 | StoreHomeMobile | SKIP có sẵn | Skip có sẵn: chỉ chụp ở mobile |
+| visual/preview.spec.ts:71 | StoreCatalog | SKIP có sẵn | Skip có sẵn: chưa có baseline canvas: /home/dawn/work/ticket/.cache/worktrees/portal-e2e-record/e2e/visual/baseline/screens/StoreCatalog-desktop.png |
+| visual/preview.spec.ts:71 | StoreCatalogMobile | SKIP có sẵn | Skip có sẵn: chỉ chụp ở mobile |
+| visual/preview.spec.ts:71 | StoreProduct | SKIP có sẵn | Skip có sẵn: chưa có baseline canvas: /home/dawn/work/ticket/.cache/worktrees/portal-e2e-record/e2e/visual/baseline/screens/StoreProduct-desktop.png |
+| visual/preview.spec.ts:71 | StoreProductMobile | SKIP có sẵn | Skip có sẵn: chỉ chụp ở mobile |
+| visual/preview.spec.ts:71 | StoreCheckout | SKIP có sẵn | Skip có sẵn: chưa có baseline canvas: /home/dawn/work/ticket/.cache/worktrees/portal-e2e-record/e2e/visual/baseline/screens/StoreCheckout-desktop.png |
+| visual/preview.spec.ts:71 | StoreCheckoutMobile | SKIP có sẵn | Skip có sẵn: chỉ chụp ở mobile |
+| visual/preview.spec.ts:71 | StoreAuth | SKIP có sẵn | Skip có sẵn: chưa có baseline canvas: /home/dawn/work/ticket/.cache/worktrees/portal-e2e-record/e2e/visual/baseline/screens/StoreAuth-desktop.png |
+| visual/preview.spec.ts:71 | StoreAuthMobile | SKIP có sẵn | Skip có sẵn: chỉ chụp ở mobile |
+| visual/preview.spec.ts:71 | ConsoleDashboard | SKIP có sẵn | Skip có sẵn: chưa có baseline canvas: /home/dawn/work/ticket/.cache/worktrees/portal-e2e-record/e2e/visual/baseline/screens/ConsoleDashboard-desktop.png |
+| visual/preview.spec.ts:71 | ConsoleTable | SKIP có sẵn | Skip có sẵn: chưa có baseline canvas: /home/dawn/work/ticket/.cache/worktrees/portal-e2e-record/e2e/visual/baseline/screens/ConsoleTable-desktop.png |
+| visual/preview.spec.ts:71 | ConsoleRecord | SKIP có sẵn | Skip có sẵn: chưa có baseline canvas: /home/dawn/work/ticket/.cache/worktrees/portal-e2e-record/e2e/visual/baseline/screens/ConsoleRecord-desktop.png |
+| visual/preview.spec.ts:71 | ConsoleForm | SKIP có sẵn | Skip có sẵn: chưa có baseline canvas: /home/dawn/work/ticket/.cache/worktrees/portal-e2e-record/e2e/visual/baseline/screens/ConsoleForm-desktop.png |
+| visual/preview.spec.ts:71 | ConsoleLogin | SKIP có sẵn | Skip có sẵn: chưa có baseline canvas: /home/dawn/work/ticket/.cache/worktrees/portal-e2e-record/e2e/visual/baseline/screens/ConsoleLogin-desktop.png |
+| visual/preview.spec.ts:71 | States | SKIP có sẵn | Skip có sẵn: chưa có baseline canvas: /home/dawn/work/ticket/.cache/worktrees/portal-e2e-record/e2e/visual/baseline/screens/States-desktop.png |
+| visual/preview.spec.ts:71 | StatesMobile | SKIP có sẵn | Skip có sẵn: chỉ chụp ở mobile |
+
+#### Video và trace các ca còn đỏ
+
+Các file dưới đây đã kiểm tồn tại, lấy trực tiếp từ JSON reporter lượt cuối.
+
+| Ca | Video | Trace |
+|---|---|---|
+| fooddev-pack/fooddev-pack.spec.ts | `/home/dawn/work/ticket/.cache/e2e/s7-l4-all-results/fooddev-pack-fooddev-pack--cc574-OUSE-đọc-oracle-và-write403-desktop/video.webm` | `/home/dawn/work/ticket/.cache/e2e/s7-l4-all-results/fooddev-pack-fooddev-pack--cc574-OUSE-đọc-oracle-và-write403-desktop/trace.zip` |
+| fooddev-set/fooddev-set.spec.ts | `/home/dawn/work/ticket/.cache/e2e/s7-l4-all-results/fooddev-set-fooddev-set-FO-69630-ay-và-restore-đúng-snapshot-desktop/video.webm` | `/home/dawn/work/ticket/.cache/e2e/s7-l4-all-results/fooddev-set-fooddev-set-FO-69630-ay-và-restore-đúng-snapshot-desktop/trace.zip` |
+| fooddev-v2/fooddev-v2.spec.ts | `/home/dawn/work/ticket/.cache/e2e/s7-l4-all-results/fooddev-v2-fooddev-v2-AC-4-69640-tại-dòng-và-xử-lý-trùng-tên-desktop/video.webm` | `/home/dawn/work/ticket/.cache/e2e/s7-l4-all-results/fooddev-v2-fooddev-v2-AC-4-69640-tại-dòng-và-xử-lý-trùng-tên-desktop/trace.zip` |
+
+Report HTML cuối: `/home/dawn/work/ticket/.cache/worktrees/portal-e2e-record/e2e-report/index.html`. Bản lưu nguyên report: `/home/dawn/work/ticket/.cache/e2e/s7-l4-all-report/index.html`. JSON: `/home/dawn/work/ticket/.cache/e2e/s7-l4-all.json`; log: `/home/dawn/work/ticket/.cache/e2e/s7-l4-all.log`.
+
+Phạm vi ghi hình desktop thực chạy: 47 ca, 46 ca có video và 47 ca có trace. TC-09 thu hồi quyền WAREHOUSE trong `supplier-contract/permissions.spec.ts:15` PASS nhưng chỉ có trace do dùng browser contexts riêng không cấu hình recordVideo; đây là mẫu có sẵn, chưa sửa trong lượt sửa ca đỏ. Cả 3 ca FAIL đều đủ video và trace. Setup đăng nhập cố ý tắt video/trace để giữ thông tin đăng nhập.
+
+#### Kiểm tra cuối và bàn giao
+
+- `npx tsc --noEmit`: PASS, exit 0, chạy sau lượt toàn bộ; log `/home/dawn/work/ticket/.cache/e2e/s7-l4-tsc.log`.
+- `npx eslint playwright.config.ts e2e/setup/api.ts e2e/setup/data.setup.ts e2e/fooddev-v2/helpers.ts e2e/fooddev-v2/dishes.spec.ts e2e/fooddev-v2/fooddev-v2.spec.ts e2e/catalog-split/catalog-split.spec.ts e2e/fooddev-pack/fooddev-pack.spec.ts e2e/fooddev-set/fooddev-set.spec.ts e2e/rbac/rbac.spec.ts e2e/supplier-contract/*.spec.ts`: PASS, exit 0; log `/home/dawn/work/ticket/.cache/e2e/s7-l4-eslint.log`.
+- Kế thừa nguyên 12 file đã sửa ở `f80e4e1`; Lượt 4 chỉ sửa thêm `e2e/supplier-contract/receipt-gate.spec.ts` và handback này. Checkpoint NCC xanh `fd92fe9`; Catalog/RBAC xanh `8d7df4d`. Commit cuối dùng thông điệp brief, không push/merge.
+- Không add ảnh `.aidlc/runs/PORTAL-INVENTORY-UX-001/artifacts`, `next-env.d.ts`, `.aidlc/trace.jsonl` hoặc các file cache/tài khoản.
+- Đi tiếp: Coordinator tách sửa 2 lỗi schema app ở `lib/api/production.ts:335` và `features/production/material-requirements-view.tsx:16`; sau sửa chạy lại 3 ca đỏ. Nợ DEV cookie `secure: true` ở `lib/api/auth-journey-bff.ts:164`, kịch bản giá cũ và video TC-09 ghi ở Left over, không lách bằng assert hoặc fixture khác.
+
+Tier 1: tsc PASS · eslint PASS · e2e cũ 44/70 PASS
