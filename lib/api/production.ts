@@ -332,7 +332,7 @@ const PrepStepSchema = z.object({
   duration_seconds: z.number().int().min(0)
 }).strict();
 
-const RecipeComponentResponseSchema = RecipeComponentSchema.extend({ name: z.string().nullable().optional() });
+const RecipeComponentResponseSchema = RecipeComponentSchema.extend({ name: z.string().nullable().optional(), inactive: z.boolean().optional() });
 
 const PackageRecipeSchema = z.object({
   id: z.string().uuid(),

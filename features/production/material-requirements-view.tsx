@@ -13,7 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { listPackages } from "@/lib/api/sales";
 import { getTargets, getMaterialRequirements, getFoodPlan, type ProductionTarget, type MaterialRequirements, type MaterialRequirement } from "@/lib/api/production";
 
-const quoteSchema = z.object({ price: z.object({ unit_price_vnd: z.number().int().nonnegative(), uom: z.enum(["KG", "L", "EA"]), source: z.enum(["SEED_RETAIL_REFERENCE", "CONTRACT"]), observed_at: z.string().nullable() }).strict().nullable().optional() });
+const quoteSchema = z.object({ price: z.object({ unit_price_vnd: z.number().int().nonnegative(), uom: z.enum(["KG", "L", "EA"]), source: z.enum(["SEED_RETAIL_REFERENCE", "CONTRACT", "SUPPLIER_PRICE"]), observed_at: z.string().nullable() }).strict().nullable().optional() });
 const pinsSchema = z.object({ pack_plan: z.object({ recipe_versions: z.array(z.object({ sku_ref: z.string(), bom_ref: z.string(), version: z.number().int().positive() }).strict()) }).nullable().optional() });
 
 function RequirementsTable({ lines }: { lines: MaterialRequirement[] }) {

@@ -913,6 +913,37 @@ describe("FOODDEV PACK UI", () => {
       components: current.components.map(({ name: _name, ...line }) => line), prep_steps: [], expected_version: 2,
     });
   });
+  it("recipe_inactive_response_opens_and_update_omits_read_only_fields", async () => {
+    const current = {
+      id: "01955700-0000-7000-8000-000000000051", output_sku_ref: "01955700-0000-7000-8000-000000000050",
+      output_quantity: 1, uom: "EA", version: 1, status: "BOM_ACTIVE", bom_code: "COT-BO-v1",
+      components: [{ sku_ref: "01955700-0000-7000-8000-000000000020", name: "Thịt bò đã ngừng", inactive: true, quantity: "0.125", uom: "KG", yield_pct: "80" }], prep_steps: [],
+    };
+    const pack = { ...packRow, id: current.output_sku_ref };
+    vi.mocked(salesApi.listPackages).mockResolvedValue({ items: [pack], next_cursor: null });
+    vi.mocked(salesApi.getPackage).mockResolvedValue(pack);
+    vi.mocked(productionApi.listPackageRecipes).mockRestore();
+    const writes: unknown[] = [];
+    vi.stubGlobal("fetch", vi.fn(async (_url: unknown, init?: RequestInit) => {
+      if (init?.method === "PUT") writes.push(JSON.parse(String(init.body)));
+      return Response.json({ code: 200, status: "success", message: "OK", data: init?.method === "PUT" ? current : { current, history: [current] } });
+    }));
+    paint(PackagesView, {}); await effects();
+    await invoke(node(paint(PackagesView, {}), named("Xem Cốt bò")), "onClick");
+    let tree = paint(PackagesView, {});
+    expect(renderToStaticMarkup(tree)).toContain("Thịt bò đã ngừng");
+    expect(nodes(tree, item => item.type === ErrorState)).toHaveLength(0);
+    await invoke(node(tree, named("Sửa công thức")), "onClick");
+    tree = paint(PackagesView, {});
+    expect(renderToStaticMarkup(tree)).toContain("<legend>Thịt bò đã ngừng</legend>");
+    await invoke(node(tree, item => item.type === "form" && item.props["aria-label"] === "Biên tập công thức"), "onSubmit", { preventDefault() {} });
+    expect(writes).toEqual([{
+      components: [{ sku_ref: "01955700-0000-7000-8000-000000000020", quantity: "0.125", uom: "KG", yield_pct: "80" }],
+      prep_steps: [], expected_version: 1,
+    }]);
+    expect(writes[0]).not.toHaveProperty("components.0.inactive");
+    expect(writes[0]).not.toHaveProperty("components.0.name");
+  });
   it("inactive_raw_label", async () => {
     vi.mocked(productionApi.listPackageRecipes).mockResolvedValue({ current: {
       id: "recipe-old", output_sku_ref: packRow.id, output_quantity: 1, uom: "EA", version: 1, status: "BOM_ACTIVE", bom_code: "COT-BO-v1",
@@ -1028,6 +1059,16 @@ describe("FOODDEV PACK UI", () => {
     paint(MaterialRequirementsView, { foodPlanId: plan.id }); await effects();
     const html = renderToStaticMarkup(paint(MaterialRequirementsView, { foodPlanId: plan.id }));
     expect(html).toContain("123000 VND/KG"); expect(html).toContain("CONTRACT"); expect(html).toContain("0.999 KG"); expect(html).toContain("Gói đã pin · công thức v3"); expect(html).not.toContain("bom-pinned");
+  });
+  it("requirements_supplier_price_renders_without_error", async () => {
+    const quoted = { ...requirement, price: { unit_price_vnd: 25000, uom: "KG", source: "SUPPLIER_PRICE", observed_at: packTime } };
+    vi.mocked(productionApi.getMaterialRequirements).mockResolvedValue({ ...requirements, lines: [quoted], all_lines: [quoted] });
+    paint(MaterialRequirementsView, { foodPlanId: plan.id }); await effects();
+    const tree = paint(MaterialRequirementsView, { foodPlanId: plan.id });
+    const html = renderToStaticMarkup(tree);
+    expect(html).toContain("25000 VND/KG"); expect(html).toContain("SUPPLIER_PRICE");
+    expect(html).not.toContain("Không tải được nhu cầu");
+    expect(nodes(tree, item => item.type === ErrorState)).toHaveLength(0);
   });
   it("reopen_pack_plan", async () => {
     const payload = {

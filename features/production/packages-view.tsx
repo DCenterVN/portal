@@ -99,7 +99,7 @@ export function PackagesView() {
     finally { setDetailBusy(false); }
   };
   const beginRecipe = () => {
-    setComponents(recipe?.components.map(({ name, ...line }) => ({ line, name: name ?? "Nguyên liệu không còn bán", units: line.uom === "KG" || line.uom === "G" ? ["KG", "G"] : line.uom === "L" || line.uom === "ML" ? ["L", "ML"] : ["EA"] })) ?? []);
+    setComponents(recipe?.components.map(({ name, sku_ref, quantity, uom, yield_pct }) => ({ line: { sku_ref, quantity, uom, yield_pct }, name: name ?? "Nguyên liệu không còn bán", units: uom === "KG" || uom === "G" ? ["KG", "G"] : uom === "L" || uom === "ML" ? ["L", "ML"] : ["EA"] })) ?? []);
     setSteps(recipe?.prep_steps ?? []); setRecipeEditing(true);
   };
   const validRecipe = components.length > 0 && components.length <= 100 && components.every(({ line }) => positive(line.quantity) && yieldValid(line.yield_pct)) && steps.every(step => step.instruction.trim() && Number.isInteger(step.duration_seconds) && step.duration_seconds >= 0);
