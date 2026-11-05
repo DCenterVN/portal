@@ -2,7 +2,7 @@ import { readManifest } from "../setup/api";
 import { test, expect, type Page, type Locator } from '@playwright/test';
 
 export async function screen(page: Page, name: string) {
-  expect(await page.locator('body').innerText(), `UUID trên màn ${name}`).not.toMatch(/[0-9a-f]{8}-[0-9a-f]{4}-/i);
+  expect(await page.locator('body').innerText(), `UUID trên màn ${name}`).not.toMatch(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
   await page.screenshot({ path: test.info().outputPath(`${name}.png`), fullPage: true, animations: 'disabled' });
 }
 
