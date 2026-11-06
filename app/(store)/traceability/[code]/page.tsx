@@ -1,5 +1,4 @@
 import { TraceView } from "@/features/traceability/trace-view";
-import { getPublicTraceability } from "@/lib/api/production";
 
 export const dynamic = "force-dynamic";
 
@@ -10,7 +9,5 @@ export const metadata = {
 
 export default async function TraceabilityPage({ params }: { params: Promise<{ code: string }> }) {
 	const { code } = await params;
-	const trace = await getPublicTraceability(code);
-
-	return <TraceView trace={trace} />;
+	return <TraceView code={code} />;
 }

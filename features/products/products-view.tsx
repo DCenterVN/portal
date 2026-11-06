@@ -169,22 +169,22 @@ export function ProductsView({ initialProducts, dataSource = "api", canCreate = 
         <Table>
           <TableHeader>
             <TableRow className="border-b border-border bg-muted hover:bg-muted">
-              <TableHead className="w-[140px] text-xs font-semibold text-muted-foreground">
+              <TableHead className="w-32 text-xs font-semibold text-muted-foreground">
                 Mã SKU
               </TableHead>
               <TableHead className="text-xs font-semibold text-muted-foreground">
                 Tên Sản Phẩm
               </TableHead>
-              <TableHead className="w-[100px] text-xs font-semibold text-muted-foreground">
+              <TableHead className="w-24 text-xs font-semibold text-muted-foreground">
                 ĐVT
               </TableHead>
-              <TableHead className="w-[140px] text-xs font-semibold text-muted-foreground text-right">
+              <TableHead className="w-32 text-xs font-semibold text-muted-foreground text-right">
                 Giá Niêm Yết
               </TableHead>
-              <TableHead className="w-[130px] text-xs font-semibold text-muted-foreground">
+              <TableHead className="w-28 text-xs font-semibold text-muted-foreground">
                 Trạng Thái
               </TableHead>
-              <TableHead className="w-[120px] text-xs font-semibold text-muted-foreground text-right">
+              <TableHead className="w-28 text-xs font-semibold text-muted-foreground text-right">
                 Thao Tác
               </TableHead>
             </TableRow>

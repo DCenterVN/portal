@@ -67,6 +67,7 @@
 :root {
   --z-header: 10;
   --z-popover: 50;
+  --z-sheet: 60;
   --z-toast: 100;
 }
 

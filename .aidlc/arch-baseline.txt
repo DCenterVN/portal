@@ -4,19 +4,5 @@ FE-03 app/api/auth/logout/route.ts
 FE-03 app/api/auth/me/route.ts
 FE-03 app/api/auth/refresh/route.ts
 FE-03 app/readyz/route.ts
-FE-04 features/console/live-console.tsx features/platform/permission-grid
-FE-04 features/console/live-console.tsx features/platform/use-role-matrix
-FE-04 features/memberships/memberships-view.tsx features/platform/access
-FE-04 features/store/store-frame.tsx features/customer-auth/auth-popup
-FE-09 app/layout.tsx
-FE-09 features/sales/pricing-floor-view.tsx
 FE-10 features/branches/branches-view.tsx
-FE-10 features/customer-auth/login-form.tsx
-FE-10 features/platform/role-matrix-view.tsx
-FE-10 features/products/cart-view.tsx
-FE-10 features/products/products-view.tsx
 FE-14 features/memberships/memberships-view.tsx missing loading
-FE-14 features/products/cart-view.tsx missing loading,empty,error
-FE-14 features/products/product-detail-view.tsx missing loading,empty,error
-FE-14 features/sales/pricing-floor-view.tsx missing loading,empty,error
-FE-14 features/traceability/trace-view.tsx missing loading,empty,error

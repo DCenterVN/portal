@@ -15,7 +15,8 @@ import { EmptyState, ErrorState, LoadingState } from "@/components/patterns/empt
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field } from "@/components/patterns/form-field";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
-import { companyAccess, errorStatus, platformAccess, type AccessState } from "./access";
+import { companyAccess, platformAccess, type AccessState } from "./access";
+import { errorStatus } from "@/lib/access";
 import { AccessProvider } from "@/lib/access-boundary";
 
 type Plane = "platform" | "company";

@@ -1,9 +1,9 @@
 {
   "files": {
     "app/frame-lock.test.ts": "a7c96e51446f1bdff57c45a78a3d8639985c345cdd9c962e305e4be67983021d",
-    "app/globals.css": "df5b7d43cbb7f336ca52752d39c9173bec25b9d39471039ba5e23aa6b0f034d8",
+    "app/globals.css": "8606dfba05d9e0ba228ab9e6a75ed74e4291098cf988f3b112115afe4d06fbd9",
     "app/layout-gate.test.ts": "97c2a1888d4d8dbd7ba389cef4a463d38898665ef0a9902b3e1a8df5aa69fa4d",
-    "app/layout.tsx": "d755e686fd34aca315cab1e552f768f23f4c617c7ba47a314b28b7b31e0f6169",
+    "app/layout.tsx": "8fb78dfc12a38322d8ed6ab7703599ff679bac3d62dfcedefb1c002d647872e0",
     "app/tokens.generated.css": "b772f113e0d7cb24cb8dba4c7856e1c53d3657668a8bfa2314b62bf2795d24bb",
     "app/ui-rules-gate.test.ts": "0724c6eaef77c9ec570d856d660eab2b9d221d02c221f5e4ff5071cf3e73d43e",
     "components/layout/auth-frame.tsx": "29717171c4f9355241fc8cb687f98187059a65d8e3bb180b19a2bff082a4aa32",
@@ -33,6 +33,7 @@
     "components/patterns/page-heading.tsx": "d6c2ba258448c61753ff62ee2e941bb7234452b77ab8de41f4e939705f5b4584",
     "components/patterns/password-input.test.tsx": "4e74da0c9e3b734cd21cf656fb1fee041dee32b72ee95bb1375812039f4f359f",
     "components/patterns/password-input.tsx": "ca63fd6e9b6490844ad77bdbd7bd80e75cbdbf58c74ba09b4a03c8aa07ea2015",
+    "components/patterns/permission-grid.tsx": "04b26df6ecc3d1e163164358cbb1f24a83b09ea88fd9d40e9db9a6ade316c829",
     "components/patterns/route-error.tsx": "7bec0166b3f7f0bb2235403f98b05cb57a7ab172899a2851ec10888245ebd7fa",
     "components/patterns/route-loading.tsx": "6acd50d963550f6d07d6338d297d151c84ad603d2bd2ae490236d180301e3825",
     "components/patterns/status-badge.tsx": "0baa84a70589b48a3c05ebf1cd9144f84929ab2a8a17a2ef893ad81907496654",

@@ -1,4 +1,5 @@
 import { permissionsSchema } from "@/lib/api/platform-contract";
+import { errorStatus } from "@/lib/access";
 
 export type AccessState = { status: "ready"; actions: ReadonlySet<string>; role?: string } | { status: "denied" | "blocked" };
 
@@ -27,11 +28,6 @@ export function formatTime(value?: string | null): string {
   if (!value) return "—";
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? "—" : timeFormat.format(date);
-}
-
-export function errorStatus(error: unknown): number {
-  const status = (error as { status?: unknown } | null)?.status;
-  return typeof status === "number" ? status : 0;
 }
 
 // Per-operation text for statuses whose meaning depends on the call (409 break-glass vs 409 last admin).

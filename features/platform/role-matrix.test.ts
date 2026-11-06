@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { actionChanges, resourcesOf } from "./use-role-matrix";
+import { actionChanges } from "./use-role-matrix";
+import { resourcesOf } from "@/lib/access";
 
 describe("role matrix draft", () => {
   it("lists resources from CRUDIE keys across roles, ignoring other verbs", () => {

@@ -12,13 +12,11 @@ describe("TraceabilityPage", () => {
   beforeEach(() => getPublicTraceability.mockReset());
 
   it("awaits Next.js dynamic params before loading the public trace", async () => {
-    getPublicTraceability.mockResolvedValue({ trace_code: "TRC-1" });
-
     const element = await TraceabilityPage({
       params: Promise.resolve({ code: "TRC-1" }),
     });
 
-    expect(getPublicTraceability).toHaveBeenCalledWith("TRC-1");
-    expect(element.props.trace).toEqual({ trace_code: "TRC-1" });
+    expect(getPublicTraceability).not.toHaveBeenCalled();
+    expect(element.props.code).toBe("TRC-1");
   });
 });

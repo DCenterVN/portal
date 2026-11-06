@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useCallback } from "react";
 import { useAccess } from "@/lib/access-boundary";
 import { toast } from "@/components/ui/toast";
 import {
@@ -29,6 +30,7 @@ export function usePricingFloor() {
 	const [policyRef, setPolicyRef] = useState("");
 	const [policyVersionRef, setPolicyVersionRef] = useState("");
 	const [busy, setBusy] = useState(false);
+	const [previewError, setPreviewError] = useState("");
 
 	const canPreview = can("sales:price_floor:read");
 	const canCreatePolicy = can("sales:price_floor_policy:create");
@@ -44,11 +46,14 @@ export function usePricingFloor() {
 		} finally { setBusy(false); }
 	}
 
-	const loadPreview = () => run(async () => {
-		const value = await getPricingPreview(productRef, variantRef, { bom_ref: bomRef, bom_version: bomVersion, ...(branchRef ? { branch_ref: branchRef } : {}) });
-		setPreview(value);
-		setProposedPrice((current) => current || value.minimum_sale_price_vnd);
-	});
+	const loadPreview = useCallback(async () => {
+		setPreviewError("");
+		try {
+			const value = await getPricingPreview(productRef, variantRef, { bom_ref: bomRef, bom_version: bomVersion, ...(branchRef ? { branch_ref: branchRef } : {}) });
+			setPreview(value);
+			setProposedPrice((current) => current || value.minimum_sale_price_vnd);
+		} catch (error) { setPreviewError(error instanceof Error ? error.message : "Không thể tải giá sàn"); }
+	}, [productRef, variantRef, bomRef, bomVersion, branchRef]);
 
 	const createPolicy = () => run(async () => {
 		const scopeRef = scopeType === "ORG" ? undefined : scopeType === "PRODUCT" ? productRef : variantRef;
@@ -89,5 +94,5 @@ export function usePricingFloor() {
 		await approvePrice(priceBookRef, priceVersionRef);
 		toast.success("Giá đã ACTIVE", { description: "Variant được kích hoạt và cart/order dùng mức giá đã duyệt." });
 	});
-	return { productRef, setProductRef, variantRef, setVariantRef, bomRef, setBomRef, bomVersion, setBomVersion, priceBookRef, setPriceBookRef, proposedPrice, setProposedPrice, preview, priceVersionRef, scopeType, setScopeType, multiplierPercent, setMultiplierPercent, policyRef, policyVersionRef, busy, canPreview, canCreatePolicy, canApprovePolicy, canPropose, canApprovePrice, belowFloor, loadPreview, createPolicy, approvePolicy, propose, approve };
+	return { productRef, setProductRef, variantRef, setVariantRef, bomRef, setBomRef, bomVersion, setBomVersion, priceBookRef, setPriceBookRef, proposedPrice, setProposedPrice, preview, previewError, priceVersionRef, scopeType, setScopeType, multiplierPercent, setMultiplierPercent, policyRef, policyVersionRef, busy, canPreview, canCreatePolicy, canApprovePolicy, canPropose, canApprovePrice, belowFloor, loadPreview, createPolicy, approvePolicy, propose, approve };
 }

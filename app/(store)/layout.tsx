@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { StoreFrame } from "@/features/store/store-frame";
+import { Suspense } from "react";
+import { AuthPopup } from "@/features/customer-auth/auth-popup";
+import { CustomerAuthPopupBody } from "@/components/layout/customer-auth-shell";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://vietsach.reborn.vn";
 
@@ -62,7 +65,7 @@ export default function StoreLayout({ children }: { children: ReactNode }) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdWebSite).replace(/</g, "\\u003c") }}
       />
-      <StoreFrame>{children}</StoreFrame>
+      <StoreFrame authPopup={<Suspense><AuthPopup signedIn={false} Shell={CustomerAuthPopupBody} /></Suspense>}>{children}</StoreFrame>
     </>
   );
 }

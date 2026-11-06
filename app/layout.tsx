@@ -89,8 +89,8 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#FFFFFF" },
-    { media: "(prefers-color-scheme: dark)", color: "#09090B" },
+    { media: "(prefers-color-scheme: light)", color: "Canvas" },
+    { media: "(prefers-color-scheme: dark)", color: "Canvas" },
   ],
 };
 
@@ -106,7 +106,7 @@ export default function RootLayout({
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
-      <body className="min-h-screen bg-[var(--background)] text-[var(--foreground)] antialiased transition-colors duration-200">
+      <body className="min-h-screen bg-background text-foreground antialiased transition-colors duration-200">
         <ThemeProvider>
           {children}
           <Toaster position="bottom-right" />

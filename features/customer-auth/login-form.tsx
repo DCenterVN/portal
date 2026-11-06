@@ -11,7 +11,7 @@ export function LoginForm() {
   const t = useTranslations("customerAuth");
   return (
     <>
-      <div role="tablist" aria-label={t("login")} className="grid grid-cols-2 rounded-lg bg-muted p-[3px] text-sm font-medium">
+      <div role="tablist" aria-label={t("login")} className="grid grid-cols-2 rounded-lg bg-muted p-1 text-sm font-medium">
         <span role="tab" aria-selected="true" className="flex min-h-9 items-center justify-center rounded-lg bg-background text-foreground shadow-sm">
           {t("login")}
         </span>

@@ -1,32 +1,16 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { toast } from "@/components/ui/toast";
-import { type Product, addToCart, formatVND, getOrCreateCartId, recordCartResponse } from "@/lib/api/sales";
+import type { Product } from "@/lib/api/sales";
+import { formatVND } from "@/lib/format";
+import { useProductDetail } from "./use-product-detail";
 import { PageShell } from "@/components/ui/page";
 import { PageHeading } from "@/components/patterns/page-heading";
 
 export function ProductDetailView({ initialProduct: product }: { initialProduct: Product }) {
-  const [addingToCart, setAddingToCart] = useState(false);
-  const [quantity, setQuantity] = useState(1);
-  const canBuy = product.status === "ACTIVE" && !!product.sku_ref && !!product.branch_ref &&
-    product.base_price_vnd !== undefined && product.available_quantity !== undefined && product.available_quantity >= quantity;
-  async function handleAddToCart() {
-    if (!canBuy || !product.sku_ref || !product.branch_ref || addingToCart) return;
-    setAddingToCart(true);
-    try {
-      const cart = await addToCart(getOrCreateCartId(), { sku_ref: product.sku_ref, branch_id: product.branch_ref, quantity });
-      recordCartResponse(cart, product);
-      toast.success("Đã thêm vào giỏ hàng", { description: `Đã thêm ${quantity} ${product.uom} ${product.name} vào giỏ hàng.` });
-    } catch (error) {
-      toast.error("Không thể thêm vào giỏ", { description: error instanceof Error ? error.message : "Vui lòng thử lại." });
-    } finally {
-      setAddingToCart(false);
-    }
-  }
+  const { addingToCart, quantity, setQuantity, canBuy, handleAddToCart } = useProductDetail(product);
   return <PageShell>
     <Link href="/products" className="mb-4 inline-flex min-h-11 items-center text-sm">Quay lại danh mục món</Link>
     <PageHeading title={product.name} description={product.description || "Thông tin món và quy cách phục vụ"} />

@@ -9,11 +9,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PageShell } from "@/components/ui/page";
 import { Field as FormField } from "@/components/patterns/form-field";
 import { PageHeading } from "@/components/patterns/page-heading";
-import { formatVND } from "@/lib/api/sales";
+import { formatVND } from "@/lib/format";
+import { EmptyState, ErrorState, LoadingState } from "@/components/patterns/empty-state";
 import { usePricingFloor } from "./use-pricing-floor";
 
 export function PricingFloorView() {
-	const { productRef, setProductRef, variantRef, setVariantRef, bomRef, setBomRef, bomVersion, setBomVersion, priceBookRef, setPriceBookRef, proposedPrice, setProposedPrice, preview, priceVersionRef, scopeType, setScopeType, multiplierPercent, setMultiplierPercent, policyRef, policyVersionRef, busy, canPreview, canCreatePolicy, canApprovePolicy, canPropose, canApprovePrice, belowFloor, loadPreview, createPolicy, approvePolicy, propose, approve } = usePricingFloor();
+	const { productRef, setProductRef, variantRef, setVariantRef, bomRef, setBomRef, bomVersion, setBomVersion, priceBookRef, setPriceBookRef, proposedPrice, setProposedPrice, preview, previewError, priceVersionRef, scopeType, setScopeType, multiplierPercent, setMultiplierPercent, policyRef, policyVersionRef, busy, canPreview, canCreatePolicy, canApprovePolicy, canPropose, canApprovePrice, belowFloor, loadPreview, createPolicy, approvePolicy, propose, approve } = usePricingFloor();
 
 	return <PageShell>
 		<PageHeading title="Giá sàn & bảng giá" description="Dữ liệu lấy từ BOM, phiếu nhập kho đã QC và policy có version; không có dữ liệu demo." />
@@ -35,9 +36,9 @@ export function PricingFloorView() {
 			</CardContent></Card>
 
 			<Card><CardHeader><CardTitle className="text-base">Giá bán variant</CardTitle></CardHeader><CardContent className="space-y-3">
-				{preview ? <div className="space-y-2 text-sm"><p>Giá vốn đầu ra: <strong>{formatVND(preview.full_cost_per_output_vnd)}</strong></p><p>Hệ số: <Badge variant="outline">{preview.floor_multiplier_bps / 100}%</Badge></p><p>Giá bán tối thiểu: <strong>{formatVND(preview.minimum_sale_price_vnd)}</strong></p>{preview.component_breakdown.map((item) => <p key={item.input_sku_ref} className="text-xs text-muted-foreground">{item.input_sku_ref}: {item.quantity} {item.uom} × {formatVND(item.unit_cost_vnd)} = {formatVND(item.subtotal_vnd)}</p>)}</div> : <p className="text-sm text-muted-foreground">Chưa tải pricing preview.</p>}
+				{busy && !preview ? <LoadingState title="Đang tính giá sàn…" /> : previewError ? <ErrorState title="Không thể tải giá sàn" description={previewError} onRetry={() => void loadPreview()} /> : preview ? <div className="space-y-2 text-sm"><p>Giá vốn đầu ra: <strong>{formatVND(preview.full_cost_per_output_vnd)}</strong></p><p>Hệ số: <Badge variant="outline">{preview.floor_multiplier_bps / 100}%</Badge></p><p>Giá bán tối thiểu: <strong>{formatVND(preview.minimum_sale_price_vnd)}</strong></p>{preview.component_breakdown.length === 0 ? <EmptyState title="Chưa có thành phần giá vốn" /> : preview.component_breakdown.map((item) => <p key={item.input_sku_ref} className="text-xs text-muted-foreground">{item.input_sku_ref}: {item.quantity} {item.uom} × {formatVND(item.unit_cost_vnd)} = {formatVND(item.subtotal_vnd)}</p>)}</div> : <EmptyState title="Chưa tải giá sàn" description="Nhập thông tin đối tượng định giá rồi tính lại giá sàn." />}
 				<Field label="Giá bán đề xuất (VND)" type="number" value={String(proposedPrice)} onChange={(value) => setProposedPrice(Number(value))} />
-				{belowFloor && <p className="text-sm text-red-600">Giá đề xuất thấp hơn giá sàn.</p>}
+				{belowFloor && <p className="text-sm text-destructive">Giá đề xuất thấp hơn giá sàn.</p>}
 				<div className="flex gap-2"><Button disabled={busy || !canPropose || !preview || belowFloor || !priceBookRef} onClick={propose}>Tạo giá DRAFT</Button><Button disabled={busy || !canApprovePrice || !priceVersionRef} variant="outline" onClick={approve}>Duyệt giá</Button></div>
 			</CardContent></Card>
 		</div>

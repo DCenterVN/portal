@@ -1,12 +1,15 @@
 "use client";
 
-import { useCallback, type ComponentType, type ReactNode } from "react";
+import { type ComponentType, type ReactNode } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { Route } from "next";
 import { useTranslations } from "next-intl";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { LoginForm } from "./login-form";
 import { RegisterForm } from "./register-form";
+import { useAuthPopup } from "@/lib/use-auth-popup";
+
+export { useAuthPopup };
 
 const popupLocale = () => (typeof document !== "undefined" && /(?:^|;\s*)NEXT_LOCALE=en(?:;|$)/.test(document.cookie) ? "en" : "vi");
 
@@ -19,12 +22,6 @@ function Body({ register }: { register: boolean }) {
       {register ? <RegisterForm /> : <LoginForm />}
     </>
   );
-}
-
-export function useAuthPopup() {
-  const router = useRouter();
-  const pathname = usePathname();
-  return useCallback(() => router.push(`${pathname}?auth=login` as Route), [router, pathname]);
 }
 
 export function AuthPopup({ signedIn, Shell }: { signedIn: boolean; Shell: ComponentType<{ children: ReactNode; locale?: "vi" | "en" }> }) {

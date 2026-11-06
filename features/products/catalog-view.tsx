@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import type { Route } from "next";
 import { NextIntlClientProvider, useTranslations } from "next-intl";
@@ -12,8 +12,9 @@ import { PageShell } from "@/components/ui/page";
 import { PageHeading } from "@/components/patterns/page-heading";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { EmptyState, ErrorState, LoadingState } from "@/components/patterns/empty-state";
-import { toast } from "@/components/ui/toast";
-import { addToCart, formatVND, getCatalog, getOrCreateCartId, recordCartResponse, type Product } from "@/lib/api/sales";
+import type { Product } from "@/lib/api/sales";
+import { formatVND } from "@/lib/format";
+import { useCatalog, useCatalogCart } from "./use-catalog";
 import { applyCatalogFilters, CatalogFilters, type CatalogFilterValues } from "./catalog-filters";
 
 interface CatalogViewProps {
@@ -23,61 +24,22 @@ interface CatalogViewProps {
   nextCursor?: string;
   onLoadMore?: () => void;
   loadingMore?: boolean;
+  onRetry?: () => void;
 }
 
 export function CatalogLoader() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [cursor, setCursor] = useState<string>();
-  const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [error, setError] = useState("");
-  useEffect(() => {
-    let active = true;
-    void getCatalog().then(result => {
-      if (!active) return;
-      setProducts(result.data);
-      setCursor(result.next_cursor);
-      setError(result.error ?? "");
-      setLoading(false);
-    });
-    return () => { active = false; };
-  }, []);
-  async function loadMore() {
-    if (!cursor || loadingMore) return;
-    setLoadingMore(true);
-    const result = await getCatalog({ cursor });
-    if (result.source === "api") {
-      setProducts(previous => Array.from(new Map([...previous, ...result.data].map(product => [product.id, product])).values()));
-      setCursor(result.next_cursor);
-    }
-    setError(result.error ?? "");
-    setLoadingMore(false);
-  }
-  return <NextIntlClientProvider locale="vi" messages={{ Catalog: viMessages.Catalog }} timeZone="Asia/Ho_Chi_Minh"><CatalogView products={products} loading={loading} error={error} nextCursor={cursor} loadingMore={loadingMore} onLoadMore={() => void loadMore()} /></NextIntlClientProvider>;
+  const state = useCatalog();
+  return <NextIntlClientProvider locale="vi" messages={{ Catalog: viMessages.Catalog }} timeZone="Asia/Ho_Chi_Minh"><CatalogView {...state} onLoadMore={() => void state.loadMore()} onRetry={() => void state.reload()} /></NextIntlClientProvider>;
 }
 
-export function CatalogView({ products, loading, error, nextCursor, onLoadMore, loadingMore }: CatalogViewProps) {
+export function CatalogView({ products, loading, error, nextCursor, onLoadMore, loadingMore, onRetry }: CatalogViewProps) {
   const t = useTranslations("Catalog");
   const [filters, setFilters] = useState<CatalogFilterValues>({});
   const [filterOpen, setFilterOpen] = useState(false);
-  const [adding, setAdding] = useState<string | null>(null);
   const visible = applyCatalogFilters(products, filters);
-  async function add(product: Product) {
-    if (!product.sku_ref || !product.branch_ref || adding) return;
-    setAdding(product.id);
-    try {
-      const result = await addToCart(getOrCreateCartId(), { sku_ref: product.sku_ref, branch_id: product.branch_ref, quantity: 1 });
-      recordCartResponse(result, product);
-      toast.success(t("added"), { description: product.name });
-    } catch (error) {
-      toast.error(t("addError"), { description: error instanceof Error ? error.message : t("addError") });
-    } finally {
-      setAdding(null);
-    }
-  }
   return <PageShell>
     <PageHeading title={t("title")} description={t("loaded", { count: products.length })} />
-    {loading ? <LoadingState title={t("loading")} /> : error ? <ErrorState title={t("loadError")} description={error} /> :
+    {loading ? <LoadingState title={t("loading")} /> : error ? <ErrorState title={t("loadError")} description={error} onRetry={onRetry} /> :
       <div className="mt-6 flex min-w-0 gap-6">
         <aside aria-label={t("filters")} className="hidden w-56 shrink-0 lg:block">
           <CatalogFilters value={filters} onChange={setFilters} />
@@ -99,23 +61,7 @@ export function CatalogView({ products, loading, error, nextCursor, onLoadMore, 
           </div>
           {visible.length === 0 ? <EmptyState title={products.length ? t("noMatch") : t("empty")} description={products.length ? t("tryFilters") : t("emptyDescription")} /> :
             <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
-              {visible.map(product => <Card key={product.id} className="flex min-w-0 flex-col overflow-hidden p-0">
-                <Link href={`/products/${product.id}` as Route} className="block aspect-[4/3] overflow-hidden bg-[var(--color-tint)]">
-                  {product.image_urls?.[0] ?
-                    <img src={product.image_urls[0]} alt={product.name} className="size-full object-cover" /> :
-                    <span className="flex size-full items-center justify-center p-3 text-center text-xs text-[var(--color-muted)]">{t("noImage")}</span>}
-                </Link>
-                <div className="flex flex-1 flex-col gap-2 p-3">
-                  <Link href={`/products/${product.id}` as Route} className="break-words text-sm font-bold">{product.name}</Link>
-                  {product.uom && <p className="text-xs text-[var(--color-muted)]">{product.uom}</p>}
-                  <p className="mt-auto text-sm font-bold">{product.base_price_vnd === undefined ? t("noPrice") : formatVND(product.base_price_vnd)}</p>
-                  {product.sku_ref && product.branch_ref && product.base_price_vnd !== undefined && <Button
-                    className="w-full whitespace-normal text-xs"
-                    disabled={adding !== null || product.available_quantity === undefined || product.available_quantity <= 0}
-                    onClick={() => void add(product)}
-                  >{adding === product.id ? t("adding") : product.available_quantity === undefined ? t("unknownStock") : product.available_quantity <= 0 ? t("outOfStock") : t("add")}</Button>}
-                </div>
-              </Card>)}
+              {visible.map(product => <CatalogProductCard key={product.id} product={product} />)}
             </div>}
           {nextCursor && <div className="text-center"><Button variant="outline" disabled={loadingMore} onClick={onLoadMore}>{loadingMore ? t("loading") : t("more")}</Button></div>}
         </section>
@@ -128,4 +74,26 @@ export function CatalogView({ products, loading, error, nextCursor, onLoadMore, 
         </Sheet>
       </div>}
   </PageShell>;
+}
+
+function CatalogProductCard({ product }: { product: Product }) {
+  const t = useTranslations("Catalog");
+  const { adding, add } = useCatalogCart(product);
+  return <Card className="flex min-w-0 flex-col overflow-hidden p-0">
+                <Link href={`/products/${product.id}` as Route} className="block aspect-[4/3] overflow-hidden bg-[var(--color-tint)]">
+                  {product.image_urls?.[0] ?
+                    <img src={product.image_urls[0]} alt={product.name} className="size-full object-cover" /> :
+                    <span className="flex size-full items-center justify-center p-3 text-center text-xs text-[var(--color-muted)]">{t("noImage")}</span>}
+                </Link>
+                <div className="flex flex-1 flex-col gap-2 p-3">
+                  <Link href={`/products/${product.id}` as Route} className="break-words text-sm font-bold">{product.name}</Link>
+                  {product.uom && <p className="text-xs text-[var(--color-muted)]">{product.uom}</p>}
+                  <p className="mt-auto text-sm font-bold">{product.base_price_vnd === undefined ? t("noPrice") : formatVND(product.base_price_vnd)}</p>
+                  {product.sku_ref && product.branch_ref && product.base_price_vnd !== undefined && <Button
+                    className="w-full whitespace-normal text-xs"
+                    disabled={adding || product.available_quantity === undefined || product.available_quantity <= 0}
+                    onClick={() => void add()}
+                  >{adding ? t("adding") : product.available_quantity === undefined ? t("unknownStock") : product.available_quantity <= 0 ? t("outOfStock") : t("add")}</Button>}
+                </div>
+              </Card>;
 }

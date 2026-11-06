@@ -8,7 +8,7 @@ import {FetchError} from "@/lib/fetcher";
 import { useEffect, useId, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { activateAccount, resendActivation } from "@/lib/api/customer-auth";
+import { useActivationApi } from "./use-activation-api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,6 +17,7 @@ import { FormNotice, passwordError } from "./form-feedback";
 
 function ResendForm({onSent}: {onSent: () => void}) {
  const t = useTranslations("customerAuth");
+ const { resendActivation } = useActivationApi();
   const id = useId(); const pending = useRef(false); const [busy, setBusy] = useState(false); const [error, setError] = useState("");
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault(); if (pending.current) return;
@@ -53,6 +54,7 @@ function ActivationFields({id, busy, feedback}: {id: string; busy: boolean; feed
 }
 
 export function ActivateView() {
+  const { activateAccount } = useActivationApi();
   const t = useTranslations("customerAuth");
   const query = useSearchParams();
   const queryToken = query?.get("token") ?? "";

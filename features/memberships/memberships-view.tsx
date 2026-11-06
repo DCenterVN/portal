@@ -17,16 +17,18 @@ import { TablePager } from "@/components/patterns/table-pager";
 import { InlineAlert } from "@/components/patterns/inline-alert";
 import { toast } from "@/components/ui/toast";
 import { useAccess } from "@/lib/access-boundary";
-import { errorStatus } from "@/features/platform/access";
-import { companyMemberships, createMembership, employeeRoles, replaceMembershipRoles, updateMembershipStatus, type Membership } from "@/lib/api/platform-client";
+import { errorStatus } from "@/lib/access";
+import type { Membership } from "@/lib/api/platform-client";
+import { useMembershipApi } from "./use-membership-api";
 
 type Editor = { kind: "create" } | { kind: "roles"; member: Membership };
 
 export function MembershipsView() {
   const t = useTranslations("memberships");
   const { can } = useAccess();
+  const api = useMembershipApi();
   const [page, setPage] = useState(1);
-  const { data, error, isLoading, mutate } = useSWR(can("org:membership:read") ? ["company-memberships", page] : null, () => companyMemberships(page));
+  const { data, error, isLoading, mutate } = useSWR(can("org:membership:read") ? ["company-memberships", page] : null, () => api.list(page));
   const [editor, setEditor] = useState<Editor | null>(null);
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
@@ -52,12 +54,12 @@ export function MembershipsView() {
       if (editor.kind === "create") {
         const form = event.currentTarget;
         const input = { email: email.trim(), display_name: name.trim(), password: String(new FormData(form).get("password") ?? ""), role_codes: roles };
-        const pending = createMembership(input);
+        const pending = api.create(input);
         input.password = "";
         form.reset();
         await pending;
       }
-      else await replaceMembershipRoles(editor.member.id, roles);
+      else await api.replaceRoles(editor.member.id, roles);
       await mutate();
       setEditor(null);
       toast.success(t("saved"));
@@ -73,7 +75,7 @@ export function MembershipsView() {
     setBusy(true);
     setFailure("");
     try {
-      await updateMembershipStatus(member.id, member.status === "ACTIVE" ? "SUSPENDED" : "ACTIVE");
+      await api.updateStatus(member.id, member.status === "ACTIVE" ? "SUSPENDED" : "ACTIVE");
       await mutate();
       toast.success(t("saved"));
     } catch (error) {
@@ -130,7 +132,7 @@ export function MembershipsView() {
               <Field label={t("password")} htmlFor="member-password"><Input id="member-password" name="password" type="password" autoComplete="new-password" required disabled={busy} /></Field>
             </>}
             <fieldset disabled={busy} className="space-y-2"><legend className="mb-2 text-sm font-medium">{t("roles")}</legend>
-              {employeeRoles.map((role) => <Checkbox key={role} label={t(`roleLabels.${role}`)} checked={roles.includes(role)} onChange={(event) => setRoles(event.target.checked ? [...roles, role] : roles.filter((value) => value !== role))} />)}
+              {api.employeeRoles.map((role) => <Checkbox key={role} label={t(`roleLabels.${role}`)} checked={roles.includes(role)} onChange={(event) => setRoles(event.target.checked ? [...roles, role] : roles.filter((value) => value !== role))} />)}
             </fieldset>
             {failure && <InlineAlert>{failure}</InlineAlert>}
             {editor?.kind === "create" && (!name.trim() || !email.trim() || roles.length === 0) && <p className="text-sm text-[var(--color-muted)]">{t("required")}</p>}

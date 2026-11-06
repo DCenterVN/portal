@@ -5,8 +5,8 @@ import { fetcher } from "@/lib/fetcher";
 import { PageShell } from "@/components/ui/page";
 import { PageHeading } from "@/components/patterns/page-heading";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { PermissionGrid } from "@/features/platform/permission-grid";
-import { resourcesOf } from "@/features/platform/use-role-matrix";
+import { PermissionGrid } from "@/components/patterns/permission-grid";
+import { resourcesOf } from "@/lib/access";
 import { InlineAlert } from "@/components/patterns/inline-alert";
 import { EmptyState, ErrorState, LoadingState } from "@/components/patterns/empty-state";
 

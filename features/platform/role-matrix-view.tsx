@@ -10,8 +10,9 @@ import { toast } from "@/components/ui/toast";
 import { errorText } from "./access";
 import { RequireAction, useAccess } from "@/lib/access-boundary";
 import { PageHeading } from "@/components/patterns/page-heading";
-import { PermissionGrid } from "./permission-grid";
-import { actionChanges, catalogOf, replaceRole, resourcesOf, useRoleMatrix } from "./use-role-matrix";
+import { PermissionGrid } from "@/components/patterns/permission-grid";
+import { actionChanges, catalogOf, replaceRole, useRoleMatrix } from "./use-role-matrix";
+import { resourcesOf } from "@/lib/access";
 
 type Props = { root: string; editable: boolean };
 
@@ -92,7 +93,7 @@ export function RoleMatrix({ root, editable }: Props) {
 
       {/* Sticky Save Bar when dirty */}
       {editable && dirty && (
-        <div className="sticky bottom-0 z-20 -mx-4 -mb-4 mt-6 border-t border-border bg-card p-4 shadow-sm sm:-mx-6 sm:-mb-6 transition-transform duration-200 animate-[sheet-in_200ms_ease-out]">
+        <div className="sticky bottom-0 z-(--z-sheet) -mx-4 -mb-4 mt-6 border-t border-border bg-card p-4 shadow-sm sm:-mx-6 sm:-mb-6 transition-transform duration-200">
           <div className="flex flex-wrap items-center justify-between gap-3 max-w-7xl mx-auto">
             <div className="flex items-center gap-2">
               <span className="text-sm font-semibold text-foreground">Thay đổi chưa lưu</span>

@@ -4,13 +4,26 @@ import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { StatusBadge } from "@/components/patterns/status-badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { PublicTraceability } from "@/lib/api/production";
+import { EmptyState, ErrorState, LoadingState } from "@/components/patterns/empty-state";
+import { useTrace } from "./use-trace";
+import type { PublicTraceability } from "@/lib/api/production";
 
 interface TraceViewProps {
-  trace: PublicTraceability;
+  code?: string;
+  trace?: PublicTraceability;
 }
 
-export function TraceView({ trace }: TraceViewProps) {
+export function TraceView({ code = "", trace: initialTrace }: TraceViewProps) {
+  const { trace: loadedTrace, error, loading, retry } = useTrace(code);
+  const trace = initialTrace ?? loadedTrace;
+  if (initialTrace) return <TraceContent trace={initialTrace} />;
+  if (loading) return <LoadingState title="Đang tải thông tin truy xuất…" />;
+  if (error) return <ErrorState title="Không thể tải thông tin truy xuất" onRetry={retry} />;
+  if (!trace) return <EmptyState title="Không tìm thấy thông tin truy xuất" />;
+  return <TraceContent trace={trace} />;
+}
+
+function TraceContent({ trace }: { trace: PublicTraceability }) {
   return (
     <div className="min-h-screen bg-background text-foreground pb-12">
       {/* Brand Header */}

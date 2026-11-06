@@ -1,6 +1,5 @@
 "use client";
 
-import React, { useState, useMemo, useCallback, useEffect } from "react";
 import Link from "next/link";
 import type { Route } from "next";
 import {
@@ -25,8 +24,10 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { toast } from "@/components/ui/toast";
-import { Cart, CartItem, clearCart, createOrder, formatVND, getCart, getOrCreateCartId, loadCartItems, recordCartResponse } from "@/lib/api/sales";
+import type { Cart } from "@/lib/api/sales";
+import { formatVND } from "@/lib/format";
+import { useCart } from "./use-cart";
+import { EmptyState, ErrorState, LoadingState } from "@/components/patterns/empty-state";
 import { PageShell } from "@/components/ui/page";
 import { PageHeading } from "@/components/patterns/page-heading";
 
@@ -35,59 +36,9 @@ interface CartViewProps {
 }
 
 export function CartView({ initialCart }: CartViewProps) {
-  // P0-4 fix: Only store items in state. Total is DERIVED, computed via useMemo.
-  const [items, setItems] = useState<CartItem[]>(initialCart?.items ?? []);
-  const [cartId, setCartId] = useState(initialCart?.id ?? "");
-  const [submittingOrder, setSubmittingOrder] = useState(false);
-  const [createdOrderCode, setCreatedOrderCode] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (initialCart) return;
-    const activeCartId = cartId || getOrCreateCartId();
-    if (!cartId) setCartId(activeCartId);
-    setItems(loadCartItems());
-    void getCart(activeCartId)
-      .then((response) => {
-        recordCartResponse(response);
-        setItems(loadCartItems());
-      })
-      .catch(() => {
-        // A cart is created lazily by the first add-item command. Until then,
-        // the last Sales-confirmed cache is the only displayable read model.
-      });
-  }, [cartId, initialCart]);
-
-  // Derived: single source of truth for total
-  const totalAmount = useMemo(
-    () => items.reduce((sum, item) => sum + item.quantity * item.price_snapshot_vnd, 0),
-    [items]
-  );
-
-  const totalQuantity = useMemo(
-    () => items.reduce((sum, item) => sum + item.quantity, 0),
-    [items]
-  );
-
-  const handleCheckout = useCallback(async () => {
-    if (items.length === 0 || !cartId) {
-      toast.error("Giỏ hàng trống", { description: "Vui lòng chọn sản phẩm trước khi tạo đơn." });
-      return;
-    }
-
-    setSubmittingOrder(true);
-    try {
-      const order = await createOrder(cartId);
-      setCreatedOrderCode(order.order_code ?? "");
-      toast.success("Tạo đơn hàng thành công", { description: order.order_code ? `Mã đơn: ${order.order_code}` : undefined });
-      setItems([]);
-      clearCart();
-      setCartId("");
-    } catch (err: unknown) {
-      toast.error("Không thể tạo đơn hàng", { description: err instanceof Error ? err.message : String(err) });
-    } finally {
-      setSubmittingOrder(false);
-    }
-  }, [items.length, cartId]);
+  const { items, cartId, submittingOrder, createdOrderCode, setCreatedOrderCode, loading, error, reload, totalAmount, totalQuantity, handleCheckout } = useCart(initialCart);
+  if (loading) return <PageShell><LoadingState title="Đang tải giỏ hàng…" /></PageShell>;
+  if (error) return <PageShell><ErrorState title="Không thể tải giỏ hàng" description={error} onRetry={reload} /></PageShell>;
 
   return (
     <PageShell className="bg-background text-foreground">
@@ -121,13 +72,13 @@ export function CartView({ initialCart }: CartViewProps) {
                     <TableHead className="text-xs font-semibold text-muted-foreground">
                       Mặt Hàng & SKU
                     </TableHead>
-                    <TableHead className="w-[120px] text-xs font-semibold text-muted-foreground text-right">
+                    <TableHead className="w-28 text-xs font-semibold text-muted-foreground text-right">
                       Đơn Giá
                     </TableHead>
-                    <TableHead className="w-[140px] text-xs font-semibold text-muted-foreground text-center">
+                    <TableHead className="w-32 text-xs font-semibold text-muted-foreground text-center">
                       Số Lượng
                     </TableHead>
-                    <TableHead className="w-[130px] text-xs font-semibold text-muted-foreground text-right">
+                    <TableHead className="w-28 text-xs font-semibold text-muted-foreground text-right">
                       Thành Tiền
                     </TableHead>
                   </TableRow>
@@ -161,14 +112,7 @@ export function CartView({ initialCart }: CartViewProps) {
                 </TableBody>
               </Table>
             ) : (
-              <div className="py-16 text-center text-xs text-muted-foreground space-y-3">
-                <p>Giỏ hàng hiện đang trống.</p>
-                <Link href={"/products" as Route}>
-                  <Button size="sm" variant="outline">
-                    Xem danh mục sản phẩm
-                  </Button>
-                </Link>
-              </div>
+              <EmptyState title="Giỏ hàng hiện đang trống" description="Chọn sản phẩm để bắt đầu tạo đơn hàng." action={<Link href={"/products" as Route}><Button size="sm" variant="outline">Xem danh mục sản phẩm</Button></Link>} />
             )}
           </Card>
         </div>

@@ -5,7 +5,7 @@
   "type": "module",
   "packageManager": "pnpm@9.15.4",
   "scripts": {
-    "dev": "node node_modules/next/dist/bin/next dev",
+    "dev": "node node_modules/next/dist/bin/next dev -H 127.0.0.1",
     "build": "node node_modules/next/dist/bin/next build",
     "start": "node node_modules/next/dist/bin/next start",
     "check:structure": "node scripts/check-structure.mjs --strict",

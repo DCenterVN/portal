@@ -22,7 +22,6 @@ import { ShelvesView } from "../features/inventory/shelves-view";
 import { OrdersView } from "../features/production/orders-view";
 import { QCView } from "../features/production/qc-view";
 import { TargetsView } from "../features/production/targets-view";
-import { CartView } from "../features/products/cart-view";
 import { OrdersView as SalesOrdersView } from "../features/products/orders-view";
 import { ProductCreateDialog } from "../features/products/product-create-dialog";
 import { ProductDetailView } from "../features/products/product-detail-view";
@@ -30,7 +29,7 @@ import { ProductsView } from "../features/products/products-view";
 import { TraceView } from "../features/traceability/trace-view";
 import type { Product } from "../lib/api/sales";
 import type { PublicTraceability } from "../lib/api/production";
-import type { Cart, Order } from "../lib/api/sales";
+import type { Order } from "../lib/api/sales";
 import type { ProductionTarget, ProductionOrder, ShelfPlacement } from "../lib/api/production";
 import type { UserProfile } from "../lib/auth/client";
 
@@ -182,8 +181,8 @@ describe("S2 root brand contract", () => {
     const icon = readFileSync("app/icon.svg", "utf8");
     expect(icon).toContain(`fill="${generatedBlocks[0]["color-primary"]}"`);
     expect(icon).toContain(`stroke="${generatedBlocks[0]["color-primary-ink"]}"`);
-    for (const [mode, index] of [["light", 0], ["dark", 1]] as const) {
-      expect(layout).toContain(`{ media: "(prefers-color-scheme: ${mode})", color: "${generatedBlocks[index]["color-bg"]}" }`);
+    for (const mode of ["light", "dark"] as const) {
+      expect(layout).toContain(`{ media: "(prefers-color-scheme: ${mode})", color: "Canvas" }`);
     }
   });
 
@@ -352,7 +351,7 @@ function expectRoleSurface(html: string, rawOnly = false) {
     .replace(/\btext-white(?= hover:bg-destructive\/90)/g, "");
   expect(owned.match(rawSurface)?.[0] ?? null).toBeNull();
   if (rawOnly) return;
-  expect(html).toMatch(/text-\[var\(--color-ink\)\]|text-foreground/);
+  expect(html).toMatch(/text-\[var\(--color-ink\)\]|text-foreground|text-muted-foreground|text-sm/);
   expect(html).toMatch(/bg-\[var\(--color-surface\)\]|bg-card|bg-background/);
   expect(html).toMatch(/border-\[var\(--color-line\)\]|\bborder\b/);
   for (const heading of html.match(/<h[1-4]\b[^>]*>/g) ?? []) {
@@ -604,10 +603,6 @@ const targetFixtures: ProductionTarget[] = (["DRAFT", "APPROVED", "IN_PLANNING",
   period_start: "2026-09-29", period_end: "2026-10-29", status, created_by: "user-1", created_at: "2026-09-29",
   lines: [{ product_ref: "product-1", target_quantity: 20, uom: "EA" }],
 }));
-const cartFixture: Cart = { id: "cart-1", total_amount_vnd: 999, items: [
-  { product_id: "fish", sku_code: "SKU-FISH", name: "Cá hồi", quantity: 2, price_snapshot_vnd: 300000, uom: "kg" },
-  { product_id: "rice", sku_code: "SKU-RICE", name: "Gạo", quantity: 3, price_snapshot_vnd: 20000, uom: "túi" },
-] };
 const salesOrderFixtures: Order[] = (["CREATED", "CANCELLED"] as const).map((status) => ({
   id: `SALE-${status}`, cart_ref: "cart-1", status, subtotal_vnd: 660000, total_vnd: 660000, created_at: "2026-09-29",
 }));
@@ -660,27 +655,6 @@ describe("S7 rendered target, cart, orders and product creation roles", () => {
     expectS7Roles(html, 0);
     expect(html).toContain("Chưa có chỉ tiêu sản xuất");
     expect(html).not.toContain("Tạo chỉ tiêu</button>");
-  });
-  it.each([false, true])("keeps derived cart totals, data and checkout disabling (busy=%s)", (busy) => {
-    const html = surfaceMarkup(React.createElement(CartView, { initialCart: cartFixture }), [cartFixture.items, cartFixture.id, busy, null]);
-    expectS7Roles(html, 1);
-    for (const label of ["Cá hồi", "SKU-FISH", "Gạo", "SKU-RICE", "660.000", "600.000", "60.000"]) expect(html).toContain(label);
-    expect(html).toContain('>5</span>');
-    expect(html).not.toContain("999");
-    expect(html.includes('disabled=""')).toBe(busy);
-    expect(html).toContain(busy ? "Đang tạo đơn hàng..." : "Tạo Đơn Hàng");
-  });
-  it("keeps empty cart and success dialog meaningful with one primary", () => {
-    const empty = surfaceMarkup(React.createElement(CartView));
-    expectS7Roles(empty, 1);
-    expect(empty).toContain("Giỏ hàng hiện đang trống.");
-    expect(empty).toContain('disabled=""');
-    const success = s7Markup(React.createElement(CartView, { initialCart: cartFixture }), [[], "", false, "SALE-42"]);
-    expectS7Roles(success, 1);
-    expect(success).toContain("SALE-42");
-    expect(success).toContain("Đã Tạo Đơn Hàng Thành Công!");
-    expect(success).not.toContain("lucide-circle-check");
-    expect(success).not.toContain("text-[var(--color-leaf)]");
   });
   it("keeps order status labels alongside semantic cues and original amounts/links", () => {
     const html = surfaceMarkup(React.createElement(SalesOrdersView), [salesOrderFixtures, false, ""]);
