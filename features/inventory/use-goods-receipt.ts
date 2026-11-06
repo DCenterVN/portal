@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useAccess } from "@/lib/access-boundary";
 import { getActiveSuppliers, type Supplier } from "@/lib/api/suppliers";
 import { getContractMaterials, getAllAgreements, resolveReceiptReferencePrice, type Agreement } from "@/lib/api/supplier-agreements";
-import { getReceiptBranch, createGoodsReceipt, receiptDraftSchema } from "@/lib/api/goods-receipts";
+import { createGoodsReceipt, receiptDraftSchema } from "@/lib/api/goods-receipts";
 import { type Material } from "@/lib/api/sales";
 import { FetchError } from "@/lib/fetcher";
 import { receiptToday, parseReceiptDate, formatReceiptDate } from "./receipt-date-input";
@@ -15,7 +15,7 @@ type Prices = { kind: "loading" } | { kind: "error" } | { kind: "ready"; supplie
 
 
 export function useGoodsReceipt() {
-  const { can } = useAccess();
+  const { can, scope } = useAccess();
   const allowed = can("inventory:goods_receipt:create") && can("inventory:supplier:read");
   const [setup, setSetup] = useState<Setup>({ kind: "loading" });
   const [prices, setPrices] = useState<Prices>({ kind: "loading" });
@@ -35,9 +35,11 @@ export function useGoodsReceipt() {
   useEffect(() => {
     if (!allowed) return;
     let live = true;
-    Promise.all([getActiveSuppliers(), getContractMaterials(), getReceiptBranch()]).then(([suppliers, materials, branch]) => { if (live) setSetup({ kind: "ready", suppliers, materials, branch }); }).catch(() => { if (live) setSetup({ kind: "error" }); });
+    const branch = scope?.branchId;
+    if (!branch) { setSetup({ kind: "error" }); return; }
+    Promise.all([getActiveSuppliers(), getContractMaterials()]).then(([suppliers, materials]) => { if (live) setSetup({ kind: "ready", suppliers, materials, branch }); }).catch(() => { if (live) setSetup({ kind: "error" }); });
     return () => { live = false; };
-  }, [allowed, revision]);
+  }, [allowed, revision, scope?.branchId]);
   const storageKey = setup.kind === "ready" ? `inventory:receipt-draft:${setup.branch}` : "";
   useEffect(() => {
     if (!storageKey || restored) return;

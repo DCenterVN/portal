@@ -18,11 +18,13 @@ vi.mock("react", async (original) => {
   };
 });
 
-import { Button, buttonVariants } from "./button";
-import { Field, Select, TextInput, Textarea } from "./field";
+import { Button } from "./button";
+import { Field } from "@/components/patterns/form-field";
+import { NativeSelect } from "./native-select";
+import { Textarea } from "./textarea";
 import { Checkbox } from "./checkbox";
 import { Switch } from "./switch";
-import { Tabs, nextTab } from "./tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./tabs";
 import { Input } from "./input";
 import { PasswordInput } from "@/components/patterns/password-input";
 import { passwordError } from "@/features/customer-auth/form-feedback";
@@ -50,26 +52,20 @@ const blurWith = (value: string) => ({ currentTarget: { value }, target: { value
 beforeEach(() => { harness.slots = []; harness.cursor = 0; });
 
 describe("Button (FR-4)", () => {
-  it.each([["sm", "h-8"], ["md", "h-10"], ["lg", "h-12"]] as const)("size %s is %s tall", (size, height) => {
+  it.each([["sm", "h-8"], ["default", "h-9"], ["lg", "h-10"]] as const)("size %s is %s tall", (size, height) => {
     expect(classes(renderToStaticMarkup(<Button size={size}>Lưu</Button>), "button")).toContain(height);
   });
 
-  it("keeps a 44px tap target on mobile for sm and md", () => {
-    for (const size of ["sm", "md"] as const) expect(buttonVariants({ size })).toContain("max-md:h-11");
-  });
-
-  it("primary is solid --p with white text, --p-hover in 100ms, 2px focus ring, 8px corners", () => {
-    const own = classes(renderToStaticMarkup(<Button variant="primary">Đặt hàng</Button>), "button");
-    expect(own).toEqual(expect.arrayContaining(["bg-p", "text-on-p", "hover:bg-p-hover", "duration-100", "focus-visible:ring-2", "rounded-lg"]));
-    expect(own).not.toContain("duration-200");
+  it("default is solid --primary with white text, a 3px focus ring and 6px corners", () => {
+    const own = classes(renderToStaticMarkup(<Button>Đặt hàng</Button>), "button");
+    expect(own).toEqual(expect.arrayContaining(["bg-primary", "text-primary-foreground", "hover:bg-primary/90", "focus-visible:ring-[3px]", "focus-visible:ring-ring/50", "rounded-md"]));
     expect(own).not.toContain("rounded-full");
   });
 
-  it("danger is an --err outline with icon, never a solid err fill", () => {
-    const markup = renderToStaticMarkup(<Button variant="danger"><Trash2 aria-hidden="true" />Xoá sản phẩm</Button>);
+  it("destructive is the --destructive fill and keeps its icon first", () => {
+    const markup = renderToStaticMarkup(<Button variant="destructive"><Trash2 aria-hidden="true" />Xoá sản phẩm</Button>);
     const own = classes(markup, "button");
-    expect(own).toEqual(expect.arrayContaining(["border", "border-err", "text-err", "bg-transparent"]));
-    expect(own.filter((name) => /^bg-(?:err|\[var\(--(?:err|destructive|color-danger)\)\])$/.test(name))).toEqual([]);
+    expect(own).toEqual(expect.arrayContaining(["bg-destructive", "text-white", "hover:bg-destructive/90"]));
     expect(markup).toMatch(/<button\b[^>]*><svg\b/);
   });
 });
@@ -85,7 +81,7 @@ describe("Field validates on blur (FR-4)", () => {
   it("does not validate while typing", () => {
     (input(render(Field, props())).props.onChange as ((e: unknown) => void) | undefined)?.(blurWith("abc"));
     const markup = html(render(Field, props()));
-    expect(markup).not.toContain("aria-invalid");
+    expect(markup).not.toContain("aria-invalid=");
     expect(markup).not.toContain('role="alert"');
   });
 
@@ -94,7 +90,7 @@ describe("Field validates on blur (FR-4)", () => {
     const markup = html(render(Field, props()));
     expect(markup).toMatch(/<input[^>]*aria-invalid="true"/);
     expect(markup).toMatch(/<input[^>]*aria-describedby="pw-error"/);
-    expect(markup).toMatch(/<p id="pw-error"[^>]*role="alert"[^>]*>passwordTooShort<\/p>/);
+    expect(markup).toMatch(/<div[^>]*role="alert"[^>]*id="pw-error"[^>]*>passwordTooShort<\/div>/);
   });
 
   it.each([[11, "passwordTooShort"], [12, ""], [256, ""], [257, "passwordTooLong"]] as const)(
@@ -102,15 +98,15 @@ describe("Field validates on blur (FR-4)", () => {
     (length, expected) => {
       (input(render(Field, props())).props.onBlur as (e: unknown) => void)(blurWith("x".repeat(length)));
       const markup = html(render(Field, props()));
-      if (expected) expect(markup).toContain(`>${expected}</p>`);
-      else expect(markup).not.toContain("aria-invalid");
+      if (expected) expect(markup).toContain(`>${expected}</div>`);
+      else expect(markup).not.toContain("aria-invalid=");
     },
   );
 
   it("clears the error once the value is fixed and blurred again", () => {
     (input(render(Field, props())).props.onBlur as (e: unknown) => void)(blurWith("abc"));
     (input(render(Field, props())).props.onBlur as (e: unknown) => void)(blurWith("x".repeat(12)));
-    expect(html(render(Field, props()))).not.toContain("aria-invalid");
+    expect(html(render(Field, props()))).not.toContain("aria-invalid=");
   });
 
   it("keeps the caller's onBlur and a server error wins", () => {
@@ -118,7 +114,7 @@ describe("Field validates on blur (FR-4)", () => {
     const tree = render(Field, { ...props(), error: "Sai mật khẩu", children: <PasswordInput id="pw" onBlur={onBlur} /> });
     (input(tree).props.onBlur as (e: unknown) => void)(blurWith("abc"));
     expect(onBlur).toHaveBeenCalledTimes(1);
-    expect(html(render(Field, { ...props(), error: "Sai mật khẩu" }))).toContain(">Sai mật khẩu</p>");
+    expect(html(render(Field, { ...props(), error: "Sai mật khẩu" }))).toContain(">Sai mật khẩu</div>");
   });
 
   it("reuses the password toggle: show/hide flips the input type", () => {
@@ -133,71 +129,59 @@ describe("Field validates on blur (FR-4)", () => {
 });
 
 describe("Checkbox 3 states (FR-4)", () => {
-  it.each([[true, "true"], [false, "false"], ["indeterminate", "mixed"]] as const)("checked=%s renders aria-checked=%s", (checked, aria) => {
+  it.each([[true, "true", "checked"], [false, "false", "unchecked"], ["indeterminate", "mixed", "indeterminate"]] as const)("checked=%s renders aria-checked=%s", (checked, aria, state) => {
     const markup = renderToStaticMarkup(<Checkbox checked={checked} aria-label="Chọn tất cả" />);
-    expect(markup).toMatch(new RegExp(`<button[^>]*role="checkbox"[^>]*aria-checked="${aria}"|<button[^>]*aria-checked="${aria}"[^>]*role="checkbox"`));
+    expect(markup).toMatch(/<button[^>]*role="checkbox"/);
+    expect(markup).toContain(`aria-checked="${aria}"`);
+    expect(markup).toContain(`data-state="${state}"`);
   });
 
-  it.each([["indeterminate", true], [false, true], [true, false]] as const)("click when %s asks for %s", (checked, next) => {
-    const onCheckedChange = vi.fn();
-    ((Checkbox({ checked, onCheckedChange }) as Node).props.onClick as (e: unknown) => void)({});
-    expect(onCheckedChange).toHaveBeenCalledWith(next);
+  it("is a native button with type=button so Space toggles and a form is not submitted", () => {
+    expect(renderToStaticMarkup(<Checkbox aria-label="a" />)).toMatch(/<button[^>]*type="button"/);
   });
 
-  it("is a native button so Space toggles; Enter does not", () => {
-    const tree = Checkbox({ checked: false }) as Node;
-    expect(tree.type).toBe("button");
-    expect(tree.props.type).toBe("button");
-    const keydown = (key: string) => { const preventDefault = vi.fn(); (tree.props.onKeyDown as (e: unknown) => void)({ key, preventDefault }); return preventDefault; };
-    expect(keydown(" ")).not.toHaveBeenCalled();
-    expect(keydown("Enter")).toHaveBeenCalledTimes(1);
-  });
-
-  it("box fills --p when checked or mixed, line-strong when empty", () => {
-    expect(renderToStaticMarkup(<Checkbox checked="indeterminate" aria-label="a" />)).toContain("bg-p");
-    expect(renderToStaticMarkup(<Checkbox checked={false} aria-label="a" />)).toContain("border-line-strong");
+  it("box fills --primary when checked or mixed, --input border when empty", () => {
+    const own = classes(renderToStaticMarkup(<Checkbox checked={false} aria-label="a" />), "button");
+    expect(own).toEqual(expect.arrayContaining(["border-input", "data-[state=checked]:bg-primary", "data-[state=checked]:text-primary-foreground"]));
   });
 });
 
 describe("Switch (FR-4)", () => {
-  it("exposes role=switch with aria-checked and toggles", () => {
-    const onCheckedChange = vi.fn();
-    const tree = Switch({ checked: false, onCheckedChange }) as Node;
-    expect(tree.type).toBe("button");
-    expect(tree.props.role).toBe("switch");
-    expect(tree.props["aria-checked"]).toBe(false);
-    (tree.props.onClick as (e: unknown) => void)({});
-    expect(onCheckedChange).toHaveBeenCalledWith(true);
-  });
-
-  it("on uses --ok, off uses --line-strong", () => {
+  it("exposes role=switch with aria-checked", () => {
     const on = renderToStaticMarkup(<Switch checked aria-label="Nhận thông báo" />);
     const off = renderToStaticMarkup(<Switch checked={false} aria-label="Nhận thông báo" />);
+    expect(on).toMatch(/<button[^>]*role="switch"/);
     expect(on).toContain('aria-checked="true"');
-    expect(on).toContain("bg-ok");
-    expect(on).not.toContain("bg-p");
-    expect(off).not.toContain("bg-ok");
-    expect(off).toContain("border-line-strong");
+    expect(off).toContain('aria-checked="false"');
+  });
+
+  it("on uses --primary, off uses --input", () => {
+    const own = classes(renderToStaticMarkup(<Switch checked aria-label="Nhận thông báo" />), "button");
+    expect(own).toEqual(expect.arrayContaining(["data-[state=checked]:bg-primary", "data-[state=unchecked]:bg-input"]));
   });
 });
 
 
 describe("Supplier controls", () => {
-  it.each([Input, TextInput, Select, Textarea])("keeps full-width fields with 8px corners and keyboard focus", (Control) => {
-    const markup = renderToStaticMarkup(<Control aria-label="Trường nhập" />);
-    expect(markup).toContain("rounded-lg");
-    expect(markup).not.toContain("rounded-md");
+  it("keeps the base Input full-width with the shadcn corners and keyboard focus ring", () => {
+    const markup = renderToStaticMarkup(<Input aria-label="Trường nhập" />);
+    expect(markup).toContain("rounded-md");
     expect(markup).toContain("w-full");
-    expect(markup).toContain("focus-visible:ring-2");
+    expect(markup).toContain("focus-visible:ring-[3px]");
   });
 
-  it("suppresses the mouse outline on tabs while retaining keyboard focus", () => {
-    const markup = renderToStaticMarkup(<Tabs label="Nhà cung cấp" idPrefix="supplier" items={[{ id: "overview", label: "Thông tin" }]} value="overview" onChange={() => {}}>Hồ sơ</Tabs>);
-    expect(classes(markup, "button")).toEqual(expect.arrayContaining(["outline-none", "rounded-lg", "focus-visible:ring-2"]));
+  it.each([Input, NativeSelect, Textarea])("keeps full-width fields with the shadcn corners and keyboard focus", (Control) => {
+    const markup = renderToStaticMarkup(<Control aria-label="Trường nhập" />);
+    expect(markup).toContain("rounded-md");
+    expect(markup).toContain("w-full");
+    expect(markup).toContain("focus-visible:ring-[3px]");
   });
 
-  it("supports vertical arrow navigation as well as horizontal arrows", () => {
-    expect(nextTab(["overview", "agreements"], "overview", "ArrowDown")).toBe("agreements");
-    expect(nextTab(["overview", "agreements"], "overview", "ArrowUp")).toBe("agreements");
+  it("renders shadcn tabs with tab roles and a keyboard focus ring", () => {
+    const markup = renderToStaticMarkup(<Tabs value="overview"><TabsList aria-label="Nhà cung cấp"><TabsTrigger value="overview">Thông tin</TabsTrigger></TabsList><TabsContent value="overview">Hồ sơ</TabsContent></Tabs>);
+    expect(markup).toContain('role="tablist"');
+    expect(markup).toContain('role="tab"');
+    expect(markup).toContain('role="tabpanel"');
+    expect(classes(markup, "button")).toEqual(expect.arrayContaining(["focus-visible:ring-[3px]"]));
   });
 });

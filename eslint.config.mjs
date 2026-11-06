@@ -30,14 +30,14 @@ const config = [
     }
   },
   {
-    // FR-2: screens use only the in-house kit; app/ui-rules-gate.test.ts holds the class-level rules + baseline.
+    // FR-2: screens use only components/ui (shadcn) and patterns; app/ui-rules-gate.test.ts holds the class-level rules + baseline.
     files: ["app/**/*.{ts,tsx}", "features/**/*.{ts,tsx}"],
     rules: {
       "no-restricted-imports": ["error", {
         patterns: [
           {
             group: [
-              "@radix-ui/*", "@headlessui/*", "@mui/*", "@chakra-ui/*", "@mantine/*", "@nextui-org/*", "@heroui/*",
+              "@radix-ui/*", "radix-ui", "radix-ui/*", "@headlessui/*", "@mui/*", "@chakra-ui/*", "@mantine/*", "@nextui-org/*", "@heroui/*",
               "@ark-ui/*", "@base-ui-components/*", "@ariakit/*", "react-aria", "react-aria-components",
               "antd", "react-bootstrap", "react-select", "react-day-picker", "cmdk", "vaul", "sonner",
               "react-icons", "react-icons/*", "@heroicons/*", "@tabler/icons-react", "@phosphor-icons/*",
@@ -52,6 +52,16 @@ const config = [
         { selector: "JSXText[value=/\\p{Emoji_Presentation}|\\p{Extended_Pictographic}\\uFE0F/u]", message: "Không dùng emoji trong JSX, dùng icon lucide (FR-2)." },
         { selector: "JSXOpeningElement[name.name='Button'] > JSXAttribute[name.name='className'] Literal[value=/(^|[\\s:])rounded-full(\\s|$)/]", message: "Cấm nút pill (FR-2)." },
       ],
+    },
+  },
+  {
+    // D1: Radix and sonner are reachable only through shadcn files in components/ui; every other component goes through them.
+    files: ["components/**/*.{ts,tsx}"],
+    ignores: ["components/ui/**"],
+    rules: {
+      "no-restricted-imports": ["error", {
+        patterns: [{ group: ["@radix-ui/*", "radix-ui", "radix-ui/*", "sonner", "cmdk", "vaul"], message: "Import Radix/sonner chỉ trong components/ui (shadcn); chỗ khác dùng @/components/ui." }],
+      }],
     },
   },
   {

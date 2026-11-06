@@ -10,15 +10,15 @@ const BASELINE = process.env.VISUAL_BASELINE === "1";
 const PREVIEW_DIR = process.env.PREVIEW_DIR || join(homedir(), "dawn-dotfiles/brain/inbox/portal-ui-preview");
 const preview = (file: string) => pathToFileURL(join(PREVIEW_DIR, file)).href;
 
-// 23 light tokens of Main.dc.html (`[data-theme]{…}`); dark overrides 20 of them, --p/--p-hover inherit.
+// Swatch of the shadcn colour roles in app/tokens.generated.css (Lá dịu); visual baselines must be regenerated after the rebrand.
 const COLOR_TOKENS = [
-  "l0", "l1", "l1-2", "line", "line-strong", "fg", "fg-2", "fg-3", "p", "p-hover", "p-text", "p-soft",
-  "ok", "ok-soft", "warn", "warn-soft", "err", "err-soft", "glass-l2", "glass-l3", "glass-edge", "scrim",
+  "background", "card", "muted", "border", "input", "foreground", "muted-foreground", "primary", "primary-hover", "accent-foreground", "accent",
+  "success", "success-soft", "warning", "warning-soft", "destructive", "destructive-soft", "glass-l2", "glass-l3", "glass-edge", "scrim",
 ];
 const panel = (theme: string) =>
-  `<div data-theme="${theme}" style="display:grid;grid-template-columns:repeat(6,40px);gap:8px;padding:20px;width:320px;background:var(--l0)">` +
+  `<div data-theme="${theme}" style="display:grid;grid-template-columns:repeat(6,40px);gap:8px;padding:20px;width:320px;background:var(--background)">` +
   COLOR_TOKENS.map((t) => `<div style="height:40px;background:var(--${t})"></div>`).join("") +
-  `<div style="height:40px;background:var(--l1);box-shadow:var(--shadow-l3)"></div></div>`;
+  `<div style="height:40px;background:var(--card);box-shadow:var(--shadow-l3)"></div></div>`;
 const SWATCH = `<div id="swatch" style="display:flex;flex-direction:column;width:320px">${panel("light")}${panel("dark")}</div>`;
 const SWATCH_CSS = "body>*:not(#swatch){display:none!important}#swatch,#swatch *{box-sizing:border-box;margin:0;border:0}";
 

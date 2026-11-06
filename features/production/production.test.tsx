@@ -142,7 +142,7 @@ describe("Production & Traceability Portal Features", () => {
   });
 });
 
-const fooddevHarness = vi.hoisted(() => ({ slots: [] as unknown[], cursor: 0, effects: [] as Array<() => unknown>, cleanups: [] as Array<() => void>, trackEffects: false, effectCursor: 0, effectStates: [] as Array<{ deps?: React.DependencyList; cleanup?: () => void }>, stateWrites: 0, toast: Object.assign(vi.fn(), { success: vi.fn(), error: vi.fn() }) }));
+const fooddevHarness = vi.hoisted(() => ({ slots: [] as unknown[], cursor: 0, effects: [] as Array<() => unknown>, cleanups: [] as Array<() => void>, trackEffects: false, effectCursor: 0, effectStates: [] as Array<{ deps?: React.DependencyList; cleanup?: () => void }>, stateWrites: 0, permissions: [] as string[], toast: Object.assign(vi.fn(), { success: vi.fn(), error: vi.fn() }) }));
 vi.mock("react", async original => {
   const actual = await original<typeof import("react")>();
   return { ...actual,
@@ -171,13 +171,19 @@ vi.mock("react", async original => {
     },
   };
 });
-vi.mock("@/components/ui/toast", () => ({ useToast: () => ({ toast: fooddevHarness.toast }) }));
+vi.mock("@/lib/access-boundary", async original => ({
+  ...await original<typeof import("@/lib/access-boundary")>(),
+  useAccess: () => ({ root: "", can: (action: string) => fooddevHarness.permissions.includes(action), scope: { userId: "user", orgId: "org", branchId: "main", branchName: "MAIN", roles: [] } }),
+}));
+vi.mock("@/components/ui/toast", () => ({ toast: fooddevHarness.toast }));
 
 import { NextRequest } from "next/server";
 import { MaterialRequirementsView } from "./material-requirements-view";
-import { Checkbox, Select } from "@/components/ui/field";
+import { Checkbox } from "@/components/patterns/form-field";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import { TablePager } from "@/components/patterns/table-pager";
 import { MaterialPicker, MaterialFilters } from "./material-picker";
-import { EntityPicker } from "@/components/ui/entity-picker";
+import { EntityPicker } from "@/components/patterns/entity-picker";
 import { GET as planRequirementsBff } from "@/app/api/production/food-plans/[id]/material-requirements/route";
 import { GET as targetRequirementsBff } from "@/app/api/production/targets/[id]/material-requirements/route";
 import { GET as materialsBff } from "@/app/api/sales/skus/route";
@@ -193,10 +199,12 @@ const material: Material = { id: "fish-real", name: "Cá tươi", sku_code: "FH-
 const plan: FoodProductPlan = { id: "plan-real", plan_code: "SET", target_ref: target.id, product_ref: product.id, variant_sku_code: "CANH", planned_quantity: "4.000", servings_per_set: 4, purpose: "PREPARATION", revision: 7, serving_size: "1 suất", uom: "EA", components: [{ sku_ref: material.id, quantity: "0.333", uom: "KG" }], status: "DRAFT", nutrition_snapshot: {}, created_by: "food-dev", created_at: "2026-10-20" };
 const requirement = { ...material, sku_ref: material.id, quantity: "0.999", uom: "KG" };
 const requirements = { target_id: target.id, plan_revision: 7, plan_revisions: { [plan.id]: 7 }, computed_at: "2026-10-20T01:00:00Z", lines: [requirement], all_lines: [requirement], total: 1, hidden_count: 0, season_message: "chưa có dữ liệu mùa" };
+// Feature sub-views take the hook state as `s` and hold no hooks, so the walker renders them inline.
 type TestNode = React.ReactElement<Record<string, unknown> & { children?: React.ReactNode }>;
 function nodes(tree: React.ReactNode, match: (node: TestNode) => boolean): TestNode[] {
   if (!React.isValidElement<Record<string, unknown> & { children?: React.ReactNode }>(tree)) return [];
-  return [...(match(tree) ? [tree] : []), ...React.Children.toArray(tree.props.children).flatMap(child => nodes(child, match)), ...nodes(tree.props.actions as React.ReactNode, match)];
+  const rendered = typeof tree.type === "function" && "s" in tree.props ? (tree.type as (props: unknown) => React.ReactNode)(tree.props) : null;
+  return [...(match(tree) ? [tree] : []), ...React.Children.toArray(tree.props.children).flatMap(child => nodes(child, match)), ...nodes(tree.props.actions as React.ReactNode, match), ...nodes(rendered, match)];
 }
 function node(tree: React.ReactNode, match: (node: TestNode) => boolean): TestNode {
   const found = nodes(tree, match)[0];
@@ -214,6 +222,7 @@ async function invoke(control: TestNode, handler: string, event?: unknown) {
 const named = (text: string) => (item: TestNode) => React.Children.toArray(item.props.children).filter(child => typeof child === "string" || typeof child === "number").join("") === text;
 const json = (data: unknown, status = 200) => Response.json({ data }, { status });
 function api(permissions = fooddevPermissions) {
+  fooddevHarness.permissions = permissions;
   const requests: Array<{ path: string; method: string; body: Record<string, unknown> }> = [];
   const fetcher = vi.fn(async (url: string | URL | Request, init?: RequestInit) => {
     const path = new URL(String(url), "http://portal.test").pathname;
@@ -244,7 +253,7 @@ describe("FOODDEV forms and warehouse", () => {
       ? new Promise<Response>(resolve => { resolvePlans = resolve; }) : fallback(url, init));
     const props = { initialPlans: [], targetId: target.id };
     let tree = render(FoodPlansView, props);
-    expect(node(tree, n => n.type === Skeleton)).toBeDefined();
+    expect(node(tree, n => n.type === LoadingState)).toBeDefined();
     await effects();
     tree = render(FoodPlansView, props);
     expect(renderToStaticMarkup(tree)).toContain('aria-busy="true"');
@@ -252,7 +261,7 @@ describe("FOODDEV forms and warehouse", () => {
     resolvePlans(json({ items: [] }));
     await new Promise(resolve => setImmediate(resolve));
     tree = render(FoodPlansView, props);
-    expect(nodes(tree, n => n.type === Skeleton)).toHaveLength(0);
+    expect(nodes(tree, n => n.type === LoadingState)).toHaveLength(0);
     const empty = node(tree, n => n.type === EmptyState);
     expect(renderToStaticMarkup(tree)).toContain("Chưa có set trong chỉ tiêu này");
     if (!canCreate) { expect(empty.props.action).toBeUndefined(); return; }
@@ -264,13 +273,13 @@ describe("FOODDEV forms and warehouse", () => {
     vi.stubGlobal("fetch", vi.fn(url => String(url).includes("/sales/skus") ? new Promise<Response>(resolve => { resolveMaterials = resolve; }) : Promise.resolve(json({ items: [], permissions: [] }))));
     const props = { onSelect: vi.fn() };
     let tree = render(MaterialPicker, props);
-    expect(node(tree, n => n.type === Skeleton)).toBeDefined();
+    expect(node(tree, n => n.type === LoadingState)).toBeDefined();
     await effects();
     expect(nodes(render(MaterialPicker, props), n => n.type === EmptyState)).toHaveLength(0);
     resolveMaterials(json({ items: [], categories: [], next_cursor: "", season_message: "chưa có dữ liệu mùa" }));
     await new Promise(resolve => setImmediate(resolve));
     tree = render(MaterialPicker, props);
-    expect(nodes(tree, n => n.type === Skeleton)).toHaveLength(0);
+    expect(nodes(tree, n => n.type === LoadingState)).toHaveLength(0);
     expect(node(tree, n => n.type === EmptyState)).toBeDefined();
     const html = renderToStaticMarkup(tree);
     expect(html).toContain("Không có nguyên liệu phù hợp");
@@ -286,7 +295,7 @@ describe("FOODDEV forms and warehouse", () => {
     const renderView = () => view === "plans" ? render(FoodPlansView, { initialPlans: [], targetId: target.id }) : render(MaterialPicker, { onSelect: vi.fn() });
     renderView(); await effects();
     const tree = renderView();
-    expect(nodes(tree, n => n.type === EmptyState || n.type === Skeleton)).toHaveLength(0);
+    expect(nodes(tree, n => n.type === EmptyState || n.type === LoadingState)).toHaveLength(0);
     expect(renderToStaticMarkup(tree)).toContain("Sales unavailable");
     expect(node(tree, named("Thử lại"))).toBeDefined();
   });
@@ -306,7 +315,7 @@ describe("FOODDEV forms and warehouse", () => {
     fetcher.mockImplementationOnce(() => new Promise<Response>(resolve => { resolveTarget = resolve; }));
     const saving = invoke(node(tree, n => n.type === "form"), "onSubmit", { preventDefault() {} });
     tree = render(TargetsView, props);
-    expect(node(tree, n => n.type === Skeleton)).toBeDefined();
+    expect(node(tree, n => n.type === LoadingState)).toBeDefined();
     let html = renderToStaticMarkup(tree);
     expect(html).toContain('aria-busy="true"');
     expect(html).not.toContain("Chưa có chỉ tiêu sản xuất");
@@ -322,7 +331,7 @@ describe("FOODDEV forms and warehouse", () => {
     const props = { foodPlanId: plan.id };
     render(MaterialRequirementsView, props); await effects();
     const pending = render(MaterialRequirementsView, props);
-    expect(node(pending, n => n.type === Skeleton)).toBeDefined();
+    expect(node(pending, n => n.type === LoadingState)).toBeDefined();
     let html = renderToStaticMarkup(pending);
     expect(html).toContain('aria-busy="true"');
     expect(html).toContain("Đang tính nhu cầu nguyên liệu");
@@ -407,7 +416,7 @@ describe("FOODDEV forms and warehouse", () => {
     render(MaterialRequirementsView, props); await effects();
     let tree = render(MaterialRequirementsView, props);
     expect(node(tree, n => n.type === Checkbox).props.checked).toBe(true);
-    await invoke(node(tree, n => n.type === Select && n.props.name === "month"), "onChange", { target: { value: "1" } });
+    await invoke(node(tree, n => n.type === NativeSelect && n.props.name === "month"), "onChange", { target: { value: "1" } });
     await invoke(node(tree, n => n.type === Checkbox), "onChange", { target: { checked: false } });
     await invoke(node(tree, n => n.type === Input && n.props.name === "price_min"), "onChange", { target: { value: "1" } });
     tree = render(MaterialRequirementsView, props);
@@ -429,7 +438,7 @@ describe("FOODDEV forms and warehouse", () => {
     render(MaterialRequirementsView, props); await effects();
     let tree = render(MaterialRequirementsView, props);
     const html = renderToStaticMarkup(tree);
-    expect(node(tree, n => n.type === "option" && n.props.value === "").props.children).toBe("Tất cả");
+    expect(node(tree, n => n.type === NativeSelectOption && n.props.value === "").props.children).toBe("Tất cả");
     expect(html).not.toContain("Đã ẩn");
     const maximum = node(tree, n => n.type === Input && n.props.name === "price_max");
     expect(maximum.props.type).toBe("number");
@@ -454,7 +463,7 @@ describe("FOODDEV forms and warehouse", () => {
     expect(renderToStaticMarkup(tree)).toContain("chưa có dữ liệu mùa");
     await invoke(node(tree, n => n.type === EntityPicker && n.props.label === "Nguyên liệu"), "onChange", material.id);
     expect(props.onSelect).toHaveBeenCalledWith(material);
-    await invoke(node(tree, named("Trang sau")), "onClick");
+    await invoke(node(tree, n => n.type === TablePager), "onNext");
     expect(requests.filter(r => r.path === "/api/sales/skus")).toHaveLength(2);
     tree = render(MaterialPicker, props);
     expect(node(tree, n => n.type === MaterialFilters)).toBeDefined();
@@ -463,7 +472,7 @@ describe("FOODDEV forms and warehouse", () => {
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { EmptyState, Skeleton } from "@/components/ui/state";
+import { EmptyState, LoadingState } from "@/components/patterns/empty-state";
 
 describe("FOODDEV BFF wire contract", () => {
   it.each([403, 409, 422, 503])("preserves upstream status %s and code on both requirements endpoints", async status => {
@@ -507,8 +516,8 @@ import * as productionApi from "@/lib/api/production";
 import { FoodSetsView } from "./food-sets-view";
 import { PackagesView } from "./packages-view";
 import { FoodPackWorkspace } from "./food-plans-view";
-import { Tabs } from "@/components/ui/tabs";
-import { ErrorState } from "@/components/ui/state";
+import { Tabs, TabsTrigger } from "@/components/ui/tabs";
+import { ErrorState } from "@/components/patterns/empty-state";
 import { Table } from "@/components/ui/table";
 
 const packTime = "2026-10-21T00:00:00Z";
@@ -527,7 +536,7 @@ const rawLabels: salesApi.RawLabelsView = { sku_ref: material.id, allergen_summa
 const packPermissions = [...fooddevPermissions, "sales:variant:read", "sales:variant:create", "sales:variant:update", "sales:variant:delete", "sales:product:update", "production:recipe:read", "production:recipe:create", "production:recipe:update", "production:recipe:delete"];
 function paint<P>(view: (props: P) => React.ReactNode, props: P) { fooddevHarness.effects = []; return render(view, props); }
 function labelControl(tree: React.ReactNode, label: string) {
-  return node(node(tree, n => n.type === "label" && React.Children.toArray(n.props.children).includes(label)), n => n.type === Input || n.type === Select);
+  return node(node(tree, n => n.type === "label" && React.Children.toArray(n.props.children).includes(label)), n => n.type === Input || n.type === NativeSelect);
 }
 async function openSetEditor() {
   paint(FoodSetsView, {}); await effects();
@@ -550,7 +559,7 @@ async function openPackPlan() {
 
 describe("FOODDEV PACK UI", () => {
   beforeEach(() => {
-    vi.spyOn(productionApi, "getProductionContext").mockResolvedValue({ permissions: packPermissions });
+    fooddevHarness.permissions = packPermissions;
     vi.spyOn(salesApi, "listFoodSets").mockResolvedValue({ items: [packSet], next_cursor: null });
     vi.spyOn(salesApi, "getFoodSet").mockResolvedValue(packSet);
     vi.spyOn(salesApi, "getDraftProducts").mockResolvedValue([product]);
@@ -572,17 +581,21 @@ describe("FOODDEV PACK UI", () => {
   it("tabs_render", async () => {
     let tree = paint(FoodPackWorkspace, { targetId: target.id });
     const tabs = node(tree, n => n.type === Tabs);
-    expect(tabs.props.items).toEqual([{ id: "dishes", label: "Món" }, { id: "sets", label: "Set (nâng cao)" }, { id: "packages", label: "Gói + công thức" }, { id: "plans", label: "Thực đơn" }]);
-    const setView = node(tree, n => n.type === FoodSetsView);
+    expect(nodes(tree, n => n.type === TabsTrigger).map(trigger => trigger.props.value)).toEqual(["dishes", "sets", "packages", "plans"]);
     expect(tabs.props.value).toBe("dishes");
     expect(nodes(tree, n => n.type === MaterialRequirementsView)).toHaveLength(0);
-    await invoke(tabs, "onChange", "packages");
+    expect([FoodSetsView, PackagesView, FoodPlansView].map(view => nodes(tree, n => n.type === view).length)).toEqual([0, 0, 0]);
+    await invoke(tabs, "onValueChange", "packages");
     expect(navigation.push).toHaveBeenCalledWith(`/production/food-plans?tab=packages&target_id=${target.id}`);
+    tree = paint(FoodPackWorkspace, { targetId: target.id, tab: "sets" });
+    const setView = node(tree, n => n.type === FoodSetsView);
+    expect([PackagesView, FoodPlansView].map(view => nodes(tree, n => n.type === view).length)).toEqual([0, 0]);
     tree = paint(FoodPackWorkspace, { targetId: target.id, tab: "packages" });
     expect(node(tree, n => n.type === "div" && nodes(n, child => child.type === FoodSetsView).length === 1 && n.props.hidden !== undefined).props.hidden).toBe(true);
     expect(node(tree, n => n.type === FoodSetsView).type).toBe(setView.type);
-    expect(nodes(tree, n => n.type === FoodPlansView)).toHaveLength(1);
-    await invoke(node(tree, n => n.type === Tabs), "onChange", "sets");
+    expect(nodes(tree, n => n.type === PackagesView)).toHaveLength(1);
+    expect(nodes(tree, n => n.type === FoodPlansView)).toHaveLength(0);
+    await invoke(node(tree, n => n.type === Tabs), "onValueChange", "sets");
     expect(node(paint(FoodPackWorkspace, { targetId: target.id, tab: "sets" }), n => n.type === Tabs).props.value).toBe("sets");
   });
   it("set_tags_counter", async () => {
@@ -686,9 +699,9 @@ describe("FOODDEV PACK UI", () => {
       settleA();
       await new Promise(resolve => setImmediate(resolve));
       tree = paint(FoodSetsView, {});
-      expect(nodes(tree, n => n.type === Skeleton)).toHaveLength(1);
+      expect(nodes(tree, n => n.type === LoadingState)).toHaveLength(1);
       expect(nodes(tree, n => n.type === ErrorState)).toHaveLength(0);
-      expect(node(tree, named("Trang tiếp")).props.disabled).toBe(true);
+      expect(node(tree, n => n.type === TablePager).props.busy).toBe(true);
     }
     resolveB({ items: [latest], next_cursor: "cursor-b" });
     await new Promise(resolve => setImmediate(resolve));
@@ -699,8 +712,8 @@ describe("FOODDEV PACK UI", () => {
     expect(html).toContain("Set mới nhất");
     expect(html).not.toContain("Set phản hồi cũ");
     expect(html).not.toContain("Lỗi phản hồi cũ");
-    expect(nodes(tree, n => n.type === ErrorState || n.type === Skeleton)).toHaveLength(0);
-    await invoke(node(tree, named("Trang tiếp")), "onClick");
+    expect(nodes(tree, n => n.type === ErrorState || n.type === LoadingState)).toHaveLength(0);
+    await invoke(node(tree, n => n.type === TablePager), "onNext");
     paint(FoodSetsView, {}); await effects();
     expect(list).toHaveBeenLastCalledWith(expect.objectContaining({ cursor: "cursor-b" }));
   });
@@ -730,7 +743,7 @@ describe("FOODDEV PACK UI", () => {
     tree = paint(FoodSetsView, {});
     expect(renderToStaticMarkup(tree)).toContain("Set giao hai tag");
     expect(renderToStaticMarkup(tree)).not.toContain("Set chỉ tag A");
-    await invoke(node(tree, named("Trang tiếp")), "onClick");
+    await invoke(node(tree, n => n.type === TablePager), "onNext");
     paint(FoodSetsView, {}); await effects();
     expect(salesApi.listFoodSets).toHaveBeenLastCalledWith(expect.objectContaining({ tags: ["bua-trua", "mua-he"], cursor: "cursor-ab" }));
   });
@@ -747,12 +760,10 @@ describe("FOODDEV PACK UI", () => {
     const state = [...fooddevHarness.slots];
     const stateWrites = fooddevHarness.stateWrites;
     const lists = vi.mocked(salesApi.listFoodSets).mock.calls.length;
-    const contexts = vi.mocked(productionApi.getProductionContext).mock.calls.length;
     const details = vi.mocked(salesApi.getFoodSet).mock.calls.length;
     fooddevHarness.toast.success.mockClear(); fooddevHarness.toast.error.mockClear();
     finish(); await saving;
     expect(salesApi.listFoodSets).toHaveBeenCalledTimes(lists);
-    expect(productionApi.getProductionContext).toHaveBeenCalledTimes(contexts);
     expect(salesApi.getFoodSet).toHaveBeenCalledTimes(details);
     expect(fooddevHarness.slots).toEqual(state);
     expect(fooddevHarness.stateWrites).toBe(stateWrites);
@@ -765,7 +776,7 @@ describe("FOODDEV PACK UI", () => {
     paint(FoodSetsView, {}); await effects();
     let tree = paint(FoodSetsView, {});
     expect(renderToStaticMarkup(tree)).not.toContain("bua-trua");
-    await invoke(node(tree, named("Trang tiếp")), "onClick");
+    await invoke(node(tree, n => n.type === TablePager), "onNext");
     paint(FoodSetsView, {}); await effects();
     expect(salesApi.listFoodSets).toHaveBeenLastCalledWith(expect.objectContaining({ cursor: "page-2" }));
     tree = paint(FoodSetsView, {});
@@ -989,7 +1000,7 @@ describe("FOODDEV PACK UI", () => {
     expect(salesApi.listFoodSets).toHaveBeenCalledTimes(2);
   });
   it("warehouse_read_only", async () => {
-    vi.mocked(productionApi.getProductionContext).mockResolvedValue({ permissions: ["sales:variant:read", "sales:product:read", "production:recipe:read", "production:food_plan:read", "production:material_requirement:read"] });
+    fooddevHarness.permissions = ["sales:variant:read", "sales:product:read", "production:recipe:read", "production:food_plan:read", "production:material_requirement:read"];
     for (const View of [FoodSetsView, PackagesView]) {
       fooddevHarness.slots = []; paint(View, {}); await effects();
       const tree = paint(View, {});
@@ -1013,7 +1024,7 @@ describe("FOODDEV PACK UI", () => {
       fooddevHarness.slots = [];
       const list = View === FoodSetsView ? vi.mocked(salesApi.listFoodSets) : vi.mocked(salesApi.listPackages);
       list.mockResolvedValueOnce({ items: [], next_cursor: null });
-      expect(nodes(paint(View, {}), n => n.type === Skeleton)).toHaveLength(1); await effects();
+      expect(nodes(paint(View, {}), n => n.type === LoadingState)).toHaveLength(1); await effects();
       expect(nodes(paint(View, {}), n => n.type === EmptyState)).toHaveLength(1);
       fooddevHarness.slots = []; list.mockRejectedValueOnce(new Error("offline")); paint(View, {}); await effects();
       const error = paint(View, {}); expect(nodes(error, n => n.type === ErrorState)).toHaveLength(1);

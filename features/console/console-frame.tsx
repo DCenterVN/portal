@@ -4,25 +4,28 @@ import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
 import messages from "@/messages/vi.json";
-import { permissionsSchema } from "@/lib/api/platform-contract";
 import { AccessProvider } from "@/lib/access-boundary";
-import { ErrorState, Skeleton } from "@/components/ui/state";
+import type { AccessScope } from "@/lib/access-context";
+import { ErrorState, LoadingState } from "@/components/patterns/empty-state";
 import { ConsoleShell } from "@/components/layout/console-shell";
 import { logoutTo } from "@/lib/auth/client";
-import { useToast } from "@/components/ui/toast";
-import { consoleNavFor, consoleRouteAllowed } from "./console-nav";
+import { toast } from "@/components/ui/toast";
+import { consoleNavFor, consoleRouteAllowed } from "@/lib/navigation";
 
 type ConsoleSession = {
   error?: string;
   user: { name: string; detail?: string };
   context: { label: string; sublabel?: string };
   permissions?: string[];
+  scope?: AccessScope;
 };
 
 const EMPTY_SESSION: ConsoleSession = {
   user: { name: "Tài khoản" },
   context: { label: "Chưa chọn chi nhánh" },
 };
+
+const isStringArray = (value: unknown): value is string[] => Array.isArray(value) && value.every((item) => typeof item === "string");
 
 function objectValue(value: unknown): Record<string, unknown> | null {
   return typeof value === "object" && value !== null ? value as Record<string, unknown> : null;
@@ -44,9 +47,13 @@ export function resolveConsoleSession(profilePayload: unknown, contextPayload: u
     : EMPTY_SESSION.context.label;
   const organization = typeof selected?.org_name === "string" ? selected.org_name : undefined;
 
-  const permissions: string[] = [];
-
-  return { user: { name, detail }, context: { label: branch, sublabel: organization }, permissions };
+  const permissions = isStringArray(context?.permissions) ? context.permissions : [];
+  const session: ConsoleSession = { user: { name, detail }, context: { label: branch, sublabel: organization }, permissions };
+  if (typeof profile?.id === "string" && typeof active?.org_id === "string" && typeof active?.branch_id === "string") {
+    const roles = Array.isArray(selected?.roles) ? selected.roles.filter((role): role is string => typeof role === "string") : [];
+    session.scope = { userId: profile.id, orgId: active.org_id, branchId: active.branch_id, branchName: branch, roles };
+  }
+  return session;
 }
 
 export async function fetchConsoleSession(fetcher: typeof fetch = fetch): Promise<ConsoleSession> {
@@ -70,20 +77,13 @@ export async function fetchConsoleSession(fetcher: typeof fetch = fetch): Promis
   if (!response.ok) {
     return { ...session, error: "Không tải được phạm vi chi nhánh." };
   }
-  const active = objectValue(context?.active_context);
-  if (typeof active?.org_id !== "string" || typeof active?.branch_id !== "string") return session;
-  try {
-    const params = new URLSearchParams({ org_id: active.org_id, branch_id: active.branch_id });
-    const response = await fetcher(`/api/org/permissions/me?${params}`);
-    if (!response.ok) throw new Error("Permission request failed");
-    return { ...session, permissions: permissionsSchema.parse(await response.json()).action_keys };
-  } catch {
+  if (context?.permissions !== undefined && !isStringArray(context.permissions)) {
     return { ...session, error: messages.memberships.permissionError };
   }
+  return session;
 }
 
 export function ConsoleFrame({ children }: { children: ReactNode }) {
-  const { toast } = useToast();
   const [session, setSession] = useState<ConsoleSession>(EMPTY_SESSION);
 
   useEffect(() => {
@@ -100,14 +100,14 @@ export function ConsoleFrame({ children }: { children: ReactNode }) {
   const actions = useMemo(() => new Set(session.permissions), [session.permissions]);
   const nav = useMemo(() => consoleNavFor(actions), [actions]);
   const body = session.error ? <ErrorState title={session.error} />
-    : !session.permissions ? <Skeleton title={messages.memberships.loading} />
+    : !session.permissions ? <LoadingState title={messages.memberships.loading} />
     : consoleRouteAllowed(pathname, actions) ? children
     : <ErrorState denied title="Không có quyền truy cập" description="Tài khoản của bạn chưa được cấp quyền xem trang này. Liên hệ quản trị viên để được cấp quyền." />;
 
   return (
     <ConsoleShell nav={nav} context={session.context} user={session.user} onLogout={() => void logoutTo("/staff/login", toast.error)}>
       <NextIntlClientProvider locale="vi" messages={messages}>
-        <AccessProvider value={{ plane: "company", actions, root: "" }}>{body}</AccessProvider>
+        <AccessProvider value={{ plane: "company", actions, root: "", scope: session.scope }}>{body}</AccessProvider>
       </NextIntlClientProvider>
     </ConsoleShell>
   );

@@ -29,7 +29,7 @@ describe("PasswordInput", () => {
     expect(html).toMatch(/<button[^>]*type="button"/);
     expect(html).toContain('aria-pressed="false"');
     expect(html).toContain('aria-label="Hiện mật khẩu"');
-    expect(html).toMatch(/<button[^>]*class="[^"]*\bsize-10\b/);
+    expect(html).toMatch(/<button[^>]*class="[^"]*\bsize-9\b/);
   });
 
   it("disables the toggle with the field", () => {
@@ -37,18 +37,17 @@ describe("PasswordInput", () => {
     expect(off.match(/disabled=""/g)).toHaveLength(2);
   });
 
-  it("V-01 toggle has no filled background in any state and no ring on the box", () => {
+  it("V-01 toggle has no filled background at rest, only the accent hover, and no ring on the box", () => {
     const toggle = html.match(/<button[^>]*class="([^"]*)"/)?.[1].split(/\s+/) ?? [];
-    expect(toggle).toContain("bg-transparent");
-    expect(toggle).toContain("hover:bg-transparent");
-    expect(toggle).toContain("shadow-none");
+    expect(toggle.filter((name) => /^bg-/.test(name))).toEqual([]);
+    expect(toggle).toContain("hover:bg-accent");
     expect(toggle).not.toContain("focus-visible:ring-2");
-    expect(toggle.some((name) => /^(hover|active|focus-visible|disabled):bg-(?!transparent)/.test(name))).toBe(false);
+    expect(toggle.some((name) => /^(active|focus-visible|disabled):bg-/.test(name))).toBe(false);
   });
 
-  it("V-01 keeps the 40px hit area while the field reserves room for it", () => {
-    expect(html).toMatch(/<button[^>]*class="[^"]*\bsize-10\b/);
-    expect(html).toMatch(/<input[^>]*class="[^"]*\bpr-11\b/);
+  it("V-01 keeps the 36px hit area while the field reserves room for it", () => {
+    expect(html).toMatch(/<button[^>]*class="[^"]*\bsize-9\b/);
+    expect(html).toMatch(/<input[^>]*class="[^"]*\bpr-10\b/);
   });
 
   beforeEach(() => {
@@ -86,9 +85,9 @@ describe("PasswordInput", () => {
     expect(renderToStaticMarkup(PasswordInput({}))).toContain('aria-label="Ẩn mật khẩu"');
   });
 
-  it("keeps the current 40px scale for the field and toggle", () => {
-    expect(html).toMatch(/<input[^>]*class="[^"]*\bh-10\b/);
-    expect(html).toMatch(/<button[^>]*class="[^"]*\bsize-10\b/);
+  it("keeps the current 36px scale for the field and toggle", () => {
+    expect(html).toMatch(/<input[^>]*class="[^"]*\bh-9\b/);
+    expect(html).toMatch(/<button[^>]*class="[^"]*\bsize-9\b/);
   });
 
   it("keeps the localized field and toggle disabled while visible", () => {

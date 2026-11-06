@@ -22,12 +22,14 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "unauthorized", message: "Chưa đăng nhập" }, { status: 401 });
     }
 
-    // 1. Fetch user profile from Auth service
-    const meRes = await fetch(`${AUTH_SERVICE_URL}/auth/me`, {
-      headers: {
-        "Authorization": `Bearer ${accessToken}`,
-      },
-    });
+    // 1+2. Profile (Auth) and access contexts (Org) are independent: fetch together.
+    const headers = { "Authorization": `Bearer ${accessToken}` };
+    const [meResult, contextsResult] = await Promise.allSettled([
+      fetch(`${AUTH_SERVICE_URL}/auth/me`, { headers }),
+      fetch(`${ORG_SERVICE_URL}/org/access-contexts/me`, { headers }),
+    ]);
+    if (meResult.status === "rejected") throw meResult.reason;
+    const meRes = meResult.value;
 
     if (!meRes.ok) {
       const errData = await meRes.json().catch(() => ({}));
@@ -36,13 +38,9 @@ export async function GET(req: NextRequest) {
 
     userData = await meRes.json();
 
-    // 2. Fetch user's access contexts from Org service
+    if (contextsResult.status === "rejected") throw contextsResult.reason;
     let accessContexts: AccessContextItem[] = [];
-    const contextsRes = await fetch(`${ORG_SERVICE_URL}/org/access-contexts/me`, {
-        headers: {
-          "Authorization": `Bearer ${accessToken}`,
-        },
-      });
+    const contextsRes = contextsResult.value;
     if (!contextsRes.ok) {
       const details = await contextsRes.json().catch(() => ({}));
       return NextResponse.json(
@@ -52,7 +50,7 @@ export async function GET(req: NextRequest) {
     }
     accessContexts = await contextsRes.json();
 
-    // 3. Extract active org_id & branch_id if available from query or contexts
+    // 3. Permissions depend on the active org/branch resolved above. Extract active org_id & branch_id if available from query or contexts
     const activeOrgId = req.nextUrl.searchParams.get("org_id") || (accessContexts.length > 0 ? accessContexts[0].org_id : "");
     const activeBranchId = req.nextUrl.searchParams.get("branch_id") || (accessContexts.length > 0 ? accessContexts[0].branch_id : "");
 

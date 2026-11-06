@@ -3,6 +3,6 @@
   "short_name": "DCenter",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#FBF6EE",
-  "theme_color": "#D2402A"
+  "background_color": "#FFFFFF",
+  "theme_color": "#2B7A52"
 }

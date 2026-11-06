@@ -99,7 +99,7 @@ vi.mock("react", async (original) => {
     useEffect: (effect: () => unknown, deps: never) => { if (!orderHarness.active) return actual.useEffect(effect as never, deps); if (!orderHarness.mounted) orderHarness.effects.push(effect); },
   };
 });
-vi.mock("@/components/ui/toast", () => ({ useToast: () => ({ toast: orderHarness.toast }) }));
+vi.mock("@/components/ui/toast", () => ({ toast: orderHarness.toast }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn(), push: vi.fn() }), usePathname: () => "/", useSearchParams: () => new URLSearchParams() }));
 import { renderToStaticMarkup } from "react-dom/server";
 import { OrdersView, orderStatusLabels } from "./orders-view";
@@ -147,10 +147,14 @@ function userFacingContent(html: string): string {
 }
 
 
-// SSR has no portal target. Keep the real dialog context/open state while rendering its content.
-vi.mock("@/components/ui/dialog", async (original) => {
-  const actual = await original<typeof import("@/components/ui/dialog")>();
-  return { ...actual, DialogContent: ({ children }: { children: React.ReactNode }) => actual.useDialog().open ? React.createElement("div", { role: "dialog" }, children) : null };
+// SSR has no portal target: render the dialog inline when open.
+vi.mock("@/components/ui/dialog", () => {
+  const part = (tag: string) => ({ children }: { children?: React.ReactNode }) => React.createElement(tag, null, children);
+  return {
+    Dialog: ({ open, children }: { open?: boolean; children?: React.ReactNode }) => open ? React.createElement(React.Fragment, null, children) : null,
+    DialogContent: ({ children }: { children?: React.ReactNode }) => React.createElement("div", { role: "dialog" }, children),
+    DialogHeader: part("header"), DialogTitle: part("h2"), DialogDescription: part("p"), DialogFooter: part("footer"),
+  };
 });
 import { Button } from "@/components/ui/button";
 
@@ -180,7 +184,7 @@ it.each(["DH-261021-00001", undefined])("cart_order_code_no_uuid (%s)", async (o
     expect(checkout).toBeDefined();
     await checkout?.();
     expect(orderHarness.toast.error).not.toHaveBeenCalled();
-    expect(orderHarness.toast.success).toHaveBeenCalledWith("Tạo đơn hàng thành công", orderCode ? `Mã đơn: ${orderCode}` : undefined);
+    expect(orderHarness.toast.success).toHaveBeenCalledWith("Tạo đơn hàng thành công", { description: orderCode ? `Mã đơn: ${orderCode}` : undefined });
     expect(JSON.stringify(orderHarness.toast.success.mock.calls)).not.toContain(uuid);
     const html = renderToStaticMarkup(view());
     expect(html).toContain('role="dialog"');

@@ -14,8 +14,8 @@ function Body({ register }: { register: boolean }) {
   const t = useTranslations("customerAuth");
   return (
     <>
-      <DialogTitle className="font-display text-2xl font-bold text-fg">{t(register ? "registerTitle" : "login")}</DialogTitle>
-      <DialogDescription className="mb-4 mt-1 text-sm text-fg-2">{t(register ? "registerSubtitle" : "loginSubtitle")}</DialogDescription>
+      <DialogTitle className="font-display text-2xl font-bold text-foreground">{t(register ? "registerTitle" : "login")}</DialogTitle>
+      <DialogDescription className="mb-4 mt-1 text-sm text-muted-foreground">{t(register ? "registerSubtitle" : "loginSubtitle")}</DialogDescription>
       {register ? <RegisterForm /> : <LoginForm />}
     </>
   );
@@ -34,7 +34,7 @@ export function AuthPopup({ signedIn, Shell }: { signedIn: boolean; Shell: Compo
   const tab = auth === "login" || auth === "register" ? auth : null;
   return (
     <Dialog open={!!tab && !signedIn} onOpenChange={(open) => !open && router.replace(pathname as Route)}>
-      <DialogContent size="xl" variant="sheet" className="max-w-[880px] overflow-hidden p-0 max-md:max-h-[100dvh]">
+      <DialogContent className="max-w-sm overflow-hidden p-0 max-md:max-h-[100dvh] sm:max-w-sm">
         <Shell locale={popupLocale()}>
           <Body register={tab === "register"} />
         </Shell>

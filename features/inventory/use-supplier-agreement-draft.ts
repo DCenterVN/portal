@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
 import messages from "@/messages/vi.json";
-import { apiFetch } from "@/lib/fetcher";
+import { useAccess } from "@/lib/access-boundary";
 import { type AgreementLine } from "@/lib/api/supplier-agreements";
 
 export type AgreementDraftValues = { code: string; from: string; to: string; lines: AgreementLine[]; needsFile: boolean };
@@ -16,7 +16,6 @@ const text = z.string().max(500);
 const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 const lineSchema = z.object({ sku_ref: z.union([z.string().uuid(), z.literal("")]), uom: text, unit_price_vnd: z.number().int().nonnegative().nullable(), valid_from: date, valid_to: date, tax_treatment: text, delivery_treatment: text });
 const savedSchema = z.object({ schema: z.literal(1), savedAt: z.number(), baseVersion: z.number().int().positive().nullable(), code: text, from: date, to: date, lines: z.array(lineSchema).min(1).max(100), needsFile: z.boolean() });
-const contextSchema = z.object({ user: z.object({ id: z.string().min(1) }), active_context: z.object({ org_id: z.string().min(1), branch_id: z.string().min(1) }) });
 
 export const draftStorageKey = (actor: string, org: string, branch: string, supplier: string, agreement: string) => prefix + JSON.stringify([actor, org, branch, supplier, agreement]);
 export function nextAgreementCommand(previous: AgreementCommand, body: string, uuid: () => string = () => crypto.randomUUID()): AgreementCommand {
@@ -70,6 +69,7 @@ function installDraftCleanup() {
 }
 export function useSupplierAgreementDraft(options: DraftOptions) {
   const { supplierId, agreementId, baseVersion, allowed, dirty, values } = options;
+  const { scope } = useAccess();
   const latest = useRef(options);
   latest.current = options;
   const [key, setKey] = useState("");
@@ -80,15 +80,12 @@ export function useSupplierAgreementDraft(options: DraftOptions) {
     let live = true;
     stopped.current = false;
     installDraftCleanup();
-    async function restore() {
+    function restore() {
       try {
-        const response = await apiFetch("/api/auth/context", { cache: "no-store" });
-        if (!response.ok) throw Error("context");
-        const context = contextSchema.parse(await response.json());
-        if (!live) return;
-        const scope = prefix + JSON.stringify([context.user.id, context.active_context.org_id, context.active_context.branch_id]).slice(0, -1) + ",";
-        clearOtherDrafts(sessionStorage, scope);
-        const storageKey = draftStorageKey(context.user.id, context.active_context.org_id, context.active_context.branch_id, supplierId, agreementId ?? "new");
+        if (!scope) throw Error("context");
+        const scopePrefix = prefix + JSON.stringify([scope.userId, scope.orgId, scope.branchId]).slice(0, -1) + ",";
+        clearOtherDrafts(sessionStorage, scopePrefix);
+        const storageKey = draftStorageKey(scope.userId, scope.orgId, scope.branchId, supplierId, agreementId ?? "new");
         const result = readAgreementDraft(sessionStorage, storageKey, baseVersion);
         if (result.kind === "restored" && !latest.current.dirty) {
           latest.current.restore(result.values);
@@ -101,7 +98,7 @@ export function useSupplierAgreementDraft(options: DraftOptions) {
     }
     void restore();
     return () => { live = false; };
-  }, [allowed, supplierId, agreementId, baseVersion]);
+  }, [allowed, supplierId, agreementId, baseVersion, scope]);
   useEffect(() => {
     if (!key || !dirty || !allowed || stopped.current) return;
     const timer = setTimeout(() => {

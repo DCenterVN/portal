@@ -5,7 +5,7 @@ import { useAccess } from "@/lib/access-boundary";
 import { getSupplierHistory, type SupplierHistory } from "@/lib/api/supplier-history";
 import { getContractMaterials } from "@/lib/api/supplier-agreements";
 import { SupplierReceiptsView } from "./supplier-receipts-view";
-import { EmptyState, ErrorState, Skeleton } from "@/components/ui/state";
+import { EmptyState, ErrorState, LoadingState } from "@/components/patterns/empty-state";
 
 type SupplierReceiptsOptions = { supplierId: string };
 export function SupplierReceiptsContainer({ supplierId }: SupplierReceiptsOptions) {
@@ -35,7 +35,7 @@ export function SupplierReceiptsContainer({ supplierId }: SupplierReceiptsOption
     return () => { live = false; };
   }, [supplierId, read, root, cursor, from, to, revision]);
   return <SupplierReceiptsView read={read} page={page} names={names} nameError={nameError} from={from} to={to}
-    pending={<Skeleton title="Đang tải lịch sử nhập" />}
+    pending={<LoadingState title="Đang tải lịch sử nhập" />}
     failure={error ? <ErrorState title={error} onRetry={() => setRevision(value => value + 1)} /> : undefined}
     empty={<EmptyState title="Chưa có phiếu nhập cho nhà cung cấp này trong chi nhánh đang làm việc" />}
     onFrom={value => { setFrom(value); setCursors([""]); }} onTo={value => { setTo(value); setCursors([""]); }}

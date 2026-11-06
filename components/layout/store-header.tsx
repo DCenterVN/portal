@@ -3,12 +3,14 @@
 import Link from "next/link";
 import type { Route } from "next";
 import { useRouter } from "next/navigation";
-import { Heart, Leaf, LogOut, Menu, Package, Search, UserRound, X } from "lucide-react";
+import { Heart, LogOut, Menu, Package, Search, UserRound, X } from "lucide-react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { MenuItem, Popover } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
-import { isActive } from "./console-shell";
-import { MiniCart, MOBILE_PANEL, type CartPreviewItem } from "./mini-cart";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { isActive } from "@/lib/navigation";
+import { MiniCart, type CartPreviewItem } from "./mini-cart";
 import { ThemeToggle } from "./theme-toggle";
 
 export type StoreNavItem = { href: string; label: string; match: string };
@@ -29,7 +31,7 @@ type Props = {
   onMenuToggle: () => void;
 };
 
-const ICON_TRIGGER = buttonVariants({ variant: "ghost", size: "icon" });
+const ICON_TRIGGER = buttonVariants({ variant: "ghost", size: "icon", className: "size-11" });
 
 function Navigation({ nav, pathname, onSelect }: Pick<Props, "nav" | "pathname"> & { onSelect?: () => void }) {
   return (
@@ -40,7 +42,7 @@ function Navigation({ nav, pathname, onSelect }: Pick<Props, "nav" | "pathname">
           href={item.href as Route}
           aria-current={isActive(pathname, item.match) ? "page" : undefined}
           onClick={onSelect}
-          className="relative flex min-h-11 items-center rounded-sm px-3 text-sm font-semibold text-fg-2 transition-colors duration-100 hover:text-fg aria-[current=page]:text-p-text after:absolute after:bottom-1 after:left-3 after:right-3 after:h-0.5 after:rounded-full after:bg-p after:opacity-0 after:content-[''] aria-[current=page]:after:opacity-100"
+          className={buttonVariants({ variant: "ghost", className: "max-md:min-h-11 max-md:justify-start aria-[current=page]:bg-accent aria-[current=page]:text-accent-foreground" })}
         >
           {item.label}
         </Link>
@@ -52,16 +54,10 @@ function Navigation({ nav, pathname, onSelect }: Pick<Props, "nav" | "pathname">
 function SearchForm({ className }: { className?: string }) {
   return (
     <form role="search" action="/products" className={className}>
-      <label className="relative block">
-        <span className="sr-only">Tìm sản phẩm</span>
-        <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-fg-3" aria-hidden="true" />
-        <input
-          type="search"
-          name="q"
-          placeholder="Tìm món, nguyên liệu…"
-          className="h-11 w-full rounded-sm border border-line-strong bg-l1 pl-9 pr-3 text-sm text-fg outline-none placeholder:text-fg-3 focus:border-p md:h-10"
-        />
-      </label>
+      <InputGroup>
+        <InputGroupAddon><Search aria-hidden="true" /></InputGroupAddon>
+        <InputGroupInput type="search" name="q" placeholder="Tìm món, nguyên liệu…" aria-label="Tìm sản phẩm" />
+      </InputGroup>
     </form>
   );
 }
@@ -74,34 +70,29 @@ function AccountMenu({ user, favoritesCount, onLogout }: { user: { name: string 
     { href: "/favorites", label: `Yêu thích (${favoritesCount})`, icon: Heart },
   ];
   return (
-    <Popover
-      menu
-      align="end"
-      label={`Tài khoản của ${user.name}`}
-      triggerClassName="flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-sm px-1 text-sm font-bold text-fg hover:bg-l1-2 md:px-2"
-      className={MOBILE_PANEL}
-      trigger={
-        <>
-          <span aria-hidden="true" className="grid size-8 place-items-center rounded-full border border-p bg-p-soft text-xs font-extrabold text-p-text">
-            {user.name.trim().charAt(0).toUpperCase()}
-          </span>
-          <span className="hidden max-w-40 truncate md:inline">{user.name}</span>
-        </>
-      }
-    >
-      {links.map(({ href, label, icon: Icon }) => (
-        <MenuItem key={href} onClick={() => router.push(href as Route)}>
-          <Icon className="size-4" aria-hidden="true" />
-          {label}
-        </MenuItem>
-      ))}
-      {onLogout && (
-        <MenuItem onClick={onLogout} className="text-err">
-          <LogOut className="size-4" aria-hidden="true" />
-          Đăng xuất
-        </MenuItem>
-      )}
-    </Popover>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon" aria-label={`Tài khoản của ${user.name}`} className="size-11">
+          <Avatar className="size-8">
+            <AvatarFallback className="bg-muted text-xs font-medium text-muted-foreground">{user.name.trim().charAt(0).toUpperCase()}</AvatarFallback>
+          </Avatar>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="min-w-48">
+        {links.map(({ href, label, icon: Icon }) => (
+          <DropdownMenuItem key={href} onSelect={() => router.push(href as Route)}>
+            <Icon aria-hidden="true" />
+            {label}
+          </DropdownMenuItem>
+        ))}
+        {onLogout && (
+          <DropdownMenuItem variant="destructive" onSelect={onLogout}>
+            <LogOut aria-hidden="true" />
+            Đăng xuất
+          </DropdownMenuItem>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
@@ -109,15 +100,13 @@ export function StoreHeader({ nav, pathname, user, cartHref, cartItems, favorite
   const router = useRouter();
   return (
     // ponytail: no sticky z token yet, borrows --z-popover (still under modal/toast). Add --z-sticky to globals.css.
-    <header className="sticky top-0 z-(--z-popover) border-b border-glass-edge">
-      {/* Glass on a back layer, not the header: a backdrop-filter ancestor would stop the L3 popovers from blurring the page. */}
-      <span aria-hidden="true" className="pointer-events-none absolute inset-0 bg-glass-l2 glass-blur-l2" />
+    <header className="sticky top-0 z-(--z-popover) border-b border-border bg-background">
       <div className="relative mx-auto flex h-15 w-full max-w-360 items-center gap-1 px-4 md:h-18 md:gap-6 md:px-10">
         <Button
           type="button"
           variant="ghost"
           size="icon"
-          className="-ml-2 md:hidden"
+          className="-ml-2 size-11 md:hidden"
           aria-label={menuOpen ? "Đóng menu" : "Mở menu"}
           aria-expanded={menuOpen}
           aria-controls="store-mobile-menu"
@@ -125,9 +114,8 @@ export function StoreHeader({ nav, pathname, user, cartHref, cartItems, favorite
         >
           {menuOpen ? <X className="size-5" aria-hidden="true" /> : <Menu className="size-5" aria-hidden="true" />}
         </Button>
-        <Link href="/" className="flex min-h-11 shrink-0 items-center gap-2 text-p-text" aria-label="Việt Sạch, trang chủ">
-          <Leaf className="size-5" aria-hidden="true" />
-          <span className="font-heading text-lg font-bold text-fg">Việt Sạch</span>
+        <Link href="/" className="flex min-h-11 shrink-0 items-center" aria-label="Việt Sạch, trang chủ">
+          <span className="text-lg font-semibold text-foreground">Việt Sạch</span>
         </Link>
         <div className="hidden md:block">
           <Navigation nav={nav} pathname={pathname} />
@@ -135,8 +123,9 @@ export function StoreHeader({ nav, pathname, user, cartHref, cartItems, favorite
         <SearchForm className="ml-auto hidden max-w-105 flex-1 md:block" />
         <div className="ml-auto flex items-center gap-1 md:ml-0 md:gap-2">
           <div className="md:hidden">
-            <Popover align="end" label="Tìm sản phẩm" triggerClassName={ICON_TRIGGER} className={cn("p-2", MOBILE_PANEL)} trigger={<Search className="size-5" aria-hidden="true" />}>
-              <SearchForm />
+            <Popover>
+              <PopoverTrigger aria-label="Tìm sản phẩm" className={ICON_TRIGGER}><Search className="size-5" aria-hidden="true" /></PopoverTrigger>
+              <PopoverContent align="end" className="w-[calc(100vw-2rem)] p-2 sm:w-80"><SearchForm /></PopoverContent>
             </Popover>
           </div>
           <MiniCart items={cartItems} cartHref={cartHref} />
@@ -144,7 +133,7 @@ export function StoreHeader({ nav, pathname, user, cartHref, cartItems, favorite
           {user ? (
             <AccountMenu user={user} favoritesCount={favoritesCount} onLogout={onLogout} />
           ) : (
-            <Button type="button" variant="ghost" size="md" aria-label="Đăng nhập" aria-haspopup={onLoginClick ? "dialog" : undefined} onClick={onLoginClick ?? (() => router.push(loginHref as Route))}>
+            <Button type="button" variant="ghost" aria-label="Đăng nhập" className="max-md:size-11" aria-haspopup={onLoginClick ? "dialog" : undefined} onClick={onLoginClick ?? (() => router.push(loginHref as Route))}>
               <UserRound className="size-5" aria-hidden="true" />
               <span className="hidden md:inline">Đăng nhập</span>
             </Button>
@@ -152,7 +141,7 @@ export function StoreHeader({ nav, pathname, user, cartHref, cartItems, favorite
         </div>
       </div>
       {menuOpen && (
-        <div id="store-mobile-menu" className="relative border-t border-glass-edge px-4 py-3 md:hidden">
+        <div id="store-mobile-menu" className="relative border-t border-border px-4 py-3 md:hidden">
           <Navigation nav={nav} pathname={pathname} onSelect={onMenuToggle} />
         </div>
       )}

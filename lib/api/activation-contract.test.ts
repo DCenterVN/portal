@@ -9,7 +9,7 @@ import { POST } from "../../app/api/auth/activate/route";
 const validator = `
 import json, sys, yaml
 from jsonschema import Draft202012Validator
-with open("contracts/auth.public.yaml") as source:
+with open("lib/contracts/auth.public.yaml") as source:
     doc = yaml.safe_load(source)
 assert doc["openapi"] == "3.1.0"
 operation = doc["paths"]["/auth/activate"]["post"]

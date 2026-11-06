@@ -2,25 +2,24 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type * as dishes from "@/lib/api/dishes";
 import type { getMaterialCategories } from "@/lib/api/material-categories";
 import type { getMaterials, getRawLabels, Material } from "@/lib/api/sales";
-import type { getProductionContext } from "@/lib/api/production";
+import { useAccess } from "@/lib/access-boundary";
 import type { DishContent, GroupNode } from "@/lib/dishes/types";
 export type { Material } from "@/lib/api/sales";
 export type MaterialInfo = { name: string; group: string | null; uom: string; allergens: string | null };
-type Deps = Pick<typeof dishes, "getSaleCategories" | "getDishPack" | "searchPacks" | "getPackRecipe" | "previewCost" | "safeMessage"> & { getMaterials: typeof getMaterials; getRawLabels: typeof getRawLabels; getMaterialCategories: typeof getMaterialCategories; getProductionContext: typeof getProductionContext };
+type Deps = Pick<typeof dishes, "getSaleCategories" | "getDishPack" | "searchPacks" | "getPackRecipe" | "previewCost" | "safeMessage"> & { getMaterials: typeof getMaterials; getRawLabels: typeof getRawLabels; getMaterialCategories: typeof getMaterialCategories };
 export function useDishData(content: DishContent | null, deps: Deps) {
   const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
   const [tree, setTree] = useState<GroupNode[]>([]);
   const [materials, setMaterials] = useState<Record<string, MaterialInfo>>({});
-  const [canCreate, setCanCreate] = useState(false);
+  const canCreate = useAccess().can("sales:product:create");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const load = useCallback(async () => {
     setLoading(true); setError("");
     try {
-      const [cats, groups, context] = await Promise.all([deps.getSaleCategories(), deps.getMaterialCategories(), deps.getProductionContext()]);
+      const [cats, groups] = await Promise.all([deps.getSaleCategories(), deps.getMaterialCategories()]);
       setCategories(cats.categories);
       setTree(groups.flatMap(group => [{ code: group.code, parent_code: null }, ...group.children.map(child => ({ code: child.code, parent_code: group.code }))]));
-      setCanCreate(context.permissions?.includes("sales:product:create") ?? false);
     } catch (e) { setError(e instanceof Error ? deps.safeMessage(e.message) : "Không tải được danh mục"); }
     finally { setLoading(false); }
   }, [deps]);

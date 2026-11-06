@@ -30,7 +30,8 @@ describe("authorization access", () => {
 });
 
 import { errorText } from "./access";
-import { companyChoices, navFor } from "./workspace";
+import { companyChoices } from "./workspace";
+import { navFor } from "@/lib/navigation";
 
 describe("workspace navigation", () => {
   it("shows only menu items whose action org returned, company links keep org_id", () => {

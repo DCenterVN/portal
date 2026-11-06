@@ -2,8 +2,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { TargetsView } from "./targets-view";
-import { ToastProvider } from "@/components/ui/toast";
 import * as salesApi from "@/lib/api/sales";
+import { AccessProvider } from "@/lib/access-boundary";
 
 const targetRender = vi.hoisted(() => ({ states: [] as unknown[] }));
 vi.mock("react", async (importOriginal) => {
@@ -56,41 +56,22 @@ const sampleProducts: salesApi.Product[] = [
 describe("B4 & B5 TargetsView Product Picker and Branch Name", () => {
   const branchId = "01955700-0000-7000-8000-000000000099";
   const branchName = "Chi nhánh Quận 1";
+  const scope = { userId: "u", orgId: "o", branchId, branchName, roles: [] };
+  const withAccess = (actions: string[]) => React.createElement(AccessProvider, {
+    value: { plane: "company", root: "", actions: new Set(actions), scope },
+    children: React.createElement(TargetsView, { initialTargets: [], initialShowCreate: true }),
+  });
 
   beforeEach(() => {
     vi.restoreAllMocks();
-    targetRender.states = [[], [], ["production:target:create"], branchId];
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockImplementation((url: string) => {
-        if (url.includes("/api/auth/context")) {
-          return Promise.resolve({
-            ok: true,
-            json: () =>
-              Promise.resolve({
-                permissions: ["production:target:create", "production:target_approval:create"],
-                active_context: {
-                  branch_id: branchId,
-                  branch_name: branchName,
-                },
-              }),
-          });
-        }
-        return Promise.reject(new Error("Unknown URL: " + url));
-      })
-    );
+    targetRender.states = [];
     vi.mocked(salesApi.getDraftProducts).mockResolvedValue(
       sampleProducts.slice(0, 1).map(({ id, name }) => ({ id, name, status: "DRAFT" }))
     );
   });
 
   it("renders EntityPicker for products with name, sku_code and does not show Product UUID label (B4)", () => {
-    const tree = React.createElement(
-      ToastProvider,
-      null,
-      React.createElement(TargetsView, { initialTargets: [], initialShowCreate: true })
-    );
-    const html = renderToStaticMarkup(tree);
+    const html = renderToStaticMarkup(withAccess(["production:target:create", "production:target_approval:create"]));
 
     // Must have EntityPicker combobox role and name product_ref
     expect(html).toContain('role="combobox"');
@@ -101,24 +82,18 @@ describe("B4 & B5 TargetsView Product Picker and Branch Name", () => {
     expect(html).not.toContain("Product UUID");
     expect(html).toContain("Sản phẩm");
 
-    targetRender.states = [[], [], [], branchId];
-    const deniedHtml = renderToStaticMarkup(tree);
+    const deniedHtml = renderToStaticMarkup(withAccess([]));
     expect(deniedHtml).not.toContain('name="product_ref"');
     expect(deniedHtml).not.toContain("Lưu chỉ tiêu");
   });
 
   it("does not render branch UUID in locked input; displays read-only branch name (B5)", () => {
-    const tree = React.createElement(
-      ToastProvider,
-      null,
-      React.createElement(TargetsView, { initialTargets: [], initialShowCreate: true })
-    );
-    const html = renderToStaticMarkup(tree);
+    const html = renderToStaticMarkup(withAccess(["production:target:create"]));
 
     // Branch UUID must not be shown to user on screen in input or text
     expect(html).not.toContain('value="' + branchId + '"');
     expect(html).not.toContain("Chi nhánh từ phiên đăng nhập");
-    expect(html).toContain("Chi nhánh");
+    expect(html).toContain(branchName);
   });
 
   it("omits RAW_MATERIAL products from client-side available products list (B4)", async () => {
@@ -151,10 +126,10 @@ describe("B4 & B5 TargetsView Product Picker and Branch Name", () => {
 it("targets_no_uuid", () => {
   targetRender.states = [];
   const uuid = "0192f3a4-5b6c-7d8e-9f00-112233445566";
-  const html = renderToStaticMarkup(<ToastProvider><TargetsView initialTargets={[{
+  const html = renderToStaticMarkup(<TargetsView initialTargets={[{
     id: uuid, branch_ref: uuid, target_code: "CT-THANG-10", title: "Chỉ tiêu tháng 10",
     period_start: "2026-10-01", period_end: "2026-10-31", status: "DRAFT", lines: [], created_by: uuid, created_at: "2026-10-01",
-  }]} /></ToastProvider>);
+  }]} />);
   expect(html).toContain("CT-THANG-10");
   expect(userFacingContent(html)).not.toMatch(/[0-9a-f]{8}-[0-9a-f]{4}-/);
 });

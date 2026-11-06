@@ -1,0 +1,79 @@
+{
+  "task": "PORTAL-UI-SHADCN-001",
+  "actor": "agent:claude-code(171709704+dawnmoriaty@users.noreply.github.com)",
+  "worker": "claude-sonnet",
+  "ts": "2026-11-05T16:58:37+00:00",
+  "cwd": ".",
+  "head": "767b6a7e4e042d7e4932ecf560d1c23ab616518c",
+  "dirty": true,
+  "checks": [
+    {
+      "name": "unit",
+      "command": "pnpm vitest run components app features lib --exclude lib/api/supplier-contract-bff.test.ts",
+      "exit": 0,
+      "status": "PASS",
+      "seconds": 3.9,
+      "log": ".aidlc/runs/PORTAL-UI-SHADCN-001/artifacts/logs/unit.log",
+      "sha256": "53ed68a90bf0d4ed3c15154603e63fe90745f1ec853fe9cc82c29f1462fd707d",
+      "tail": [
+        "    at renderNodeDestructive (/home/dawn/work/ticket/.cache/worktrees/portal-ui-shadcn/node_modules/.pnpm/react-dom@19.0.0_react@19.0.0/node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:5439:11)",
+        "    at renderElement (/home/dawn/work/ticket/.cache/worktrees/portal-ui-shadcn/node_modules/.pnpm/react-dom@19.0.0_react@19.0.0/node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:5343:15) {",
+        "  code: 'ENVIRONMENT_FALLBACK',",
+        "  originalMessage: 'There is no `timeZone` configured, this can lead to markup mismatches caused by environment differences. Consider adding a global default: https://next-intl.dev/docs/configuration#time-zone'",
+        "}"
+      ]
+    },
+    {
+      "name": "lint",
+      "command": "pnpm lint",
+      "exit": 0,
+      "status": "PASS",
+      "seconds": 2.9,
+      "log": ".aidlc/runs/PORTAL-UI-SHADCN-001/artifacts/logs/lint.log",
+      "sha256": "c54a8b0865df12e1f69f10635490d4488a0e70aecd2c31d8f824a0d89ffbfa9b",
+      "tail": [
+        "> @dcentervn/portal@0.1.0 lint /home/dawn/work/ticket/.cache/worktrees/portal-ui-shadcn",
+        "> node node_modules/eslint/bin/eslint.js ."
+      ]
+    },
+    {
+      "name": "typecheck",
+      "command": "pnpm tsc --noEmit",
+      "exit": 0,
+      "status": "PASS",
+      "seconds": 1.5,
+      "log": ".aidlc/runs/PORTAL-UI-SHADCN-001/artifacts/logs/typecheck.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tail": []
+    },
+    {
+      "name": "build",
+      "command": "pnpm next build --webpack",
+      "exit": 0,
+      "status": "PASS",
+      "seconds": 19.4,
+      "log": ".aidlc/runs/PORTAL-UI-SHADCN-001/artifacts/logs/build.log",
+      "sha256": "0e87e4c5e093d36daf8633cb57f206be2cf92e12fe5a4e7b5bd9f211743ccd0e",
+      "tail": [
+        "",
+        "ƒ Proxy (Middleware)",
+        "",
+        "○  (Static)   prerendered as static content",
+        "ƒ  (Dynamic)  server-rendered on demand"
+      ]
+    },
+    {
+      "name": "structure",
+      "command": "node scripts/check-structure.mjs --strict",
+      "exit": 0,
+      "status": "PASS",
+      "seconds": 0.0,
+      "log": ".aidlc/runs/PORTAL-UI-SHADCN-001/artifacts/logs/structure.log",
+      "sha256": "8b7d8a1c6cc47be42cf1de1a91ed3fab28d34ceca129ba079f07f1c4bbb0a207",
+      "tail": [
+        "Structure violations: 23, baselined 23, new 0"
+      ]
+    }
+  ],
+  "verdict": "PASS"
+}

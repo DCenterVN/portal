@@ -1,14 +1,16 @@
 "use client";
-import {EmptyState, ErrorState} from "@/components/ui/state";
+import { EmptyState, ErrorState } from "@/components/patterns/empty-state";
 import {useTranslations} from "next-intl";
 import {FetchError} from "@/lib/fetcher";
 
 import {useEffect, useId, useRef, useState} from "react";
+import Link from "next/link";
 import {useRouter, useSearchParams} from "next/navigation";
 import type {Route} from "next";
 import {listContexts, switchOrg, switchBranch, type EmployeeContext} from "@/lib/api/employee-auth";
 import {Button} from "@/components/ui/button";
 import {Label} from "@/components/ui/label";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 
 export function SwitchContext({selection}: {selection: "org" | "branch"}) {
  const t = useTranslations("employeeAuth");
@@ -36,10 +38,10 @@ export function SwitchContext({selection}: {selection: "org" | "branch"}) {
   {!loading && !error && !options.length && <EmptyState title={t("contextInvalid")} action={<a href="/staff/login">{t("login")}</a>} />}
   {loading && <p role="status"> {t("contextPending")} </p>}
   <Label htmlFor={`${id}-context`}>{selection==="org" ? t("company") : t("branch")}</Label>
-  <select id={`${id}-context`} name={selection==="org" ? "org_id" : "branch_id"} disabled={loading || busy} required aria-invalid={!!error} aria-describedby={error ? `${id}-error` : undefined} className="min-h-11 w-full rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] px-3 text-[var(--color-ink)] focus-visible:ring-2 focus-visible:ring-[var(--color-focus)]">
-   <option value="">{selection==="org" ? t("chooseCompany") : t("chooseBranch")}</option>{options.map(value=><option key={value} value={value}>{value}</option>)}
-  </select>
-  {selection==="branch" && !orgId && !loading && <a href="/staff/switch-org" className="inline-flex min-h-11 items-center text-[var(--color-primary)] underline"> {t("chooseCompanyFirst")} </a>}
+  <NativeSelect id={`${id}-context`} name={selection==="org" ? "org_id" : "branch_id"} disabled={loading || busy} required aria-invalid={!!error} aria-describedby={error ? `${id}-error` : undefined}>
+   <NativeSelectOption value="">{selection==="org" ? t("chooseCompany") : t("chooseBranch")}</NativeSelectOption>{options.map(value=><NativeSelectOption key={value} value={value}>{value}</NativeSelectOption>)}
+  </NativeSelect>
+  {selection==="branch" && !orgId && !loading && <Link href="/staff/switch-org" className="inline-flex min-h-11 items-center text-primary underline-offset-4 hover:underline"> {t("chooseCompanyFirst")} </Link>}
   <Button type="submit" disabled={loading || busy || !options.length} className="w-full">{busy ? t("switchPending") : t("continue")}</Button>
  </form>;
 }

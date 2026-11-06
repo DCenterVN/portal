@@ -7,12 +7,16 @@ import { describe, expect, it } from "vitest";
 const BASELINE = "app/ui-rules-baseline.txt";
 const BLUR_ALLOW = new Set([
   "components/layout/store-header.tsx", "components/layout/console-header.tsx", "components/ui/popover.tsx",
-  "components/ui/drawer.tsx", "components/ui/sheet.tsx", "components/ui/entity-picker.tsx",
+  "components/ui/drawer.tsx", "components/ui/sheet.tsx", "components/patterns/entity-picker.tsx",
 ]);
 const COLOR = /#[\da-f]{3,8}\b|rgba?\(/gi;
 const RADIUS = /(?:^|:)!?rounded(?:-(?:[trblse]|tl|tr|br|bl|ss|se|es|ee))?(?:-(\S+))?$/;
 const RADIUS_OK = /^(?:none|\[2px\]|sm|lg|xl|full|\[var\(--r-[\w-]+\)\])$/;
+// shadcn files under components/ui are generated unmodified (AC-3), so they keep the shadcn radius scale.
+const SHADCN_RADIUS = /^(?:md|xs|\[4px\])$/;
 const DURATION = /(?:^|:)!?duration-(\S+)$/;
+// Sheet slides in over 500ms in the shadcn original.
+const SHADCN_DURATION = /^500$/;
 const EMOJI = /\p{Emoji_Presentation}|\p{Extended_Pictographic}️/u;
 const ID_TEXT = /\bUUID\b|\bID\b|\bref\b/i;
 const TEXT_CONTROLS = new Set(["Input", "TextInput", "input", "Field"]);
@@ -32,10 +36,10 @@ function classViolations(file: string, text: string, onButton: boolean): string[
     const arbitrary = token.match(/\[([^\]]*)\]/)?.[1] ?? "";
     return [
       /-\[(?:#|rgba?\()/.test(token) && hasRawColor(arbitrary) ? "hex" : "",
-      radius && radius[1] !== undefined && !RADIUS_OK.test(radius[1]) ? "rounded" : "",
+      radius && radius[1] !== undefined && !RADIUS_OK.test(radius[1]) && !(SHADCN_RADIUS.test(radius[1]) && file.startsWith("components/ui/")) ? "rounded" : "",
       /(?:^|:)!?rounded-full$/.test(token) && (onButton || file === "components/ui/button.tsx") ? "button-pill" : "",
       /(?:^|:)!?(?:backdrop-blur|glass-blur-)/.test(token) && !BLUR_ALLOW.has(file) ? "blur" : "",
-      duration && !/^(?:100|150|200|300|400)$/.test(duration[1]) ? "duration" : "",
+      duration && !/^(?:100|150|200|300|400)$/.test(duration[1]) && !(SHADCN_DURATION.test(duration[1]) && file.startsWith("components/ui/")) ? "duration" : "",
     ].filter(Boolean).map((rule) => `${rule}\t${file}:${token}`);
   });
 }

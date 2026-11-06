@@ -4,12 +4,12 @@ import { useRouter } from "next/navigation";
 import * as api from "@/lib/api/dishes";
 import { getMaterialCategories } from "@/lib/api/material-categories";
 import { getMaterials, getRawLabels } from "@/lib/api/sales";
-import { getProductionContext } from "@/lib/api/production";
 import { validateDish } from "@/lib/dishes/validate-dish";
 import type { DishContent } from "@/lib/dishes/types";
 import { Button } from "@/components/ui/button";
-import { PageShell, PageHeader } from "@/components/ui/page";
-import { EmptyState, Skeleton } from "@/components/ui/state";
+import { PageShell } from "@/components/ui/page";
+import { PageHeading } from "@/components/patterns/page-heading";
+import { EmptyState, LoadingState } from "@/components/patterns/empty-state";
 import { DishListView } from "./dish-list-view";
 import { DishEditorView } from "./dish-editor-view";
 import { DishIngredientsView } from "./dish-ingredients-view";
@@ -19,7 +19,8 @@ import { DishDetailView } from "./dish-detail-view";
 import { useDishes, emptyContent, type DishLocation } from "./use-dishes";
 import { useDishDraft } from "./use-dish-draft";
 import { useDishData } from "./use-dish-data";
-const dataApi = { ...api, getMaterialCategories, getMaterials, getRawLabels, getProductionContext };
+import { InlineAlert } from "@/components/patterns/inline-alert";
+const dataApi = { ...api, getMaterialCategories, getMaterials, getRawLabels };
 export function DishesContainer({ mon, mode, draft: draftId }: DishLocation) {
   const router = useRouter();
   const [touched, setTouched] = useState(false);
@@ -47,12 +48,12 @@ export function DishesContainer({ mon, mode, draft: draftId }: DishLocation) {
     if (editor.content && !editor.frozen && !editor.conflict && !await editor.save()) return;
     navigate({}); void workspace.load();
   };
-  return <PageShell><PageHeader title="Món" description="Soạn công thức mỗi suất, tự tính lượng theo khẩu phần. Hoàn tất để bàn giao, chưa mở bán." />
-    {data.error && <div role="alert">{data.error} <Button variant="outline" onClick={() => void data.load()}>Thử lại</Button></div>}
-    {editor.error && <div role="alert">{editor.error}<Button variant="outline" onClick={() => void editor.reload()}>Tải lại nháp</Button></div>}
-    {workspace.error && (mon || draftId) && <div role="alert">{workspace.error}<Button variant="outline" onClick={() => void workspace.load()}>Thử lại</Button></div>}
+  return <PageShell><PageHeading title="Món" description="Soạn công thức mỗi suất, tự tính lượng theo khẩu phần. Hoàn tất để bàn giao, chưa mở bán." />
+    {data.error && <InlineAlert>{data.error} <Button variant="outline" onClick={() => void data.load()}>Thử lại</Button></InlineAlert>}
+    {editor.error && <InlineAlert>{editor.error}<Button variant="outline" onClick={() => void editor.reload()}>Tải lại nháp</Button></InlineAlert>}
+    {workspace.error && (mon || draftId) && <InlineAlert>{workspace.error}<Button variant="outline" onClick={() => void workspace.load()}>Thử lại</Button></InlineAlert>}
     {workspace.existing && <Button variant="outline" onClick={() => navigate({ mon, draft: workspace.existing })}>Mở bản đang có</Button>}
-    {(editor.loading || (mon && workspace.busy && !workspace.detail)) && <Skeleton title="Đang tải món…" />}
+    {(editor.loading || (mon && workspace.busy && !workspace.detail)) && <LoadingState title="Đang tải món…" />}
     {draftId && editor.draft && editor.content ? <div onBlurCapture={event => { if (!(event.relatedTarget instanceof HTMLButtonElement)) setTouched(true); }} onClickCapture={event => { if (event.target instanceof Element && event.target.closest("button")) setTouched(true); }}><DishEditorView key={editor.draft.id} draft={editor.draft} content={editor.content} categories={data.categories} categoryLoading={data.loading} saveState={editor.saveState} busy={editor.busy || !data.canCreate} frozen={editor.frozen} conflict={editor.conflict} errors={errors} validationErrors={validationErrors} existingServings={ctx.existingVariants.map(v => v.servings)} onExistingVariant={id => { workspace.setSelected(id); navigate({ mon: editor.content?.base?.product_ref }); }} onChange={editor.change} onSave={() => void editor.save()} onComplete={() => void editor.complete()} onDiscard={() => void editor.discard()} onReload={() => void editor.reload()} onBack={() => void back()}>
       <div className="grid gap-6 xl:grid-cols-3"><div className="space-y-6 xl:col-span-2"><DishIngredientsView content={editor.content} materials={data.materials} tree={data.tree} errors={errors} readOnly={editor.frozen} onChange={editor.change} onMaterial={material => void data.remember(material)} />
       <DishSeasoningsView content={editor.content} packs={data.packs} recipes={data.recipes} loading={data.packLoading} error={data.packError} next={data.packNext} errors={errors} readOnly={editor.frozen} onChange={editor.change} onQuery={data.setPackQuery} onRetry={data.retryPacks} onNext={() => void data.loadPacks(data.packNext ?? "")} /></div><aside>{cost}</aside></div>

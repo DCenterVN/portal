@@ -5,8 +5,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/components/ui/toast";
-import { createDraftProduct, type Product } from "@/lib/api/sales";
+import { toast } from "@/components/ui/toast";
+import type { Product } from "@/lib/api/sales";
+import { InlineAlert } from "@/components/patterns/inline-alert";
+import { useCreateDraftProduct } from "./use-create-draft-product";
 
 interface ProductCreateDialogProps {
   open: boolean;
@@ -16,28 +18,18 @@ interface ProductCreateDialogProps {
 
 export function ProductCreateDialog({ open, onOpenChange, onSuccess }: ProductCreateDialogProps) {
   const id = useId();
-  const { toast } = useToast();
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState("");
+  const { submitting, error, create } = useCreateDraftProduct(onSuccess);
   async function submit(event: FormEvent) {
     event.preventDefault();
     if (submitting || !name.trim() || !slug.trim()) return;
-    setSubmitting(true);
-    setError("");
-    try {
-      const created = await createDraftProduct({ name: name.trim(), slug: slug.trim() });
-      onSuccess?.({ ...created, status: "DRAFT", sku_code: "", uom: "", created_at: "" });
-      toast.success("Đã tạo sản phẩm nháp", created.name);
-      onOpenChange(false);
-      setName("");
-      setSlug("");
-    } catch (error) {
-      setError(error instanceof Error ? error.message : "Không tạo được sản phẩm nháp");
-    } finally {
-      setSubmitting(false);
-    }
+    const created = await create({ name: name.trim(), slug: slug.trim() });
+    if (!created) return;
+    toast.success("Đã tạo sản phẩm nháp", { description: created.name });
+    onOpenChange(false);
+    setName("");
+    setSlug("");
   }
   return <Dialog open={open} onOpenChange={value => { if (!submitting) onOpenChange(value); }}>
     <DialogContent>
@@ -56,7 +48,7 @@ export function ProductCreateDialog({ open, onOpenChange, onSuccess }: ProductCr
             <Input id={`${id}-slug`} required pattern="[a-z0-9]+(-[a-z0-9]+)*" value={slug} onChange={e => setSlug(e.target.value)} aria-describedby={`${id}-hint`} placeholder="bun-bo-hue" />
             <p id={`${id}-hint`} className="text-xs text-[var(--color-muted)]">Chữ thường không dấu, số và dấu gạch ngang.</p>
           </div>
-          {error && <p role="alert" className="text-sm text-[var(--color-danger)]">{error}</p>}
+          {error && <InlineAlert>{error}</InlineAlert>}
         </div>
         <DialogFooter>
           <Button type="button" variant="outline" disabled={submitting} onClick={() => onOpenChange(false)}>Huỷ</Button>

@@ -6,11 +6,13 @@ import type { Route } from "next";
 import { NextIntlClientProvider, useTranslations } from "next-intl";
 import viMessages from "@/messages/vi.json";
 import { Button } from "@/components/ui/button";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { Card } from "@/components/ui/card";
-import { PageShell, PageHeader } from "@/components/ui/page";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { EmptyState, ErrorState, Skeleton } from "@/components/ui/state";
-import { useToast } from "@/components/ui/toast";
+import { PageShell } from "@/components/ui/page";
+import { PageHeading } from "@/components/patterns/page-heading";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { EmptyState, ErrorState, LoadingState } from "@/components/patterns/empty-state";
+import { toast } from "@/components/ui/toast";
 import { addToCart, formatVND, getCatalog, getOrCreateCartId, recordCartResponse, type Product } from "@/lib/api/sales";
 import { applyCatalogFilters, CatalogFilters, type CatalogFilterValues } from "./catalog-filters";
 
@@ -56,7 +58,6 @@ export function CatalogLoader() {
 
 export function CatalogView({ products, loading, error, nextCursor, onLoadMore, loadingMore }: CatalogViewProps) {
   const t = useTranslations("Catalog");
-  const { toast } = useToast();
   const [filters, setFilters] = useState<CatalogFilterValues>({});
   const [filterOpen, setFilterOpen] = useState(false);
   const [adding, setAdding] = useState<string | null>(null);
@@ -67,16 +68,16 @@ export function CatalogView({ products, loading, error, nextCursor, onLoadMore, 
     try {
       const result = await addToCart(getOrCreateCartId(), { sku_ref: product.sku_ref, branch_id: product.branch_ref, quantity: 1 });
       recordCartResponse(result, product);
-      toast.success(t("added"), product.name);
+      toast.success(t("added"), { description: product.name });
     } catch (error) {
-      toast.error(t("addError"), error instanceof Error ? error.message : t("addError"));
+      toast.error(t("addError"), { description: error instanceof Error ? error.message : t("addError") });
     } finally {
       setAdding(null);
     }
   }
   return <PageShell>
-    <PageHeader title={t("title")} description={t("loaded", { count: products.length })} />
-    {loading ? <Skeleton title={t("loading")} /> : error ? <ErrorState title={t("loadError")} description={error} /> :
+    <PageHeading title={t("title")} description={t("loaded", { count: products.length })} />
+    {loading ? <LoadingState title={t("loading")} /> : error ? <ErrorState title={t("loadError")} description={error} /> :
       <div className="mt-6 flex min-w-0 gap-6">
         <aside aria-label={t("filters")} className="hidden w-56 shrink-0 lg:block">
           <CatalogFilters value={filters} onChange={setFilters} />
@@ -86,14 +87,14 @@ export function CatalogView({ products, loading, error, nextCursor, onLoadMore, 
             <Button variant="outline" className="lg:hidden" aria-haspopup="dialog" aria-expanded={filterOpen} onClick={() => setFilterOpen(true)}>{t("filters")}</Button>
             <label className="ml-auto flex min-w-0 flex-wrap items-center gap-2 text-sm">
               <span>{t("sort")}</span>
-              <select className="min-h-11 max-w-full rounded-lg border border-line bg-l1 px-3 text-fg" value={filters.sort ?? ""} onChange={e => {
+              <span className="w-48"><NativeSelect value={filters.sort ?? ""} onChange={e => {
                 const sort = e.target.value;
                 setFilters({ ...filters, sort: sort === "price-asc" || sort === "price-desc" ? sort : undefined });
               }}>
-                <option value="">{t("defaultSort")}</option>
-                <option value="price-asc">{t("priceAsc")}</option>
-                <option value="price-desc">{t("priceDesc")}</option>
-              </select>
+                <NativeSelectOption value="">{t("defaultSort")}</NativeSelectOption>
+                <NativeSelectOption value="price-asc">{t("priceAsc")}</NativeSelectOption>
+                <NativeSelectOption value="price-desc">{t("priceDesc")}</NativeSelectOption>
+              </NativeSelect></span>
             </label>
           </div>
           {visible.length === 0 ? <EmptyState title={products.length ? t("noMatch") : t("empty")} description={products.length ? t("tryFilters") : t("emptyDescription")} /> :
@@ -118,13 +119,13 @@ export function CatalogView({ products, loading, error, nextCursor, onLoadMore, 
             </div>}
           {nextCursor && <div className="text-center"><Button variant="outline" disabled={loadingMore} onClick={onLoadMore}>{loadingMore ? t("loading") : t("more")}</Button></div>}
         </section>
-        <Dialog open={filterOpen} onOpenChange={setFilterOpen}>
-          <DialogContent variant="sheet">
-            <DialogTitle>{t("filters")}</DialogTitle>
-            <div className="mt-5"><CatalogFilters value={filters} onChange={setFilters} /></div>
-            <Button className="mt-5 w-full" onClick={() => setFilterOpen(false)}>{t("showResults")}</Button>
-          </DialogContent>
-        </Dialog>
+        <Sheet open={filterOpen} onOpenChange={setFilterOpen}>
+          <SheetContent side="bottom" className="max-h-dvh overflow-y-auto">
+            <SheetHeader><SheetTitle>{t("filters")}</SheetTitle></SheetHeader>
+            <div className="px-4"><CatalogFilters value={filters} onChange={setFilters} /></div>
+            <div className="p-4 pt-0"><Button className="w-full" onClick={() => setFilterOpen(false)}>{t("showResults")}</Button></div>
+          </SheetContent>
+        </Sheet>
       </div>}
   </PageShell>;
 }

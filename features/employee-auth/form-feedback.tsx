@@ -7,6 +7,7 @@ export function getTranslations(namespace: "employeeAuth", locale: "vi" | "en" =
 }
 
 import type {ReactNode} from "react";
+import {InlineAlert} from "@/components/patterns/inline-alert";
 export function FormAlert({id, children}: {id?: string; children: ReactNode}) {
- return <p id={id} role="alert" className="rounded-[var(--radius-md)] border border-[var(--color-danger)] p-3 text-sm text-[var(--color-danger)]">{children}</p>;
+ return <InlineAlert id={id}>{children}</InlineAlert>;
 }

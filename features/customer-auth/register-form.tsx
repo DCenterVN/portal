@@ -10,9 +10,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/patterns/password-input";
 import { Label } from "@/components/ui/label";
-import { EmptyState, ErrorState } from "@/components/ui/state";
+import { EmptyState, ErrorState } from "@/components/patterns/empty-state";
 import { authTabHref, FormNotice, passwordError, SHAKE_STYLE } from "./form-feedback";
 import { cn } from "@/lib/utils";
+import { InlineAlert } from "@/components/patterns/inline-alert";
 
 function validate(email: string, phone: string, name: string, password: string): string {
   if (!email && !phone) return "identityRequired";
@@ -76,7 +77,7 @@ export function RegisterForm() {
   if (sentTo) {
     return (
       <FormNotice title={t("checkInbox")}>
-        <p className="text-fg-2">{t("activationSent", { destination: sentTo })}</p>
+        <p className="text-muted-foreground">{t("activationSent", { destination: sentTo })}</p>
         {sentEmail && (
           <p>
             <Button type="button" variant="outline" size="sm" disabled={resend === "busy"} onClick={onResend}>
@@ -84,10 +85,10 @@ export function RegisterForm() {
             </Button>
           </p>
         )}
-        {resend === "done" && <p className="text-sm font-semibold text-ok">{t("resendDone")}</p>}
-        {resend === "failed" && <p role="alert" className="text-sm font-semibold text-err">{t("resendFailed")}</p>}
+        {resend === "done" && <p className="text-sm font-semibold text-success">{t("resendDone")}</p>}
+        {resend === "failed" && <InlineAlert>{t("resendFailed")}</InlineAlert>}
         <p className="pt-2">
-          <Link href={authTabHref("login", redirect)} className="inline-flex min-h-11 items-center font-bold text-p-text hover:text-p-hover hover:underline">
+          <Link href={authTabHref("login", redirect)} className="inline-flex min-h-11 items-center font-bold text-accent-foreground hover:text-primary-hover hover:underline">
             {t("loginReturn")}
           </Link>
         </p>
@@ -102,11 +103,11 @@ export function RegisterForm() {
         {!busy && !error && <EmptyState title={t("createAccount")} description={t("identityRequired")} className="py-4" />}
         {error && (
           <div id={`${id}-error`} className="animate-shake">
-            <ErrorState title={error} className="py-4 rounded-lg border-solid border-err/40 bg-err-soft/50 text-err" />
+            <ErrorState title={error} className="py-4 rounded-lg border-solid border-destructive/40 bg-destructive-soft/50 text-destructive" />
           </div>
         )}
         <div className="space-y-1.5">
-          <Label htmlFor={`${id}-display_name`} className="font-semibold text-sm text-fg">
+          <Label htmlFor={`${id}-display_name`} className="font-semibold text-sm text-foreground">
             {t("displayName")}
           </Label>
           <Input
@@ -118,12 +119,12 @@ export function RegisterForm() {
             disabled={busy}
             aria-invalid={!!error && (!errorField || errorField === "display_name")}
             aria-describedby={error ? `${id}-error` : undefined}
-            className={cn("min-h-11 rounded-sm border-line-strong transition-colors duration-150", !!error && errorField === "display_name" && "border-err focus-visible:ring-err")}
+            className={cn("min-h-11 rounded-sm border-input transition-colors duration-150", !!error && errorField === "display_name" && "border-destructive focus-visible:ring-destructive")}
           />
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-1.5">
-            <Label htmlFor={`${id}-email`} className="font-semibold text-sm text-fg">
+            <Label htmlFor={`${id}-email`} className="font-semibold text-sm text-foreground">
               {t("email")}
             </Label>
             <Input
@@ -135,11 +136,11 @@ export function RegisterForm() {
               disabled={busy}
               aria-invalid={!!error && (!errorField || errorField === "email")}
               aria-describedby={error ? `${id}-error` : undefined}
-              className={cn("min-h-11 rounded-sm border-line-strong transition-colors duration-150", !!error && errorField === "email" && "border-err focus-visible:ring-err")}
+              className={cn("min-h-11 rounded-sm border-input transition-colors duration-150", !!error && errorField === "email" && "border-destructive focus-visible:ring-destructive")}
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor={`${id}-phone`} className="font-semibold text-sm text-fg">
+            <Label htmlFor={`${id}-phone`} className="font-semibold text-sm text-foreground">
               {t("phone")}
             </Label>
             <Input
@@ -151,12 +152,12 @@ export function RegisterForm() {
               disabled={busy}
               aria-invalid={!!error && (!errorField || errorField === "phone")}
               aria-describedby={error ? `${id}-error` : undefined}
-              className={cn("min-h-11 rounded-sm border-line-strong transition-colors duration-150", !!error && errorField === "phone" && "border-err focus-visible:ring-err")}
+              className={cn("min-h-11 rounded-sm border-input transition-colors duration-150", !!error && errorField === "phone" && "border-destructive focus-visible:ring-destructive")}
             />
           </div>
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor={`${id}-password`} className="font-semibold text-sm text-fg">
+          <Label htmlFor={`${id}-password`} className="font-semibold text-sm text-foreground">
             {t("password")}
           </Label>
           <PasswordInput
@@ -167,27 +168,26 @@ export function RegisterForm() {
             aria-describedby={`${id}-password-hint${error ? ` ${id}-error` : ""}`}
             disabled={busy}
             aria-invalid={!!error && (!errorField || errorField === "password")}
-            className={cn("h-11 rounded-sm border-line-strong transition-colors duration-150", !!error && errorField === "password" && "border-err focus-visible:ring-err")}
+            className={cn("h-11 rounded-sm border-input transition-colors duration-150", !!error && errorField === "password" && "border-destructive focus-visible:ring-destructive")}
           />
-          <p id={`${id}-password-hint`} className="text-xs text-fg-3">
+          <p id={`${id}-password-hint`} className="text-xs text-muted-foreground">
             {t("passwordHint")}
           </p>
         </div>
         <Button
           type="submit"
-          variant="accent"
-          size="touch"
+          variant="default"
           disabled={busy}
           className="w-full text-sm font-bold shadow-sm transition-colors duration-100"
         >
           {busy ? t("registerPending") : t("createAccount")}
         </Button>
-        <div className="space-y-1 border-t border-line pt-4 text-center text-sm text-fg-2">
+        <div className="space-y-1 border-t border-border pt-4 text-center text-sm text-muted-foreground">
           <p>
             {t("hasAccount")}{" "}
             <Link
               href={authTabHref("login", redirect)}
-              className="inline-flex min-h-11 items-center font-bold text-p-text hover:text-p-hover hover:underline"
+              className="inline-flex min-h-11 items-center font-bold text-accent-foreground hover:text-primary-hover hover:underline"
             >
               {t("login")}
             </Link>

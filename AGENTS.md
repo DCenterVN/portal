@@ -14,7 +14,7 @@ Boundary/domain rules: [AI_CONTEXT.md](AI_CONTEXT.md). Workspace map + workflow:
 | request proxy / auth guard | proxy.ts |
 | i18n messages | messages/ |
 | design tokens | app/tokens.generated.css · platform-docs/docs/11-ui-component-standard.md |
-| backend contracts | contracts/ |
+| backend contracts | lib/contracts/ |
 
 ## Work here
 - Board first: `.aidlc/planning/board.md` (refresh: `python3 ~/agent_skills/sdlc/engine/sdlc.py board`).

@@ -22,12 +22,13 @@ function form(tree: ReactElement): ReactElement<Props> {
 }
 async function submit(tree: ReactElement, fields: Record<string,string>) {
  const element={querySelector:vi.fn(() => ({focus:vi.fn()}))};
+ vi.stubGlobal("requestAnimationFrame",(callback:FrameRequestCallback)=>{callback(0);return 0;});
  vi.stubGlobal("FormData",class {get(key:string){return fields[key] ?? null;}});
  await form(tree).props.onSubmit?.({preventDefault(){}, currentTarget:element} as unknown as React.FormEvent<HTMLFormElement>); return element;
 }
 beforeEach(() => {vi.restoreAllMocks(); vi.unstubAllGlobals(); h.slots=[];h.cursor=0;h.effects=[];h.query=new URLSearchParams();h.push.mockReset();h.refresh.mockReset();});
 describe("S8 employee login", () => {
- it("owns one main, staff marker, skip link and solid branded shell", () => {const html=renderToStaticMarkup(<EmployeeAuthShell>staff</EmployeeAuthShell>);expect(html.match(/<main/g)).toHaveLength(1);expect(html.match(/data-auth-journey="employee"/g)).toHaveLength(1);expect(html).toContain('href="#main"');expect(html).toContain("Bếp Tươi");expect(html).toContain("Cổng nhân viên");expect(html).not.toMatch(/blur|gradient/);});
+ it("owns one main, staff marker, skip link and solid branded shell", () => {const html=renderToStaticMarkup(<EmployeeAuthShell>staff</EmployeeAuthShell>);expect(html.match(/<main/g)).toHaveLength(1);expect(html.match(/data-auth-journey="employee"/g)).toHaveLength(1);expect(html).toContain('href="#main"');expect(html).toContain("Bếp Tươi");expect(html).not.toContain("<aside");expect(html).toContain("max-w-sm");expect(html).not.toMatch(/blur|gradient|bg-primary/);});
  it("labels pair with unique IDs; staff has no self-register", () => {const html=renderToStaticMarkup(render(LoginForm));const ids=[...html.matchAll(/<label[^>]*for="([^"]+)"/g)].map(m=>m[1]);expect(ids).toHaveLength(2);expect(new Set(ids).size).toBe(2);for(const id of ids) expect(html).toContain(`id="${id}"`);expect(html).toContain('autoComplete="current-password"');expect(html).toContain('href="/staff/forgot-password"');expect(html).not.toContain('/register');});
  it("single pending request uses server staff next_path, ignores redirect query", async () => {let done!: (v:{next_path:string})=>void;const login=vi.spyOn(client,"login").mockImplementation(()=>new Promise(r=>{done=r;}));h.query=new URLSearchParams("redirect=https://evil.com");const tree=render(LoginForm);const pending=submit(tree,{identifier:" staff@example.com ",password:"password-1234"});await submit(tree,{identifier:"staff@example.com",password:"password-1234"});expect(login).toHaveBeenCalledTimes(1);expect(renderToStaticMarkup(render(LoginForm))).toContain('aria-busy="true"');done({next_path:"/staff/switch-org"});await pending;expect(h.push).toHaveBeenCalledWith("/staff/switch-org");expect(h.refresh).toHaveBeenCalledOnce();});
  it("validation focuses missing field; upstream denial clears busy with accessible feedback", async () => {const login=vi.spyOn(client,"login").mockRejectedValue(new FetchError("wrong journey",403,{error:"FORBIDDEN"}));const element=await submit(render(LoginForm),{identifier:"staff"});expect(login).not.toHaveBeenCalled();expect(element.querySelector).toHaveBeenCalledWith('[name="password"]');await submit(render(LoginForm),{identifier:"staff",password:"p"});const html=renderToStaticMarkup(render(LoginForm));expect(html).toContain('role="alert"');expect(html).toContain('aria-invalid="true"');expect(html).toContain('aria-describedby=');expect(html).toContain('aria-busy="false"');expect(html).toContain('href="/login"');});
@@ -93,12 +94,12 @@ it("FE-14 loaded empty contexts render recovery without enabling submit", async 
  vi.spyOn(client, "listContexts").mockResolvedValue([]);
  render(() => SwitchContext({selection:"org"})); h.effects[0](); await Promise.resolve();
  const html = renderToStaticMarkup(render(() => SwitchContext({selection:"org"})));
- expect(html).toContain("lucide-inbox"); expect(html).toContain('href="/staff/login"'); expect(html).toMatch(/<button[^>]*disabled/);
+ expect(html).toContain('role="status"'); expect(html).not.toContain("lucide-inbox"); expect(html).toContain('href="/staff/login"'); expect(html).toMatch(/<button[^>]*disabled/);
 });
 it("FE-14 staff initial login and missing invitation have visible empty states", () => {
  expect(renderToStaticMarkup(render(LoginForm))).toContain("<form");
  h.slots = [];
- expect(renderToStaticMarkup(render(InviteForm))).toContain("lucide-inbox");
+ expect(renderToStaticMarkup(render(InviteForm))).toContain('role="status"');
 });
 
 it("S19 employee shell supplies an explicit journey-only next-intl provider", () => {

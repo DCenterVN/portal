@@ -1,9 +1,8 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { Play, CheckSquare, Layers, Box, CheckCircle2, Clock } from "lucide-react";
+import { InlineAlert } from "@/components/patterns/inline-alert";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { StatusBadge } from "@/components/patterns/status-badge";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
@@ -13,106 +12,27 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useToast } from "@/components/ui/toast";
-import { PageShell, PageHeader } from "@/components/ui/page";
-import {
-  ProductionOrder,
-  acceptOrder,
-  allocateOrderLots,
-  startOrder,
-  completeOrder,
-} from "@/lib/api/production";
+import { PageShell } from "@/components/ui/page";
+import { PageHeading } from "@/components/patterns/page-heading";
+import type { ProductionOrder } from "@/lib/api/production";
+import { useProductionOrders } from "./use-production-orders";
 
 interface OrdersViewProps {
-  initialOrders: ProductionOrder[];
+  initialOrders?: ProductionOrder[];
 }
 
 export function OrdersView({ initialOrders }: OrdersViewProps) {
-  const { toast } = useToast();
-  const [orders, setOrders] = useState<ProductionOrder[]>(initialOrders);
-  const [loadingId, setLoadingId] = useState<string | null>(null);
-  const [permissions, setPermissions] = useState<string[]>([]);
-  const [startRole, setStartRole] = useState<"VT-10" | "VT-11">("VT-10");
-
-  useEffect(() => {
-    fetch("/api/auth/context", { cache: "no-store" })
-      .then((response) => response.ok ? response.json() : Promise.reject(new Error("Không thể tải quyền")))
-      .then((context: { active_context?: { branch_id?: string }; contexts?: Array<{ branch_id: string; roles: string[] }>; permissions?: string[] }) => {
-        setPermissions(context.permissions ?? []);
-        const active = context.contexts?.find((item) => item.branch_id === context.active_context?.branch_id);
-        setStartRole(active?.roles.includes("VT-10") ? "VT-10" : "VT-11");
-      })
-      .catch(() => setPermissions([]));
-  }, []);
-
-  const handleAccept = async (orderId: string) => {
-    setLoadingId(orderId);
-    try {
-      const updated = await acceptOrder(orderId);
-      setOrders(orders.map((o) => (o.id === orderId ? updated : o)));
-      toast({ title: "Tổ trưởng sơ chế đã tiếp nhận (VT-09)", description: `Lệnh ${updated.order_code} chuyển sang ACCEPTED`, variant: "success" });
-    } catch (err: unknown) {
-      toast({ title: "Lỗi tiếp nhận lệnh", description: err instanceof Error ? err.message : "Không thể tiếp nhận lệnh", variant: "error" });
-    } finally {
-      setLoadingId(null);
-    }
-  };
-
-  const handleAllocate = async (orderId: string) => {
-    setLoadingId(orderId);
-    try {
-      const updated = await allocateOrderLots(orderId);
-      setOrders(orders.map((o) => (o.id === orderId ? updated : o)));
-      toast({ title: "Đã phân bổ FEFO nguyên liệu kho", description: `Lệnh ${updated.order_code} chuyển sang ALLOCATED`, variant: "success" });
-    } catch (err: unknown) {
-      toast({ title: "Lỗi phân bổ kho", description: err instanceof Error ? err.message : "Không thể phân bổ kho", variant: "error" });
-    } finally {
-      setLoadingId(null);
-    }
-  };
-
-  const handleStart = async (orderId: string) => {
-    setLoadingId(orderId);
-    try {
-      const updated = await startOrder(orderId, startRole);
-      setOrders(orders.map((o) => (o.id === orderId ? updated : o)));
-      toast({ title: "Bắt đầu sơ chế & chế biến (VT-10 / VT-11)", description: `Đã trừ tồn kho nguyên liệu, lệnh ${updated.order_code} chuyển sang IN_PROGRESS`, variant: "success" });
-    } catch (err: unknown) {
-      toast({ title: "Lỗi bắt đầu chế biến", description: err instanceof Error ? err.message : "Không thể bắt đầu chế biến", variant: "error" });
-    } finally {
-      setLoadingId(null);
-    }
-  };
-
-  const handleComplete = async (orderId: string, plannedQty: number) => {
-    setLoadingId(orderId);
-    try {
-      const updated = await completeOrder(orderId, plannedQty, [], "VT-12");
-      setOrders(orders.map((o) => (o.id === orderId ? updated : o)));
-      toast({ title: "Đóng gói & Cấp đông hoàn tất (VT-12)", description: `Đã tạo lô thành phẩm QUARANTINED, chuyển sang chờ QC (VT-13)`, variant: "success" });
-    } catch (err: unknown) {
-      toast({ title: "Lỗi hoàn tất lệnh", description: err instanceof Error ? err.message : "Không thể hoàn tất lệnh", variant: "error" });
-    } finally {
-      setLoadingId(null);
-    }
-  };
-
-  // Visual emphasis only: retain every existing permission-gated row action.
-  const primaryOrderId = orders.find((order) =>
-    (order.status === "HANDED_OFF" && permissions.includes("production:order:update")) ||
-    (order.status === "ACCEPTED" && permissions.includes("production:order:update")) ||
-    (order.status === "ALLOCATED" && permissions.includes("production:order:update")) ||
-    (order.status === "IN_PROGRESS" && permissions.includes("production:order:update"))
-  )?.id;
+  const { orders, listLoading, listError, loadingId, canUpdate, primaryOrderId, handleAccept, handleAllocate, handleStart, handleComplete } = useProductionOrders(initialOrders);
 
   return (
-    <PageShell className="bg-[var(--color-bg)] text-[var(--color-ink)]">
-      <PageHeader
+    <PageShell>
+      <PageHeading
         title="Điều hành Sản xuất & Chế biến (VT-09 .. VT-12)"
         description="Quy trình Make-to-Stock: Tiếp nhận → Phân bổ FEFO → Sơ chế & Nấu → Đóng gói & Cấp đông"
       />
 
-      <Card className="bg-[var(--color-surface)] text-[var(--color-ink)] border-[var(--color-line)]">
+      {listError && <InlineAlert className="mb-4">{listError}</InlineAlert>}
+      <Card>
         <CardContent className="p-0">
           <Table>
             <TableHeader>
@@ -127,8 +47,8 @@ export function OrdersView({ initialOrders }: OrdersViewProps) {
             <TableBody>
               {orders.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-6 text-[var(--color-muted)]">
-                    Chưa có lệnh sản xuất nào được chuyển giao từ Chuyên gia dinh dưỡng (VT-21)
+                  <TableCell colSpan={5} className="py-6 text-center text-muted-foreground">
+                    {listLoading ? "Đang tải lệnh sản xuất…" : "Chưa có lệnh sản xuất nào được chuyển giao từ Chuyên gia dinh dưỡng (VT-21)"}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -138,70 +58,65 @@ export function OrdersView({ initialOrders }: OrdersViewProps) {
                     <TableCell>{o.planned_quantity} {o.uom}</TableCell>
                     <TableCell>{o.actual_output_quantity > 0 ? `${o.actual_output_quantity} ${o.uom}` : "—"}</TableCell>
                     <TableCell>
-                      <Badge
-                        variant={
+                      <StatusBadge tone={
                           o.status === "QC_PASSED"
-                            ? "active"
+                            ? "success"
                             : o.status === "COMPLETED" || o.status === "IN_PROGRESS"
-                            ? "secondary"
+                            ? "neutral"
                             : o.status === "QC_FAILED" || o.status === "FAILED"
-                            ? "revoked"
-                            : "outline"
+                            ? "danger"
+                            : "neutral"
                         }
                       >
                         {o.status}
-                      </Badge>
+                      </StatusBadge>
                     </TableCell>
                     <TableCell className="text-right">
-                      {o.status === "HANDED_OFF" && permissions.includes("production:order:update") && (
+                      {o.status === "HANDED_OFF" && canUpdate && (
                         <Button
                           size="sm"
                           variant={o.id === primaryOrderId ? "default" : "outline"}
                           disabled={loadingId === o.id}
                           onClick={() => handleAccept(o.id)}
                         >
-                          <CheckSquare className="h-4 w-4 mr-1" /> Tiếp nhận (VT-09)
+                          Tiếp nhận (VT-09)
                         </Button>
                       )}
-                      {o.status === "ACCEPTED" && permissions.includes("production:order:update") && (
+                      {o.status === "ACCEPTED" && canUpdate && (
                         <Button
                           size="sm"
                           variant={o.id === primaryOrderId ? "default" : "outline"}
                           disabled={loadingId === o.id}
                           onClick={() => handleAllocate(o.id)}
                         >
-                          <Layers className="h-4 w-4 mr-1" /> Phân bổ FEFO
+                          Phân bổ FEFO
                         </Button>
                       )}
-                      {o.status === "ALLOCATED" && permissions.includes("production:order:update") && (
+                      {o.status === "ALLOCATED" && canUpdate && (
                         <Button
                           size="sm"
                           variant={o.id === primaryOrderId ? "default" : "outline"}
                           disabled={loadingId === o.id}
                           onClick={() => handleStart(o.id)}
                         >
-                          <Play className="h-4 w-4 mr-1" /> Bắt đầu nấu (VT-10/11)
+                          Bắt đầu nấu (VT-10/11)
                         </Button>
                       )}
-                      {o.status === "IN_PROGRESS" && permissions.includes("production:order:update") && (
+                      {o.status === "IN_PROGRESS" && canUpdate && (
                         <Button
                           size="sm"
                           variant={o.id === primaryOrderId ? "default" : "outline"}
                           disabled={loadingId === o.id}
                           onClick={() => handleComplete(o.id, o.planned_quantity)}
                         >
-                          <Box className="h-4 w-4 mr-1" /> Đóng gói & Cấp đông (VT-12)
+                          Đóng gói & Cấp đông (VT-12)
                         </Button>
                       )}
                       {o.status === "COMPLETED" && (
-                        <span className="text-sm font-medium text-[var(--color-ink)] flex items-center justify-end">
-                          <Clock className="h-4 w-4 mr-1 text-[var(--color-sun)]" /> Chờ QC nghiệm thu (VT-13)
-                        </span>
+                        <StatusBadge tone="warning">Chờ QC nghiệm thu (VT-13)</StatusBadge>
                       )}
                       {o.status === "QC_PASSED" && (
-                        <span className="text-sm font-medium text-[var(--color-ink)] flex items-center justify-end">
-                          <CheckCircle2 className="h-4 w-4 mr-1 text-[var(--color-leaf)]" /> QC Đạt — Sẵn sàng lên kệ
-                        </span>
+                        <StatusBadge tone="success">QC Đạt — Sẵn sàng lên kệ</StatusBadge>
                       )}
                     </TableCell>
                   </TableRow>

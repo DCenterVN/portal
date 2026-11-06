@@ -1,5 +1,5 @@
 "use client";
-import {EmptyState, ErrorState} from "@/components/ui/state";
+import { EmptyState, ErrorState } from "@/components/patterns/empty-state";
 import {useTranslations} from "next-intl";
 
 

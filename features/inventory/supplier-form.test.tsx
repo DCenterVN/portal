@@ -46,15 +46,15 @@ it("không có ảnh chỉ lưu hồ sơ, không presign", async () => {
 });
 
 type SurfaceProps = { children?: ReactNode; open?: boolean };
-vi.mock("@/components/ui/dialog", () => ({
-  Dialog: ({ children, open }: SurfaceProps) => open ? children : null,
-  DialogContent: ({ children }: SurfaceProps) => <section>{children}</section>,
-  DialogHeader: ({ children }: SurfaceProps) => <header>{children}</header>,
-  DialogTitle: ({ children }: SurfaceProps) => <h2>{children}</h2>,
-  DialogDescription: ({ children }: SurfaceProps) => <p>{children}</p>,
-  DialogFooter: ({ children }: SurfaceProps) => <footer>{children}</footer>,
-  ConfirmDialog: () => null,
+vi.mock("@/components/ui/sheet", () => ({
+  Sheet: ({ children, open }: SurfaceProps) => open ? children : null,
+  SheetContent: ({ children }: SurfaceProps) => <section>{children}</section>,
+  SheetHeader: ({ children }: SurfaceProps) => <header>{children}</header>,
+  SheetTitle: ({ children }: SurfaceProps) => <h2>{children}</h2>,
+  SheetDescription: ({ children }: SurfaceProps) => <p>{children}</p>,
+  SheetFooter: ({ children }: SurfaceProps) => <footer>{children}</footer>,
 }));
+vi.mock("@/components/patterns/confirm-dialog", () => ({ ConfirmDialog: () => null }));
 
 it("form thêm/sửa có đủ section và mọi trường hồ sơ", () => {
   for (const value of [undefined, supplier]) {

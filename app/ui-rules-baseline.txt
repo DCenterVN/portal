@@ -4,32 +4,8 @@ raw-id	features/sales/pricing-floor-view.tsx:label=BOM UUID	B11
 raw-id	features/sales/pricing-floor-view.tsx:label=Price book UUID	B12
 raw-id	features/sales/pricing-floor-view.tsx:label=Product UUID	B9
 raw-id	features/sales/pricing-floor-view.tsx:label=Variant UUID	B10
-rounded	app/(store)/me/profile-client.tsx:rounded-2xl	-
-rounded	app/(store)/me/profile-client.tsx:rounded-2xl#2	-
-rounded	app/(store)/me/profile-client.tsx:rounded-2xl#3	-
-rounded	app/(store)/me/profile-client.tsx:rounded-2xl#4	-
 rounded	components/layout/console-shell.tsx:focus:rounded-md	-
-rounded	components/layout/customer-auth-shell.tsx:focus:rounded-md	-
 rounded	components/layout/store-shell.tsx:focus:rounded-md	-
-rounded	components/modals/session-timeout-modal.tsx:rounded-2xl	-
-rounded	features/branches/branches-view.tsx:rounded-2xl	-
-rounded	features/branches/branches-view.tsx:rounded-[var(--radius-md)]	-
 rounded	features/customer-auth/form-feedback.tsx:rounded-[var(--radius-md)]	-
-rounded	features/customer-auth/form-feedback.tsx:rounded-[var(--radius-md)]#2	-
-rounded	features/employee-auth/form-feedback.tsx:rounded-[var(--radius-md)]	-
-rounded	features/employee-auth/switch-context.tsx:rounded-[var(--radius-md)]	-
-rounded	features/inventory/shelves-view.tsx:rounded-[var(--radius-md)]	-
-rounded	features/inventory/shelves-view.tsx:rounded-[var(--radius-md)]#2	-
 rounded	features/platform/audit-view.tsx:rounded-md	-
-rounded	features/production/qc-view.tsx:rounded-[var(--radius-md)]	-
-rounded	features/production/qc-view.tsx:rounded-[var(--radius-md)]#2	-
-rounded	features/production/targets-view.tsx:rounded-[var(--radius-md)]	-
-rounded	features/products/cart-view.tsx:rounded-2xl	-
-rounded	features/products/cart-view.tsx:rounded-2xl#2	-
-rounded	features/products/cart-view.tsx:rounded-2xl#3	-
 rounded	features/products/orders-view.tsx:rounded-[var(--radius-md)]	-
-rounded	features/products/products-view.tsx:rounded-2xl	-
-rounded	features/products/products-view.tsx:rounded-2xl#2	-
-rounded	features/products/products-view.tsx:rounded-2xl#3	-
-rounded	features/products/products-view.tsx:rounded-2xl#4	-
-rounded	features/roles/roles-view.tsx:rounded-2xl	-

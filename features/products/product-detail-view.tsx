@@ -4,12 +4,12 @@ import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useToast } from "@/components/ui/toast";
+import { toast } from "@/components/ui/toast";
 import { type Product, addToCart, formatVND, getOrCreateCartId, recordCartResponse } from "@/lib/api/sales";
-import { PageShell, PageHeader } from "@/components/ui/page";
+import { PageShell } from "@/components/ui/page";
+import { PageHeading } from "@/components/patterns/page-heading";
 
 export function ProductDetailView({ initialProduct: product }: { initialProduct: Product }) {
-  const { toast } = useToast();
   const [addingToCart, setAddingToCart] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const canBuy = product.status === "ACTIVE" && !!product.sku_ref && !!product.branch_ref &&
@@ -20,16 +20,16 @@ export function ProductDetailView({ initialProduct: product }: { initialProduct:
     try {
       const cart = await addToCart(getOrCreateCartId(), { sku_ref: product.sku_ref, branch_id: product.branch_ref, quantity });
       recordCartResponse(cart, product);
-      toast.success("Đã thêm vào giỏ hàng", `Đã thêm ${quantity} ${product.uom} ${product.name} vào giỏ hàng.`);
+      toast.success("Đã thêm vào giỏ hàng", { description: `Đã thêm ${quantity} ${product.uom} ${product.name} vào giỏ hàng.` });
     } catch (error) {
-      toast.error("Không thể thêm vào giỏ", error instanceof Error ? error.message : "Vui lòng thử lại.");
+      toast.error("Không thể thêm vào giỏ", { description: error instanceof Error ? error.message : "Vui lòng thử lại." });
     } finally {
       setAddingToCart(false);
     }
   }
   return <PageShell>
     <Link href="/products" className="mb-4 inline-flex min-h-11 items-center text-sm">Quay lại danh mục món</Link>
-    <PageHeader title={product.name} description={product.description || "Thông tin món và quy cách phục vụ"} />
+    <PageHeading title={product.name} description={product.description || "Thông tin món và quy cách phục vụ"} />
     <div className="mt-6 grid min-w-0 gap-6 lg:grid-cols-2">
       <Card className="overflow-hidden border-[var(--color-line)] bg-[var(--color-surface)] p-0">
         {product.image_urls?.[0] ?

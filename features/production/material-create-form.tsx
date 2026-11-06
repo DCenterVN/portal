@@ -3,8 +3,10 @@
 import { useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Checkbox, Select } from "@/components/ui/field";
-import { EntityPicker } from "@/components/ui/entity-picker";
+import { Checkbox } from "@/components/patterns/form-field";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import { EntityPicker } from "@/components/patterns/entity-picker";
+import { InlineAlert } from "@/components/patterns/inline-alert";
 const allergens = ["GLUTEN", "CRUSTACEANS", "EGGS", "FISH", "PEANUTS", "SOYBEANS", "MILK", "TREE_NUTS", "CELERY", "MUSTARD", "SESAME", "SULPHITES", "LUPIN", "MOLLUSCS"] as const;
 const avoidance = ["PORK", "BEEF", "ANIMAL", "ALCOHOL", "MSG", "SPICY", "NGU_VI_TAN"] as const;
 
@@ -56,14 +58,14 @@ export function MaterialCreateForm({ initialName, categories, onCreate, onUseExi
       <p>Mã nguyên liệu được tạo tự động sau khi lưu.</p>
       <EntityPicker name="material-create-parent" label="Nhóm cấp 1" required items={categories} status="ready" value={parent} getId={item => item.code} getLabel={item => item.name} onChange={id => { setParent(id ?? ""); setLeaf(""); }} />
       <EntityPicker key={parent} name="material-create-leaf" label="Nhóm cấp 2" required items={categories.find(item => item.code === parent)?.children ?? []} status="ready" value={leaf} getId={item => item.code} getLabel={item => item.name} onChange={id => setLeaf(id ?? "")} />
-      <label>Đơn vị<Select value={unit} onChange={e => { const value = e.target.value; if (value === "KG" || value === "L" || value === "EA") setUnit(value); }}><option value="KG">Kilôgam</option><option value="L">Lít</option><option value="EA">Cái/gói</option></Select></label>
-      <label>Dị ứng<Select value={known ? "known" : "unknown"} onChange={e => setKnown(e.target.value === "known")}><option value="unknown">Chưa biết</option><option value="known">Đã khai báo</option></Select></label>
+      <label>Đơn vị<NativeSelect value={unit} onChange={e => { const value = e.target.value; if (value === "KG" || value === "L" || value === "EA") setUnit(value); }}><NativeSelectOption value="KG">Kilôgam</NativeSelectOption><NativeSelectOption value="L">Lít</NativeSelectOption><NativeSelectOption value="EA">Cái/gói</NativeSelectOption></NativeSelect></label>
+      <label>Dị ứng<NativeSelect value={known ? "known" : "unknown"} onChange={e => setKnown(e.target.value === "known")}><NativeSelectOption value="unknown">Chưa biết</NativeSelectOption><NativeSelectOption value="known">Đã khai báo</NativeSelectOption></NativeSelect></label>
       {known && <fieldset><legend>Dị ứng đã khai báo (để trống = Không có)</legend>{allergens.map(value => <Checkbox key={value} label={value} checked={contains.includes(value)} onChange={e => setContains(current => e.target.checked ? [...current, value] : current.filter(item => item !== value))} />)}</fieldset>}
       <fieldset><legend>Nhãn kiêng</legend>{avoidance.map(value => <Checkbox key={value} label={value} checked={flags.includes(value)} onChange={e => setFlags(current => e.target.checked ? [...current, value] : current.filter(item => item !== value))} />)}</fieldset>
-      <label>Chế độ ăn<Select value={diet} onChange={e => setDiet(e.target.value)}><option value="unknown">Chưa biết</option><option value="none">Không</option><option value="VEGETARIAN">Chay</option><option value="VEGAN">Thuần chay</option></Select></label>
+      <label>Chế độ ăn<NativeSelect value={diet} onChange={e => setDiet(e.target.value)}><NativeSelectOption value="unknown">Chưa biết</NativeSelectOption><NativeSelectOption value="none">Không</NativeSelectOption><NativeSelectOption value="VEGETARIAN">Chay</NativeSelectOption><NativeSelectOption value="VEGAN">Thuần chay</NativeSelectOption></NativeSelect></label>
       <fieldset><legend>Tháng mùa</legend><div className="flex flex-wrap gap-3">{Array.from({ length: 12 }, (_, index) => index + 1).map(month => <Checkbox key={month} label={`Tháng ${month}`} checked={months.includes(month)} onChange={e => setMonths(current => e.target.checked ? [...current, month] : current.filter(item => item !== month))} />)}</div></fieldset>
     </fieldset>
-    {(validationError || error) && <p role="alert">{validationError || error}</p>}
+    {(validationError || error) && <InlineAlert>{validationError || error}</InlineAlert>}
     {existing && <div role="status"><p>Đã có {existing.name} · {existing.code}</p><Button type="button" variant="outline" disabled={busy} onClick={() => void useExisting()}>Dùng nguyên liệu đã có</Button></div>}
     <div className="flex gap-3"><Button type="submit" disabled={busy}>{busy ? "Đang lưu…" : "Tạo nguyên liệu"}</Button><Button type="button" variant="outline" disabled={busy} onClick={onCancel}>Hủy</Button></div>
   </form>;

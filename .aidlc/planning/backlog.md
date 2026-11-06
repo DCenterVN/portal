@@ -11,3 +11,4 @@
 - US-INBOUND-UX-001: (Dawn 31/10) Nhân viên kho mở phiếu nháp, nhận hàng từng dòng kèm ảnh hàng + chứng từ giao hàng (bắt buộc), ghi lệch số lượng có ảnh, để lô vào kho có bằng chứng (backend: ../inventory/.aidlc/specs/inbound-receiving.md, inbound-trace-storage.md).
 - US-DISH-GUARD-001: (Dawn 31/10) FOOD_DEV không hoàn tất được món khi có nguyên liệu chưa thuộc nhóm hợp lệ, để ngăn đóng gói không bị gán sai (theo handoff 31/10 mục 3.3).
 - US-E2E-VIDEO-001: (Dawn 31/10) Dawn xem được e2e đã làm gì: mỗi ca có video + trace + kịch bản tiếng Việt từng bước, codex chạy và gửi lại kết quả, để Dawn tự tin trước khi merge.
+- US-UI-SHADCN-001: (Dawn 05/11) Người dùng từng vai (kho, QC, FOOD_DEV, quản trị, khách) làm việc trên giao diện xanh lá dịu, nút/khung shadcn gốc, bố cục gọn, để sản phẩm dễ nhìn và dễ phát triển tiếp (plan: .aidlc/runs/PORTAL-UI-SHADCN-001/plan.md).

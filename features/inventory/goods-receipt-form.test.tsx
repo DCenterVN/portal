@@ -51,7 +51,7 @@ vi.mock("react", async original => {
 });
 vi.mock("@/lib/access-boundary", async original => {
   const actual = await original<typeof import("@/lib/access-boundary")>();
-  return { ...actual, useAccess: () => harness.enabled ? { can: () => true } : actual.useAccess() };
+  return { ...actual, useAccess: () => harness.enabled ? { can: () => true, scope: { userId: "u", orgId: "o", branchId: documentID, branchName: "B", roles: [] } } : actual.useAccess() };
 });
 afterEach(() => { harness.enabled = false; vi.restoreAllMocks(); vi.unstubAllGlobals(); });
 function receiptHook() {
@@ -66,7 +66,6 @@ async function readyReceipt(items: agreementsAPI.Agreement[] = []) {
   vi.spyOn(suppliersAPI, "getActiveSuppliers").mockResolvedValue([supplier]);
   vi.spyOn(agreementsAPI, "getContractMaterials").mockResolvedValue([material]);
   vi.spyOn(agreementsAPI, "getAllAgreements").mockResolvedValue(items);
-  vi.spyOn(receiptsAPI, "getReceiptBranch").mockResolvedValue(documentID);
   receiptHook(); await Promise.resolve(); await Promise.resolve(); await Promise.resolve();
   receiptHook().onSupplier(supplierID);
   receiptHook(); await Promise.resolve(); await Promise.resolve();

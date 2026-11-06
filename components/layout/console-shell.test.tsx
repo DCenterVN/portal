@@ -2,125 +2,108 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { ThemeProvider } from "@/components/theme-provider";
+import type { NavGroup } from "@/lib/navigation";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import { ConsoleHeader } from "./console-header";
-import { ConsoleShell, initialCollapsed, isActive, type ShellNavGroup } from "./console-shell";
+import { ConsoleShell } from "./console-shell";
 
 vi.mock("next/navigation", () => ({ usePathname: () => "/inventory/shelves", useRouter: () => ({ push: vi.fn() }) }));
 
-// Node has no DOM: with `open` set, every `useState(false)` starts true so the account menu shows in the SSR markup.
+// Node has no DOM: with `open` set, the account menu content renders inline so its items show in the SSR markup.
 const flags = vi.hoisted(() => ({ open: false }));
-vi.mock("react", async (original) => {
-  const actual = await original<typeof import("react")>();
-  return { ...actual, useState: (initial: unknown) => actual.useState(flags.open && initial === false ? true : initial) };
+
+vi.mock("@/components/ui/dropdown-menu", async (original) => {
+  const { ssrMenuContent, ssrMenuItem } = await import("@/mocks/overlay-ssr");
+  return { ...(await original<typeof import("@/components/ui/dropdown-menu")>()), DropdownMenuContent: ssrMenuContent(() => flags.open), DropdownMenuItem: ssrMenuItem };
 });
 
 const themed = (node: React.ReactNode) => renderToStaticMarkup(<ThemeProvider>{node}</ThemeProvider>);
 const section = (html: string, tag: string) => html.slice(html.indexOf(`<${tag}`), html.indexOf(`</${tag}>`));
 
-const nav: ShellNavGroup[] = [
+const nav: NavGroup[] = [
   {
-    title: "Inventory",
+    title: "Kho",
     items: [
-      { href: "/inventory/shelves", label: "Shelves", match: "/inventory/shelves" },
-      { href: "/production/orders", label: "Orders", match: "/production/orders" },
+      { href: "/inventory/shelves", label: "Kệ hàng", match: "/inventory/shelves" },
+      { href: "/production/orders", label: "Lệnh sản xuất", match: "/production/orders" },
     ],
   },
 ];
 
+const shell = (props: Partial<React.ComponentProps<typeof ConsoleShell>> = {}) =>
+  themed(
+    <ConsoleShell nav={nav} context={{ label: "Chi nhánh 1", sublabel: "Công ty" }} user={{ name: "Dawn Nguyen", detail: "Quản lý" }} {...props}>
+      <p>Page content</p>
+    </ConsoleShell>
+  );
+
 describe("ConsoleShell", () => {
-  it("initializes collapsed state from storage before viewport width", () => {
-    expect(initialCollapsed(1200, "1")).toBe(true);
-    expect(initialCollapsed(700, "0")).toBe(false);
-    expect(initialCollapsed(1024, null)).toBe(false);
-    expect(initialCollapsed(1023, null)).toBe(true);
-  });
-
-  it("matches exact routes and descendants only", () => {
-    expect(isActive("/inventory/shelves", "/inventory/shelves")).toBe(true);
-    expect(isActive("/inventory/shelves/one", "/inventory/shelves")).toBe(true);
-    expect(isActive("/inventory/shelving", "/inventory/shelves")).toBe(false);
-  });
-
-  it("renders the CRM shell, active link, toggle, and skip link", () => {
-    const html = themed(
-      <ConsoleShell nav={nav} context={{ label: "Branch" }} user={{ name: "User" }}>
-        <p>Page content</p>
-      </ConsoleShell>
-    );
-
+  it("renders one main landmark, the skip link and the labelled navigation with the active link", () => {
+    const html = shell();
     expect(html).toContain('data-surface="console"');
-    expect(html).not.toContain('data-collapsed="true"');
     expect((html.match(/<main\b/g) ?? []).length).toBe(1);
     expect(html).toContain('<main id="main"');
-    expect(html).toContain('aria-expanded="true"');
-    expect(html).toContain('aria-current="page"');
     expect(html).toContain('href="#main">Bỏ qua tới nội dung</a>');
-  });
-
-  it("renders the requested initial collapsed state", () => {
-    const html = themed(
-      <ConsoleShell
-        nav={nav}
-        context={{ label: "Branch" }}
-        user={{ name: "User" }}
-        defaultCollapsed
-      >
-        <p>Page content</p>
-      </ConsoleShell>
-    );
-
-    expect(html).toContain('data-surface="console" data-collapsed="true"');
-    expect(html).toContain('aria-expanded="false"');
-  });
-
-  it("keeps the sidebar solid with no avatar and the main area full width", () => {
-    const html = themed(
-      <ConsoleShell nav={nav} context={{ label: "Branch" }} user={{ name: "Dawn Nguyen", detail: "Quản lý" }}>
-        <p>Page content</p>
-      </ConsoleShell>
-    );
-    const aside = section(html, "aside");
-    expect(aside).toContain("bg-[var(--color-surface)]");
-    expect(aside).not.toMatch(/glass|backdrop-blur/);
-    expect(aside).not.toContain("Dawn Nguyen");
-    expect(aside).not.toContain("rounded-full");
+    expect(html).toMatch(/<nav aria-label="Điều hướng quản trị"/);
+    const current = html.match(/<a\b[^>]*aria-current="page"[^>]*>/g) ?? [];
+    expect(current).toHaveLength(1);
+    expect(current[0]).toContain('href="/inventory/shelves"');
     expect(html.match(/<main\b[^>]*>/)?.[0]).not.toMatch(/max-w|mx-auto/);
   });
 
-  it("puts a sticky glass L2 top bar with theme toggle and avatar menu", () => {
-    const html = themed(
-      <ConsoleShell nav={nav} context={{ label: "Branch" }} user={{ name: "Dawn Nguyen" }}>
-        <p>Page content</p>
-      </ConsoleShell>
-    );
-    const header = section(html, "header");
-    expect(header.match(/<header[^>]*class="([^"]*)"/)?.[1].split(" ")).toEqual(expect.arrayContaining(["sticky", "top-0", "border-glass-edge"]));
-    const glass = header.match(/<span aria-hidden="true" class="([^"]*)"/)?.[1] ?? "";
-    for (const name of ["absolute", "inset-0", "bg-glass-l2", "glass-blur-l2"]) expect(glass).toContain(name);
+  it("is a shadcn icon-collapsible sidebar with a rail, group labels and the branch context", () => {
+    const html = shell();
+    expect(html).toContain('data-slot="sidebar-wrapper"');
+    expect(html).toContain('data-state="expanded"');
+    expect(html).toContain('data-slot="sidebar-rail"');
+    expect(html).toContain('data-slot="sidebar-group-label"');
+    expect(html).toContain("Chi nhánh 1");
+    expect(html).toContain("Công ty");
+    expect(html).not.toMatch(/glass|backdrop-blur/);
+  });
+
+  it("puts the breadcrumb (group > page) and the sidebar trigger in a sticky header", () => {
+    const header = section(shell(), "header");
+    expect(header.match(/<header[^>]*class="([^"]*)"/)?.[1].split(" ")).toEqual(expect.arrayContaining(["sticky", "top-0", "border-b"]));
+    expect(header).toContain('aria-label="breadcrumb"');
+    expect(header).toContain(">Kho</li>");
+    expect(header).toMatch(/aria-current="page"[^>]*>Kệ hàng<\/span>/);
+    expect(header).toContain('data-slot="sidebar-trigger"');
     expect(header).toMatch(/aria-label="Chuyển sang giao diện (tối|sáng)"/);
-    expect(header).toContain('aria-label="Tài khoản của Dawn Nguyen" aria-haspopup="menu"');
   });
 
-  it("hides account name and detail below sm while preserving its accessible name", () => {
-    const html = themed(
-      <ConsoleHeader collapsed={false} onToggle={() => {}} toggleLabel="Toggle" user={{ name: "Dawn Nguyen", detail: "Quản lý kho" }} />
-    );
-    const header = section(html, "header");
-    const classes = header.match(/<span class="([^"]*)">Dawn Nguyen/)?.[1].split(" ") ?? [];
-    expect(classes).toEqual(expect.arrayContaining(["hidden", "sm:block"]));
-    expect(header).toContain('aria-label="Tài khoản của Dawn Nguyen"');
-    expect(header).toMatch(/aria-hidden="true"[^>]*>D<\/span>/);
-    expect(header).toContain("Quản lý kho</span></span>");
+  it("keeps header icon buttons at a 44px touch size on mobile", () => {
+    const header = section(shell(), "header");
+    const triggerClasses = header.match(/<button[^>]*data-slot="sidebar-trigger"[^>]*class="([^"]*)"/)?.[1] ?? header.match(/<button[^>]*class="([^"]*)"[^>]*data-slot="sidebar-trigger"/)?.[1] ?? "";
+    expect(triggerClasses).toContain("max-md:size-11");
+    expect(header.match(/<button[^>]*aria-label="Chuyển sang giao diện[^>]*>/)?.[0]).toContain("max-md:size-11");
   });
 
-  it("lists Tài khoản and Đăng xuất in the open avatar menu", () => {
+  it("omits the breadcrumb when the path matches no menu item", () => {
+    const html = themed(<SidebarProvider><ConsoleHeader crumbs={[]} /></SidebarProvider>);
+    expect(html).not.toContain('aria-label="breadcrumb"');
+  });
+
+  it("shows the status footer only when given", () => {
+    expect(shell()).not.toContain("<footer");
+    expect(shell({ statusText: "Đồng bộ" })).toContain("Đồng bộ");
+  });
+
+  it("names the account trigger and keeps name and detail in the sidebar footer", () => {
+    const html = shell();
+    const footer = html.slice(html.indexOf('data-slot="sidebar-footer"'));
+    expect(footer).toContain('aria-label="Tài khoản của Dawn Nguyen"');
+    expect(footer).toContain("Dawn Nguyen");
+    expect(footer).toContain("Quản lý");
+    expect(footer).toContain("aria-haspopup=\"menu\"");
+  });
+
+  it("lists Tài khoản and Đăng xuất in the open account menu, and Đăng xuất only with a logout handler", () => {
     flags.open = true;
     try {
-      const html = themed(
-        <ConsoleHeader collapsed={false} onToggle={() => {}} toggleLabel="Toggle" user={{ name: "Dawn" }} onLogout={() => {}} />
-      );
-      const items = [...html.matchAll(/role="menuitem"[^>]*>(?:<svg[\s\S]*?<\/svg>)?([^<]*)/g)].map((match) => match[1]);
-      expect(items).toEqual(["Tài khoản", "Đăng xuất"]);
+      const items = (html: string) => [...html.matchAll(/role="menuitem"[^>]*>(?:<svg[\s\S]*?<\/svg>)?([^<]*)/g)].map((match) => match[1]);
+      expect(items(shell({ onLogout: () => {} }))).toEqual(["Tài khoản", "Đăng xuất"]);
+      expect(items(shell())).toEqual(["Tài khoản"]);
     } finally {
       flags.open = false;
     }

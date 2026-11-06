@@ -7,7 +7,6 @@ import { companyMemberships } from "@/lib/api/platform-client";
 import * as swr from "swr";
 import { NextIntlClientProvider } from "next-intl";
 import messages from "@/messages/vi.json";
-import { ToastProvider } from "@/components/ui/toast";
 
 vi.mock("swr", () => ({ default: vi.fn() }));
 vi.mock("@/lib/access-boundary", () => ({ useAccess: () => ({ can: () => true }) }));
@@ -20,7 +19,7 @@ it("memberships_no_uuid", async () => {
   } })));
   const data = await companyMemberships(1);
   vi.mocked(swr.default).mockReturnValue({ data, error: undefined, isLoading: false, isValidating: false, mutate: vi.fn() });
-  const html = renderToStaticMarkup(<NextIntlClientProvider locale="vi" timeZone="Asia/Ho_Chi_Minh" messages={messages}><ToastProvider><MembershipsView /></ToastProvider></NextIntlClientProvider>);
+  const html = renderToStaticMarkup(<NextIntlClientProvider locale="vi" timeZone="Asia/Ho_Chi_Minh" messages={messages}><MembershipsView /></NextIntlClientProvider>);
   expect(html).toContain(messages.memberships.roleLabels.SALES);
   expect(html).toContain(messages.memberships.ACTIVE);
   expect(userFacingContent(html)).not.toMatch(/[0-9a-f]{8}-[0-9a-f]{4}-/);
