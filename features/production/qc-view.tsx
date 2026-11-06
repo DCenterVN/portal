@@ -2,6 +2,7 @@
 
 import React, { useId } from "react";
 import { InlineAlert } from "@/components/patterns/inline-alert";
+import { ErrorState } from "@/components/patterns/empty-state";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,7 +29,7 @@ interface QCViewProps {
 
 export function QCView({ completedOrders }: QCViewProps) {
   const formId = useId();
-  const { orders, listLoading, listError, selectedOrder, setSelectedOrder, temperature, setTemperature, packagePassed, setPackagePassed, sensoryNotes, setSensoryNotes, loading, handleDecision } = useQcDecision(completedOrders);
+  const { orders, listLoading, listError, reload, selectedOrder, setSelectedOrder, temperature, setTemperature, packagePassed, setPackagePassed, sensoryNotes, setSensoryNotes, loading, handleDecision } = useQcDecision(completedOrders);
 
   return (
     <PageShell>
@@ -93,8 +94,7 @@ export function QCView({ completedOrders }: QCViewProps) {
         </Card>
       )}
 
-      {listError && <InlineAlert className="mb-4">{listError}</InlineAlert>}
-      <Card>
+      {listError ? <ErrorState title={listError} onRetry={reload} className="mb-4" /> : <Card>
         <CardContent className="p-0">
           <Table>
             <TableHeader>
@@ -138,7 +138,7 @@ export function QCView({ completedOrders }: QCViewProps) {
             </TableBody>
           </Table>
         </CardContent>
-      </Card>
+      </Card>}
     </PageShell>
   );
 }

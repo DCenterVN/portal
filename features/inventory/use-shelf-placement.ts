@@ -7,7 +7,7 @@ import { toast } from "@/components/ui/toast";
 import { type ShelfPlacement, type ProductionOrder, getOrders, getShelfPlacements, placeOnShelf } from "@/lib/api/production";
 
 export function useShelfPlacement(initialPlacements?: ShelfPlacement[]) {
-  const { items: placements, setItems: setPlacements, loading: listLoading, error: listError } = useLoadedList(initialPlacements, getShelfPlacements);
+  const { items: placements, setItems: setPlacements, loading: listLoading, error: listError, reload } = useLoadedList(initialPlacements, getShelfPlacements);
   const [showCreate, setShowCreate] = useState(false);
   const [shelfCode, setShelfCode] = useState("KE-MAT-01");
   const [finishedLotRef, setFinishedLotRef] = useState("");
@@ -55,5 +55,5 @@ export function useShelfPlacement(initialPlacements?: ShelfPlacement[]) {
       setLoading(false);
     }
   };
-  return { placements, listLoading, listError, showCreate, setShowCreate, shelfCode, setShelfCode, finishedLotRef, setFinishedLotRef, branchRef, placedQty, setPlacedQty, loading, lots, lotStatus, canPlace, handlePlace };
+  return { placements, listLoading, listError, reload, showCreate, setShowCreate, shelfCode, setShelfCode, finishedLotRef, setFinishedLotRef, branchRef, placedQty, setPlacedQty, loading, lots, lotStatus, canPlace, handlePlace };
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { InlineAlert } from "@/components/patterns/inline-alert";
+import { ErrorState } from "@/components/patterns/empty-state";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/patterns/status-badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -22,7 +22,7 @@ interface OrdersViewProps {
 }
 
 export function OrdersView({ initialOrders }: OrdersViewProps) {
-  const { orders, listLoading, listError, loadingId, canUpdate, primaryOrderId, handleAccept, handleAllocate, handleStart, handleComplete } = useProductionOrders(initialOrders);
+  const { orders, listLoading, listError, reload, loadingId, canUpdate, primaryOrderId, handleAccept, handleAllocate, handleStart, handleComplete } = useProductionOrders(initialOrders);
 
   return (
     <PageShell>
@@ -31,8 +31,7 @@ export function OrdersView({ initialOrders }: OrdersViewProps) {
         description="Quy trình Make-to-Stock: Tiếp nhận → Phân bổ FEFO → Sơ chế & Nấu → Đóng gói & Cấp đông"
       />
 
-      {listError && <InlineAlert className="mb-4">{listError}</InlineAlert>}
-      <Card>
+      {listError ? <ErrorState title={listError} onRetry={reload} className="mb-4" /> : <Card>
         <CardContent className="p-0">
           <Table>
             <TableHeader>
@@ -125,7 +124,7 @@ export function OrdersView({ initialOrders }: OrdersViewProps) {
             </TableBody>
           </Table>
         </CardContent>
-      </Card>
+      </Card>}
     </PageShell>
   );
 }

@@ -296,7 +296,7 @@ describe("FOODDEV forms and warehouse", () => {
     renderView(); await effects();
     const tree = renderView();
     expect(nodes(tree, n => n.type === EmptyState || n.type === LoadingState)).toHaveLength(0);
-    expect(renderToStaticMarkup(tree)).toContain("Sales unavailable");
+    expect(renderToStaticMarkup(tree)).toContain(view === "plans" ? "Không tải được kế hoạch (503)" : "Sales unavailable");
     expect(node(tree, named("Thử lại"))).toBeDefined();
   });
   it("shows an actionable empty target state and loading while saving the first target", async () => {
@@ -454,7 +454,7 @@ describe("FOODDEV forms and warehouse", () => {
     vi.stubGlobal("fetch", vi.fn(async () => Response.json({ error: "dependency_unavailable", message: "Sales unavailable" }, { status: 503 })));
     const props = { foodPlanId: plan.id }; render(MaterialRequirementsView, props); await effects();
     const html = renderToStaticMarkup(render(MaterialRequirementsView, props));
-    expect(html).toContain('role="alert"'); expect(html).toContain("Sales unavailable"); expect(html).not.toContain("0.999");
+    expect(html).toContain('role="alert"'); expect(html).toContain("Không tải được nhu cầu (503)"); expect(html).not.toContain("0.999");
   });
   it("picker fetches the next server page and keeps unknown-season data visible", async () => {
     const { requests } = api();

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { InlineAlert } from "@/components/patterns/inline-alert";
+import { ErrorState } from "@/components/patterns/empty-state";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,7 +26,7 @@ interface ShelvesViewProps {
 }
 
 export function ShelvesView({ initialPlacements }: ShelvesViewProps) {
-  const { placements, listLoading, listError, showCreate, setShowCreate, shelfCode, setShelfCode, finishedLotRef, setFinishedLotRef, branchRef, placedQty, setPlacedQty, loading, lots, lotStatus, canPlace, handlePlace } = useShelfPlacement(initialPlacements);
+  const { placements, listLoading, listError, reload, showCreate, setShowCreate, shelfCode, setShelfCode, finishedLotRef, setFinishedLotRef, branchRef, placedQty, setPlacedQty, loading, lots, lotStatus, canPlace, handlePlace } = useShelfPlacement(initialPlacements);
 
   return (
     <PageShell>
@@ -81,8 +81,7 @@ export function ShelvesView({ initialPlacements }: ShelvesViewProps) {
         </Card>
       )}
 
-      {listError && <InlineAlert className="mb-4">{listError}</InlineAlert>}
-      <Card>
+      {listError ? <ErrorState title={listError} onRetry={reload} className="mb-4" /> : <Card>
         <CardContent className="p-0">
           <Table>
             <TableHeader>
@@ -129,7 +128,7 @@ export function ShelvesView({ initialPlacements }: ShelvesViewProps) {
             </TableBody>
           </Table>
         </CardContent>
-      </Card>
+      </Card>}
     </PageShell>
   );
 }

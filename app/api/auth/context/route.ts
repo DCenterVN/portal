@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { decodeJwt } from "jose";
+import { publicError } from "@/lib/api/public-error";
 
 const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL || "http://localhost:8080";
 const ORG_SERVICE_URL = process.env.ORG_INTERNAL_URL || process.env.ORG_SERVICE_URL || "http://localhost:8081";
@@ -12,6 +14,22 @@ interface AccessContextItem {
   member_type: string;
   roles: string[];
   authorization_version: number;
+}
+
+const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function activeContext(req: NextRequest, token: string, contexts: AccessContextItem[]) {
+  const claims = decodeJwt(token);
+  const queryOrgId = req.nextUrl.searchParams.get("org_id");
+  const queryBranchId = req.nextUrl.searchParams.get("branch_id");
+  const requested = queryOrgId && queryBranchId ? { org_id: queryOrgId, branch_id: queryBranchId } : null;
+  const claimed = typeof claims.org_id === "string" && typeof claims.branch_id === "string"
+    ? { org_id: claims.org_id, branch_id: claims.branch_id }
+    : null;
+  const matches = (value: typeof requested) => value && uuidPattern.test(value.branch_id)
+    ? contexts.find((context) => context.org_id === value.org_id && context.branch_id === value.branch_id)
+    : undefined;
+  return matches(requested) ?? matches(claimed) ?? (contexts.length === 1 ? contexts[0] : null);
 }
 
 export async function GET(req: NextRequest) {
@@ -33,7 +51,8 @@ export async function GET(req: NextRequest) {
 
     if (!meRes.ok) {
       const errData = await meRes.json().catch(() => ({}));
-      return NextResponse.json(errData, { status: meRes.status });
+      const projected = errData && typeof errData === "object" && !Array.isArray(errData) ? publicError(errData) : null;
+      return NextResponse.json(projected ?? { error: "auth_context_unavailable", message: "Không thể tải thông tin tài khoản" }, { status: meRes.status });
     }
 
     userData = await meRes.json();
@@ -43,16 +62,17 @@ export async function GET(req: NextRequest) {
     const contextsRes = contextsResult.value;
     if (!contextsRes.ok) {
       const details = await contextsRes.json().catch(() => ({}));
+      const projected = details && typeof details === "object" && !Array.isArray(details) ? publicError(details) : null;
       return NextResponse.json(
-        { user: userData, error: "org_context_unavailable", message: "Không thể tải phạm vi tổ chức", details },
+        { user: userData, ...(projected ?? { error: "org_context_unavailable", message: "Không thể tải phạm vi tổ chức" }) },
         { status: contextsRes.status },
       );
     }
     accessContexts = await contextsRes.json();
 
-    // 3. Permissions depend on the active org/branch resolved above. Extract active org_id & branch_id if available from query or contexts
-    const activeOrgId = req.nextUrl.searchParams.get("org_id") || (accessContexts.length > 0 ? accessContexts[0].org_id : "");
-    const activeBranchId = req.nextUrl.searchParams.get("branch_id") || (accessContexts.length > 0 ? accessContexts[0].branch_id : "");
+    const active = activeContext(req, accessToken, accessContexts);
+    const activeOrgId = active?.org_id ?? "";
+    const activeBranchId = active?.branch_id ?? "";
 
     let permissions: string[] = [];
     if (activeOrgId && activeBranchId) {
@@ -64,8 +84,9 @@ export async function GET(req: NextRequest) {
         });
       if (!permsRes.ok) {
         const details = await permsRes.json().catch(() => ({}));
+        const projected = details && typeof details === "object" && !Array.isArray(details) ? publicError(details) : null;
         return NextResponse.json(
-          { user: userData, error: "permissions_unavailable", message: "Không thể xác minh quyền truy cập", details },
+          { user: userData, ...(projected ?? { error: "permissions_unavailable", message: "Không thể xác minh quyền truy cập" }) },
           { status: permsRes.status },
         );
       }

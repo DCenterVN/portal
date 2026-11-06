@@ -1,7 +1,7 @@
 {
   "id": "PORTAL-UI-SHADCN-001",
   "title": "UI shadcn gốc + xanh Lá dịu + cấu trúc theo Vinmec",
-  "description": "worker: claude-sonnet · story: US-UI-SHADCN-001 · sprint: 05 · slices: 0/16 · next: verification: no 'integration*' check (pipeline stage integration)",
+  "description": "worker: claude-sonnet · story: US-UI-SHADCN-001 · sprint: 05 · slices: 0/16 · next: verification: stale (code changed since verify: .aidlc/arch-baseline.txt, AGENTS.md, app/(console)/error.tsx)",
   "pipeline": "sdlc",
   "agent": null,
   "agents": [
@@ -17,7 +17,7 @@
   "currentStep": 4,
   "status": "in_progress",
   "createdAt": "2026-11-05T07:31:59+00:00",
-  "updatedAt": "2026-11-05T16:58:37+00:00",
+  "updatedAt": "2026-11-06T05:42:26+00:00",
   "stepStates": [
     {
       "agent": "sdlc-discovery",

@@ -9,7 +9,7 @@ import { type ProductionOrder, getOrders, acceptOrder, allocateOrderLots, startO
 type Outcome = { title: string; description: string };
 
 export function useProductionOrders(initialOrders?: ProductionOrder[]) {
-  const { items: orders, setItems: setOrders, loading: listLoading, error: listError } = useLoadedList(initialOrders, getOrders);
+  const { items: orders, setItems: setOrders, loading: listLoading, error: listError, reload } = useLoadedList(initialOrders, getOrders);
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const { can, scope } = useAccess();
   const canUpdate = can("production:order:update");
@@ -50,5 +50,5 @@ export function useProductionOrders(initialOrders?: ProductionOrder[]) {
     (order.status === "IN_PROGRESS" && canUpdate)
   )?.id;
 
-  return { orders, listLoading, listError, loadingId, canUpdate, primaryOrderId, handleAccept, handleAllocate, handleStart, handleComplete };
+  return { orders, listLoading, listError, reload, loadingId, canUpdate, primaryOrderId, handleAccept, handleAllocate, handleStart, handleComplete };
 }

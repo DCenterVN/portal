@@ -7,7 +7,7 @@ import {
   OctagonXIcon,
   TriangleAlertIcon,
 } from "lucide-react"
-import { Toaster as Sonner, type ToasterProps } from "sonner"
+import { toast as sonnerToast, Toaster as Sonner, type ToasterProps } from "sonner"
 
 const Toaster = ({ ...props }: ToasterProps) => {
   return (
@@ -34,3 +34,8 @@ const Toaster = ({ ...props }: ToasterProps) => {
 }
 
 export { Toaster }
+export const toast = {
+  ...sonnerToast,
+  error: (message: Parameters<typeof sonnerToast.error>[0], data?: Parameters<typeof sonnerToast.error>[1]) =>
+    sonnerToast.error(message, { ...data, duration: Infinity }),
+}

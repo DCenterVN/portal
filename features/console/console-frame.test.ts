@@ -12,6 +12,9 @@ const profile: UserProfile & { avatar_key: string | null; avatar_url: string | n
 };
 
 const contextPayload = { user: profile, active_context: {}, contexts: [] };
+const branchOrgId = "11111111-1111-4111-8111-111111111111";
+const branchId = "22222222-2222-4222-8222-222222222222";
+const branchToken = `eyJhbGciOiJub25lIn0.${Buffer.from(JSON.stringify({ org_id: branchOrgId, branch_id: branchId })).toString("base64url")}.signature`;
 
 describe("console session", () => {
   it("uses the active API branch and real profile", () => {
@@ -159,7 +162,7 @@ describe("console BFF request count", () => {
         return new Response(JSON.stringify(profile));
       }
       if (path === "/org/access-contexts/me") return new Response(JSON.stringify([
-        { org_id: "org", org_name: "Công ty", branch_id: "main", branch_name: "Chi nhánh chính", roles: [] },
+        { org_id: branchOrgId, org_name: "Công ty", branch_id: branchId, branch_name: "Chi nhánh chính", roles: [] },
       ]));
       if (path === "/org/permissions/me") return new Response(JSON.stringify({ action_keys: ["org:membership:read"] }));
       throw new Error("Unexpected upstream path");
@@ -168,7 +171,7 @@ describe("console BFF request count", () => {
     try {
       const browser = vi.fn<typeof fetch>(async (url) => {
         const path = String(url);
-        const request = new NextRequest(`http://portal${path}`, { headers: { cookie: "access_token=opaque-test-credential" } });
+        const request = new NextRequest(`http://portal${path}`, { headers: { cookie: `access_token=${branchToken}` } });
         if (path === "/api/auth/context") return contextGET(request);
         if (path === "/api/auth/me") return meGET(request);
         throw new Error("Unexpected browser path");
@@ -199,10 +202,10 @@ describe("context BFF failure propagation", () => {
       const current = path === "/auth/me" ? "profile" : path === "/org/access-contexts/me" ? "contexts" : "permissions";
       if (current === "profile") profileCalls++;
       if (current === stage) return new Response(JSON.stringify({ code: status, status: "error", message: "unavailable", errors: { error_code: status === 503 ? "UNAVAILABLE" : "UNAUTHORIZED" } }), { status });
-      return new Response(JSON.stringify(current === "profile" ? profile : current === "contexts" ? [{ org_id: "org", branch_id: "main", branch_name: "Chi nhánh chính" }] : { action_keys: [] }));
+      return new Response(JSON.stringify(current === "profile" ? profile : current === "contexts" ? [{ org_id: branchOrgId, branch_id: branchId, branch_name: "Chi nhánh chính" }] : { action_keys: [] }));
     }));
     try {
-      const response = await GET(new NextRequest("http://portal/api/auth/context", { headers: { cookie: "access_token=opaque-test-credential" } }));
+      const response = await GET(new NextRequest("http://portal/api/auth/context", { headers: { cookie: `access_token=${branchToken}` } }));
       expect(response.status).toBe(status);
       const payload: unknown = await response.json();
       if (expectedUser) expect(payload).toHaveProperty("user", profile);
@@ -223,11 +226,11 @@ describe("context BFF concurrency", () => {
       const path = new URL(String(url)).pathname;
       started.push(path);
       if (path === "/auth/me") { await gate; return new Response(JSON.stringify(profile)); }
-      if (path === "/org/access-contexts/me") return new Response(JSON.stringify([{ org_id: "org", branch_id: "main", branch_name: "Chi nhánh chính" }]));
+      if (path === "/org/access-contexts/me") return new Response(JSON.stringify([{ org_id: branchOrgId, branch_id: branchId, branch_name: "Chi nhánh chính" }]));
       return new Response(JSON.stringify({ action_keys: ["org:membership:read"] }));
     }));
     try {
-      const pending = GET(new NextRequest("http://portal/api/auth/context", { headers: { cookie: "access_token=opaque-test-credential" } }));
+      const pending = GET(new NextRequest("http://portal/api/auth/context", { headers: { cookie: `access_token=${branchToken}` } }));
       await new Promise((resolve) => setTimeout(resolve, 0));
       expect(started).toEqual(["/auth/me", "/org/access-contexts/me"]);
       release();
