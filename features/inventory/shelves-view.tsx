@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { Plus, Store, ExternalLink } from "lucide-react";
+import { InlineAlert } from "@/components/patterns/inline-alert";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { StatusBadge } from "@/components/patterns/status-badge";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
@@ -14,97 +15,33 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useToast } from "@/components/ui/toast";
-import { PageShell, PageHeader } from "@/components/ui/page";
-import { EntityPicker } from "@/components/ui/entity-picker";
-import { ShelfPlacement, ProductionOrder, getOrders, placeOnShelf } from "@/lib/api/production";
+import { PageShell } from "@/components/ui/page";
+import { PageHeading } from "@/components/patterns/page-heading";
+import { EntityPicker } from "@/components/patterns/entity-picker";
+import type { ShelfPlacement } from "@/lib/api/production";
+import { useShelfPlacement } from "./use-shelf-placement";
 
 interface ShelvesViewProps {
-  initialPlacements: ShelfPlacement[];
+  initialPlacements?: ShelfPlacement[];
 }
 
 export function ShelvesView({ initialPlacements }: ShelvesViewProps) {
-  const { toast } = useToast();
-  const [placements, setPlacements] = useState<ShelfPlacement[]>(initialPlacements);
-  const [showCreate, setShowCreate] = useState(false);
-  const [shelfCode, setShelfCode] = useState("KE-MAT-01");
-  const [finishedLotRef, setFinishedLotRef] = useState("");
-  const [branchRef, setBranchRef] = useState("");
-  const [permissions, setPermissions] = useState<string[]>([]);
-  const [placedQty, setPlacedQty] = useState(20);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    fetch("/api/auth/context", { cache: "no-store" })
-      .then((response) => response.ok ? response.json() : Promise.reject(new Error("Không thể tải phạm vi làm việc")))
-      .then((context: { active_context?: { branch_id?: string }; permissions?: string[] }) => {
-        setBranchRef(context.active_context?.branch_id ?? "");
-        setPermissions(context.permissions ?? []);
-      })
-      .catch(() => {
-        setBranchRef("");
-        setPermissions([]);
-      });
-  }, []);
-
-  const [lots, setLots] = useState<ProductionOrder[]>([]);
-  const [lotStatus, setLotStatus] = useState<"loading" | "ready" | "error">("loading");
-
-  useEffect(() => {
-    let active = true;
-    getOrders({ forPicker: true }).then((orders) => {
-      if (!active) return;
-      const eligible = orders.filter((order) => order.status === "QC_PASSED" && order.finished_lot_ref).slice(0, 100);
-      setLots(eligible);
-      if (eligible.length === 1) setFinishedLotRef(eligible[0].finished_lot_ref ?? "");
-      setLotStatus("ready");
-    }).catch(() => { if (active) setLotStatus("error"); });
-    return () => { active = false; };
-  }, []);
-
-  const canPlace = permissions.includes("inventory:shelf_placement:create");
-
-  const handlePlace = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!canPlace || !branchRef || lotStatus !== "ready" || !lots.some((lot) => lot.finished_lot_ref === finishedLotRef)) return;
-    setLoading(true);
-    try {
-      const created = await placeOnShelf({
-        finished_lot_ref: finishedLotRef.trim(),
-        branch_ref: branchRef,
-        shelf_code: shelfCode,
-        placed_quantity: placedQty,
-        uom: "EA",
-      });
-      setPlacements([created, ...placements]);
-      setShowCreate(false);
-      setFinishedLotRef("");
-      toast({
-        title: "Đã đưa hàng lên kệ tại chi nhánh",
-        description: `Mã truy vết QR: ${created.trace_code}`,
-        variant: "success",
-      });
-    } catch (err: unknown) {
-      toast({ title: "Lỗi đưa hàng lên kệ", description: err instanceof Error ? err.message : "Không thể đưa hàng lên kệ", variant: "error" });
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { placements, listLoading, listError, showCreate, setShowCreate, shelfCode, setShelfCode, finishedLotRef, setFinishedLotRef, branchRef, placedQty, setPlacedQty, loading, lots, lotStatus, canPlace, handlePlace } = useShelfPlacement(initialPlacements);
 
   return (
-    <PageShell className="bg-[var(--color-bg)] text-[var(--color-ink)]">
-      <PageHeader
+    <PageShell>
+      <PageHeading
         title="Quản lý Kệ hàng & Tem Truy xuất QR (VT-08 / VT-16)"
         description="Đưa các lô thành phẩm đã QC đạt lên kệ chi nhánh và quản lý mã QR truy vết"
         actions={
           <Button variant={showCreate ? "outline" : "default"} onClick={() => setShowCreate(true)} disabled={!canPlace || !branchRef}>
-            <Plus className="mr-2 h-4 w-4" /> Đưa lô thành phẩm lên kệ
+            Đưa lô thành phẩm lên kệ
           </Button>
         }
       />
 
       {showCreate && (
-        <Card className="mb-6 border-[var(--color-line)] bg-[var(--color-surface)] text-[var(--color-ink)]">
+        <Card className="mb-6">
           <CardContent className="pt-6">
             <form onSubmit={handlePlace} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -124,29 +61,13 @@ export function ShelvesView({ initialPlacements }: ShelvesViewProps) {
                   placeholder="Tìm theo mã lệnh sản xuất"
                   emptyText="Chưa có lô thành phẩm đã QC đạt để chọn"
                 />
-                <div>
-                  <label className="text-sm font-medium">Vị trí Kệ hàng</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="VD: KE-MAT-01, KE-DONG-02"
-                    style={{ borderWidth: "1.5px" }}
-                    className="w-full mt-1 px-3 h-11 border bg-[var(--color-surface)] text-[var(--color-ink)] border-[var(--color-input-border)] rounded-[var(--radius-md)] focus:outline-none focus:ring-2 focus:ring-[var(--color-focus)]"
-                    value={shelfCode}
-                    onChange={(e) => setShelfCode(e.target.value)}
-                  />
+                <div className="grid gap-1.5">
+                  <Label htmlFor="shelf-code">Vị trí Kệ hàng</Label>
+                  <Input id="shelf-code" type="text" required placeholder="VD: KE-MAT-01, KE-DONG-02" value={shelfCode} onChange={(e) => setShelfCode(e.target.value)} />
                 </div>
-                <div>
-                  <label className="text-sm font-medium">Số lượng đưa lên kệ (EA)</label>
-                  <input
-                    type="number"
-                    min="1"
-                    required
-                    style={{ borderWidth: "1.5px" }}
-                    className="w-full mt-1 px-3 h-11 border bg-[var(--color-surface)] text-[var(--color-ink)] border-[var(--color-input-border)] rounded-[var(--radius-md)] focus:outline-none focus:ring-2 focus:ring-[var(--color-focus)]"
-                    value={placedQty}
-                    onChange={(e) => setPlacedQty(Number(e.target.value))}
-                  />
+                <div className="grid gap-1.5">
+                  <Label htmlFor="shelf-qty">Số lượng đưa lên kệ (EA)</Label>
+                  <Input id="shelf-qty" type="number" min="1" required value={placedQty} onChange={(e) => setPlacedQty(Number(e.target.value))} />
                 </div>
               </div>
               <div className="flex gap-2">
@@ -160,7 +81,8 @@ export function ShelvesView({ initialPlacements }: ShelvesViewProps) {
         </Card>
       )}
 
-      <Card className="bg-[var(--color-surface)] text-[var(--color-ink)] border-[var(--color-line)]">
+      {listError && <InlineAlert className="mb-4">{listError}</InlineAlert>}
+      <Card>
         <CardContent className="p-0">
           <Table>
             <TableHeader>
@@ -175,32 +97,30 @@ export function ShelvesView({ initialPlacements }: ShelvesViewProps) {
             <TableBody>
               {placements.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-6 text-[var(--color-muted)]">
-                    Chưa có mặt hàng nào được đưa lên kệ
+                  <TableCell colSpan={5} className="py-6 text-center text-muted-foreground">
+                    {listLoading ? "Đang tải kệ hàng…" : "Chưa có mặt hàng nào được đưa lên kệ"}
                   </TableCell>
                 </TableRow>
               ) : (
                 placements.map((p) => (
                   <TableRow key={p.id}>
-                    <TableCell className="font-semibold flex items-center gap-1.5">
-                      <Store className="h-4 w-4 text-[var(--color-muted)]" /> {p.shelf_code}
-                    </TableCell>
-                    <TableCell className="font-mono text-sm font-medium text-[var(--color-ink)]">
+                    <TableCell className="font-medium">{p.shelf_code}</TableCell>
+                    <TableCell className="font-mono text-sm">
                       {p.trace_code}
                     </TableCell>
                     <TableCell>{p.available_quantity} / {p.placed_quantity} {p.uom}</TableCell>
                     <TableCell>
-                      <Badge variant={p.status === "PLACED" ? "active" : "outline"}>
+                      <StatusBadge tone={p.status === "PLACED" ? "success" : "neutral"}>
                         {p.status}
-                      </Badge>
+                      </StatusBadge>
                     </TableCell>
                     <TableCell className="text-right">
                       <Link
                         href={`/traceability/${encodeURIComponent(p.trace_code)}`}
                         target="_blank"
-                        className="inline-flex items-center text-sm font-medium text-[var(--color-primary-hover)] dark:text-[var(--color-primary)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus)]"
+                        className="text-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
                       >
-                        <ExternalLink className="h-4 w-4 mr-1" /> Xem trang QR xuất xứ
+                        Xem trang QR xuất xứ
                       </Link>
                     </TableCell>
                   </TableRow>

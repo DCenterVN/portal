@@ -1,7 +1,7 @@
 "use client";
 
 import { useContext, type ReactNode } from "react";
-import { ErrorState } from "@/components/ui/state";
+import { ErrorState } from "@/components/patterns/empty-state";
 
 import { AccessContext, type PlaneAccess } from "@/lib/access-context";
 
@@ -14,6 +14,7 @@ export function useAccess() {
   return {
     root: access?.root ?? "",
     role: access?.role,
+    scope: access?.scope,
     can: (action: string) => access?.actions.has(action) ?? false,
   };
 }

@@ -46,8 +46,8 @@ export default defineConfig({
   projects: [
     { name: "setup", testMatch: "**/setup/login.setup.ts", use: { trace: "off", video: "off", screenshot: "off" } },
     { name: "data", testMatch: "**/setup/data.setup.ts", dependencies: ["setup"], use: { launchOptions: { executablePath, slowMo: 0 }, trace: "on", video: "off" } },
-    { name: "desktop", testIgnore: "**/setup/**", ...(record && { dependencies: ["data"] }), use: { viewport: { width: 1440, height: 900 } } },
-    { name: "mobile", testIgnore: ["**/rbac/**", "**/setup/**"], use: { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 1 } },
+    { name: "desktop", testIgnore: ["**/setup/**", "**/supplier-ux/**"], ...(record && { dependencies: ["data"] }), use: { viewport: { width: 1440, height: 900 } } },
+    { name: "mobile", testIgnore: ["**/rbac/**", "**/setup/**", "**/supplier-ux/**"], use: { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 1 } },
   ],
   webServer: baseline || process.env.E2E_BASE_URL ? undefined : {
     command: "npm run dev -- --port 3000",

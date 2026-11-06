@@ -2,62 +2,55 @@ import { readFileSync } from "node:fs";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { ButtonProps } from "@/components/ui/button";
+import type { Button } from "@/components/ui/button";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 
-// Copied verbatim from brain/inbox/portal-ui-preview/Main.dc.html lines 14-15 (approved preview).
-const PREVIEW_LIGHT = "--l0:#F4F4F5;--l1:#FFFFFF;--l1-2:#FAFAFA;--line:#E4E4E7;--line-strong:#8A8A8A;--fg:#18181B;--fg-2:#52525B;--fg-3:#71717A;--p:#D2402A;--p-hover:#B3361F;--p-text:#B3361F;--p-soft:#FCEBE7;--ok:#2F7A3B;--ok-soft:#E8F3EA;--warn:#A86A12;--warn-soft:#FDF1DE;--err:#9B2C55;--err-soft:#F7E6EC;--glass-l2:rgba(255,255,255,.72);--glass-l3:rgba(255,255,255,.86);--glass-edge:rgba(255,255,255,.65);--shadow-l3:0 12px 32px -8px rgba(24,24,27,.18),0 2px 6px rgba(24,24,27,.06);--scrim:rgba(24,24,27,.4)";
-const PREVIEW_DARK = "--l0:#0F0F11;--l1:#18181B;--l1-2:#202024;--line:#2E2E33;--line-strong:#71717A;--fg:#FAFAF9;--fg-2:#A1A1AA;--fg-3:#8B8B94;--p-text:#F06A52;--p-soft:#3A1D18;--ok:#5FB36C;--ok-soft:#1B2A1E;--warn:#E3A24A;--warn-soft:#2E2414;--err:#E07A9E;--err-soft:#2E1822;--glass-l2:rgba(24,24,27,.72);--glass-l3:rgba(32,32,36,.86);--glass-edge:rgba(255,255,255,.08);--shadow-l3:0 12px 32px -8px rgba(0,0,0,.6);--scrim:rgba(0,0,0,.6)";
+const LIGHT = "--background:#FFFFFF;--foreground:#18181B;--card:#FFFFFF;--card-foreground:#18181B;--popover:#FFFFFF;--primary:#2B7A52;--primary-foreground:#FFFFFF;--primary-hover:#236444;--secondary:#F4F4F5;--muted:#F4F4F5;--muted-foreground:#5F5F68;--accent:#F4F4F5;--accent-foreground:#18181B;--destructive:#B91C1C;--destructive-soft:#FEF2F2;--destructive-border:#FECACA;--success:#166534;--success-soft:#F0FDF4;--warning:#92400E;--warning-soft:#FFFBEB;--warning-border:#FDE68A;--border:#E4E4E7;--input:#8C8C96;--ring:#2B7A52;--sidebar:#FAFAFA;--sidebar-foreground:#3F3F46;--sidebar-accent:#EFEFF1;--sidebar-accent-foreground:#18181B;--chart-1:#2B7A52;--glass-l2:#FFFFFF;--glass-l3:#FFFFFF;--glass-edge:#E4E4E7;--scrim:rgba(24,24,27,.4)";
+const DARK = "--background:#09090B;--foreground:#FAFAFA;--card:#101012;--card-foreground:#FAFAFA;--popover:#141416;--primary:#4CAF7D;--primary-foreground:#09090B;--primary-hover:#5BBF8A;--secondary:#18181B;--muted:#18181B;--muted-foreground:#A1A1AA;--accent:#1F1F23;--accent-foreground:#FAFAFA;--destructive:#F87171;--destructive-soft:#2A1212;--destructive-border:#5B2020;--success:#5BBF8A;--success-soft:#0F1F17;--warning:#E8B04B;--warning-soft:#231C0D;--warning-border:#4A3A12;--border:#27272A;--input:#666670;--ring:#4CAF7D;--sidebar:#0C0C0E;--sidebar-foreground:#D4D4D8;--sidebar-accent:#1F1F23;--sidebar-accent-foreground:#FAFAFA;--chart-1:#4CAF7D;--glass-l2:#141416;--glass-l3:#141416;--glass-edge:#27272A;--scrim:rgba(0,0,0,.6)";
 
 const css = readFileSync("app/globals.css", "utf8");
+const generated = readFileSync("app/tokens.generated.css", "utf8");
 const layout = readFileSync("app/layout.tsx", "utf8");
 
 const decls = (body: string) =>
   Object.fromEntries([...body.matchAll(/(--[\w-]+)\s*:\s*([^;]+?)\s*(?:;|$)/g)].map((m) => [m[1], m[2].replace(/\s*,\s*/g, ",")]));
 
-function block(selector: string) {
-  const at = css.indexOf(`${selector} {`);
+function block(source: string, selector: string) {
+  const at = source.indexOf(`${selector} {`);
   expect(at, `missing block ${selector}`).toBeGreaterThan(-1);
-  const start = css.indexOf("{", at) + 1;
-  return decls(css.slice(start, css.indexOf("}", start)));
+  const start = source.indexOf("{", at) + 1;
+  return decls(source.slice(start, source.indexOf("}", start)));
 }
 
-const light = decls(PREVIEW_LIGHT);
-const dark = decls(PREVIEW_DARK);
+const light = decls(LIGHT);
+const dark = decls(DARK);
 
-describe("FR-1 preview tokens in globals.css", () => {
-  it("copies 23 light and 21 dark preview tokens", () => {
-    expect(Object.keys(light)).toHaveLength(23);
-    expect(Object.keys(dark)).toHaveLength(21);
+describe("FR-1 Lá dịu shadcn roles in tokens.generated.css", () => {
+  it("declares every light role with the approved value", () => {
+    expect(block(generated, ':root, [data-theme="light"]')).toMatchObject(light);
   });
 
-  it("declares every light token with the preview value", () => {
-    expect(block(':root, [data-theme="light"]')).toMatchObject(light);
+  it("declares the dark roles for an explicit choice and for the system preference", () => {
+    expect(block(generated, '[data-theme="dark"], .dark')).toMatchObject(dark);
+    const media = generated.slice(generated.indexOf("@media (prefers-color-scheme: dark) {"));
+    expect(block(media, ':root:not([data-theme="light"])')).toMatchObject(dark);
   });
 
-  it("declares exactly the dark tokens for an explicit choice and for the system preference", () => {
-    expect(block('[data-theme="dark"], .dark')).toEqual(dark);
-    const media = css.slice(css.indexOf("@media (prefers-color-scheme: dark) {\n  :root:not([data-theme=\"light\"]) {"));
-    expect(media.length).toBeLessThan(css.length);
-    const start = media.indexOf("{", media.indexOf(":root:not")) + 1;
-    expect(decls(media.slice(start, media.indexOf("}", start)))).toEqual(dark);
-  });
-
-  it("declares the radius and motion scales", () => {
-    expect(block(':root, [data-theme="light"]')).toMatchObject({
-      "--r-0": "0", "--r-2": "2px", "--r-4": "4px", "--r-8": "8px", "--r-12": "12px", "--r-full": "999px",
-      "--d-hover": "100ms", "--d-1": "150ms", "--d-2": "200ms", "--d-3": "300ms", "--d-4": "400ms",
+  it("declares the radius scale and no leftover motion-duration scale", () => {
+    expect(block(generated, ':root, [data-theme="light"]')).toMatchObject({
+      "--r-0": "0", "--r-2": "2px", "--r-4": "4px", "--r-6": "6px", "--r-8": "8px", "--r-full": "999px",
     });
+    expect(css).not.toMatch(/--d-(?:hover|\d)\s*:/);
   });
 
-  it("maps tokens to Tailwind utilities through @theme inline", () => {
-    const theme = block("@theme inline");
+  it("maps roles to Tailwind utilities through @theme inline", () => {
+    const theme = block(css, "@theme inline");
     for (const name of Object.keys(light).filter((n) => n !== "--shadow-l3")) expect(theme[`--color-${name.slice(2)}`]).toBe(`var(${name})`);
     expect(theme).toMatchObject({
       "--shadow-l3": "var(--shadow-l3)",
-      "--font-heading": "var(--font-heading)", "--font-body": "var(--font-body)",
-      "--radius-sm": "var(--r-4)", "--radius-lg": "var(--r-8)", "--radius-xl": "var(--r-12)", "--radius-full": "var(--r-full)",
+      "--font-heading": "var(--font-body)", "--font-body": "var(--font-body)", "--font-mono": "var(--font-mono)",
+      "--radius-sm": "var(--r-4)", "--radius-md": "var(--r-6)", "--radius-lg": "var(--r-8)", "--radius-xl": "var(--r-8)", "--radius-full": "var(--r-full)",
     });
   });
 
@@ -68,8 +61,8 @@ describe("FR-1 preview tokens in globals.css", () => {
 
 describe("FR-1 fonts and no-flash theme script in layout.tsx", () => {
   it.each([
-    ["Be_Vietnam_Pro", "--font-heading", '["700"]'],
-    ["Nunito", "--font-body", null],
+    ["Inter", "--font-body", '["400", "500", "600"]'],
+    ["Geist_Mono", "--font-mono", '["400", "500"]'],
   ] as const)("loads %s as %s with swap and fallback metrics", (font, variable, weight) => {
     expect(layout).toMatch(new RegExp(`import \\{[^}]*\\b${font}\\b[^}]*\\} from "next/font/google"`));
     const options = layout.match(new RegExp(`const (\\w+) = ${font}\\(\\{([\\s\\S]*?)\\}\\)`));
@@ -110,6 +103,7 @@ describe("FR-1 fonts and no-flash theme script in layout.tsx", () => {
   });
 });
 
+type ButtonProps = React.ComponentProps<typeof Button>;
 const captured = vi.hoisted(() => ({ props: null as ButtonProps | null }));
 vi.mock("@/components/ui/button", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/components/ui/button")>();

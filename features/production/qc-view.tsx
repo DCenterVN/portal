@@ -1,9 +1,13 @@
 "use client";
 
-import React, { useId, useState } from "react";
-import { ShieldCheck, CheckCircle2, XCircle, AlertTriangle, Thermometer } from "lucide-react";
+import React, { useId } from "react";
+import { InlineAlert } from "@/components/patterns/inline-alert";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Textarea } from "@/components/ui/textarea";
+import { StatusBadge } from "@/components/patterns/status-badge";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
@@ -13,136 +17,75 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useToast } from "@/components/ui/toast";
-import { PageShell, PageHeader } from "@/components/ui/page";
-import { ProductionOrder, decideQC } from "@/lib/api/production";
+import { PageShell } from "@/components/ui/page";
+import { PageHeading } from "@/components/patterns/page-heading";
+import type { ProductionOrder } from "@/lib/api/production";
+import { useQcDecision } from "./use-qc-decision";
 
 interface QCViewProps {
-  completedOrders: ProductionOrder[];
+  completedOrders?: ProductionOrder[];
 }
 
 export function QCView({ completedOrders }: QCViewProps) {
   const formId = useId();
-  const { toast } = useToast();
-  const [orders, setOrders] = useState<ProductionOrder[]>(completedOrders);
-  const [selectedOrder, setSelectedOrder] = useState<ProductionOrder | null>(null);
-  const [temperature, setTemperature] = useState(-18.5);
-  const [packagePassed, setPackagePassed] = useState(true);
-  const [sensoryNotes, setSensoryNotes] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  const handleDecision = async (decision: "PASS" | "FAIL") => {
-    if (!selectedOrder) return;
-    setLoading(true);
-    try {
-      const res = await decideQC(selectedOrder.id, {
-        decision,
-        core_temperature_celsius: temperature,
-        package_check_passed: packagePassed,
-        sensory_result: { notes: sensoryNotes.trim() },
-        failure_reason: decision === "FAIL" ? "Không đạt nhiệt độ tâm hoặc bao bì lỗi" : undefined,
-      });
-      setOrders(orders.map((o) => (o.id === selectedOrder.id ? res.production_order : o)));
-      setSelectedOrder(null);
-      toast({
-        title: decision === "PASS" ? "Nghiệm thu QC ĐẠT (PASS)" : "Nghiệm thu QC KHÔNG ĐẠT (FAIL)",
-        description: `Lệnh ${res.production_order.order_code} đã hoàn tất kiểm định chất lượng (SoD Verified)`,
-        variant: "success",
-      });
-    } catch (err: unknown) {
-      toast({
-        title: "Lỗi kiểm định QC",
-        description: err instanceof Error ? err.message : "Lỗi không xác định",
-        variant: "error",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { orders, listLoading, listError, selectedOrder, setSelectedOrder, temperature, setTemperature, packagePassed, setPackagePassed, sensoryNotes, setSensoryNotes, loading, handleDecision } = useQcDecision(completedOrders);
 
   return (
-    <PageShell className="bg-[var(--color-bg)] text-[var(--color-ink)]">
-      <PageHeader
+    <PageShell>
+      <PageHeading
         title="Kiểm định Chất lượng Thành phẩm (VT-13 QC)"
         description="Nghiệm thu cảm quan, nhiệt độ tâm cấp đông (-18°C) và kiểm tra bao bì với Phân tách trách nhiệm (SoD)"
       />
 
-      <div className="mb-6 p-4 border border-[var(--color-line)] bg-[var(--color-tint)] rounded-lg flex items-start gap-3">
-        <AlertTriangle className="h-5 w-5 text-[var(--color-sun)] shrink-0 mt-0.5" />
-        <div className="text-sm text-[var(--color-warn-ink)]">
-          <p className="font-semibold">Nguyên tắc Phân tách Trách nhiệm (SoD Enforcement):</p>
-          <p>
-            Chuyên viên QC (VT-13) bắt buộc phải là nhân sự <strong>độc lập</strong> với người trực tiếp điều phối, sơ chế, nấu chín hoặc đóng gói lô hàng. Hệ thống tự động từ chối (403 Forbidden) nếu phát hiện trùng lặp người thực hiện.
-          </p>
-        </div>
-      </div>
+      <InlineAlert tone="warning" className="mb-6">
+        <p className="font-medium">Nguyên tắc Phân tách Trách nhiệm (SoD Enforcement):</p>
+        <p>
+          Chuyên viên QC (VT-13) bắt buộc phải là nhân sự <strong>độc lập</strong> với người trực tiếp điều phối, sơ chế, nấu chín hoặc đóng gói lô hàng. Hệ thống tự động từ chối (403 Forbidden) nếu phát hiện trùng lặp người thực hiện.
+        </p>
+      </InlineAlert>
 
       {selectedOrder && (
-        <Card className="mb-6 border-[var(--color-line)] bg-[var(--color-surface)] text-[var(--color-ink)]">
+        <Card className="mb-6">
           <CardContent className="pt-6">
-            <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
-              <ShieldCheck className="h-5 w-5 text-[var(--color-info)]" />
+            <h3 className="mb-4 text-lg font-semibold">
               Nghiệm thu Lệnh: {selectedOrder.order_code} ({selectedOrder.planned_quantity} {selectedOrder.uom})
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <div>
-                <label htmlFor={`${formId}-temperature`} className="text-sm font-medium flex items-center gap-1">
-                  <Thermometer className="h-4 w-4 text-[var(--color-info)]" /> Nhiệt độ tâm sau cấp đông (°C)
-                </label>
-                <input
+            <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="grid gap-1.5">
+                <Label htmlFor={`${formId}-temperature`}>Nhiệt độ tâm sau cấp đông (°C)</Label>
+                <Input
                   id={`${formId}-temperature`}
                   type="number"
                   step="0.1"
-                  style={{ borderWidth: "1.5px" }}
-                    className="w-full mt-1 px-3 h-11 border bg-[var(--color-surface)] text-[var(--color-ink)] border-[var(--color-input-border)] rounded-[var(--radius-md)] focus:outline-none focus:ring-2 focus:ring-[var(--color-focus)]"
                   value={temperature}
                   onChange={(e) => setTemperature(Number(e.target.value))}
                 />
-                <p className="text-xs text-[var(--color-muted)] mt-1">Tiêu chuẩn cấp đông an toàn: ≤ -18.0°C</p>
+                <p className="text-xs text-muted-foreground">Tiêu chuẩn cấp đông an toàn: ≤ -18.0°C</p>
               </div>
-              <div>
-                <label className="text-sm font-medium">Kiểm tra niêm phong & bao bì</label>
-                <div className="mt-2 flex items-center gap-4">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      className="accent-[var(--color-primary)] border-[var(--color-input-border)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus)]"
-                      name="packageCheck"
-                      checked={packagePassed}
-                      onChange={() => setPackagePassed(true)}
-                    />
-                    Bao bì nguyên vẹn, hút chân không đạt
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      className="accent-[var(--color-primary)] border-[var(--color-input-border)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus)]"
-                      name="packageCheck"
-                      checked={!packagePassed}
-                      onChange={() => setPackagePassed(false)}
-                    />
-                    Bao bì lỗi / hở
-                  </label>
-                </div>
+              <div className="grid gap-1.5">
+                <Label id={`${formId}-package`}>Kiểm tra niêm phong & bao bì</Label>
+                <RadioGroup aria-labelledby={`${formId}-package`} className="mt-1 flex items-center gap-4" value={packagePassed ? "ok" : "bad"} onValueChange={(value) => setPackagePassed(value === "ok")}>
+                  <div className="flex items-center gap-2">
+                    <RadioGroupItem id={`${formId}-package-ok`} value="ok" />
+                    <Label htmlFor={`${formId}-package-ok`} className="font-normal">Bao bì nguyên vẹn, hút chân không đạt</Label>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <RadioGroupItem id={`${formId}-package-bad`} value="bad" />
+                    <Label htmlFor={`${formId}-package-bad`} className="font-normal">Bao bì lỗi / hở</Label>
+                  </div>
+                </RadioGroup>
               </div>
-              <div className="md:col-span-2">
-                <label htmlFor={`${formId}-sensory`} className="text-sm font-medium">Ghi nhận kiểm tra cảm quan</label>
-                <textarea id={`${formId}-sensory`} style={{ borderWidth: "1.5px" }} className="mt-1 min-h-24 w-full rounded-[var(--radius-md)] border bg-[var(--color-surface)] text-[var(--color-ink)] border-[var(--color-input-border)] p-3 focus:outline-none focus:ring-2 focus:ring-[var(--color-focus)]" required value={sensoryNotes} onChange={(event) => setSensoryNotes(event.target.value)} placeholder="Màu sắc, mùi, cấu trúc và nhận xét thực tế của mẫu kiểm tra" />
+              <div className="grid gap-1.5 md:col-span-2">
+                <Label htmlFor={`${formId}-sensory`}>Ghi nhận kiểm tra cảm quan</Label>
+                <Textarea id={`${formId}-sensory`} className="min-h-24" required value={sensoryNotes} onChange={(event) => setSensoryNotes(event.target.value)} placeholder="Màu sắc, mùi, cấu trúc và nhận xét thực tế của mẫu kiểm tra" />
               </div>
             </div>
             <div className="flex gap-2">
-              <Button
-                disabled={loading || !sensoryNotes.trim()}
-                onClick={() => handleDecision("PASS")}
-              >
-                <CheckCircle2 className="h-4 w-4 mr-1" /> Phê duyệt QC (PASS) — Cho phép lên kệ
+              <Button disabled={loading || !sensoryNotes.trim()} onClick={() => handleDecision("PASS")}>
+                Phê duyệt QC (PASS) — Cho phép lên kệ
               </Button>
-              <Button
-                disabled={loading || !sensoryNotes.trim()}
-                variant="destructive"
-                onClick={() => handleDecision("FAIL")}
-              >
-                <XCircle className="h-4 w-4 mr-1" /> Từ chối QC (FAIL) — Hủy lô
+              <Button disabled={loading || !sensoryNotes.trim()} variant="destructive" onClick={() => handleDecision("FAIL")}>
+                Từ chối QC (FAIL) — Hủy lô
               </Button>
               <Button variant="ghost" onClick={() => setSelectedOrder(null)}>Hủy bỏ</Button>
             </div>
@@ -150,7 +93,8 @@ export function QCView({ completedOrders }: QCViewProps) {
         </Card>
       )}
 
-      <Card className="bg-[var(--color-surface)] text-[var(--color-ink)] border-[var(--color-line)]">
+      {listError && <InlineAlert className="mb-4">{listError}</InlineAlert>}
+      <Card>
         <CardContent className="p-0">
           <Table>
             <TableHeader>
@@ -164,8 +108,8 @@ export function QCView({ completedOrders }: QCViewProps) {
             <TableBody>
               {orders.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center py-6 text-[var(--color-muted)]">
-                    Không có lô thành phẩm nào đang chờ kiểm định QC
+                  <TableCell colSpan={4} className="py-6 text-center text-muted-foreground">
+                    {listLoading ? "Đang tải lô thành phẩm…" : "Không có lô thành phẩm nào đang chờ kiểm định QC"}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -174,20 +118,18 @@ export function QCView({ completedOrders }: QCViewProps) {
                     <TableCell className="font-mono font-medium">{o.order_code}</TableCell>
                     <TableCell>{o.actual_output_quantity > 0 ? o.actual_output_quantity : o.planned_quantity} {o.uom}</TableCell>
                     <TableCell>
-                      <Badge variant={o.status === "QC_PASSED" ? "active" : o.status === "QC_FAILED" ? "revoked" : "secondary"}>
+                      <StatusBadge tone={o.status === "QC_PASSED" ? "success" : o.status === "QC_FAILED" ? "danger" : "neutral"}>
                         {o.status}
-                      </Badge>
+                      </StatusBadge>
                     </TableCell>
                     <TableCell className="text-right">
                       {o.status === "COMPLETED" && (
                         <Button size="sm" variant={!selectedOrder && orders.find((order) => order.status === "COMPLETED")?.id === o.id ? "default" : "outline"} onClick={() => setSelectedOrder(o)}>
-                          <ShieldCheck className="h-4 w-4 mr-1" /> Tiến hành nghiệm thu
+                          Tiến hành nghiệm thu
                         </Button>
                       )}
                       {o.status === "QC_PASSED" && (
-                        <Badge variant="outline" className="text-[var(--color-ink)] bg-[var(--color-tint)] border-[var(--color-leaf)]">
-                          Đã phê duyệt đạt chuẩn
-                        </Badge>
+                        <span className="text-sm text-muted-foreground">Đã phê duyệt đạt chuẩn</span>
                       )}
                     </TableCell>
                   </TableRow>

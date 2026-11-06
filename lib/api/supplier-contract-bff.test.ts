@@ -17,7 +17,7 @@ import { supplierID, agreementID, documentID } from "@/mocks/supplier-contract";
 afterEach(() => vi.unstubAllGlobals());
 it("metadata taxonomy sinh từ inventory và snapshot giữ nguyên bytes", () => {
   expect(OPERATIONS).toHaveProperty("listMaterialCategories", { service: "inventory", method: "GET", path: "/inventory/material-categories", actionKey: "inventory:supplier:read", scope: "none" });
-  expect(readFileSync("contracts/inventory.public.yaml")).toEqual(readFileSync("../inventory/api/openapi.public.yaml"));
+  expect(readFileSync("lib/contracts/inventory.public.yaml")).toEqual(readFileSync("../inventory/api/openapi.public.yaml"));
   expect(JSON.parse(readFileSync("../inventory/api/permissions.json", "utf8"))).toMatchObject({ permissions: expect.arrayContaining([expect.objectContaining({ action_key: "inventory:supplier:read", operations: expect.arrayContaining(["listMaterialCategories"]) })]) });
 });
 it("history BFF truyền abort signal và giữ 403/no-store", async () => {

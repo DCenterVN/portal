@@ -12,8 +12,8 @@ vi.mock("@/components/ui/dialog", () => ({
   DialogContent: ({ children }: SurfaceProps) => <section>{children}</section>,
   DialogTitle: ({ children }: SurfaceProps) => <h2>{children}</h2>,
   DialogDescription: ({ children }: SurfaceProps) => <p>{children}</p>,
-  ConfirmDialog: () => null,
 }));
+vi.mock("@/components/patterns/confirm-dialog", () => ({ ConfirmDialog: () => null }));
 const noop = () => {};
 function markup(value: Agreement = agreement, update = true) {
   return renderToStaticMarkup(<AccessProvider value={{ plane: "company", root: "", actions: new Set(update ? ["inventory:supplier:update"] : []) }}><SupplierAgreementForm supplierId={supplierID} agreement={value} onClose={noop} onSaved={noop} onConflict={noop} /></AccessProvider>);

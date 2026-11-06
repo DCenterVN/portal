@@ -1,81 +1,39 @@
 "use client";
 
-import type { ReactNode } from "react";
-import type { Route } from "next";
-import { useRouter } from "next/navigation";
-import { LogOut, PanelLeft, UserRound } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { MenuItem, Popover } from "@/components/ui/popover";
+import { Fragment, type ReactNode } from "react";
+import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
+import { Separator } from "@/components/ui/separator";
+import { SidebarTrigger } from "@/components/ui/sidebar";
+import type { Crumb } from "@/lib/navigation";
 import { ThemeToggle } from "./theme-toggle";
 
 type Props = {
-  collapsed: boolean;
-  onToggle: () => void;
-  toggleLabel: string;
-  user: { name: string; detail?: string };
-  accountHref?: string;
-  /** The logout item shows only when the frame can log out. */
-  onLogout?: () => void;
+  crumbs: Crumb[];
   actions?: ReactNode;
 };
 
-function AccountMenu({ user, accountHref, onLogout }: Pick<Props, "user" | "onLogout"> & { accountHref: string }) {
-  const router = useRouter();
+export function ConsoleHeader({ crumbs, actions }: Props) {
   return (
-    <Popover
-      menu
-      align="end"
-      label={`Tài khoản của ${user.name}`}
-      triggerClassName="flex min-h-11 items-center gap-2 rounded-sm px-2 text-sm font-bold text-fg hover:bg-l1-2"
-      trigger={
-        <>
-          <span aria-hidden="true" className="grid size-8 place-items-center rounded-full border border-p bg-p-soft text-xs font-extrabold text-p-text">
-            {user.name.trim().charAt(0).toUpperCase()}
-          </span>
-          <span className="hidden max-w-40 truncate text-left sm:block">
-            {user.name}
-            {user.detail && <span className="block truncate text-xs font-normal text-fg-3">{user.detail}</span>}
-          </span>
-        </>
-      }
-    >
-      <MenuItem onClick={() => router.push(accountHref as Route)}>
-        <UserRound className="size-4" aria-hidden="true" />
-        Tài khoản
-      </MenuItem>
-      {onLogout && (
-        <MenuItem onClick={onLogout} className="text-err">
-          <LogOut className="size-4" aria-hidden="true" />
-          Đăng xuất
-        </MenuItem>
+    <header className="sticky top-0 z-(--z-header) flex h-14 shrink-0 items-center gap-2 border-b border-border bg-background px-4">
+      <SidebarTrigger className="-ml-1 max-md:size-11" />
+      <Separator orientation="vertical" className="mr-1 data-[orientation=vertical]:h-4" />
+      {crumbs.length > 0 && (
+        <Breadcrumb className="min-w-0">
+          <BreadcrumbList>
+            {crumbs.map((crumb, index) => (
+              <Fragment key={crumb.label}>
+                {index > 0 && <BreadcrumbSeparator className="hidden md:block" />}
+                <BreadcrumbItem className={index === crumbs.length - 1 ? "min-w-0" : "hidden md:block"}>
+                  {index === crumbs.length - 1 ? <BreadcrumbPage className="truncate">{crumb.label}</BreadcrumbPage> : crumb.label}
+                </BreadcrumbItem>
+              </Fragment>
+            ))}
+          </BreadcrumbList>
+        </Breadcrumb>
       )}
-    </Popover>
-  );
-}
-
-export function ConsoleHeader({ collapsed, onToggle, toggleLabel, user, accountHref = "/account", onLogout, actions }: Props) {
-  return (
-    // ponytail: same z as store-header (--z-popover) until globals.css gets --z-sticky.
-    <header className="sticky top-0 z-(--z-popover) border-b border-glass-edge">
-      {/* Glass on a back layer so the L3 account menu can still blur the page. */}
-      <span aria-hidden="true" className="pointer-events-none absolute inset-0 bg-glass-l2 glass-blur-l2" />
-      <div className="relative flex h-15 items-center gap-3 px-6">
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          aria-label={toggleLabel}
-          aria-expanded={!collapsed}
-          aria-controls="console-sidebar"
-          onClick={onToggle}
-        >
-          <PanelLeft aria-hidden="true" />
-        </Button>
-        <div className="ml-auto flex min-w-0 items-center gap-2">
-          {actions}
-          <ThemeToggle />
-          <AccountMenu user={user} accountHref={accountHref} onLogout={onLogout} />
-        </div>
+      <div className="ml-auto flex shrink-0 items-center gap-2">
+        {actions}
+        <ThemeToggle />
       </div>
     </header>
   );

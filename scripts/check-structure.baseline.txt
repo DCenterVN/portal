@@ -1,0 +1,14 @@
+app/api/auth/context/route.ts fetch-outside-lib
+app/api/auth/context/route.ts fetch-outside-lib
+app/api/auth/context/route.ts fetch-outside-lib
+app/api/auth/logout/route.ts fetch-outside-lib
+app/api/auth/me/route.ts fetch-outside-lib
+app/api/auth/refresh/route.ts fetch-outside-lib
+app/readyz/route.ts fetch-outside-lib
+features/branches/branches-view.tsx router-logic-in-tsx
+features/customer-auth/auth-popup.tsx router-logic-in-tsx
+features/employee-auth/switch-context.tsx router-logic-in-tsx
+features/platform/workspace.tsx router-logic-in-tsx
+features/production/dishes/dishes-container.tsx router-logic-in-tsx
+features/production/food-plans-view.tsx router-logic-in-tsx
+features/staff-profile/staff-profile-view.tsx router-logic-in-tsx

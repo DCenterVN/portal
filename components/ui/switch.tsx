@@ -1,34 +1,34 @@
-import * as React from "react";
-import { cn } from "@/lib/utils";
+"use client"
 
-export interface SwitchProps extends Omit<React.ComponentProps<"button">, "onChange"> {
-  checked: boolean;
-  onCheckedChange?: (checked: boolean) => void;
-}
+import * as React from "react"
+import { cn } from "@/lib/utils"
+import { Switch as SwitchPrimitive } from "radix-ui"
 
-/** Only for settings that take effect immediately; inside a form with a Save button use Checkbox. */
-export function Switch({ checked, onCheckedChange, onClick, className, children, ...props }: SwitchProps) {
+function Switch({
+  className,
+  size = "default",
+  ...props
+}: React.ComponentProps<typeof SwitchPrimitive.Root> & {
+  size?: "sm" | "default"
+}) {
   return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={checked}
+    <SwitchPrimitive.Root
+      data-slot="switch"
+      data-size={size}
       className={cn(
-        "inline-flex min-h-6 items-center justify-between gap-3 text-left text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] disabled:cursor-not-allowed disabled:opacity-50 max-md:min-h-11",
-        className,
+        "peer group/switch inline-flex shrink-0 items-center rounded-full border border-transparent shadow-xs transition-all outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 data-[size=default]:h-[1.15rem] data-[size=default]:w-8 data-[size=sm]:h-3.5 data-[size=sm]:w-6 data-[state=checked]:bg-primary data-[state=unchecked]:bg-input dark:data-[state=unchecked]:bg-input/80",
+        className
       )}
-      onClick={(event) => { onClick?.(event); onCheckedChange?.(!checked); }}
       {...props}
     >
-      {children}
-      <span
+      <SwitchPrimitive.Thumb
+        data-slot="switch-thumb"
         className={cn(
-          "flex h-6 w-12 shrink-0 rounded-full border p-px transition-colors duration-150",
-          checked ? "justify-end border-ok bg-ok" : "justify-start border-line-strong bg-l1",
+          "pointer-events-none block rounded-full bg-background ring-0 transition-transform group-data-[size=default]/switch:size-4 group-data-[size=sm]/switch:size-3 data-[state=checked]:translate-x-[calc(100%-2px)] data-[state=unchecked]:translate-x-0 dark:data-[state=checked]:bg-primary-foreground dark:data-[state=unchecked]:bg-foreground"
         )}
-      >
-        <span className={cn("size-5 rounded-full", checked ? "bg-on-p" : "bg-line-strong")} />
-      </span>
-    </button>
-  );
+      />
+    </SwitchPrimitive.Root>
+  )
 }
+
+export { Switch }

@@ -5,12 +5,17 @@ import useSWR from "swr";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Field, TextInput, Checkbox } from "@/components/ui/field";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { StatusBadge } from "@/components/patterns/status-badge";
+import { Field, Checkbox } from "@/components/patterns/form-field";
+import { Input } from "@/components/ui/input";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PageShell, PageHeader } from "@/components/ui/page";
-import { EmptyState, ErrorState, InlineAlert } from "@/components/ui/state";
-import { useToast } from "@/components/ui/toast";
+import { PageShell } from "@/components/ui/page";
+import { PageHeading } from "@/components/patterns/page-heading";
+import { EmptyState, ErrorState } from "@/components/patterns/empty-state";
+import { TablePager } from "@/components/patterns/table-pager";
+import { InlineAlert } from "@/components/patterns/inline-alert";
+import { toast } from "@/components/ui/toast";
 import { useAccess } from "@/lib/access-boundary";
 import { errorStatus } from "@/features/platform/access";
 import { companyMemberships, createMembership, employeeRoles, replaceMembershipRoles, updateMembershipStatus, type Membership } from "@/lib/api/platform-client";
@@ -20,7 +25,6 @@ type Editor = { kind: "create" } | { kind: "roles"; member: Membership };
 export function MembershipsView() {
   const t = useTranslations("memberships");
   const { can } = useAccess();
-  const { toast } = useToast();
   const [page, setPage] = useState(1);
   const { data, error, isLoading, mutate } = useSWR(can("org:membership:read") ? ["company-memberships", page] : null, () => companyMemberships(page));
   const [editor, setEditor] = useState<Editor | null>(null);
@@ -84,7 +88,7 @@ export function MembershipsView() {
 
   return (
     <PageShell>
-      <PageHeader title={t("title")} description={t("description")} actions={add} />
+      <PageHeading title={t("title")} description={t("description")} actions={add} />
       {failure && !editor && <InlineAlert>{failure}</InlineAlert>}
       <div className="overflow-x-auto rounded-xl border border-[var(--color-line)] bg-[var(--color-surface)]">
         <Table>
@@ -104,7 +108,7 @@ export function MembershipsView() {
             </TableCell></TableRow> : data?.items.map((member) => <TableRow key={member.id}>
 
               <TableCell>{member.role_codes.map((role) => <Badge key={role} variant="secondary">{t(`roleLabels.${role}`)}</Badge>)}</TableCell>
-              <TableCell><Badge variant={member.status === "ACTIVE" ? "active" : "suspended"}>{t(member.status)}</Badge></TableCell>
+              <TableCell><StatusBadge tone={member.status === "ACTIVE" ? "success" : "warning"}>{t(member.status)}</StatusBadge></TableCell>
               <TableCell>{can("org:membership:update") && <div className="flex flex-wrap gap-2">
                 <Button size="sm" variant="outline" disabled={busy} onClick={() => openEditor({ kind: "roles", member })}>{t("editRoles")}</Button>
                 <Button size="sm" variant="outline" disabled={busy} onClick={() => void changeStatus(member)}>{t(member.status === "ACTIVE" ? "suspend" : "activate")}</Button>
@@ -113,34 +117,30 @@ export function MembershipsView() {
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-end gap-3">
-        <Button variant="outline" disabled={page === 1 || isLoading || busy} onClick={() => setPage(page - 1)}>{t("previous")}</Button>
-        <span>{t("page", { page })}</span>
-        <Button variant="outline" disabled={!data || data.items.length < data.limit || isLoading || busy} onClick={() => setPage(page + 1)}>{t("next")}</Button>
-      </div>
-      <Dialog open={editor !== null} onOpenChange={(open) => { if (!open && !busy) setEditor(null); }}>
-        <DialogContent variant="sheet" showClose={false} className="md:fixed md:inset-y-0 md:right-0 md:max-w-md md:rounded-none overflow-y-auto">
-          <DialogHeader><DialogTitle>{t(editor?.kind === "roles" ? "editRoles" : "add")}</DialogTitle>
-            <DialogDescription>{t(editor?.kind === "roles" ? "rolesHint" : "createHint")}</DialogDescription>
-          </DialogHeader>
-          <form onSubmit={(event) => void save(event)} className="space-y-4">
+      <TablePager busy={isLoading || busy} previousLabel={t("previous")} nextLabel={t("next")} status={t("page", { page })} hasPrevious={page > 1} onPrevious={() => setPage(page - 1)} hasNext={!!data && data.items.length >= data.limit} onNext={() => setPage(page + 1)} />
+      <Sheet open={editor !== null} onOpenChange={(open) => { if (!open && !busy) setEditor(null); }}>
+        <SheetContent showCloseButton={false} className="overflow-y-auto sm:max-w-md">
+          <SheetHeader><SheetTitle>{t(editor?.kind === "roles" ? "editRoles" : "add")}</SheetTitle>
+            <SheetDescription>{t(editor?.kind === "roles" ? "rolesHint" : "createHint")}</SheetDescription>
+          </SheetHeader>
+          <form onSubmit={(event) => void save(event)} className="space-y-4 px-4">
             {editor?.kind === "create" && <>
-              <Field label={t("name")} htmlFor="member-name"><TextInput id="member-name" value={name} onChange={(event) => setName(event.target.value)} required disabled={busy} autoFocus /></Field>
-              <Field label={t("email")} htmlFor="member-email"><TextInput id="member-email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} required disabled={busy} /></Field>
-              <Field label={t("password")} htmlFor="member-password"><TextInput id="member-password" name="password" type="password" autoComplete="new-password" required disabled={busy} /></Field>
+              <Field label={t("name")} htmlFor="member-name"><Input id="member-name" value={name} onChange={(event) => setName(event.target.value)} required disabled={busy} autoFocus /></Field>
+              <Field label={t("email")} htmlFor="member-email"><Input id="member-email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} required disabled={busy} /></Field>
+              <Field label={t("password")} htmlFor="member-password"><Input id="member-password" name="password" type="password" autoComplete="new-password" required disabled={busy} /></Field>
             </>}
             <fieldset disabled={busy} className="space-y-2"><legend className="mb-2 text-sm font-medium">{t("roles")}</legend>
               {employeeRoles.map((role) => <Checkbox key={role} label={t(`roleLabels.${role}`)} checked={roles.includes(role)} onChange={(event) => setRoles(event.target.checked ? [...roles, role] : roles.filter((value) => value !== role))} />)}
             </fieldset>
             {failure && <InlineAlert>{failure}</InlineAlert>}
             {editor?.kind === "create" && (!name.trim() || !email.trim() || roles.length === 0) && <p className="text-sm text-[var(--color-muted)]">{t("required")}</p>}
-            <DialogFooter className="sticky bottom-0 flex-col sm:flex-col sm:space-x-0 bg-[var(--color-surface)]">
+            <SheetFooter className="sticky bottom-0 bg-[var(--color-surface)] px-0">
               <Button variant="outline" type="button" disabled={busy} onClick={() => setEditor(null)}>{t("cancel")}</Button>
               <Button type="submit" disabled={busy || (editor?.kind === "create" && (!name.trim() || !email.trim() || roles.length === 0))}>{t(busy ? "saving" : "save")}</Button>
-            </DialogFooter>
+            </SheetFooter>
           </form>
-        </DialogContent>
-      </Dialog>
+        </SheetContent>
+      </Sheet>
     </PageShell>
   );
 }

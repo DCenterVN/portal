@@ -7,6 +7,7 @@ export function getTranslations(namespace: "customerAuth", locale: "vi" | "en" =
 }
 
 import type { ReactNode } from "react";
+import { InlineAlert } from "@/components/patterns/inline-alert";
 import type { Route } from "next";
 export function authTabHref(tab: "login" | "register", redirect?: string): Route {
   const q = new URLSearchParams({auth: tab});
@@ -16,7 +17,7 @@ export function authTabHref(tab: "login" | "register", redirect?: string): Route
 export const authPopupUrl = (tab: "login" | "register", redirect?: string): Route => `/${authTabHref(tab, redirect)}` as Route;
 
 export function FormAlert({children, id}: {children: ReactNode; id?: string}) {
-  return <p id={id} role="alert" className="rounded-[var(--radius-md)] border border-[var(--color-danger)] bg-[var(--color-surface)] p-3 text-sm text-[var(--color-danger)]">{children}</p>;
+  return <InlineAlert id={id}>{children}</InlineAlert>;
 }
 export function FormNotice({title, children}: {title: string; children: ReactNode}) {
   return <div role="status" className="space-y-3 rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] p-6 text-center text-[var(--color-ink)]"><h2 className="font-display text-lg font-bold">{title}</h2><div className="space-y-3 text-sm">{children}</div></div>;

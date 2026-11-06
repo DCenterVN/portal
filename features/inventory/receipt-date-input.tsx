@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Field, TextInput } from "@/components/ui/field";
+import { Field } from "@/components/patterns/form-field";
+import { Input } from "@/components/ui/input";
 
 export function parseReceiptDate(text: string): string {
   const match = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(text);
@@ -37,7 +38,7 @@ export function ReceiptDateInput({ value, onChange, disabled }: ReceiptDateInput
   const invalid = !parseReceiptDate(text);
   const message = "Nhập ngày hợp lệ theo dd/mm/yyyy.";
   return <Field label="Ngày dự kiến nhập" htmlFor="receipt-date" hint="dd/mm/yyyy. Hợp đồng và giá phải phủ ngày này." error={touched && invalid ? message : undefined}>
-    <TextInput id="receipt-date" type="text" inputMode="numeric" placeholder="dd/mm/yyyy" required disabled={disabled} value={text}
+    <Input id="receipt-date" type="text" inputMode="numeric" placeholder="dd/mm/yyyy" required disabled={disabled} value={text}
       ref={element => element?.setCustomValidity(invalid ? message : "")}
       onChange={event => {
         const next = event.target.value;

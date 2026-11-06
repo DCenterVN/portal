@@ -9,7 +9,7 @@ import { formatVND, type Product } from "@/lib/api/sales";
 import { CatalogView } from "./catalog-view";
 import { applyCatalogFilters } from "./catalog-filters";
 
-vi.mock("@/components/ui/toast", () => ({ useToast: () => ({ toast: { error: vi.fn(), success: vi.fn() } }), ToastProvider: ({ children }: { children: React.ReactNode }) => children }));
+vi.mock("@/components/ui/toast", () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn(), push: vi.fn() }), usePathname: () => "/products", useSearchParams: () => new URLSearchParams() }));
 
 const BRANCH = "0198fd55-3f46-7a01-9e52-f4c0de000020";
@@ -156,7 +156,7 @@ describe("AC-7 console ProductsView giữ #019 và sửa wrap / căn giữa icon
     expect((source.match(/className="flex max-w-full flex-wrap items-center gap-(?:1\.5|2\.5)/g) ?? [])).toHaveLength(2);
   });
   it("icon Search căn giữa dọc theo ô nhập", () => {
-    expect(source).toMatch(/<Search className="[^"]*top-1\/2 -translate-y-1\/2[^"]*"/);
+    expect(source).toMatch(/<InputGroupAddon><Search aria-hidden="true" \/><\/InputGroupAddon>/);
     expect(source).not.toMatch(/<Search className="[^"]*top-2\.5/);
   });
   it("không tạo style effect thứ hai trong console", () => {

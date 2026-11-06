@@ -2,10 +2,12 @@
 
 import Link from "next/link";
 import { useAccess } from "@/lib/access-boundary";
-import { Button, buttonVariants } from "@/components/ui/button";
-import { Field, TextInput } from "@/components/ui/field";
+import { buttonVariants } from "@/components/ui/button";
+import { Field } from "@/components/patterns/form-field";
+import { Input } from "@/components/ui/input";
 import { Table, TableHeader, TableHead, TableBody, TableRow, TableCell } from "@/components/ui/table";
-import { EmptyState, ErrorState, Skeleton } from "@/components/ui/state";
+import { EmptyState, ErrorState, LoadingState } from "@/components/patterns/empty-state";
+import { TablePager } from "@/components/patterns/table-pager";
 import type { SupplierHistory, SupplierReceipt } from "@/lib/api/supplier-history";
 import type { ReactNode } from "react";
 
@@ -24,7 +26,7 @@ const statuses: Record<string, string> = { DRAFT: "Nháp", IN_PROGRESS: "Đang n
 function ReceiptGroup({ receipt, names }: ReceiptGroupProps) {
   const draft = receipt.status === "DRAFT";
   const { can } = useAccess();
-  return <article className="grid gap-3 rounded-lg border border-line p-4">
+  return <article className="grid gap-3 rounded-lg border border-border p-4">
     <h3 className="font-semibold">{date(receipt.created_at)} · {statuses[receipt.status] ?? "Đang xử lý"}</h3>
     {["DRAFT", "IN_PROGRESS"].includes(receipt.status) && can("inventory:goods_receipt:update") && <Link className={buttonVariants({ variant: "outline", size: "sm" })} href={{ pathname: `/inventory/goods-receipts/${encodeURIComponent(receipt.id)}/receive`, query: { supplier: receipt.supplier_ref } }}>Nhận hàng</Link>}
     <p>{draft ? "Tổng dự kiến" : "Tổng thực nhận"}: {money(draft ? receipt.total_amount_vnd : receipt.lines.reduce((sum, line) => sum + (line.actual_amount_vnd ?? 0), 0))} VND</p>
@@ -44,9 +46,9 @@ export function SupplierReceiptsView({ read, page, names, nameError, pending, em
   if (!read) return <ErrorState denied title="Bạn không có quyền xem lịch sử nhập" />;
   return <section className="mt-6 grid gap-4" aria-label="Lịch sử nhập">
     <h2 className="text-xl font-semibold">Lịch sử nhập</h2>
-    <div className="flex flex-wrap gap-3"><Field label="Từ ngày" htmlFor="supplier-history-from"><TextInput id="supplier-history-from" type="date" value={from} max={to || undefined} onChange={event => onFrom(event.target.value)} /></Field><Field label="Đến ngày" htmlFor="supplier-history-to"><TextInput id="supplier-history-to" type="date" value={to} min={from || undefined} onChange={event => onTo(event.target.value)} /></Field></div>
-    {failure || (!page ? pending ?? <Skeleton title="Đang tải lịch sử nhập" /> : !page.items.length ? empty ?? <EmptyState title="Chưa có phiếu nhập cho nhà cung cấp này trong chi nhánh đang làm việc" /> : page.items.map(receipt => <ReceiptGroup key={receipt.id} receipt={receipt} names={names} />))}
+    <div className="flex flex-wrap gap-3"><Field label="Từ ngày" htmlFor="supplier-history-from"><Input id="supplier-history-from" type="date" value={from} max={to || undefined} onChange={event => onFrom(event.target.value)} /></Field><Field label="Đến ngày" htmlFor="supplier-history-to"><Input id="supplier-history-to" type="date" value={to} min={from || undefined} onChange={event => onTo(event.target.value)} /></Field></div>
+    {failure || (!page ? pending ?? <LoadingState title="Đang tải lịch sử nhập" /> : !page.items.length ? empty ?? <EmptyState title="Chưa có phiếu nhập cho nhà cung cấp này trong chi nhánh đang làm việc" /> : page.items.map(receipt => <ReceiptGroup key={receipt.id} receipt={receipt} names={names} />))}
     {nameError && <ErrorState title="Chưa tải được tên nguyên liệu" onRetry={onRetry} />}
-    <div className="flex gap-3"><Button variant="outline" disabled={!page || !hasPrevious} onClick={onPrevious}>Trang trước</Button><Button variant="outline" disabled={!page?.next_cursor} onClick={onNext}>Trang sau</Button></div>
+    <TablePager busy={!page} hasPrevious={hasPrevious} onPrevious={onPrevious} hasNext={Boolean(page?.next_cursor)} onNext={onNext} />
   </section>;
 }

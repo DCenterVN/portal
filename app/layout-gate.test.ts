@@ -68,9 +68,8 @@ describe("layout architecture gate", () => {
   it("keeps main landmarks inside shell components", () => {
     const files = matches(/<main\b/).filter((file) => !/\.test\./.test(file));
     expect(files.sort()).toEqual([
+      "components/layout/auth-frame.tsx",
       "components/layout/console-shell.tsx",
-      "components/layout/customer-auth-shell.tsx",
-      "components/layout/employee-auth-shell.tsx",
       "components/layout/store-shell.tsx",
       "features/platform/workspace.tsx",
     ]);

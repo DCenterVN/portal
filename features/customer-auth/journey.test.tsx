@@ -103,7 +103,7 @@ it.each([[RegisterForm, "Create account"], [ForgotForm, "Enter your email"], [Re
 });
 it.each([RegisterForm, ForgotForm, ResetForm, ActivateView])("FE-14 customer renders a visible actionable empty state (%s)", component => {
  const html = renderToStaticMarkup(render(component));
- expect(html).toContain("lucide-inbox");
+ expect(html).not.toContain("lucide-inbox");
  expect(html).toContain('role="status"');
  expect(html).toMatch(/<input|href="\/forgot-password"/);
 });

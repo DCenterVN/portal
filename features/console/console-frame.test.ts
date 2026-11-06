@@ -2,7 +2,7 @@ import * as React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import type { UserProfile } from "@/lib/auth/client";
 import { existsSync } from "node:fs";
-import { CONSOLE_NAV, consoleNavFor, consoleRouteAllowed } from "./console-nav";
+import { CONSOLE_NAV, consoleNavFor, consoleRouteAllowed } from "@/lib/navigation";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ConsoleFrame, fetchConsoleSession, resolveConsoleSession } from "./console-frame";
 
@@ -69,19 +69,29 @@ describe("console session", () => {
 });
 
 describe("console effective permissions and navigation", () => {
-  it("uses org effective permissions rather than context role names or cached permissions", async () => {
-    const fetcher = vi.fn()
-      .mockResolvedValueOnce(new Response(JSON.stringify({ ...contextPayload, active_context: { org_id: "org", branch_id: "main" }, permissions: ["*"], roles: ["ADMIN"] })))
-      .mockResolvedValueOnce(new Response(JSON.stringify({ action_keys: ["org:membership:read"] })));
+  it("takes effective permissions from the context payload with one request, never the role names", async () => {
+    const fetcher = vi.fn().mockResolvedValueOnce(new Response(JSON.stringify({
+      ...contextPayload, active_context: { org_id: "org", branch_id: "main" }, permissions: ["org:membership:read"], roles: ["ADMIN"],
+    })));
     const session = await fetchConsoleSession(fetcher);
-    expect(fetcher).toHaveBeenNthCalledWith(2, "/api/org/permissions/me?org_id=org&branch_id=main");
+    expect(fetcher).toHaveBeenCalledTimes(1);
     expect(session.permissions).toEqual(["org:membership:read"]);
   });
 
-  it.each([403, 503, 200])("fails closed when permission lookup returns %s or malformed data", async (status) => {
-    const fetcher = vi.fn()
-      .mockResolvedValueOnce(new Response(JSON.stringify({ ...contextPayload, active_context: { org_id: "org", branch_id: "main" }, permissions: ["org:membership:read"] })))
-      .mockResolvedValueOnce(new Response(JSON.stringify({ actions: ["org:membership:read"] }), { status }));
+  it("exposes the active branch scope for views instead of a second context request", () => {
+    const session = resolveConsoleSession(profile, {
+      active_context: { org_id: "org", branch_id: "main" },
+      contexts: [{ org_id: "org", org_name: "Công ty", branch_id: "main", branch_name: "Chi nhánh chính", roles: ["VT-10", 3] }],
+    });
+    expect(session.scope).toEqual({ userId: "user-1", orgId: "org", branchId: "main", branchName: "Chi nhánh chính", roles: ["VT-10"] });
+    expect(resolveConsoleSession(profile, { active_context: {}, contexts: [] }).scope).toBeUndefined();
+  });
+
+  it.each([
+    { name: "BFF permission failure", status: 503, body: { user: profile, error: "permissions_unavailable" } },
+    { name: "malformed permissions", status: 200, body: { ...contextPayload, active_context: { org_id: "org", branch_id: "main" }, permissions: "*" } },
+  ])("fails closed on $name", async ({ status, body }) => {
+    const fetcher = vi.fn().mockResolvedValueOnce(new Response(JSON.stringify(body), { status }));
     const session = await fetchConsoleSession(fetcher);
     expect(session.error).toBeTruthy();
     expect(session.permissions).toEqual([]);
@@ -113,7 +123,7 @@ vi.mock("react", async (importOriginal) => {
   return { ...actual, useState: (initial: unknown) => actual.useState(frameState.current ?? initial) };
 });
 vi.mock("next/navigation", () => ({ usePathname: () => "/memberships" }));
-vi.mock("@/components/ui/toast", () => ({ useToast: () => ({ toast: { error: vi.fn() } }) }));
+vi.mock("@/components/ui/toast", () => ({ toast: { error: vi.fn() } }));
 vi.mock("@/components/layout/console-shell", () => ({
   ConsoleShell: ({ children }: { children: React.ReactNode }) => children,
 }));
@@ -161,7 +171,6 @@ describe("console BFF request count", () => {
         const request = new NextRequest(`http://portal${path}`, { headers: { cookie: "access_token=opaque-test-credential" } });
         if (path === "/api/auth/context") return contextGET(request);
         if (path === "/api/auth/me") return meGET(request);
-        if (path.startsWith("/api/org/permissions/me?")) return new Response(JSON.stringify({ action_keys: ["org:membership:read"] }));
         throw new Error("Unexpected browser path");
       });
       const session = await fetchConsoleSession(browser);
@@ -169,9 +178,7 @@ describe("console BFF request count", () => {
       expect(session.context).toEqual({ label: "Chi nhánh chính", sublabel: "Công ty" });
       expect(session.permissions).toEqual(["org:membership:read"]);
       expect(profileCalls).toBe(1);
-      expect(browser.mock.calls.map(([url]) => String(url))).toEqual([
-        "/api/auth/context", "/api/org/permissions/me?org_id=org&branch_id=main",
-      ]);
+      expect(browser.mock.calls.map(([url]) => String(url))).toEqual(["/api/auth/context"]);
     } finally { vi.unstubAllGlobals(); }
   });
 });
@@ -201,6 +208,32 @@ describe("context BFF failure propagation", () => {
       if (expectedUser) expect(payload).toHaveProperty("user", profile);
       else expect(payload).not.toHaveProperty("user");
       expect(profileCalls).toBe(1);
+    } finally { vi.unstubAllGlobals(); }
+  });
+});
+
+describe("context BFF concurrency", () => {
+  it("starts profile and access-context upstream calls together, permissions after the active context is known", async () => {
+    const { GET } = await import("@/app/api/auth/context/route");
+    const { NextRequest } = await import("next/server");
+    const started: string[] = [];
+    let release!: () => void;
+    const gate = new Promise<void>((resolve) => { release = resolve; });
+    vi.stubGlobal("fetch", vi.fn<typeof fetch>(async (url) => {
+      const path = new URL(String(url)).pathname;
+      started.push(path);
+      if (path === "/auth/me") { await gate; return new Response(JSON.stringify(profile)); }
+      if (path === "/org/access-contexts/me") return new Response(JSON.stringify([{ org_id: "org", branch_id: "main", branch_name: "Chi nhánh chính" }]));
+      return new Response(JSON.stringify({ action_keys: ["org:membership:read"] }));
+    }));
+    try {
+      const pending = GET(new NextRequest("http://portal/api/auth/context", { headers: { cookie: "access_token=opaque-test-credential" } }));
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      expect(started).toEqual(["/auth/me", "/org/access-contexts/me"]);
+      release();
+      const payload = await (await pending).json() as { permissions: string[] };
+      expect(started).toEqual(["/auth/me", "/org/access-contexts/me", "/org/permissions/me"]);
+      expect(payload.permissions).toEqual(["org:membership:read"]);
     } finally { vi.unstubAllGlobals(); }
   });
 });

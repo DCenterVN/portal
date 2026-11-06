@@ -12,6 +12,7 @@ export function ThemeToggle() {
       type="button"
       variant="ghost"
       size="icon"
+      className="max-md:size-11"
       aria-label={next === "dark" ? "Chuyển sang giao diện tối" : "Chuyển sang giao diện sáng"}
       onClick={() => {
         document.documentElement.dataset.theme = next;

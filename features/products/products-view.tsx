@@ -4,18 +4,14 @@ import React, { useState, useMemo, useCallback } from "react";
 import Link from "next/link";
 import type { Route } from "next";
 import {
-  Package,
   Plus,
   Search,
-  CheckCircle2,
   Check,
-  AlertCircle,
-  ArrowUpRight,
-  TriangleAlert,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { Badge } from "@/components/ui/badge";
+import { StatusBadge } from "@/components/patterns/status-badge";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
@@ -25,8 +21,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Product, DataSource, formatVND } from "@/lib/api/sales";
-import { PageShell, PageHeader } from "@/components/ui/page";
+import type { Product, DataSource } from "@/lib/api/sales";
+import { formatVND } from "@/lib/format";
+import { InlineAlert } from "@/components/patterns/inline-alert";
+import { EmptyState } from "@/components/patterns/empty-state";
+import { PageShell } from "@/components/ui/page";
+import { PageHeading } from "@/components/patterns/page-heading";
 import { ProductCreateDialog } from "./product-create-dialog";
 import motion from "./filter-motion.module.css";
 
@@ -72,16 +72,12 @@ export function ProductsView({ initialProducts, dataSource = "api", canCreate = 
   return (
     <PageShell>
       {dataSource === "unavailable" && (
-        <div className="mb-4 flex items-center gap-2 rounded-xl border border-[var(--color-line)] bg-[var(--color-surface)] p-3 text-xs font-semibold text-[var(--color-ink)]" role="alert">
-          <TriangleAlert className="size-4 shrink-0" />
-          <span>Không thể tải dữ liệu từ Sales API. Danh sách được để trống để tránh hiển thị dữ liệu giả.</span>
-        </div>
+        <InlineAlert tone="warning" className="mb-4">Không thể tải dữ liệu từ Sales API. Danh sách được để trống để tránh hiển thị dữ liệu giả.</InlineAlert>
       )}
-      <PageHeader
-        icon={<Package />}
+      <PageHeading
         title="Sản phẩm"
         badge={
-          <Badge variant="secondary" dot={false} className="text-xs font-bold px-2.5 py-0.5 rounded-full">
+          <Badge variant="secondary" className="text-xs font-semibold px-2.5 py-0.5 rounded-full">
             {products.length} sản phẩm
           </Badge>
         }
@@ -99,46 +95,39 @@ export function ProductsView({ initialProducts, dataSource = "api", canCreate = 
         }
       />
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 my-6">
-        <Card className="rounded-2xl border-[var(--color-line)] bg-[var(--color-surface)] p-4.5">
+        <Card className="border-border bg-card p-4">
           <CardContent className="p-0">
-            <div className="text-xs font-semibold text-[var(--color-muted)]">Tổng sản phẩm</div>
-            <div className="text-2xl font-extrabold text-[var(--color-ink)] mt-1">{products.length}</div>
-            <div className="text-[11px] text-[var(--color-muted)] mt-0.5">Mặt hàng trong hệ thống</div>
+            <div className="text-xs font-semibold text-muted-foreground">Tổng sản phẩm</div>
+            <div className="text-2xl font-semibold text-foreground mt-1">{products.length}</div>
+            <div className="text-xs text-muted-foreground mt-0.5">Mặt hàng trong hệ thống</div>
           </CardContent>
         </Card>
 
-        <Card className="rounded-2xl border-[var(--color-line)] bg-[var(--color-surface)] p-4.5">
+        <Card className="border-border bg-card p-4">
           <CardContent className="p-0">
-            <div className="text-xs font-semibold text-[var(--color-ink)] flex items-center gap-1.5">
-              <CheckCircle2 className="size-3.5 text-[var(--color-leaf)]" />
+            <div className="text-xs font-semibold text-muted-foreground">
               Đang mở bán (ACTIVE)
             </div>
-            <div className="text-2xl font-extrabold text-[var(--color-ink)] mt-1">{activeCount}</div>
-            <div className="text-[11px] text-[var(--color-muted)] mt-0.5">Sản phẩm có trạng thái mở bán</div>
+            <div className="text-2xl font-semibold text-foreground mt-1">{activeCount}</div>
+            <div className="text-xs text-muted-foreground mt-0.5">Sản phẩm có trạng thái mở bán</div>
           </CardContent>
         </Card>
 
-        <Card className="rounded-2xl border-[var(--color-line)] bg-[var(--color-surface)] p-4.5">
+        <Card className="border-border bg-card p-4">
           <CardContent className="p-0">
-            <div className="text-xs font-semibold text-[var(--color-ink)] flex items-center gap-1.5">
-              <AlertCircle className="size-3.5 text-[var(--color-warn-ink)]" />
+            <div className="text-xs font-semibold text-muted-foreground">
               Bản nháp (DRAFT)
             </div>
-            <div className="text-2xl font-extrabold text-[var(--color-ink)] mt-1">{draftCount}</div>
-            <div className="text-[11px] text-[var(--color-muted)] mt-0.5">Sản phẩm đang được chuẩn bị</div>
+            <div className="text-2xl font-semibold text-foreground mt-1">{draftCount}</div>
+            <div className="text-xs text-muted-foreground mt-0.5">Sản phẩm đang được chuẩn bị</div>
           </CardContent>
         </Card>
       </div>
       <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mb-6">
-        <div className="relative w-full sm:w-80">
-          <Search className="size-4 text-[var(--color-muted)] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-          <Input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Tìm theo tên sản phẩm..."
-            className="pl-9 text-xs rounded-xl"
-          />
-        </div>
+        <InputGroup className="w-full sm:w-80">
+          <InputGroupAddon><Search aria-hidden="true" /></InputGroupAddon>
+          <InputGroupInput value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Tìm theo tên sản phẩm..." aria-label="Tìm sản phẩm" />
+        </InputGroup>
 
         <div className="flex max-w-full flex-wrap items-center gap-1.5 self-start sm:self-auto">
           <Button
@@ -176,26 +165,26 @@ export function ProductsView({ initialProducts, dataSource = "api", canCreate = 
           </Button>
         </div>
       </div>
-      <Card className="rounded-2xl border-[var(--color-line)] bg-[var(--color-surface)] overflow-hidden shadow-[var(--elevation-shadow-card)]">
+      {products.length === 0 ? <EmptyState title="Chưa có sản phẩm" description="Sản phẩm được tạo sẽ hiển thị ở đây." /> : <Card className="border-border bg-card overflow-hidden ">
         <Table>
           <TableHeader>
-            <TableRow className="border-b border-[var(--color-line)] bg-[var(--color-tint)] hover:bg-[var(--color-tint)]">
-              <TableHead className="w-[140px] text-[11px] font-bold uppercase tracking-wider text-[var(--color-muted)]">
+            <TableRow className="border-b border-border bg-muted hover:bg-muted">
+              <TableHead className="w-[140px] text-xs font-semibold text-muted-foreground">
                 Mã SKU
               </TableHead>
-              <TableHead className="text-[11px] font-bold uppercase tracking-wider text-[var(--color-muted)]">
+              <TableHead className="text-xs font-semibold text-muted-foreground">
                 Tên Sản Phẩm
               </TableHead>
-              <TableHead className="w-[100px] text-[11px] font-bold uppercase tracking-wider text-[var(--color-muted)]">
+              <TableHead className="w-[100px] text-xs font-semibold text-muted-foreground">
                 ĐVT
               </TableHead>
-              <TableHead className="w-[140px] text-[11px] font-bold uppercase tracking-wider text-[var(--color-muted)] text-right">
+              <TableHead className="w-[140px] text-xs font-semibold text-muted-foreground text-right">
                 Giá Niêm Yết
               </TableHead>
-              <TableHead className="w-[130px] text-[11px] font-bold uppercase tracking-wider text-[var(--color-muted)]">
+              <TableHead className="w-[130px] text-xs font-semibold text-muted-foreground">
                 Trạng Thái
               </TableHead>
-              <TableHead className="w-[120px] text-[11px] font-bold uppercase tracking-wider text-[var(--color-muted)] text-right">
+              <TableHead className="w-[120px] text-xs font-semibold text-muted-foreground text-right">
                 Thao Tác
               </TableHead>
             </TableRow>
@@ -203,43 +192,42 @@ export function ProductsView({ initialProducts, dataSource = "api", canCreate = 
           <TableBody>
             {filteredProducts.length > 0 ? (
               filteredProducts.map((p) => (
-                <TableRow key={p.id} className="border-b border-[var(--color-line)] hover:bg-[var(--color-tint)] transition-colors">
-                  <TableCell className="font-mono text-xs font-bold text-[var(--color-ink)]">
+                <TableRow key={p.id} className="border-b border-border hover:bg-muted transition-colors">
+                  <TableCell className="font-mono text-xs font-semibold text-foreground">
                     {p.sku_code}
                   </TableCell>
                   <TableCell>
                     {p.status === "ACTIVE" ? <Link
                       href={`/products/${p.id}` as Route}
-                      className="font-bold text-xs text-[var(--color-ink)] hover:text-[var(--color-primary-hover)] dark:hover:text-[var(--color-primary)] transition-colors flex items-center gap-1.5 group"
+                      className="font-semibold text-xs text-foreground hover:underline transition-colors"
                     >
-                      <span>{p.name}</span>
-                      <ArrowUpRight className="size-3 text-[var(--color-muted)] opacity-0 group-hover:opacity-100 transition-opacity" />
-                    </Link> : <span className="text-xs font-bold">{p.name}</span>}
+                      {p.name}
+                    </Link> : <span className="text-xs font-semibold">{p.name}</span>}
                     {p.description && (
-                      <p className="text-[11px] text-[var(--color-muted)] truncate max-w-md mt-0.5">
+                      <p className="text-xs text-muted-foreground truncate max-w-md mt-0.5">
                         {p.description}
                       </p>
                     )}
                   </TableCell>
-                  <TableCell className="text-xs font-semibold text-[var(--color-muted)]">
+                  <TableCell className="text-xs font-semibold text-muted-foreground">
                     {p.uom}
                   </TableCell>
-                  <TableCell className="text-right font-serif font-bold text-xs text-[var(--color-ink)]">
+                  <TableCell className="text-right font-semibold text-xs text-foreground">
                     {formatVND(p.base_price_vnd)}
                   </TableCell>
                   <TableCell>
                     {p.status === "ACTIVE" ? (
-                      <Badge variant="active" dot className="text-[10px] font-bold">
+                      <StatusBadge tone="success" className="text-xs font-semibold">
                         Đang mở bán
-                      </Badge>
+                      </StatusBadge>
                     ) : p.status === "DRAFT" ? (
-                      <Badge variant="secondary" dot className="text-[10px] font-bold text-[var(--color-ink)] bg-[var(--color-surface)] border-[var(--color-line)]">
+                      <Badge variant="outline">
                         Bản nháp
                       </Badge>
                     ) : (
-                      <Badge variant="revoked" dot className="text-[10px] font-bold">
+                      <StatusBadge tone="danger" className="text-xs font-semibold">
                         Tạm ngưng
-                      </Badge>
+                      </StatusBadge>
                     )}
                   </TableCell>
                   <TableCell className="text-right">
@@ -253,14 +241,14 @@ export function ProductsView({ initialProducts, dataSource = "api", canCreate = 
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-12 text-xs text-[var(--color-muted)]">
+                <TableCell colSpan={6} className="text-center py-12 text-xs text-muted-foreground">
                   Không tìm thấy sản phẩm nào phù hợp với điều kiện tìm kiếm.
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
-      </Card>
+      </Card>}
 
       {canCreate && <ProductCreateDialog
         open={createDialogOpen}

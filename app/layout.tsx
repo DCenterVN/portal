@@ -1,21 +1,21 @@
 import type { Metadata, Viewport } from "next";
-import { Be_Vietnam_Pro, Nunito } from "next/font/google";
+import { Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
-import { ToastProvider } from "@/components/ui/toast";
+import { Toaster } from "@/components/ui/toast";
 
-const heading = Be_Vietnam_Pro({
+const body = Inter({
   subsets: ["vietnamese", "latin"],
-  weight: ["700"],
-  variable: "--font-heading",
+  weight: ["400", "500", "600"],
+  variable: "--font-body",
   display: "swap",
   adjustFontFallback: true,
 });
 
-const body = Nunito({
-  subsets: ["vietnamese", "latin"],
-  weight: ["400", "500", "600", "700", "800"],
-  variable: "--font-body",
+const mono = Geist_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500"],
+  variable: "--font-mono",
   display: "swap",
   adjustFontFallback: true,
 });
@@ -89,8 +89,8 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#FBF6EE" },
-    { media: "(prefers-color-scheme: dark)", color: "#1D1714" },
+    { media: "(prefers-color-scheme: light)", color: "#FFFFFF" },
+    { media: "(prefers-color-scheme: dark)", color: "#09090B" },
   ],
 };
 
@@ -101,16 +101,15 @@ export default function RootLayout({
     <html
       lang="vi"
       suppressHydrationWarning
-      className={`${heading.variable} ${body.variable}`}
+      className={`${body.variable} ${mono.variable}`}
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body className="min-h-screen bg-[var(--background)] text-[var(--foreground)] antialiased transition-colors duration-200">
         <ThemeProvider>
-          <ToastProvider>
-            {children}
-          </ToastProvider>
+          {children}
+          <Toaster position="bottom-right" />
         </ThemeProvider>
       </body>
     </html>

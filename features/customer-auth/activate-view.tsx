@@ -1,5 +1,7 @@
 "use client";
-import {EmptyState, ErrorState} from "@/components/ui/state";
+import { EmptyState, ErrorState } from "@/components/patterns/empty-state";
+import { InlineAlert } from "@/components/patterns/inline-alert";
+import { FieldError } from "@/components/ui/field";
 import {useTranslations} from "next-intl";
 import {FetchError} from "@/lib/fetcher";
 
@@ -44,8 +46,8 @@ function ActivationFields({id, busy, feedback}: {id: string; busy: boolean; feed
         showLabel={t("showPassword")} hideLabel={t("hidePassword")}
         aria-invalid={feedback.field === field}
         aria-describedby={`${field === "password" ? `${id}-hint` : ""}${feedback.field === field ? ` ${id}-${field}-error` : ""}`.trim() || undefined} />
-      {field === "password" && <p id={`${id}-hint`} className="text-xs text-[var(--color-muted)]">{t("passwordPolicy")}</p>}
-      {feedback.field === field && <p id={`${id}-${field}-error`} role="alert" className="text-sm text-[var(--color-danger)]">{t(feedback.key)}</p>}
+      {field === "password" && <p id={`${id}-hint`} className="text-xs text-muted-foreground">{t("passwordPolicy")}</p>}
+      {feedback.field === field && <FieldError id={`${id}-${field}-error`}>{t(feedback.key)}</FieldError>}
     </div>)}
   </>;
 }
@@ -66,7 +68,7 @@ export function ActivateView() {
   const previousGeneration = useRef(generation);
   const pending = useRef(false);
   const formRef = useRef<HTMLFormElement>(null);
-  const alertRef = useRef<HTMLParagraphElement>(null);
+  const alertRef = useRef<HTMLDivElement>(null);
   const [state, setState] = useState("idle");
   const [feedback, setFeedback] = useState<ActivationFeedback>({key: ""});
   const [retryAt, setRetryAt] = useState(0);
@@ -132,7 +134,7 @@ export function ActivateView() {
     }
   };
 
-  const login = <Link href="/login" className="inline-flex min-h-11 items-center text-[var(--color-primary)] hover:underline">{t("login")}</Link>;
+  const login = <Link href="/login" className="inline-flex min-h-11 items-center text-primary underline-offset-4 hover:underline">{t("login")}</Link>;
   if (state === "done") return <FormNotice title={t("activationDone")}><p>{t("activationReady")}</p>{login}</FormNotice>;
   if (state === "resent") return <FormNotice title={t("activationResent")}><p>{t("activationResentNotice")}</p>{login}</FormNotice>;
   if (!token || state === "invalid") return <div className="space-y-4">
@@ -140,9 +142,9 @@ export function ActivateView() {
     <ResendForm onSent={() => setState("resent")} />{login}
   </div>;
   return <form ref={formRef} key={generation} onSubmit={onSubmit} noValidate aria-busy={busy} className="space-y-4">
-    {feedback.key && !feedback.field && <p ref={alertRef} tabIndex={-1} role="alert" className="text-sm text-[var(--color-danger)]">{t(feedback.key)}</p>}
+    {feedback.key && !feedback.field && <InlineAlert ref={alertRef} tabIndex={-1}>{t(feedback.key)}</InlineAlert>}
     <ActivationFields id={id} busy={busy} feedback={feedback} />
-    {seconds > 0 && <p role="status" className="text-sm text-[var(--color-muted)]">{t("activationRetryWait", {seconds})}</p>}
+    {seconds > 0 && <p role="status" className="text-sm text-muted-foreground">{t("activationRetryWait", {seconds})}</p>}
     {busy && <p role="status">{t("activationPending")}</p>}
     <Button type="submit" disabled={busy || seconds > 0} className="w-full">{t(busy ? "activationPending" : "activationSubmit")}</Button>
     {login}

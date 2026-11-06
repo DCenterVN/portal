@@ -1,5 +1,6 @@
 "use client";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -12,8 +13,6 @@ type Props = {
   disabled?: boolean;
   onToggle?: (key: string, on: boolean) => void;
 };
-
-const otherChip = "inline-flex items-center px-1.5 py-0.5 rounded-[var(--r-2)] text-[11px] font-mono bg-l1-2 text-fg-2 border border-line";
 
 export function PermissionGrid({ actions, resources, catalog, disabled, onToggle }: Props) {
   const locked = (key: string) => !onToggle || !!disabled || (!!catalog && !catalog.has(key));
@@ -28,19 +27,19 @@ export function PermissionGrid({ actions, resources, catalog, disabled, onToggle
             <TableRow>
               <TableHead className="w-1/3">Tài nguyên</TableHead>
               {VERBS.map((verb) => (
-                <TableHead key={verb} className="text-center font-bold uppercase" title={verb}>
+                <TableHead key={verb} className="text-center font-medium" title={verb}>
                   {verb[0].toUpperCase()}
                 </TableHead>
               ))}
-              <TableHead className="text-center font-bold">Khác</TableHead>
+              <TableHead className="text-center font-medium">Khác</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {resources.map((resource) => {
               const others = othersOf(resource);
               return (
-                <TableRow key={resource} className="transition-colors duration-100 hover:bg-l1-2">
-                  <TableCell className="whitespace-nowrap font-mono text-xs font-medium text-fg">{resource}</TableCell>
+                <TableRow key={resource} className="transition-colors duration-100 hover:bg-muted">
+                  <TableCell className="whitespace-nowrap font-mono text-xs font-medium text-foreground">{resource}</TableCell>
                   {VERBS.map((verb) => {
                     const key = `${resource}:${verb}`;
                     return (
@@ -48,9 +47,8 @@ export function PermissionGrid({ actions, resources, catalog, disabled, onToggle
                         <Checkbox
                           checked={actions.includes(key)}
                           disabled={locked(key)}
-                          onCheckedChange={(on) => onToggle?.(key, on)}
+                          onCheckedChange={(on) => onToggle?.(key, on === true)}
                           aria-label={key}
-                          className="justify-center transition-colors duration-100"
                         />
                       </TableCell>
                     );
@@ -59,13 +57,13 @@ export function PermissionGrid({ actions, resources, catalog, disabled, onToggle
                     {others.length > 0 ? (
                       <div className="flex flex-wrap justify-center gap-1">
                         {others.map((act) => (
-                          <span key={act} className={otherChip} title={act}>
+                          <Badge key={act} variant="outline" className="font-mono" title={act}>
                             {act.slice(resource.length + 1)}
-                          </span>
+                          </Badge>
                         ))}
                       </div>
                     ) : (
-                      <span className="text-xs text-fg-3">—</span>
+                      <span className="text-xs text-muted-foreground">—</span>
                     )}
                   </TableCell>
                 </TableRow>
@@ -76,22 +74,22 @@ export function PermissionGrid({ actions, resources, catalog, disabled, onToggle
       </div>
 
       <div className="md:hidden space-y-2.5">
-        <div className="flex items-center justify-between text-xs text-fg-3 px-1">
+        <div className="flex items-center justify-between text-xs text-muted-foreground px-1">
           <span>Tài nguyên</span>
           <span className="font-mono">C · R · U · D · I · E</span>
         </div>
         {resources.map((resource) => {
           const others = othersOf(resource);
           return (
-            <div key={resource} className="rounded-lg border border-line bg-l1 p-3 space-y-2">
+            <div key={resource} className="rounded-lg border border-border bg-card p-3 space-y-2">
               <div className="flex items-center justify-between gap-2">
-                <span className="font-mono text-xs font-bold text-fg break-all">{resource}</span>
+                <span className="font-mono text-xs font-medium text-foreground break-all">{resource}</span>
                 {others.length > 0 && (
                   <div className="flex flex-wrap gap-1">
                     {others.map((act) => (
-                      <span key={act} className={otherChip} title={act}>
+                      <Badge key={act} variant="outline" className="font-mono" title={act}>
                         {act.slice(resource.length + 1)}
-                      </span>
+                      </Badge>
                     ))}
                   </div>
                 )}
@@ -107,11 +105,11 @@ export function PermissionGrid({ actions, resources, catalog, disabled, onToggle
                       role="checkbox"
                       aria-checked={checked}
                       aria-label={key}
-                      variant={checked ? "primary" : "outline"}
+                      variant={checked ? "default" : "outline"}
                       size="sm"
                       disabled={locked(key)}
                       onClick={() => onToggle?.(key, !checked)}
-                      className="font-bold text-xs"
+                      className="text-xs font-medium"
                       title={verb}
                     >
                       {verb[0].toUpperCase()}

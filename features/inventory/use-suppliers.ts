@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAccess } from "@/lib/access-boundary";
 import { getSuppliers, type SupplierPage } from "@/lib/api/suppliers";
 import { getMaterialCategories } from "@/lib/api/material-categories";
@@ -18,13 +18,16 @@ export function useSuppliers(initialPage?: SupplierPage) {
   const [create, setCreate] = useState(false);
   const [revision, setRevision] = useState(0);
   const cursor = cursors[cursors.length - 1];
+  const typedQ = useRef(q);
   useEffect(() => {
     if (!read) return;
     let live = true;
     setLoading(true);
+    const delay = typedQ.current === q ? 0 : 250;
+    typedQ.current = q;
     const timer = setTimeout(() => {
       getSuppliers({ q, status, cursor }).then(value => { if (live) { setPage(value); setError(""); } }).catch(() => { if (live) setError("Không tải được danh sách nhà cung cấp"); }).finally(() => { if (live) setLoading(false); });
-    }, 250);
+    }, delay);
     return () => { live = false; clearTimeout(timer); };
   }, [q, status, cursor, read, revision]);
   const [categories, setCategories] = useState<MaterialCategory[]>([]);

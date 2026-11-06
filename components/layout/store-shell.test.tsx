@@ -17,6 +17,15 @@ vi.mock("react", async (original) => {
   return { ...actual, useState: (initial: unknown) => actual.useState(flags.open && initial === false ? true : initial) };
 });
 
+vi.mock("@/components/ui/dropdown-menu", async (original) => {
+  const { ssrMenuContent, ssrMenuItem } = await import("@/mocks/overlay-ssr");
+  return { ...(await original<typeof import("@/components/ui/dropdown-menu")>()), DropdownMenuContent: ssrMenuContent(() => flags.open), DropdownMenuItem: ssrMenuItem };
+});
+vi.mock("@/components/ui/popover", async (original) => {
+  const { ssrPopoverContent } = await import("@/mocks/overlay-ssr");
+  return { ...(await original<typeof import("@/components/ui/popover")>()), PopoverContent: ssrPopoverContent(() => flags.open) };
+});
+
 const nav = [
   { href: "/", label: "Cửa hàng", match: "/" },
   { href: "/products", label: "Sản phẩm", match: "/products" },
@@ -67,12 +76,11 @@ describe("StoreShell", () => {
     expect(html).toContain('aria-current="page"');
   });
 
-  it("keeps the header sticky on glass L2 and the content at 1440 with 16/40 gutters", () => {
+  it("keeps the header sticky on a solid background and the content at 1440 with 16/40 gutters", () => {
     const html = shell();
     const header = tagWith(html, "header");
-    for (const name of ["sticky", "top-0", "border-glass-edge"]) expect(header).toContain(name);
-    const glass = html.slice(html.indexOf("<header"), html.indexOf("</header>")).match(/<span aria-hidden="true" class="[^"]*"/)?.[0] ?? "";
-    for (const name of ["absolute", "inset-0", "bg-glass-l2", "glass-blur-l2"]) expect(glass).toContain(name);
+    for (const name of ["sticky", "top-0", "border-border", "bg-background"]) expect(header).toContain(name);
+    expect(html.slice(html.indexOf("<header"), html.indexOf("</header>"))).not.toMatch(/glass|backdrop|blur/);
     const main = tagWith(html, "main");
     for (const name of ["max-w-360", "px-4", "md:px-10"]) expect(main).toContain(name);
   });

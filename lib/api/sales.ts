@@ -255,8 +255,7 @@ export function clearCart(): void {
   window.localStorage.removeItem(cartItemsKey);
   window.localStorage.removeItem("vietsach.cart_id");
 }
-const vndFormatter = new Intl.NumberFormat("vi-VN");
-export function formatVND(amount: number | undefined): string { return amount === undefined ? "Chưa có giá" : vndFormatter.format(amount) + " ₫"; }
+export { formatVND } from "@/lib/format";
 
 export interface DraftProduct { id: string; name: string; status: string; }
 export async function getDraftProducts(): Promise<DraftProduct[]> {

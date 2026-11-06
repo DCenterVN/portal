@@ -3,22 +3,16 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  Users,
-  MapPin,
-  Clock,
-  ArrowUpRight,
   Search,
   Plus,
-  CheckCircle2,
-  ThermometerSnowflake,
-  Coins,
-  Building2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { Badge } from "@/components/ui/badge";
+import { StatusBadge } from "@/components/patterns/status-badge";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { PageShell, PageHeader } from "@/components/ui/page";
+import { PageShell } from "@/components/ui/page";
+import { PageHeading } from "@/components/patterns/page-heading";
 
 interface BranchInfo {
   id: string;
@@ -53,27 +47,21 @@ export function BranchesView({ initialBranches }: BranchesViewProps) {
   };
 
   return (
-    <PageShell className="bg-[var(--color-bg)] text-[var(--color-ink)]">
-      <PageHeader
-        icon={<Building2 />}
+    <PageShell className="bg-background text-foreground">
+      <PageHeading
         title="Danh sách Chi nhánh Vận hành"
         badge={
-          <Badge variant="secondary" dot={false} className="text-xs font-bold px-2.5 py-0.5 rounded-full">
+          <Badge variant="outline">
             {safeBranches.length} Chi nhánh
           </Badge>
         }
         description="Chọn chi nhánh cấp đông để chuyển đổi ngữ cảnh làm việc, quản lý kho hàng và nhân sự"
         actions={
           <>
-            <div className="relative w-64 sm:w-80">
-              <Search className="absolute left-3 top-3.5 size-3.5 text-[var(--color-muted)]" />
-              <Input
-                placeholder="Tìm mã hoặc tên chi nhánh..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-8 text-xs h-11 rounded-[var(--radius-md)] bg-[var(--color-surface)] text-[var(--color-ink)] border-[var(--color-input-border)]"
-              />
-            </div>
+            <InputGroup className="w-64 sm:w-80">
+              <InputGroupAddon><Search aria-hidden="true" /></InputGroupAddon>
+              <InputGroupInput placeholder="Tìm mã hoặc tên chi nhánh..." value={search} onChange={(e) => setSearch(e.target.value)} aria-label="Tìm chi nhánh" />
+            </InputGroup>
             <Button size="sm">
               <Plus className="size-3.5" />
               <span>Thêm Chi Nhánh</span>
@@ -89,84 +77,68 @@ export function BranchesView({ initialBranches }: BranchesViewProps) {
           return (
             <Card
               key={branch.id}
-              className={`relative flex flex-col justify-between transition-all rounded-2xl border bg-[var(--color-surface)] text-[var(--color-ink)] overflow-hidden ${
+              className={`relative flex flex-col justify-between transition-all border bg-card text-foreground overflow-hidden ${
                 isSelected
-                  ? "border-[var(--color-primary)] shadow-[var(--elevation-shadow-card)] ring-2 ring-[var(--color-focus)]"
-                  : "border-[var(--color-line)] hover:border-[var(--color-input-border)] hover:shadow-[var(--elevation-shadow-card)]"
+                  ? "border-primary"
+                  : "border-border hover:border-input"
               }`}
             >
               {/* Selected Pill Header */}
               {isSelected && (
                 <div className="absolute top-3 right-4 z-10">
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--color-tint)] px-3 py-0.5 text-[11px] font-bold text-[var(--color-ink)] shadow-[var(--elevation-shadow-card)]">
-                    <CheckCircle2 className="size-3 text-[var(--color-leaf)]" /> Đang vận hành
-                  </span>
+                  <Badge variant="outline">Đang vận hành</Badge>
                 </div>
               )}
 
               <CardHeader className="pb-3 pt-5">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-xs font-bold px-2 py-0.5 rounded-lg bg-[var(--color-tint)] text-[var(--color-ink)] border border-[var(--color-line)]">
+                    <Badge variant="outline" className="font-mono">
                       {branch.code}
-                    </span>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[var(--color-tint)] text-[var(--color-ink)] border border-[var(--color-line)]">
+                    </Badge>
+                    <Badge variant="outline">
                       {branch.type === "MAIN" ? "Trụ sở chính" : "Chi nhánh con"}
-                    </span>
+                    </Badge>
                   </div>
-                  {!isSelected && <Badge variant="active">Active</Badge>}
+                  {!isSelected && <StatusBadge tone="success">Active</StatusBadge>}
                 </div>
-                <CardTitle className="font-[family-name:var(--font-quicksand,var(--font-display))] text-base font-bold mt-2.5 text-[var(--color-ink)] leading-snug">
+                <CardTitle className="text-base font-semibold mt-2.5 text-foreground leading-snug">
                   {branch.name}
                 </CardTitle>
-                <CardDescription className="flex items-start gap-1.5 text-xs text-[var(--color-muted)] pt-1 font-medium">
-                  <MapPin className="size-3.5 shrink-0 mt-0.5 text-[var(--color-primary)]" />
+                <CardDescription className="flex items-start gap-1.5 text-xs text-muted-foreground pt-1 font-medium">
                   <span>{branch.address}</span>
                 </CardDescription>
               </CardHeader>
 
               <CardContent className="space-y-3 pt-1 text-xs">
-                <div className="grid grid-cols-2 gap-2 rounded-xl bg-[var(--color-tint)] p-3 border border-[var(--color-line)]">
+                <div className="grid grid-cols-2 gap-2 rounded-lg bg-muted p-3 border border-border">
                   <div className="flex items-center gap-2.5">
-                    <div className="flex size-8 items-center justify-center rounded-lg bg-[var(--color-surface)] text-[var(--color-info)]">
-                      <ThermometerSnowflake className="size-4" />
-                    </div>
                     <div>
-                      <p className="text-[10px] text-[var(--color-muted)] font-medium">Nhiệt độ kho</p>
-                      <p className="font-bold text-[var(--color-ink)] text-xs">{branch.tempZone}</p>
+                      <p className="text-xs text-muted-foreground font-medium">Nhiệt độ kho</p>
+                      <p className="font-semibold text-foreground text-xs">{branch.tempZone}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2.5">
-                    <div className="flex size-8 items-center justify-center rounded-lg bg-[var(--color-surface)] text-[var(--color-muted)]">
-                      <Users className="size-4" />
-                    </div>
                     <div>
-                      <p className="text-[10px] text-[var(--color-muted)] font-medium">Nhân sự</p>
-                      <p className="font-bold text-[var(--color-ink)] text-xs">{branch.membersCount} thành viên</p>
+                      <p className="text-xs text-muted-foreground font-medium">Nhân sự</p>
+                      <p className="font-semibold text-foreground text-xs">{branch.membersCount} thành viên</p>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between text-[11px] text-[var(--color-muted)] px-1 font-medium">
-                  <div className="flex items-center gap-1">
-                    <Clock className="size-3" />
-                    <span>Asia/Ho_Chi_Minh</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Coins className="size-3" />
-                    <span>Tiền tệ: VND</span>
-                  </div>
+                <div className="flex items-center justify-between text-xs text-muted-foreground px-1 font-medium">
+                  <span>Asia/Ho_Chi_Minh</span>
+                  <span>Tiền tệ: VND</span>
                 </div>
               </CardContent>
 
-              <CardFooter className="border-t border-[var(--color-line)] pt-3 pb-3 bg-[var(--color-tint)]">
+              <CardFooter className="border-t border-border pt-3 pb-3 bg-muted">
                 <Button
                   onClick={() => handleSelectBranch(branch.id)}
                   variant={isSelected ? "default" : "outline"}
                   className="w-full"
                 >
                   <span>{isSelected ? "Đang chọn chi nhánh này" : "Chọn chi nhánh này"}</span>
-                  <ArrowUpRight className="size-3.5" />
                 </Button>
               </CardFooter>
             </Card>
