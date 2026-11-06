@@ -82,7 +82,7 @@
     "e2e/visual/baseline/tokens-mobile.png": "b2dfceb4d7784d090c467d8d545428f5997d86a8a9edc7923509c22beec19e41",
     "e2e/visual/preview.spec.ts": "a8370d6fad7d152028d7cc380e303d67536cf47eea259643c6d8f87156af3e7e",
     "eslint.config.mjs": "95ab420cef6bdaa1de1b6911718f5d85da873d06a41c658bf57e41a4bdea75d6",
-    "package.json": "62eabc99d38cccb3e94805c209a0d34272a1f8a23c9332bcf760185cebd9d8f3",
+    "package.json": "fb6179c8d56cd088afa49c7ca10222a376b4e9b1aae57329064e1bee49cd7902",
     "playwright.config.ts": "a57bc7c6c50d7903a93221ebf6274b6070def2d75f05d4191c2631d314133207",
     "pnpm-lock.yaml": "4afd10fec11e9f6e8195a9f585126f393014805bb4991423b0b0e5d4c1ed615a",
     "scripts/frame-lock.mjs": "8fc91a057421cb1bdc9b10aed4e63b6983f1464aee3791b1e08a144a681aa41d"

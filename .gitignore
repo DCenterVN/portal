@@ -19,3 +19,6 @@ tsconfig.tsbuildinfo
 .vercel/
 .harness/
 .claude/
+.aidlc/runs/
+.aidlc/trace.jsonl
+.aidlc/ACTIVE

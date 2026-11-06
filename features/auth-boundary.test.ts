@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import ts from "typescript";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 
 type Sources = Record<string, string>;
@@ -52,8 +52,6 @@ function inspect(sources: Sources): string[] {
 }
 function liveSources(): Sources {
   const result: Sources = {};
-  // Enumerate the approved file list, then read only its local import closure: no repository scan.
-  const plan = readFileSync(".aidlc/runs/PORTAL-AUTH-SPLIT-001/plan.md", "utf8").split("## Files planned")[1].split("## Tests planned")[0];
   const load = (file: string) => {
     if (file in result || !existsSync(file) || /\.test\./.test(file) || !/\.tsx?$/.test(file)) return;
     const text = readFileSync(file, "utf8"); result[file] = text;
@@ -71,7 +69,11 @@ function liveSources(): Sources {
     };
     visit(ast);
   };
-  for (const match of plan.matchAll(/^- (.+\.tsx?)$/gm)) load(match[1]);
+  for (const root of ["features", "app", "lib/api", "components/layout"])
+    for (const file of readdirSync(root, { recursive: true }) as string[]) {
+      const p = `${root}/${file}`;
+      if (customer(p) || employee(p)) load(p);
+    }
   return result;
 }
 
