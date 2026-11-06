@@ -13,6 +13,12 @@ vi.mock("react", async (original) => ({
     if (!(index in harness.slots)) harness.slots[index] = initial;
     return [harness.slots[index], (next: unknown) => { harness.slots[index] = typeof next === "function" ? next(harness.slots[index]) : next; }];
   },
+  useRef(initial: unknown) {
+    const index = harness.cursor++;
+    if (!(index in harness.slots)) harness.slots[index] = { current: initial };
+    return harness.slots[index];
+  },
+  useCallback(callback: unknown) { return callback; },
   useEffect(effect: () => unknown) { if (!harness.mounted) harness.effects.push(effect); },
 }));
 vi.mock("@/lib/access-boundary", () => ({
@@ -71,7 +77,7 @@ it("shelves_lot_list_error", async () => {
   const tree = view();
   const html = renderToStaticMarkup(tree);
   expect(html).toContain('role="alert"');
-  expect(html).toContain("Không tải được danh sách");
+  expect(html).toContain("Không tải được danh sách nên chưa chọn được.");
   expect(html).not.toContain("UUID");
   expect(html).not.toContain('name="finished_lot_ref"');
   expect(nodes(tree, (node) => node.props.type === "submit")[0].props.disabled).toBe(true);

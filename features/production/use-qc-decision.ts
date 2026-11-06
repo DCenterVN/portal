@@ -8,7 +8,7 @@ import { type ProductionOrder, decideQC, getOrders } from "@/lib/api/production"
 const loadQcOrders = () => getOrders().then((all) => all.filter((o) => o.status === "COMPLETED" || o.status === "QC_PASSED" || o.status === "QC_FAILED"));
 
 export function useQcDecision(completedOrders?: ProductionOrder[]) {
-  const { items: orders, setItems: setOrders, loading: listLoading, error: listError } = useLoadedList(completedOrders, loadQcOrders);
+  const { items: orders, setItems: setOrders, loading: listLoading, error: listError, reload } = useLoadedList(completedOrders, loadQcOrders);
   const [selectedOrder, setSelectedOrder] = useState<ProductionOrder | null>(null);
   const [temperature, setTemperature] = useState(-18.5);
   const [packagePassed, setPackagePassed] = useState(true);
@@ -35,5 +35,5 @@ export function useQcDecision(completedOrders?: ProductionOrder[]) {
       setLoading(false);
     }
   };
-  return { orders, listLoading, listError, selectedOrder, setSelectedOrder, temperature, setTemperature, packagePassed, setPackagePassed, sensoryNotes, setSensoryNotes, loading, handleDecision };
+  return { orders, listLoading, listError, reload, selectedOrder, setSelectedOrder, temperature, setTemperature, packagePassed, setPackagePassed, sensoryNotes, setSensoryNotes, loading, handleDecision };
 }

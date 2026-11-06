@@ -250,7 +250,9 @@ describe("Portal auth context fails closed", () => {
     const request = new NextRequest("http://localhost:3000/api/auth/context", { headers: { cookie: "access_token=jwt" } });
     const response = await contextHandler(request);
     expect(response.status).toBe(503);
-    expect(await response.json()).toMatchObject({ error: "org_context_unavailable" });
+    const payload = await response.json();
+    expect(payload).toMatchObject({ error: "internal" });
+    expect(payload).not.toHaveProperty("details");
   });
 });
 

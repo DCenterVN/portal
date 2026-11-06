@@ -14,8 +14,8 @@ export function useCreateDraftProduct(onSuccess?: (product: Product) => void) {
       const created = await createDraftProduct(input);
       onSuccess?.({ ...created, status: "DRAFT", sku_code: "", uom: "", created_at: "" });
       return created;
-    } catch (error) {
-      setError(error instanceof Error ? error.message : "Không tạo được sản phẩm nháp");
+    } catch {
+      setError("Không tải được dữ liệu. Thử lại sau.");
       return undefined;
     } finally {
       setSubmitting(false);
