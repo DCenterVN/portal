@@ -641,3 +641,15 @@ Bộ này chỉ so ảnh, chưa kiểm hành trình nghiệp vụ. Tên ca màn 
 | Bước | Làm gì (lời thường) | Mong thấy gì | Use case (`spec path:line`) | Lệch |
 |---|---|---|---|---|
 | 1 | Nếu có ảnh chuẩn và đúng thiết bị, mở /states-preview trên điện thoại, chờ chữ sẵn sàng rồi so ảnh toàn trang. | Ảnh khớp ảnh chuẩn trong mức sai khác cấu hình; thiếu ảnh chuẩn thì bỏ qua. | Chưa có đặc tả so ảnh trong hành trình. | Chỉ xét điều kiện hoặc so ảnh, chưa kiểm tiền, kho hay phân quyền; `e2e/visual/preview.spec.ts:76`. |
+
+## Tài khoản của tôi trên stack dev thật
+
+- Khách đăng nhập `/me`, đổi tên và kiểm header ngay cùng dữ liệu sau reload; chọn ảnh rồi Huỷ không gọi presign; Lưu ảnh gọi đúng một presign, POST MinIO và finalize, ảnh header trả 200; xoá ảnh. Đổi email tạm rồi email gốc qua thư Mailpit và nút Xác nhận. Thử sai mật khẩu hiện tại, đổi mật khẩu tạm, đăng nhập lại và khôi phục mật khẩu gốc. `afterAll` khôi phục email, mật khẩu và tên nếu bước giữa lỗi.
+- Nhân viên đăng nhập `/staff/login`, mở `/account`, thấy tổ chức và chi nhánh; đổi tên rồi khôi phục; đăng nhập hai context, thu hồi phiên thứ hai qua UI, refresh context đó phải về đăng nhập; đăng xuất mọi thiết bị. Giữ email và mật khẩu admin.
+
+Spec: `e2e/account/account.spec.ts`. Chromium desktop 1280 × 900, một worker, không mock. Cấu hình riêng bỏ setup tạo dữ liệu của bộ tổng và lọc mật khẩu, cookie, token, link xác nhận khỏi trace/report khi kết thúc.
+
+```bash
+TMPDIR=/home/dawn/work/ticket/.cache/tmp E2E_RECORD=1 E2E_BASE_URL=http://localhost:3003 pnpm exec playwright test --config e2e/account/playwright.config.ts
+pnpm exec playwright show-report node_modules/.cache/account-report
+```

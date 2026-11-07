@@ -1,6 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
 import { z } from "zod";
-import messages from "../../messages/vi.json" with { type: "json" };
+import { enterFirstBranch } from "../account/helpers";
 
 const placementsSchema = z.object({ items: z.array(z.object({ trace_code: z.string(), shelf_code: z.string() })).nullable() });
 
@@ -22,18 +22,9 @@ test("QC: kiểm lô nhập, nghiệm thu thành phẩm đủ trường rồi tr
       try { await action(); } finally { await overlay.dispose(); }
     });
   }
-  async function enterFirstScope(target: Page) {
-    for (const [slug, field] of [["/staff/switch-org", messages.employeeAuth.company], ["/staff/switch-branch", messages.employeeAuth.branch]] as const) {
-      if (new URL(target.url()).pathname !== slug) continue;
-      await target.getByLabel(field, { exact: true }).selectOption({ index: 1 });
-      await target.getByRole("button", { name: messages.employeeAuth.continue, exact: true }).click();
-      await target.waitForURL(url => url.pathname !== slug);
-    }
-  }
   async function visit(target: Page, path: string, name: string) {
     let response = await target.goto(path);
-    await enterFirstScope(target);
-    await enterFirstScope(target);
+    await enterFirstBranch(target);
     if (new URL(target.url()).pathname !== path) response = await target.goto(path);
     expect(response?.status(), `Mở ${path}`).toBeLessThan(400);
     expect(new URL(target.url()).pathname, `Không bị đẩy khỏi ${path}`).toBe(path);

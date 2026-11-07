@@ -7,6 +7,7 @@ import { decodeJwt } from "jose";
 import { z } from "zod";
 import { decodePlatform, pageSchema, roleMatrixSchema } from "../../lib/api/platform-contract";
 import messages from "../../messages/vi.json" with { type: "json" };
+import { enterFirstBranch } from "../account/helpers";
 
 const matrixPath = "/api/org/company/role-matrix";
 const membershipsPath = "/api/org/company/memberships";
@@ -111,16 +112,7 @@ async function openMemberships(page: Page) {
   await page.goto("/memberships");
   if (!new URL(page.url()).pathname.startsWith("/staff/switch-")) return;
   if (!originalMember) throw new Error("Chưa có membership MAIN.");
-  if (new URL(page.url()).pathname === "/staff/switch-org") {
-    await page.getByLabel(messages.employeeAuth.company, { exact: true }).selectOption(originalMember.branch_id);
-    await page.getByRole("button", { name: messages.employeeAuth.continue, exact: true }).click();
-    await page.waitForURL(/\/(console|staff\/switch-branch)(\?|$)/);
-  }
-  if (new URL(page.url()).pathname === "/staff/switch-branch") {
-    await page.getByLabel(messages.employeeAuth.branch, { exact: true }).selectOption(originalMember.branch_id);
-    await page.getByRole("button", { name: messages.employeeAuth.continue, exact: true }).click();
-    await page.waitForURL(/\/console$/);
-  }
+  await enterFirstBranch(page);
   await page.goto("/memberships");
 }
 

@@ -1,3 +1,4 @@
+import { BRAND_NAME } from "@/lib/brand";
 // mock — replace when real API exists
 // Store navigation and footer content will come from the public-site CMS API.
 export const STORE_NAV = [
@@ -9,7 +10,7 @@ export const STORE_NAV = [
 export const STORE_FOOTER = {
   columns: [
     {
-      title: "Việt Sạch",
+      title: BRAND_NAME,
       links: [
         { href: "/about", label: "Về chúng tôi" },
         { href: "/contact", label: "Liên hệ" },
@@ -37,7 +38,7 @@ export const STORE_FOOTER = {
       ],
     },
   ],
-  legal: ["© Việt Sạch", "Chính sách bảo mật", "Điều khoản sử dụng"],
+  legal: [`© ${BRAND_NAME}`, "Chính sách bảo mật", "Điều khoản sử dụng"],
 };
 
 // Cart preview, account and favourites for the frame, tests and visual baselines; replace with the cart/wishlist APIs.

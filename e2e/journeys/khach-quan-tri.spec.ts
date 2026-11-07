@@ -3,6 +3,7 @@ import { test, expect, type Page, type BrowserContext } from "@playwright/test";
 import { z } from "zod";
 import { decodePlatform, pageSchema } from "../../lib/api/platform-contract";
 import messages from "../../messages/vi.json" with { type: "json" };
+import { enterFirstBranch } from "../account/helpers";
 
 const t = messages.memberships;
 const c = messages.customerAuth;
@@ -30,18 +31,9 @@ async function members(context: BrowserContext) {
   }
 }
 
-async function enterCompany(page: Page, branchId: string) {
+async function enterCompany(page: Page) {
   await page.goto("/memberships");
-  if (new URL(page.url()).pathname === "/staff/switch-org") {
-    await page.getByLabel(messages.employeeAuth.company, { exact: true }).selectOption(branchId);
-    await page.getByRole("button", { name: messages.employeeAuth.continue, exact: true }).click();
-    await page.waitForURL(/\/(console|staff\/switch-branch)(\?|$)/);
-  }
-  if (new URL(page.url()).pathname === "/staff/switch-branch") {
-    await page.getByLabel(messages.employeeAuth.branch, { exact: true }).selectOption(branchId);
-    await page.getByRole("button", { name: messages.employeeAuth.continue, exact: true }).click();
-    await page.waitForURL(/\/console$/);
-  }
+  await enterFirstBranch(page);
 }
 
 async function memberRow(page: Page, member: Member) {
@@ -192,7 +184,7 @@ test("KHÁCH + QUẢN TRỊ: kích hoạt email, SALES mất và lấy lại quy
       expect((await customer.request.get(membershipsPath)).status()).toBe(403);
     });
     await step("Bước 5: ADMIN tạo nhân viên Bán hàng mới, trạng thái đang hoạt động", async () => {
-      await enterCompany(adminPage, (await members(admin))[0].branch_id);
+      await enterCompany(adminPage);
       await adminPage.goto("/memberships");
       await adminPage.getByRole("button", { name: t.add, exact: true }).click();
       const dialog = adminPage.getByRole("dialog");

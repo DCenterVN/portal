@@ -3,6 +3,7 @@ import { test, expect, type Page, type BrowserContext } from "@playwright/test";
 import { z } from "zod";
 import { decodePlatform, pageSchema } from "../../lib/api/platform-contract";
 import messages from "../../messages/vi.json" with { type: "json" };
+import { enterFirstBranch } from "../account/helpers";
 
 const t = messages.memberships;
 const c = messages.customerAuth;
@@ -32,18 +33,9 @@ async function members(context: BrowserContext) {
   }
 }
 
-async function enterCompany(page: Page, branchId: string) {
+async function enterCompany(page: Page) {
   await page.goto("/memberships");
-  if (new URL(page.url()).pathname === "/staff/switch-org") {
-    await page.getByLabel(messages.employeeAuth.company, { exact: true }).selectOption(branchId);
-    await page.getByRole("button", { name: messages.employeeAuth.continue, exact: true }).click();
-    await page.waitForURL(/\/(console|staff\/switch-branch)(\?|$)/);
-  }
-  if (new URL(page.url()).pathname === "/staff/switch-branch") {
-    await page.getByLabel(messages.employeeAuth.branch, { exact: true }).selectOption(branchId);
-    await page.getByRole("button", { name: messages.employeeAuth.continue, exact: true }).click();
-    await page.waitForURL(/\/console$/);
-  }
+  await enterFirstBranch(page);
 }
 
 async function memberRow(page: Page, member: Member) {
@@ -115,7 +107,7 @@ test("QUẢN TRỊ: ADMIN đi các màn quản trị, tạo nhân viên Bán hà
   }
   try {
     await step("Bước 1: ADMIN vào công ty và đi các màn quản trị: tổng quan, thành viên, chi nhánh, công ty và vai trò", async () => {
-      await enterCompany(adminPage, (await members(admin))[0].branch_id);
+      await enterCompany(adminPage);
       for (const [path, name] of [["/console", "tong-quan"], ["/memberships", "thanh-vien"], ["/branches", "chi-nhanh"], ["/company", "vai-tro-cong-ty"]] as const) {
         const response = await adminPage.goto(path);
         expect(response?.status(), `Mở ${path}`).toBeLessThan(400);
