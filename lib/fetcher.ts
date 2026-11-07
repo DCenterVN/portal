@@ -1,7 +1,7 @@
 // Derived from app/(console) pages; the route-group drift test enforces completeness.
-export const CONSOLE_ROUTES = ["/account", "/branches", "/console", "/inventory/shelves", "/inventory/suppliers", "/inventory/suppliers/[id]", "/inventory/goods-receipts/new", "/inventory/goods-receipts/[id]/receive", "/memberships", "/production/food-plans", "/production/material-requirements", "/production/orders", "/production/qc", "/production/targets", "/roles", "/sales/pricing", "/sales/products"] as const;
+export const CONSOLE_ROUTES = ["/account", "/audit", "/branches", "/branches/[id]", "/console", "/inventory/shelves", "/inventory/stock-transfers", "/inventory/stock-transfers/new", "/inventory/stock-transfers/[id]", "/inventory/stock-transfers/[id]/receive", "/inventory/suppliers", "/inventory/suppliers/[id]", "/inventory/goods-receipts/new", "/inventory/goods-receipts/[id]/receive", "/memberships", "/production/food-plans", "/production/material-requirements", "/production/orders", "/production/qc", "/production/targets", "/roles", "/sales/pricing", "/sales/products"] as const;
 export function isEmployeeRoute(pathname: string): boolean {
-  return [...CONSOLE_ROUTES, "/staff", "/platform", "/switch-branch", "/switch-org"].some(path => pathname === path || pathname.startsWith(`${path}/`));
+  return [...CONSOLE_ROUTES, "/staff", "/company", "/platform", "/switch-branch", "/switch-org"].some(path => pathname === path || pathname.startsWith(`${path}/`));
 }
 
 export class FetchError extends Error {

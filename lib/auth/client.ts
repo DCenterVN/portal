@@ -1,4 +1,4 @@
-import { apiFetch } from "../fetcher";
+import { apiFetch, FetchError } from "../fetcher";
 
 export interface UserProjection {
   id: string;
@@ -9,6 +9,7 @@ export interface UserProjection {
 }
 
 export interface UserProfile {
+  avatar_url?: string | null;
   id: string;
   email: string;
   phone: string;
@@ -41,10 +42,7 @@ export async function getProfile(): Promise<UserProfile> {
   const res = await apiFetch("/api/auth/me");
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({}));
-    const message = errorData.message || (res.status === 401 ? "Phiên làm việc hết hạn" : "Không thể tải thông tin hồ sơ");
-    const err = new Error(message);
-    (err as unknown as { status?: number }).status = res.status;
-    throw err;
+    throw new FetchError("Không thể tải thông tin hồ sơ", res.status, errorData, res.headers.get("retry-after"));
   }
   return res.json();
 }

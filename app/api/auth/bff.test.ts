@@ -5,13 +5,13 @@ vi.mock("server-only", () => ({}));
 import { POST as loginHandler } from "./login/route";
 import { POST as logoutHandler } from "./logout/route";
 import { POST as refreshHandler } from "./refresh/route";
+import { POST as switchBranchHandler } from "./web/switch-branch/route";
 import { POST as registerHandler } from "./register/route";
 import { POST as activateHandler } from "./activate/route";
 import { POST as resendHandler } from "./activate/resend/route";
 import { POST as forgotHandler } from "./forgot/route";
 import { POST as resetHandler } from "./reset/route";
 import { GET as meHandler } from "./me/route";
-import { POST as switchOrgHandler } from "./staff/switch-org/route";
 import { GET as contextHandler } from "./context/route";
 
 function expectSecureAccessTokenCookie(res: Response, value: string) {
@@ -108,6 +108,26 @@ describe("Portal BFF Auth Handlers (9 handlers)", () => {
     expect((await res.json()).access_token).toBeUndefined();
     expect(res.cookies.get("access_token")?.value).toBe("new-jwt-token");
     expectSecureAccessTokenCookie(res, "new-jwt-token");
+    expect(res.headers.getSetCookie().some((cookie) => cookie.startsWith("refresh_token=new-rt"))).toBe(true);
+  });
+
+  it("3b. POST /api/auth/web/switch-branch keeps refresh cookie and marks the employee plane", async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      headers: { getSetCookie: () => ["refresh_token=new-rt; Path=/; HttpOnly; Max-Age=3600; SameSite=Strict; Secure"] },
+      json: async () => ({ access_token: "branch-jwt", expires_in: 900 }),
+    } as unknown as Response);
+    const req = new NextRequest("http://localhost:3000/api/auth/web/switch-branch", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Sec-Fetch-Site": "same-origin", cookie: "refresh_token=old-rt; CSRF-Token=csrf" },
+      body: JSON.stringify({ branch_id: "0192f3a4-5b6c-7d8e-9f00-112233445566" }),
+    });
+    const res = await switchBranchHandler(req);
+    expect(res.status).toBe(200);
+    expect(res.cookies.get("access_token")?.value).toBe("branch-jwt");
+    expect(res.cookies.get("portal_plane")?.value).toBe("employee");
+    expect(res.headers.getSetCookie().some((cookie) => cookie.startsWith("refresh_token=new-rt"))).toBe(true);
   });
 
   it("4. POST /api/auth/register forwards registration payload", async () => {
@@ -206,39 +226,6 @@ describe("Portal BFF Auth Handlers (9 handlers)", () => {
         headers: { Authorization: "Bearer valid-jwt" },
       })
     );
-  });
-
-  it("9. POST /api/auth/staff/switch-org returns 401 when access token missing, and switches context when present", async () => {
-    const reqNoToken = new NextRequest("http://localhost:3000/api/auth/staff/switch-org", {
-      method: "POST", headers: {"Content-Type":"application/json", "Sec-Fetch-Site":"same-origin"},
-      body: JSON.stringify({ org_id: "org-1" }),
-    });
-    const res401 = await switchOrgHandler(reqNoToken);
-    expect(res401.status).toBe(401);
-
-    const identityToken = "eyJhbGciOiJFUzI1NiJ9.eyJzdWIiOiJ1Iiwib3JnX2lkIjoibWFpbiIsImJyYW5jaF9pZCI6Im1haW4ifQ.signature";
-    global.fetch = vi.fn()
-      .mockResolvedValueOnce(new Response(JSON.stringify([{org_id:"main",branch_id:"main",member_type:"EMPLOYEE",status:"ACTIVE",roles:[]}])) )
-      .mockResolvedValueOnce(new Response(JSON.stringify({action_keys:["org:company:read"]})));
-
-    const reqWithToken = new NextRequest("http://localhost:3000/api/auth/staff/switch-org", {
-      method: "POST",
-      headers: {
-        "Content-Type":"application/json", "Sec-Fetch-Site":"same-origin",
-        cookie: `access_token=${identityToken}; refresh_token=existing-refresh`,
-      },
-      body: JSON.stringify({ org_id: "main", branch_id: "main" }),
-    });
-
-    const res200 = await switchOrgHandler(reqWithToken);
-    expect(res200.status).toBe(200);
-    expect((await res200.json()).access_token).toBeUndefined();
-    expect(res200.cookies.get("access_token")).toBeUndefined();
-    expect(res200.cookies.get("refresh_token")).toBeUndefined();
-    expect(reqWithToken.cookies.get("access_token")?.value).toBe(identityToken);
-    expect(reqWithToken.cookies.get("refresh_token")?.value).toBe("existing-refresh");
-    expect(global.fetch).toHaveBeenCalledTimes(2);
-    expect(global.fetch).toHaveBeenLastCalledWith(expect.stringContaining("/org/permissions/me?org_id=main&branch_id=main"), expect.objectContaining({headers: {Authorization: `Bearer ${identityToken}`}}));
   });
 });
 

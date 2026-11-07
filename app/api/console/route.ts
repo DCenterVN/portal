@@ -13,12 +13,6 @@ export async function GET(request: NextRequest) {
   return NextResponse.json({
     user: payload.user,
     contexts: payload.contexts,
-    active_context: payload.active_context,
     permissions: payload.permissions,
-    limitations: [
-      "Backend chưa có API service-health tổng hợp",
-      "Backend chưa có API audit feed cho portal",
-      "Order hiện chỉ hỗ trợ tạo trạng thái CREATED",
-    ],
   });
 }

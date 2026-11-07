@@ -59,7 +59,7 @@ describe("AC-4 menu Sản phẩm theo sales:product:read", () => {
   });
 });
 
-import { breadcrumbFor, isActive, type NavGroup } from "./navigation";
+import { breadcrumbFor, isActive, openGroups, type NavGroup } from "./navigation";
 
 describe("breadcrumbFor", () => {
   const nav: NavGroup[] = [
@@ -86,5 +86,31 @@ describe("breadcrumbFor", () => {
       { href: "/a", label: "A", match: "/a" }, { href: "/a/b", label: "AB", match: "/a/b" },
     ] }];
     expect(breadcrumbFor(deep, "/a/b/c")).toEqual([{ label: "G" }, { label: "AB" }]);
+  });
+});
+
+describe("openGroups", () => {
+  const all = (permissions: string[]) => consoleNavFor(new Set(permissions));
+  const admin = all(["inventory:goods_receipt:create", "inventory:shelf_placement:read", "production:food_plan:read", "production:order:read", "sales:product:read", "org:company:read"]);
+  it("ADMIN: chỉ mở nhóm chứa trang đang xem và nhóm đã nhớ", () => {
+    expect(openGroups(admin, "/production/food-plans", [])).toEqual(["Sản xuất"]);
+    expect(openGroups(admin, "/production/food-plans", ["Kho"])).toEqual(["Kho", "Sản xuất"]);
+    expect(breadcrumbFor(admin, "/production/food-plans")).toEqual([{ label: "Sản xuất" }, { label: "Món & thực đơn" }]);
+  });
+  it("SALES: tối đa 2 nhóm thì mở hết", () => {
+    const sales = all(["sales:product:read", "sales:price_book:create"]);
+    expect(openGroups(sales, "/console", [])).toEqual(["Tổng quan", "Bán hàng"]);
+  });
+  it("nhóm chỉ còn 1 mục con vẫn là nhóm 1 mục", () => {
+    const one = all(["inventory:supplier:read", "production:order:read", "sales:product:read"]);
+    expect(one.find((group) => group.title === "Kho")?.items).toHaveLength(1);
+    expect(openGroups(one, "/inventory/suppliers", [])).toEqual(["Kho"]);
+  });
+  it("Chuyển hàng nằm trong nhóm Kho, chỉ hiện khi có inventory:transfer:read", () => {
+    const hrefs = (keys: string[]) => all(keys).flatMap((group) => group.items).map((item) => item.href);
+    expect(hrefs(["inventory:transfer:read"])).toContain("/inventory/stock-transfers");
+    expect(hrefs(["sales:product:read", "inventory:transfer:create"])).not.toContain("/inventory/stock-transfers");
+    expect(consoleRouteAllowed("/inventory/stock-transfers/new", new Set(["inventory:transfer:read"]))).toBe(true);
+    expect(consoleRouteAllowed("/inventory/stock-transfers/x/receive", new Set(["sales:product:read"]))).toBe(false);
   });
 });

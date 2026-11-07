@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 const PUBLIC_PREFIXES = [
-  "/login", "/register", "/activate", "/forgot-password", "/reset-password",
+  "/email/confirm", "/login", "/register", "/activate", "/forgot-password", "/reset-password",
   "/traceability", "/products", "/api/auth", "/api/public", "/healthz", "/readyz", "/_next", "/favicon.ico", "/icon.svg",
 ];
 
@@ -32,7 +32,7 @@ export function proxy(request: NextRequest) {
     return NextResponse.json(AUTH_FORBIDDEN_ERROR, {status: 403, headers: {"Cache-Control": "no-store"}});
   }
   // UI gate only; org remains responsible for data authorization.
-  if (CONSOLE_ROUTES.some(path => matchesPathPrefix(pathname, path)) && request.cookies.get("portal_plane")?.value !== "employee") {
+  if ([...CONSOLE_ROUTES, "/company/account"].some(path => matchesPathPrefix(pathname, path)) && request.cookies.get("portal_plane")?.value !== "employee") {
     const contextUrl = new URL("/staff/switch-org", request.url);
     contextUrl.searchParams.set("redirect", pathname);
     return NextResponse.redirect(contextUrl);

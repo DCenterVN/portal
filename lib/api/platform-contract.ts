@@ -30,7 +30,7 @@ export const supportGrantSchema = z.object({
 });
 export const auditSchema = z.object({
   id: uuid, occurred_at: timestamp, actor_user_id: uuid.optional(), actor_service: z.string().optional(),
-  plane: z.string(), action: z.string(), target_type: z.string(), target_id: z.string().optional(),
+  plane: z.string().optional(), action: z.string(), target_type: z.string(), target_id: z.string().optional(),
   root_branch_id: uuid.optional(), on_behalf_of_root_branch_id: uuid.optional(), support_access_grant_id: uuid.optional(),
   contract_ref: z.string().optional(), reason: z.string().optional(), before: z.unknown().optional(), after: z.unknown().optional(),
 });

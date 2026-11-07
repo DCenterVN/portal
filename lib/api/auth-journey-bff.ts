@@ -13,7 +13,6 @@ type Json = Record<string, unknown>;
 const object = (value: unknown): value is Json => !!value && typeof value === "object" && !Array.isArray(value);
 const response = (data: unknown, status = 200, retry?: string | null) => NextResponse.json(data, {status, headers: {"Cache-Control": "no-store", ...(retry ? {"Retry-After": retry} : {})}});
 const unavailable = () => response({error: "INTERNAL_ERROR", message: "Dịch vụ xác thực hiện không khả dụng"}, 503);
-// Existing public site URL is shared with layout/robots/sitemap; no listener or proxy headers.
 const publicOrigin = () => {
   const configured = process.env.NEXT_PUBLIC_SITE_URL || (process.env.NODE_ENV !== "production" ? "http://localhost:3000" : "");
   try {
@@ -41,13 +40,12 @@ export function safeLanding(target: string, journey: Journey): string {
   } catch { return fallback; }
 }
 
-async function readFields(req: NextRequest, allowed: readonly string[], required: readonly string[], authenticated = false): Promise<Json | NextResponse> {
+async function readFields(req: NextRequest, allowed: readonly string[], required: readonly string[]): Promise<Json | NextResponse> {
   const origin = req.headers.get("origin");
   const site = req.headers.get("sec-fetch-site");
   const json = req.headers.get("content-type")?.split(";", 1)[0].trim().toLowerCase() === "application/json";
   const sameOrigin = site !== null ? site === "same-origin" : origin !== null && origin === publicOrigin();
   if (!json || !sameOrigin) return response({error: "FORBIDDEN", message: "Yêu cầu không hợp lệ"}, 403);
-  if (authenticated && !req.cookies.get("access_token")?.value) return response({error:"UNAUTHORIZED"},401);
   let body: unknown;
   try { body = await req.json(); } catch { return response({error: "BAD_REQUEST", message: "Nội dung JSON không hợp lệ"}, 400); }
   if (!object(body)) return response({error: "VALIDATION_ERROR", message: "Thông tin không hợp lệ"}, 400);
@@ -59,11 +57,10 @@ async function readFields(req: NextRequest, allowed: readonly string[], required
 function sessionCookies(upstream: Response): string[] {
   return (upstream.headers.getSetCookie?.() ?? []).filter(cookie => /^(refresh_token|__Host-refresh_token|CSRF-Token)=/.test(cookie));
 }
-function setPortalPlane(result: NextResponse, req: NextRequest, employee: boolean, cookies: string[] = []) {
+export function setPortalPlane(result: NextResponse, req: NextRequest, employee: boolean, cookies: string[] = []) {
   const refresh = cookies.find(cookie => /^(refresh_token|__Host-refresh_token)=/.test(cookie));
   const maxAge = refresh?.match(/;\s*Max-Age=(-?\d+)/i)?.[1];
   const sameSite = refresh?.match(/;\s*SameSite=(Strict|Lax|None)(?:\s*;|\s*$)/i)?.[1].toLowerCase() as "strict" | "lax" | "none" | undefined;
-  // Without refresh rotation, its remaining TTL is unavailable: use a session marker.
   result.cookies.set("portal_plane", employee ? "employee" : "", {
     httpOnly: true, path: "/", sameSite: sameSite ?? "strict",
     secure: refresh ? /;\s*Secure(?:\s*;|\s*$)/i.test(refresh) : req.cookies.has("__Host-refresh_token") || !req.cookies.has("refresh_token"),
@@ -97,32 +94,52 @@ function contexts(value: unknown): Context[] | null {
 }
 function activeStaffContexts(rows: Context[], token: string): Context[] {
   const {org_id, branch_id} = decodeJwt(token);
-  if (typeof org_id !== "string" || !org_id || org_id !== branch_id) return [];
-  // Org includes ACTIVE memberships/branches only; reject explicit inactive rows too.
+  if (typeof org_id !== "string" || !org_id || typeof branch_id !== "string" || !branch_id) return [];
   const employees = rows.filter(row => row.org_id === org_id && row.branch_id === branch_id && row.member_type === "EMPLOYEE" && (row.status === undefined || row.status === "ACTIVE"));
   return [...new Map(employees.map(row => [JSON.stringify([row.org_id, row.branch_id]), row])).values()];
 }
-async function staffDecision(token: string, verified?: Context[]): Promise<{next_path: string; token: string; expires_in?: number; cookies?: string[]} | NextResponse> {
-  let rows = verified;
-  if (!rows) {
-    const upstream = await fetch(`${orgUrl()}/org/access-contexts/me`, {headers: {Authorization: `Bearer ${token}`}, cache: "no-store"});
-    if (!upstream.ok) return upstreamError(upstream);
-    const parsed = contexts(await upstream.json());
-    if (!parsed) return unavailable();
-    rows = parsed;
+type Decision = {next_path: string; token: string; expires_in?: number; cookies?: string[]};
+type Session = {clientIP: string | undefined; userAgent: string; cookies: string[]};
+async function rotateToEmployeeBranch(branch: string, session: Session): Promise<{token: string; expires_in?: number; cookies: string[]} | NextResponse> {
+  const pairs = session.cookies.map(cookie => cookie.split(";")[0]);
+  const csrf = pairs.find(cookie => cookie.startsWith("CSRF-Token="))?.slice("CSRF-Token=".length) ?? "";
+  const upstream = await fetch(`${authUrl()}/auth/web/switch-branch`, {method: "POST", cache: "no-store", headers: authHeaders(session.clientIP, {"Content-Type": "application/json", Cookie: pairs.join("; "), "X-CSRF-Token": csrf, "User-Agent": session.userAgent}), body: JSON.stringify({branch_id: branch})});
+  if (!upstream.ok) return upstreamError(upstream);
+  const data: unknown = await upstream.json();
+  if (!object(data) || typeof data.access_token !== "string" || !data.access_token) return unavailable();
+  return {token: data.access_token, expires_in: typeof data.expires_in === "number" ? data.expires_in : undefined, cookies: sessionCookies(upstream)};
+}
+function otherBranches(rows: Context[], token: string): Context[] {
+  const {org_id} = decodeJwt(token);
+  const mine = rows.filter(row => row.org_id === org_id && row.member_type === "EMPLOYEE" && (row.status === undefined || row.status === "ACTIVE"));
+  return [...new Map(mine.map(row => [row.branch_id, row])).values()];
+}
+async function staffDecision(token: string, session: Session): Promise<Decision | NextResponse> {
+  const upstream = await fetch(`${orgUrl()}/org/access-contexts/me`, {headers: {Authorization: `Bearer ${token}`}, cache: "no-store"});
+  if (!upstream.ok) return upstreamError(upstream);
+  const rows = contexts(await upstream.json());
+  if (!rows) return unavailable();
+  let active = token; let expires_in: number | undefined; let cookies: string[] | undefined;
+  let distinct = activeStaffContexts(rows, active);
+  if (!distinct.length) {
+    const branches = otherBranches(rows, active);
+    if (!branches.length) return forbidden();
+    if (branches.length > 1) return {next_path: "/staff/switch-branch", token};
+    const rotated = await rotateToEmployeeBranch(branches[0].branch_id, session);
+    if (rotated instanceof NextResponse) return rotated;
+    ({token: active, expires_in, cookies} = rotated);
+    distinct = activeStaffContexts(rows, active);
+    if (!distinct.length) return forbidden();
   }
-  const distinct = activeStaffContexts(rows, token);
-  if (!distinct.length) return forbidden();
   const {org_id, branch_id} = distinct[0];
-  const permissions = await fetch(`${orgUrl()}/org/permissions/me?${new URLSearchParams({org_id, branch_id})}`, {headers: {Authorization: `Bearer ${token}`}, cache: "no-store"});
+  const permissions = await fetch(`${orgUrl()}/org/permissions/me?${new URLSearchParams({org_id, branch_id})}`, {headers: {Authorization: `Bearer ${active}`}, cache: "no-store"});
   if (!permissions.ok) return upstreamError(permissions);
   const {action_keys} = permissionsSchema.parse(await permissions.json());
-  return {next_path: action_keys.includes("org:role:update") ? "/platform" : "/console", token};
+  return {next_path: action_keys.includes("org:role:update") ? "/platform" : "/console", token: active, expires_in, cookies};
 }
 
 export async function loginJourney(req: NextRequest, journey: Journey): Promise<NextResponse> {
   const result = await authenticateJourney(req, journey);
-  // Failed login also removes an old marker; no deletion is needed when none exists.
   if (req.cookies.has("portal_plane") && !result.cookies.has("portal_plane")) setPortalPlane(result, req, false);
   return result;
 }
@@ -144,7 +161,7 @@ async function authenticateJourney(req: NextRequest, journey: Journey): Promise<
     if (!profile.ok) return upstreamError(profile);
     const user: unknown = await profile.json();
     if (!object(user) || typeof user.id !== "string" || user.status !== "ACTIVE") return response({error: "FORBIDDEN", reason: "NOT_ACTIVATED", message: "Tài khoản chưa được kích hoạt"}, 403);
-    const decision = journey === "customer" ? {next_path: "/", token: temporaryToken, expires_in: undefined, cookies: undefined} : await staffDecision(temporaryToken);
+    const decision = journey === "customer" ? {next_path: "/", token: temporaryToken, expires_in: undefined, cookies: undefined} : await staffDecision(temporaryToken, {clientIP, userAgent: req.headers.get("user-agent") || "portal-bff", cookies});
     if (decision instanceof NextResponse) return decision;
     const requested = typeof redirect === "string" && redirect ? safeLanding(redirect, journey) : "";
     const landing = requested && requested !== "/staff/switch-branch" && requested !== "/platform" && (journey === "customer" || decision.next_path === "/console") ? requested : safeLanding(decision.next_path, journey);
@@ -167,7 +184,6 @@ const customerOperations = {
 } as const;
 export async function customerOperation(req: NextRequest, operation: keyof typeof customerOperations): Promise<NextResponse> {
   const contract = customerOperations[operation];
-  // Activation password presence and policy are checked below without trimming.
   const body = await readFields(req, contract.allowed, operation === "activate" ? ["token"] : contract.required);
   if (body instanceof NextResponse) return body;
   if (operation === "register" && ((!body.email && !body.phone) || (typeof body.display_name === "string" && ([...body.display_name].length > 50 || !body.display_name.trim())))) return response({error: "VALIDATION_ERROR", message: "Vui lòng nhập email hoặc số điện thoại và tên tối đa 50 ký tự"}, 400);
@@ -175,7 +191,6 @@ export async function customerOperation(req: NextRequest, operation: keyof typeo
   if (operation === "activate" && typeof password !== "string") return response({error: "VALIDATION_ERROR", message: "Vui lòng nhập đầy đủ thông tin"}, 400);
   if (typeof password === "string" && ([...password].length < 12 || new TextEncoder().encode(password).length > 256)) return response({error: "VALIDATION_ERROR", message: "Mật khẩu cần ít nhất 12 ký tự và tối đa 256 byte UTF-8"}, 400);
   try {
-    // Auth responses need credential redaction and Retry-After preservation; forwardService lacks both.
     const upstream = await fetch(`${authUrl()}${contract.path}`, {method: "POST", cache: "no-store", headers: authHeaders(resolveClientIP(req.headers), {"Content-Type": "application/json"}), body: JSON.stringify(body)});
     if (!upstream.ok) return upstreamError(upstream);
     const data: unknown = await upstream.json();
@@ -201,40 +216,6 @@ export async function acceptStaffInvite(request: NextRequest) {
    return {status: "activated"};
   }});
   const retry=upstream.headers.get("retry-after");
-  // Return only the public invite contract, never tokens or upstream cookies.
   return NextResponse.json({status:data.status},{status:upstream.status,headers:{...headers,...(retry ? {"Retry-After":retry} : {})}});
  } catch {return NextResponse.json({error:"INTERNAL_ERROR",message:"Không thể nhận lời mời lúc này."},{status:503,headers});}
-}
-
-const noStore={"Cache-Control":"no-store"};
-const failure=()=>NextResponse.json({error:"INTERNAL_ERROR",message:"Không thể xác minh quyền nhân viên."},{status:503,headers:noStore});
-async function verifiedContexts(request: NextRequest): Promise<Context[] | NextResponse> {
- const token=request.cookies.get("access_token")?.value;
- if(!token) return NextResponse.json({error:"UNAUTHORIZED",message:"Chưa đăng nhập."},{status:401,headers:noStore});
- const upstream=await fetch(`${process.env.ORG_INTERNAL_URL || process.env.ORG_SERVICE_URL || "http://localhost:8081"}/org/access-contexts/me`,{cache:"no-store",headers:{Authorization:`Bearer ${token}`}});
- if (!upstream.ok) return upstreamError(upstream);
- const rows=await upstream.json();
- const parsed = contexts(rows);
- if (!parsed) return failure();
- const eligible = activeStaffContexts(parsed, token);
- if (!eligible.length) return forbidden();
- return eligible;
-}
-export async function listStaffContexts(request: NextRequest) {
- try {const rows=await verifiedContexts(request);return rows instanceof NextResponse ? rows : NextResponse.json(rows.map(({org_id,branch_id,roles})=>({org_id,branch_id,roles})),{headers:noStore});}
- catch {return failure();}
-}
-export async function switchStaffContext(request: NextRequest) {
- const fields = await readFields(request, ["org_id", "branch_id"], ["org_id", "branch_id"], true);
- if (fields instanceof NextResponse) return fields;
- try {
-  const rows=await verifiedContexts(request);if(rows instanceof NextResponse) return rows;
-  if(!rows.some(row=>row.org_id===fields.org_id && row.branch_id===fields.branch_id)) return forbidden();
-  const token = request.cookies.get("access_token")!.value;
-  const decision = await staffDecision(token, rows);
-  if (decision instanceof NextResponse) return decision;
-  const result=NextResponse.json({next_path:"/console"},{headers:noStore});
-  setPortalPlane(result, request, true);
-  return result;
- } catch {return failure();}
 }

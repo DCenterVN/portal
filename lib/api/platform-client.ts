@@ -29,23 +29,36 @@ const membershipSchema = z.object({
   id: z.string().uuid(), user_id: z.string().uuid(), branch_id: z.string().uuid(),
   role_codes: z.array(z.enum(employeeRoles)).nullable().transform((roles) => roles ?? []),
   status: z.enum(["ACTIVE", "SUSPENDED"]),
+  display_name: z.string().default(""), email: z.string().default(""),
+  branch_name: z.string().default(""), all_branches: z.boolean().default(false),
 });
 export type Membership = z.infer<typeof membershipSchema>;
-export async function companyMemberships(page: number) {
-  return decodePlatform(await companyCall<unknown>(`company/memberships?page=${page}&limit=20`, ""), pageSchema(membershipSchema));
+const roleCatalogSchema = z.object({
+  items: z.array(z.object({ code: z.string(), name: z.string(), branch_types: z.array(z.string()).nullable().transform((types) => types ?? []) })),
+});
+export type RoleCatalogItem = z.infer<typeof roleCatalogSchema>["items"][number];
+export async function companyRoles(): Promise<RoleCatalogItem[]> {
+  return decodePlatform(await companyCall<unknown>("company/roles", ""), roleCatalogSchema).items;
 }
-export async function createMembership(input: { email: string; display_name: string; role_codes: string[] }) {
+export async function companyMemberships(page: number, branchId?: string) {
+  return decodePlatform(await companyCall<unknown>(`company/memberships?${query({ page: String(page), limit: "20", branch_id: branchId })}`, ""), pageSchema(membershipSchema));
+}
+export type NewMembership = { branch_id: string; role_codes: string[] } & ({ user_id: string } | { email: string; display_name: string });
+export async function createMembership(input: NewMembership) {
   return decodePlatform(await companyCall<unknown>("company/memberships", "", {
     method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(input),
   }), membershipSchema);
+}
+export async function deleteMembership(id: string) {
+  await companyCall<unknown>(`company/memberships/${encodeURIComponent(id)}`, "", { method: "DELETE" });
 }
 export async function replaceMembershipRoles(id: string, role_codes: string[]) {
   return decodePlatform(await companyCall<unknown>(`company/memberships/${encodeURIComponent(id)}/roles`, "", {
     method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify({ role_codes }),
   }), z.object({ membership_id: z.string().uuid(), role_codes: z.array(z.enum(employeeRoles)).nullable() }));
 }
-export async function updateMembershipStatus(id: string, status: Membership["status"]) {
-  return decodePlatform(await companyCall<unknown>(`company/memberships/${encodeURIComponent(id)}`, "", {
-    method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ status }),
-  }), z.object({ membership_id: z.string().uuid(), status: membershipSchema.shape.status }));
+export async function updateMembership(id: string, patch: { status?: Membership["status"]; all_branches?: boolean }) {
+  await companyCall<unknown>(`company/memberships/${encodeURIComponent(id)}`, "", {
+    method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify(patch),
+  });
 }

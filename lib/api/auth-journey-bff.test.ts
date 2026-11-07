@@ -5,7 +5,7 @@ vi.mock("server-only", () => ({}));
 import { POST as customer } from "../../app/api/auth/login/route";
 import { POST as activate } from "../../app/api/auth/activate/route";
 import { POST as staff } from "../../app/api/auth/staff/login/route";
-import { customerOperation, acceptStaffInvite, switchStaffContext, safeLanding } from "./auth-journey-bff";
+import { customerOperation, acceptStaffInvite, safeLanding } from "./auth-journey-bff";
 const reply = (data: unknown, status = 200, cookies: string[] = []) => { const headers = new Headers({"content-type": "application/json"}); cookies.forEach(c => headers.append("set-cookie", c)); return new Response(JSON.stringify(data), {status, headers}); };
 const request = (body: unknown = {identifier: "a@example.com", password: "password-1234"}) => new NextRequest("http://localhost/api/auth/login", { method: "POST", headers: {"Content-Type":"application/json","Sec-Fetch-Site":"same-origin",cookie: `access_token=${identityToken}; refresh_token=${identityToken}`}, body: JSON.stringify(body) });
 const row = (org_id = "main", branch_id = "main", member_type = "EMPLOYEE", status = "ACTIVE") => ({org_id, branch_id, member_type, status, roles: ["SALES"]});
@@ -34,6 +34,49 @@ describe("S2 login policy", () => {
     expect(await res.json()).toMatchObject({error: "FORBIDDEN", message: expect.stringContaining("/login")});
     expect(res.headers.get("set-cookie")).toBeNull();
     expect(fetch).toHaveBeenCalledWith(expect.stringContaining("/auth/web/logout"), expect.objectContaining({headers: expect.objectContaining({Cookie: `refresh_token=temporary-rt; CSRF-Token=temporary-csrf`, "X-CSRF-Token": "temporary-csrf", Authorization: `Bearer ${identityToken}`})}));
+  });
+  it("nhân viên chỉ làm ở cửa hàng: token mặc định ở bếp; đúng một chi nhánh thì đổi sang đó, nhiều chi nhánh thì đưa về bộ chọn", async () => {
+    const storeToken = "eyJhbGciOiJFUzI1NiJ9.eyJzdWIiOiJ1Iiwib3JnX2lkIjoibWFpbiIsImJyYW5jaF9pZCI6InN0b3JlIn0.signature";
+    const calls: Array<{url: string; init?: RequestInit}> = [];
+    const run = (contexts: unknown[], switchStatus = 200) => {
+      calls.length = 0;
+      vi.stubGlobal("fetch", vi.fn(async (url: string, init?: RequestInit) => {
+        calls.push({url, init});
+        if (url.endsWith("/auth/web/login")) return login();
+        if (url.endsWith("/auth/web/switch-branch")) return switchStatus === 200 ? reply({access_token: storeToken, expires_in: 900}, 200, [`refresh_token=store-rt; Path=/; HttpOnly; Secure; SameSite=Strict`, `CSRF-Token=store-csrf; Path=/; Secure`]) : reply({error: "FORBIDDEN"}, switchStatus);
+        if (url.includes("/org/permissions/me?")) return reply({action_keys: []});
+        if (url.endsWith("/auth/me")) return reply({id: "u", status: "ACTIVE"});
+        if (url.endsWith("/org/access-contexts/me")) return reply(contexts);
+        return reply({});
+      }));
+      return staff(request());
+    };
+    const ok = await run([row("main", "store")]);
+    expect(ok.status).toBe(200);
+    expect(await ok.json()).toMatchObject({next_path: "/console"});
+    const rotate = calls.find(call => call.url.endsWith("/auth/web/switch-branch"));
+    expect(JSON.parse(String(rotate?.init?.body))).toEqual({branch_id: "store"});
+    expect((rotate?.init?.headers as Record<string, string>)["X-CSRF-Token"]).toBe("temporary-csrf");
+    expect(ok.headers.get("set-cookie")).toContain(`access_token=${storeToken}`);
+    expect(ok.headers.get("set-cookie")).toContain("refresh_token=store-rt");
+    expect(calls.some(call => call.url.includes("/org/permissions/me?org_id=main&branch_id=store"))).toBe(true);
+
+    const none = await run([row("main", "store", "CUSTOMER")]);
+    expect(none.status).toBe(403);
+    expect(calls.some(call => call.url.endsWith("/auth/web/switch-branch"))).toBe(false);
+    const refused = await run([row("main", "store")], 403);
+    expect(refused.status).toBe(403);
+    expect(refused.headers.get("set-cookie")).toBeNull();
+    expect(calls.some(call => call.url.endsWith("/auth/web/logout"))).toBe(true);
+  
+    const many = await run([row("main", "store"), row("main", "store-2")]);
+    expect(many.status).toBe(200);
+    expect(await many.json()).toMatchObject({next_path: "/staff/switch-branch"});
+    expect(calls.some(call => call.url.endsWith("/auth/web/switch-branch"))).toBe(false);
+    expect(many.headers.get("set-cookie")).toContain(`access_token=${identityToken}`);
+    expect(many.headers.get("set-cookie")).not.toMatch(/portal_plane=employee/);
+    const foreign = await run([row("other", "store")]);
+    expect(foreign.status).toBe(403);
   });
   it("inactive auth profile fails closed and revokes", async () => { const fetch = upstream([], 200, 200, "SUSPENDED"); const res = await customer(request()); expect(res.status).toBe(403); expect(res.headers.get("set-cookie")).toBeNull(); expect(fetch.mock.calls.at(-1)?.[0]).toContain("logout"); });
   it.each([{account_type: "EMPLOYEE"}, {roles: ["OWNER"]}, {next_path: "/console"}])("rejects forged fields before creating session %j", async fields => { const fetch = upstream(); const res = await staff(request({identifier: "a", password: "p", ...fields})); expect(res.status).toBe(400); expect(await res.json()).toMatchObject({error: "BAD_REQUEST"}); expect(fetch).not.toHaveBeenCalled(); });
@@ -156,13 +199,11 @@ describe("S5 auth client IP forwarding", () => {
     expect(await res.json()).toEqual({error: "rate_limit_exceeded"});
     exact(fetch.mock.calls[0][1].headers, {"content-type": "application/json"});
   });
-  it("invite and selected context use the shared auth contract", async () => {
+  it("invite uses the shared auth contract", async () => {
     vi.stubEnv("PORTAL_CLIENT_IP_SOURCE", "trusted-kong");
-    const fetch = vi.fn().mockResolvedValueOnce(reply({code: 200, status: "success", message: "OK", data: {status: "activated"}})).mockResolvedValueOnce(reply([row()])).mockResolvedValueOnce(reply({action_keys: []})); vi.stubGlobal("fetch", fetch);
+    const fetch = vi.fn().mockResolvedValueOnce(reply({code: 200, status: "success", message: "OK", data: {status: "activated"}})); vi.stubGlobal("fetch", fetch);
     expect((await acceptStaffInvite(edge({token: "token", password: "password-1234"}))).status).toBe(200);
     exact(fetch.mock.calls[0][1].headers, {"content-type": "application/json"});
-    expect((await switchStaffContext(edge({org_id: "main", branch_id: "main"}))).status).toBe(200);
-    expect(Object.fromEntries(new Headers(fetch.mock.calls[2][1].headers))).toEqual({authorization: `Bearer ${identityToken}`});
   });
   it.each([undefined, "", "192.0.2.1, 192.0.2.1", "[::1]", "192.0.2.1:80", "fe80::1%eth0"])("invalid ingress %s returns 503 before auth fetch", async ip => {
     vi.stubEnv("PORTAL_CLIENT_IP_SOURCE", "trusted-kong");

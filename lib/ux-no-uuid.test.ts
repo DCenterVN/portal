@@ -5,11 +5,7 @@ import { expect, it } from "vitest";
 
 // Existing screens outside S2–S4 stay tracked until their D-246 slices land.
 const allowlist: Record<string, { reason: string; debt: "D-246" }> = {
-  "features/console/live-console.tsx": { reason: "Fallback user.id của console nằm ngoài S2–S4.", debt: "D-246" },
   "features/sales/pricing-floor-view.tsx": { reason: "S1 giá sàn chờ BE, brief cấm thực hiện trong S2–S4.", debt: "D-246" },
-  // D-246: legacy profile prints a shortened employee UUID; outside this review scope.
-  "app/(store)/me/profile-client.tsx": { reason: "Mã NV dùng profile.id.slice(0, 8), màn hồ sơ ngoài plan.", debt: "D-246" },
-  "features/staff-profile/staff-profile-view.tsx": { reason: "Fallback org_id của hồ sơ nhân viên nằm ngoài plan.", debt: "D-246" },
 };
 // contract_ref is a paper contract number; audit separately filters UUID values.
 const forbiddenField = /^(?!contract_ref$)(?:id|.*_id|.*_ref)$/;
@@ -48,9 +44,35 @@ function labelText(node: ts.Node): string {
   return "";
 }
 
-function scan(file: string): string[] {
-  const source = ts.createSourceFile(file, readFileSync(file, "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+function idCarriers(source: ts.SourceFile): { values: Set<string>; lists: Set<string> } {
+  const values = new Set<string>();
+  const lists = new Set<string>();
+  const mapsToId = (node: ts.Node): boolean => (ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression) && node.expression.name.text === "map" && ts.isArrowFunction(node.arguments[0]) && ts.isExpression(node.arguments[0].body) && exposesId(node.arguments[0].body)) || ts.forEachChild(node, mapsToId) === true;
+  (function visit(node: ts.Node) {
+    if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && node.initializer) {
+      if (exposesId(node.initializer)) values.add(node.name.text);
+      if (mapsToId(node.initializer)) lists.add(node.name.text);
+    }
+    ts.forEachChild(node, visit);
+  })(source);
+  return { values, lists };
+}
+
+function printsCarrier(node: ts.Node, carriers: ReturnType<typeof idCarriers>): boolean {
+  if (!ts.isIdentifier(node)) return false;
+  if (carriers.values.has(node.text)) return true;
+  for (let up = node.parent; up; up = up.parent) {
+    if (!ts.isArrowFunction(up) || !up.parameters.some((parameter) => parameter.name.getText() === node.text)) continue;
+    const call = up.parent;
+    return ts.isCallExpression(call) && ts.isPropertyAccessExpression(call.expression) && call.expression.name.text === "map" && ts.isIdentifier(call.expression.expression) && carriers.lists.has(call.expression.expression.text);
+  }
+  return false;
+}
+
+function scan(file: string, text = readFileSync(file, "utf8")): string[] {
+  const source = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   const violations: string[] = [];
+  const carriers = idCarriers(source);
   const report = (node: ts.Node) => {
     const line = source.getLineAndCharacterOfPosition(node.getStart(source)).line + 1;
     violations.push(`${file}:${line}: ${node.getText(source)}`);
@@ -63,7 +85,7 @@ function scan(file: string): string[] {
     if (ts.isJsxElement(node) && node.openingElement.tagName.getText(source) === "label") {
       for (const child of node.children) if (ts.isJsxText(child) && forbiddenLabel.test(child.text)) report(child);
     }
-    if (ts.isJsxExpression(node) && !ts.isJsxAttribute(node.parent) && node.expression && exposesId(node.expression)) report(node);
+    if (ts.isJsxExpression(node) && !ts.isJsxAttribute(node.parent) && node.expression && (exposesId(node.expression) || printsCarrier(node.expression, carriers))) report(node);
     if (ts.isCallExpression(node) && (node.expression.getText(source) === "toast" || /^toast\.\w+$/.test(node.expression.getText(source)))) {
       for (const argument of node.arguments) if (forbiddenLabel.test(labelText(argument)) || exposesId(argument)) report(argument);
     }
@@ -83,4 +105,11 @@ it("repo_scan_no_uuid", () => {
     return [];
   });
   expect(violations).toEqual([]);
+});
+
+it("scanner_catches_id_assigned_to_variable_then_printed", () => {
+  const leak = "const ids = rows.map(row => row.branch_id); const view = <select>{ids.map(value => <option key={value}>{value}</option>)}</select>;";
+  const safe = "const ids = rows.map(row => row.branch_id); const view = <select>{rows.map(row => <option key={row.branch_id}>{row.branch_name}</option>)}</select>;";
+  expect(scan("leak.tsx", leak)).toHaveLength(1);
+  expect(scan("safe.tsx", safe)).toEqual([]);
 });
