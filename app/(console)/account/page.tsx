@@ -1,5 +1,5 @@
-import { StaffProfileView } from "@/features/staff-profile/staff-profile-view";
+import { redirect } from "next/navigation";
 
 export default function StaffAccountPage() {
-  return <StaffProfileView />;
+  redirect("/company/account");
 }

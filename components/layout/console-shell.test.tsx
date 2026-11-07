@@ -51,12 +51,12 @@ describe("ConsoleShell", () => {
     expect(html.match(/<main\b[^>]*>/)?.[0]).not.toMatch(/max-w|mx-auto/);
   });
 
-  it("is a shadcn icon-collapsible sidebar with a rail, group labels and the branch context", () => {
+  it("is a shadcn icon-collapsible sidebar with a rail, group menu and the branch context", () => {
     const html = shell();
     expect(html).toContain('data-slot="sidebar-wrapper"');
     expect(html).toContain('data-state="expanded"');
     expect(html).toContain('data-slot="sidebar-rail"');
-    expect(html).toContain('data-slot="sidebar-group-label"');
+    expect(html).toContain(">Kho<");
     expect(html).toContain("Chi nhánh 1");
     expect(html).toContain("Công ty");
     expect(html).not.toMatch(/glass|backdrop-blur/);
@@ -68,13 +68,13 @@ describe("ConsoleShell", () => {
     expect(header).toContain('aria-label="breadcrumb"');
     expect(header).toContain(">Kho</li>");
     expect(header).toMatch(/aria-current="page"[^>]*>Kệ hàng<\/span>/);
-    expect(header).toContain('data-slot="sidebar-trigger"');
+    expect(header).toContain('data-sidebar="trigger"');
     expect(header).toMatch(/aria-label="Chuyển sang giao diện (tối|sáng)"/);
   });
 
   it("keeps header icon buttons at a 44px touch size on mobile", () => {
     const header = section(shell(), "header");
-    const triggerClasses = header.match(/<button[^>]*data-slot="sidebar-trigger"[^>]*class="([^"]*)"/)?.[1] ?? header.match(/<button[^>]*class="([^"]*)"[^>]*data-slot="sidebar-trigger"/)?.[1] ?? "";
+    const triggerClasses = header.match(/<button[^>]*data-sidebar="trigger"[^>]*class="([^"]*)"/)?.[1] ?? header.match(/<button[^>]*class="([^"]*)"[^>]*data-sidebar="trigger"/)?.[1] ?? "";
     expect(triggerClasses).toContain("max-md:size-11");
     expect(header.match(/<button[^>]*aria-label="Chuyển sang giao diện[^>]*>/)?.[0]).toContain("max-md:size-11");
   });

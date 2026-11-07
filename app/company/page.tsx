@@ -1,5 +1,5 @@
-import { MyCompanyView } from "@/features/platform/my-company-view";
+import { redirect } from "next/navigation";
 
-export default function MyCompanyPage() {
-  return <MyCompanyView />;
+export default function CompanyRedirect() {
+  redirect("/roles");
 }

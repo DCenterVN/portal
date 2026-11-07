@@ -37,7 +37,7 @@ const footer = {
     { title: "Cửa hàng", links: [{ href: "/orders", label: "Đơn hàng" }] },
     { title: "Kết nối", links: [{ href: "/contact", label: "Liên hệ" }] },
   ],
-  legal: ["© Việt Sạch", "Chính sách bảo mật"],
+  legal: ["© Sunny", "Chính sách bảo mật"],
 };
 
 type Props = React.ComponentProps<typeof StoreShell>;

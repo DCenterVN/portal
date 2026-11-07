@@ -4,11 +4,14 @@ import Link from "next/link";
 import type { Route } from "next";
 import { useRouter } from "next/navigation";
 import { Heart, LogOut, Menu, Package, Search, UserRound, X } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Tip } from "@/components/patterns/tip";
+import { useHeaderProfile } from "@/lib/use-header-profile";
+import { BRAND_NAME } from "@/lib/brand";
 import { isActive } from "@/lib/navigation";
 import { MiniCart, type CartPreviewItem } from "./mini-cart";
 import { ThemeToggle } from "./theme-toggle";
@@ -64,6 +67,7 @@ function SearchForm({ className }: { className?: string }) {
 
 function AccountMenu({ user, favoritesCount, onLogout }: { user: { name: string } } & Pick<Props, "favoritesCount" | "onLogout">) {
   const router = useRouter();
+  const profile = useHeaderProfile(user);
   const links = [
     { href: "/me", label: "Tài khoản", icon: UserRound },
     { href: "/orders", label: "Đơn hàng", icon: Package },
@@ -71,13 +75,14 @@ function AccountMenu({ user, favoritesCount, onLogout }: { user: { name: string 
   ];
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label={`Tài khoản của ${user.name}`} className="size-11">
+      <Tip label={`Tài khoản của ${profile.name}`}><DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon" aria-label={`Tài khoản của ${profile.name}`} className="size-11">
           <Avatar className="size-8">
-            <AvatarFallback className="bg-muted text-xs font-medium text-muted-foreground">{user.name.trim().charAt(0).toUpperCase()}</AvatarFallback>
+            <AvatarImage src={profile.avatar_url || undefined} alt={profile.name} />
+            <AvatarFallback className="bg-muted text-xs font-medium text-muted-foreground">{profile.name.trim().charAt(0).toUpperCase()}</AvatarFallback>
           </Avatar>
         </Button>
-      </DropdownMenuTrigger>
+      </DropdownMenuTrigger></Tip>
       <DropdownMenuContent align="end" className="min-w-48">
         {links.map(({ href, label, icon: Icon }) => (
           <DropdownMenuItem key={href} onSelect={() => router.push(href as Route)}>
@@ -102,7 +107,7 @@ export function StoreHeader({ nav, pathname, user, cartHref, cartItems, favorite
     // ponytail: no sticky z token yet, borrows --z-popover (still under modal/toast). Add --z-sticky to globals.css.
     <header className="sticky top-0 z-(--z-popover) border-b border-border bg-background">
       <div className="relative mx-auto flex h-15 w-full max-w-360 items-center gap-1 px-4 md:h-18 md:gap-6 md:px-10">
-        <Button
+        <Tip label={menuOpen ? "Đóng menu" : "Mở menu"}><Button
           type="button"
           variant="ghost"
           size="icon"
@@ -113,9 +118,9 @@ export function StoreHeader({ nav, pathname, user, cartHref, cartItems, favorite
           onClick={onMenuToggle}
         >
           {menuOpen ? <X className="size-5" aria-hidden="true" /> : <Menu className="size-5" aria-hidden="true" />}
-        </Button>
-        <Link href="/" className="flex min-h-11 shrink-0 items-center" aria-label="Việt Sạch, trang chủ">
-          <span className="text-lg font-semibold text-foreground">Việt Sạch</span>
+        </Button></Tip>
+        <Link href="/" className="flex min-h-11 shrink-0 items-center" aria-label={`${BRAND_NAME}, trang chủ`}>
+          <span className="text-lg font-semibold text-foreground">{BRAND_NAME}</span>
         </Link>
         <div className="hidden md:block">
           <Navigation nav={nav} pathname={pathname} />

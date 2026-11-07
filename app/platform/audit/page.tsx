@@ -1,5 +1,5 @@
-import { AuditView } from "@/features/platform/audit-view";
+import { redirect } from "next/navigation";
 
-export default function AuditPage() {
-  return <AuditView />;
+export default function AuditRedirect() {
+  redirect("/audit");
 }

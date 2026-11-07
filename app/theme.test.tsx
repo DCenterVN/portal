@@ -128,6 +128,7 @@ describe("FR-1 ThemeToggle", () => {
     const store = new Map<string, string>();
     const root = { dataset: {} as Record<string, string>, classList: { add: vi.fn(), remove: vi.fn() } };
     vi.stubGlobal("document", { documentElement: root });
+    vi.stubGlobal("window", globalThis);
     vi.stubGlobal("localStorage", { getItem: (k: string) => store.get(k) ?? null, setItem: (k: string, v: string) => store.set(k, v) });
     renderToStaticMarkup(<ThemeProvider><ThemeToggle /></ThemeProvider>);
     captured.props!.onClick!({} as React.MouseEvent<HTMLButtonElement>);

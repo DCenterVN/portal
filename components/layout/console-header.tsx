@@ -4,6 +4,7 @@ import { Fragment, type ReactNode } from "react";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { Tip } from "@/components/patterns/tip";
 import type { Crumb } from "@/lib/navigation";
 import { ThemeToggle } from "./theme-toggle";
 
@@ -14,8 +15,8 @@ type Props = {
 
 export function ConsoleHeader({ crumbs, actions }: Props) {
   return (
-    <header className="sticky top-0 z-(--z-header) flex h-14 shrink-0 items-center gap-2 border-b border-border bg-background px-4">
-      <SidebarTrigger className="-ml-1 max-md:size-11" />
+    <header className="sticky top-0 z-(--z-header) flex h-14 shrink-0 items-center gap-2 border-b border-border/60 bg-background px-4">
+      <Tip label="Bật/tắt thanh bên"><SidebarTrigger className="-ml-1 max-md:size-11" /></Tip>
       <Separator orientation="vertical" className="mr-1 data-[orientation=vertical]:h-4" />
       {crumbs.length > 0 && (
         <Breadcrumb className="min-w-0">

@@ -31,6 +31,7 @@ export interface EntityPickerProps<T> {
   emptyText?: string;
   onRetry?: () => void;
   placeholder?: string;
+  searchPlaceholder?: string;
   className?: string;
 }
 
@@ -59,8 +60,8 @@ export function EntityList<T>({ options, picked, onPick, emptyMessage, getId, ge
         {options.map((item, index) => (
           <CommandItem key={getId(item)} value={String(index)} onSelect={() => onPick(getId(item))} className="min-h-11 md:min-h-8">
             <span className="grid min-w-0 flex-1">
-              <span className="truncate font-medium">{getLabel(item)}</span>
-              {getMeta && <span className="truncate text-xs text-muted-foreground">{getMeta(item)}</span>}
+              <span className="font-medium">{getLabel(item)}</span>
+              {getMeta && <span className="text-xs text-muted-foreground">{getMeta(item)}</span>}
             </span>
             {getId(item) === picked && <Check aria-hidden="true" className="size-4 shrink-0 text-primary" />}
           </CommandItem>
@@ -73,7 +74,7 @@ export function EntityList<T>({ options, picked, onPick, emptyMessage, getId, ge
 // Popover + Command combobox. Only status "ready" offers options (fail closed on loading/error).
 export function EntityPicker<T>({
   label, name, serializeValue = true, maxOptions = Infinity, items, status, getId, getLabel, getMeta, filter, value, onChange, required, error,
-  emptyText = "Chưa có mục nào để chọn.", onRetry, placeholder, className,
+  emptyText = "Chưa có mục nào để chọn.", onRetry, placeholder, searchPlaceholder, className,
 }: EntityPickerProps<T>) {
   const [own, setOwn] = React.useState<string | null>(null);
   const [query, setQuery] = React.useState("");
@@ -127,7 +128,7 @@ export function EntityPicker<T>({
         </Field>
         <PopoverContent align="start" className="w-(--radix-popover-trigger-width) max-w-[calc(100vw-2rem)] p-0">
           <Command shouldFilter={false}>
-            <CommandInput value={query} onValueChange={setQuery} placeholder={placeholder ?? "Tìm…"} />
+            <CommandInput value={query} onValueChange={setQuery} placeholder={searchPlaceholder ?? placeholder ?? "Tìm…"} />
             <EntityList
               options={options}
               picked={picked ?? null}

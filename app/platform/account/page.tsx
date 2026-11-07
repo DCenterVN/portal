@@ -1,5 +1,5 @@
-import { StaffProfileView } from "@/features/staff-profile/staff-profile-view";
+import { StaffAccount } from "@/features/account/staff/staff-account";
 
 export default function StaffAccountPage() {
-  return <StaffProfileView />;
+  return <StaffAccount />;
 }

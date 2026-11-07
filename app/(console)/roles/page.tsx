@@ -1,5 +1,5 @@
-import { redirect } from "next/navigation";
+import { RolesView } from "@/features/roles/roles-view";
 
 export default function RolesPage() {
-  redirect("/company");
+  return <RolesView />;
 }

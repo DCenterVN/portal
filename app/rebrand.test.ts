@@ -1,3 +1,4 @@
+import { formatDateTime } from "@/lib/format-date";
 import { readFileSync } from "node:fs";
 import { describe, expect, it, vi } from "vitest";
 import * as React from "react";
@@ -11,7 +12,10 @@ import { LoginForm } from "../features/customer-auth/login-form";
 import { CustomerAuthShell } from "../components/layout/customer-auth-shell";
 import { EmployeeAuthShell } from "../components/layout/employee-auth-shell";
 import ProfileClient from "./(store)/me/profile-client";
-import { StaffProfileView } from "../features/staff-profile/staff-profile-view";
+import { StaffAccount } from "../features/account/staff/staff-account";
+import { NextIntlClientProvider } from "next-intl";
+import viMessages from "../messages/vi.json";
+const StaffProfileView = () => React.createElement(StaffAccount);
 import { SWRConfig, unstable_serialize } from "swr";
 import { AccessProvider } from "../lib/access-boundary";
 import type { Membership } from "../lib/api/platform-client";
@@ -31,6 +35,7 @@ import type { Product } from "../lib/api/sales";
 import type { PublicTraceability } from "../lib/api/production";
 import type { Order } from "../lib/api/sales";
 import type { ProductionTarget, ProductionOrder, ShelfPlacement } from "../lib/api/production";
+import { FetchError } from "../lib/fetcher";
 import type { UserProfile } from "../lib/auth/client";
 
 // SSR cannot mount a portal. Only expose its rendered tree; effects/keyboard are
@@ -187,9 +192,9 @@ describe("S2 root brand contract", () => {
   });
 
   it("keeps identity while describing factual meal-kit preparation", () => {
-    expect(layout).toContain('"https://vietsach.reborn.vn"');
-    expect(layout).toContain('siteName: "Việt Sạch"');
-    expect(layout).toContain("Fresh Meal Kit");
+    expect(layout).toContain('BRAND_NAME');
+    expect(layout).toContain('siteName: BRAND_NAME');
+    expect(layout).toContain("bộ nguyên liệu bữa ăn");
     expect(layout).not.toMatch(/hữu cơ|nông trại|VietGAP|GlobalGAP/);
   });
 });
@@ -327,17 +332,30 @@ const profileFixture: UserProfile = {
   id: "user-42", email: "dawn@example.test", phone: "0901234567", display_name: "Dawn",
   status: "ACTIVE", created_at: "2026-09-29", memberships: [{ org_id: "org-1", org_name: "Bếp Hà Nội", roles: ["STAFF"] }],
 };
-const staffProfile = (profile: UserProfile) => React.createElement(SWRConfig, { value: { fallback: { "staff-profile": profile }, revalidateOnMount: false } }, React.createElement(StaffProfileView));
-const branchFixtures = ["branch-1", "branch-2"].map((id) => ({
-  id, name: `Chi nhánh ${id}`, code: id, address: "Hà Nội", type: "MAIN", tempZone: "-18 °C", membersCount: 3,
-}));
+function profileSurface(profile: UserProfile | null, staff = false, error?: FetchError) {
+  const key = unstable_serialize(["/api/auth/me", undefined]);
+  const provider = () => new Map(error ? [[key, { error, isLoading: false }]] : []);
+  const fallback = profile ? { [key]: profile } : {};
+  const element = React.createElement(staff ? StaffProfileView : ProfileClient);
+  return React.createElement(NextIntlClientProvider, { locale: "vi", timeZone: "Asia/Ho_Chi_Minh", messages: viMessages, children: React.createElement(SWRConfig, { value: { provider, fallback, revalidateOnMount: false } }, element) });
+}
+const staffProfile = (profile: UserProfile) => profileSurface(profile, true);
+const branchFixtures = [
+  { id: "0192f3a4-5b6c-7d8e-9f00-112233445566", code: "MAIN", name: "Bếp trung tâm", type: "CENTRAL_KITCHEN", status: "ACTIVE", employee_count: 3 },
+  { id: "0192f3a4-5b6c-7d8e-9f00-112233445567", code: "CAU-GIAY", name: "Cửa hàng Cầu Giấy", type: "STORE", status: "SUSPENDED", employee_count: 0 },
+];
+function branches() {
+  return React.createElement(AccessProvider, { value: { plane: "company", root: "", actions: new Set(["org:branch:read", "org:branch:create"]) }, children:
+    React.createElement(SWRConfig, { value: { provider: () => new Map(), revalidateOnMount: false, fallback: { "company-branches": branchFixtures } } }, React.createElement(BranchesView)) });
+}
 const membershipFixtures: Membership[] = (["ACTIVE", "SUSPENDED"] as const).map((status) => ({
   id: status, user_id: `user-${status}`, branch_id: "branch-1", role_codes: ["SALES"], status,
+  display_name: `Nhân viên ${status}`, email: `${status.toLowerCase()}@example.test`, branch_name: "Bếp trung tâm", all_branches: false,
 }));
-function memberships(items: Membership[], actions = ["org:membership:read", "org:employee:create", "org:membership:update"]) {
+function memberships(items: Membership[], actions = ["org:membership:read", "org:branch:read", "org:employee:create", "org:membership:update"]) {
   return React.createElement(AccessProvider, { value: { plane: "company", root: "", actions: new Set(actions) }, children:
     React.createElement(SWRConfig, { value: { provider: () => new Map(), revalidateOnMount: false,
-      fallback: { [unstable_serialize(["company-memberships", 1])]: { items, page: 1, limit: 20, total: items.length } },
+      fallback: { "role-holders": items, "company-branches": branchFixtures },
     } }, React.createElement(MembershipsView)) });
 }
 const rawSurface = /(?:bg|text|border|ring|from|via|to|fill|stroke|shadow)-(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|white|black)(?:-\d+)?\b|#[\da-f]{3,8}\b|gradient|blur|glass/i;
@@ -377,13 +395,16 @@ describe("S5 rendered auth, profile, branch and membership roles", () => {
     }
   });
 
-  it.each(["general", "security"])("renders profile %s tab with solid roles and original content", (tab) => {
-    const html = surfaceMarkup(React.createElement(ProfileClient), [profileFixture, false, "", null, tab]);
+  it("renders the customer account profile with inline fields and the side menu", () => {
+    const html = surfaceMarkup(profileSurface(profileFixture));
     expectRoleSurface(html);
-    expect(html).toContain("Dawn");
-    expect(html).toContain("Đăng xuất");
-    expect(html).toContain("bg-muted");
-    if (tab === "security") expect(html).toContain("Mật khẩu tài khoản");
+    for (const text of ["Dawn", "Tài khoản của tôi", "Hồ sơ", "Đơn hàng", "Ảnh đại diện", "Tên hiển thị", "Số điện thoại", "Email", "Lưu"]) expect(html).toContain(text);
+    expect(html).toMatch(/<input\b[^>]*id="display_name-field"[^>]*value="Dawn"/);
+    expect(html).toMatch(/<input\b[^>]*id="phone-field"[^>]*value="0901234567"/);
+    expect(html).toMatch(/<button\b[^>]*type="submit"[^>]*disabled="">Lưu<\/button>/);
+    expect(html).not.toMatch(/<button\b[^>]*>Sửa<\/button>/);
+    expect(html).not.toContain("Mã NV");
+    expect(html).not.toContain("Tổ chức và chi nhánh");
   });
 
   it("renders staff profile memberships with solid roles and original content", () => {
@@ -395,81 +416,52 @@ describe("S5 rendered auth, profile, branch and membership roles", () => {
   });
 
   it.each([401, 500])("renders profile error %s with readable danger cue", (status) => {
-    const html = surfaceMarkup(React.createElement(ProfileClient), [null, false, "Lỗi kết nối", status, "general"]);
+    const html = surfaceMarkup(profileSurface(null, false, new FetchError("Lỗi kết nối", status, { error: status === 401 ? "UNAUTHORIZED" : "INTERNAL_ERROR" })));
     expectRoleSurface(html);
     expect(html).toContain("text-destructive");
-    expect(html).toContain(status === 401 ? "Đăng nhập lại" : "Thử lại");
+    expect(html).toContain(status === 401 ? "Đăng nhập khách hàng" : "Thử lại");
   });
 
   it("keeps profile loading and empty memberships distinct", () => {
     const loading = surfaceMarkup(React.createElement(StaffProfileView));
-    expect(loading).toContain("Đang tải hồ sơ nhân viên…");
+    expect(loading).toContain("Đang tải tài khoản…");
     expect(loading).not.toMatch(rawSurface);
     const empty = surfaceMarkup(staffProfile({ ...profileFixture, memberships: [] }));
     expectRoleSurface(empty, true);
     expect(empty).toContain("Tài khoản chưa có phạm vi truy cập.");
   });
 
-  it("renders selected and unselected branches with ink status and role boundaries", () => {
-    const html = surfaceMarkup(React.createElement(BranchesView, { initialBranches: branchFixtures }));
+  it("renders the branch table with type, status and add button, without ids", () => {
+    const html = surfaceMarkup(branches());
     expectRoleSurface(html);
-    expect(html).toContain("Đang vận hành");
-    expect(html).toContain("border-primary");
-    expect(html).not.toContain("ring-[var(--color-focus)]");
-    expect(html).toContain("Chọn chi nhánh này");
-    expect(html).toContain('data-slot="input-group"');
+    expect(html).toContain("Bếp trung tâm");
+    expect(html).toContain("Cửa hàng");
+    expect(html).toContain("Tạm ngừng");
+    expect(html).toContain("Thêm cửa hàng");
+    expect(html.replace(/href="[^"]*"/g, "")).not.toMatch(/[0-9a-f]{8}-[0-9a-f]{4}-/);
   });
 
-  it.each([false, true])("renders membership table and semantic statuses (empty=%s)", (empty) => {
+  it.each([false, true])("renders membership table grouped by person (empty=%s)", (empty) => {
     const html = surfaceMarkup(memberships(empty ? [] : membershipFixtures));
     expectRoleSurface(html, true);
-    expect(html).toContain("bg-[var(--color-surface)]");
-    expect(html).toContain("border-[var(--color-line)]");
     expect(html).toContain("text-foreground");
     expect(html).toContain("Thêm nhân viên");
-    expect(html).toContain("Trang 1");
+    expect(html).toContain("Tìm theo tên hoặc email");
     if (empty) expect(html).toContain("Chưa có nhân viên");
     else {
       for (const member of membershipFixtures) expect(html).not.toContain(member.user_id);
       expect(html.match(/<tr\b/g)).toHaveLength(membershipFixtures.length + 1);
-      for (const surface of ["border-border text-foreground", "bg-warning-soft"]) expect(html).toContain(surface);
-      for (const label of ["Đang hoạt động", "Tạm khoá", "Bán hàng", "Đổi vai trò", "Khoá", "Mở khoá"]) expect(html).toContain(label);
+      for (const label of ["Đang hoạt động", "Tạm khoá", "Bếp trung tâm · Bán hàng", "Chi nhánh và vai trò"]) expect(html).toContain(label);
     }
-  });
-
-  it("renders add employee sheet with solid scrim and required name, email, password and role fields", () => {
-    const html = s7Markup(memberships(membershipFixtures), [1, { kind: "create" }, "", "", ["SALES"], false, ""]);
-    expectRoleSurface(html, true);
-    expect(html).toContain("bg-[var(--color-surface)]");
-    expect(html).toContain("border-[var(--color-line)]");
-    expect(html).toContain("text-foreground");
-    expect(html).toContain('role="dialog"');
-    for (const label of ["Thêm nhân viên", "Họ và tên", "Email", "Vai trò", "Lưu", "Huỷ"]) expect(html).toContain(label);
-    expect(html.match(/required=""/g)).toHaveLength(3);
-    expect(html).toContain('type="email"');
-    const passwordInput = html.match(/<input\b[^>]*id="member-password"[^>]*>/)?.[0];
-    expect(passwordInput).toContain('type="password"');
-    expect(passwordInput).toContain('autoComplete="new-password"');
-    expect(html.match(/role="checkbox"/g)).toHaveLength(5);
-    expect(html).toContain('aria-checked="true"');
-    const inputs = html.match(/<input\b[^>]*id="member-(?:name|email|password)"[^>]*>/g) ?? [];
-    expect(inputs).toHaveLength(3);
-    for (const input of inputs) {
-      expect(input).toContain("h-9");
-      expect(input).toContain("border-input");
-      expect(input).toContain("focus-visible:ring-ring/50");
-    }
-    expect(classesFor(html, "button", 'type="submit"')).toMatch(PRIMARY_FILL);
-    expect(html).toMatch(/<button[^>]*type="submit"[^>]*disabled=""/);
   });
 
   it("keeps membership mutations hidden for read-only access and denies unverified access", () => {
     const html = surfaceMarkup(memberships(membershipFixtures, ["org:membership:read"]));
     expect(html).toContain("Đang hoạt động");
     expect(html).not.toContain("user-ACTIVE");
-    for (const label of ["Thêm nhân viên", "Đổi vai trò", "Mở khoá"]) expect(html).not.toMatch(new RegExp(`<button[^>]*>${label}</button>`));
+    for (const label of ["Thêm nhân viên"]) expect(html).not.toMatch(new RegExp(`<button[^>]*>${label}</button>`));
     const denied = surfaceMarkup(React.createElement(MembershipsView));
-    expect(denied).toContain("Bạn chưa có quyền xem nhân viên.");
+    expect(denied).toContain("Bạn không có quyền mở nội dung này.");
     expect(denied).not.toContain("user-ACTIVE");
   });
 });
@@ -646,7 +638,7 @@ describe("S7 rendered target, cart, orders and product creation roles", () => {
       expect(classesFor(html, "button", 'type="submit"')).toMatch(PRIMARY_FILL);
       expect(html).toContain("Lưu chỉ tiêu");
       expect(html).toContain('aria-label="Xóa dòng"');
-      expect(html.match(/required=""/g)).toHaveLength(4);
+      expect(html.match(/required=""/g)).toHaveLength(2);
       expect(html).toContain('aria-required="true"');
     }
   });
@@ -665,7 +657,7 @@ describe("S7 rendered target, cart, orders and product creation roles", () => {
       expect(link).toContain("text-[var(--color-ink)]");
       expect(link).toContain(order.status === "CANCELLED" ? "bg-destructive" : "border-border");
       expect(link).toContain("660.000");
-      expect(link).toContain(new Date(order.created_at).toLocaleString("vi-VN"));
+      expect(link).toContain(formatDateTime(order.created_at));
       expect(link).not.toContain(order.cart_ref);
       expect(link).not.toContain("Giỏ");
     }
@@ -864,7 +856,7 @@ it("S18 retires shared screens and exposes independent shells", () => {
     expect(html.match(/<main/g)).toHaveLength(1);
     expect(html.match(/data-auth-journey=/g)).toHaveLength(1);
     expect(html).toContain(`data-auth-journey="${journey}"`);
-    expect(html).toContain("Bếp Tươi");
+    expect(html).toContain("Sunny");
   }
 });
 

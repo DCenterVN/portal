@@ -14,7 +14,7 @@ type Props = {
 
 export function PageHeading({ title, description, icon, badge, actions, className }: Props) {
   return (
-    <div className={cn("flex flex-col gap-4 border-b border-border pb-4 md:flex-row md:items-center md:justify-between", className)}>
+    <div className={cn("flex flex-col gap-4 pb-4 md:flex-row md:items-center md:justify-between", className)}>
       <div className="flex min-w-0 flex-1 items-center gap-3">
         {icon && <div className="shrink-0">{icon}</div>}
         <div className="min-w-0">

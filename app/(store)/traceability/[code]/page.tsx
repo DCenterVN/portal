@@ -1,9 +1,10 @@
+import { BRAND_NAME } from "@/lib/brand";
 import { TraceView } from "@/features/traceability/trace-view";
 
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Truy xuất Nguồn gốc Thực phẩm — Việt Sạch",
+  title: `Truy xuất Nguồn gốc Thực phẩm — ${BRAND_NAME}`,
   description: "Cổng thông tin minh bạch nguồn gốc và nhật ký sản xuất an toàn (VT-01)",
 };
 

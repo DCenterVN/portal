@@ -53,7 +53,7 @@ describe("Admin Shell & Sidebar Navigation", () => {
     expect(items.length).toBeGreaterThanOrEqual(6);
 
     const labels = items.map((item) => item.label);
-    expect(labels).toContain("Bảng điều khiển");
+    expect(labels).toContain("Tổng quan");
     expect(labels).toContain("Kệ hàng");
     expect(labels).toContain("Kiểm định");
     expect(labels).toContain("Bảng giá");

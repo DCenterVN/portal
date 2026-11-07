@@ -1,7 +1,8 @@
 import { MetadataRoute } from "next";
+import { SITE_URL } from "@/lib/brand";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://vietsach.reborn.vn";
+  const baseUrl = SITE_URL;
   const now = new Date();
 
   return [

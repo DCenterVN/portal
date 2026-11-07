@@ -1,9 +1,10 @@
+import { BRAND_NAME } from "@/lib/brand";
 import { FoodPackWorkspace } from "@/features/production/food-plans-view";
 
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Kế hoạch Dinh dưỡng & BOM — Việt Sạch",
+  title: `Món & thực đơn — ${BRAND_NAME}`,
   description: "Chuyên gia dinh dưỡng xây dựng công thức, định lượng nguyên liệu và xuất bản lệnh sản xuất (VT-21)",
 };
 

@@ -1,1 +1,5 @@
-export { RoleMatrixView as default } from "@/features/platform/role-matrix-view";
+import { redirect } from "next/navigation";
+
+export default function RoleMatrixRedirect() {
+  redirect("/roles");
+}

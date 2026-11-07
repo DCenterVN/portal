@@ -64,7 +64,7 @@ describe("PasswordInput", () => {
     expect(before).toContain(`aria-label="${showLabel}"`);
     expect(before).not.toMatch(/<input[^>]*(showLabel|hideLabel)=/);
     expect(before).toContain('aria-pressed="false"');
-    const toggle = hidden.props.children[1];
+    const toggle = hidden.props.children[1].props.children;
     expect(toggle.props.type).toBe("button");
     toggle.props.onClick();
     const shown = PasswordInput(props);
@@ -75,13 +75,13 @@ describe("PasswordInput", () => {
     expect(after).toContain('value="fixture password"');
     expect(after).toContain('id="chosen-password"');
     expect(after).toContain('autoComplete="new-password"');
-    expect(shown.props.children[1].props.type).toBe("button");
-    shown.props.children[1].props.onClick();
+    expect(shown.props.children[1].props.children.props.type).toBe("button");
+    shown.props.children[1].props.children.props.onClick();
     expect(renderToStaticMarkup(PasswordInput(props))).toContain('type="password"');
   });
 
   it("keeps the legacy hide label after toggling", () => {
-    PasswordInput({}).props.children[1].props.onClick();
+    PasswordInput({}).props.children[1].props.children.props.onClick();
     expect(renderToStaticMarkup(PasswordInput({}))).toContain('aria-label="Ẩn mật khẩu"');
   });
 

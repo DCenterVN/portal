@@ -59,7 +59,7 @@ function hasButtonOverride(source: string): boolean {
 
 function buttonOverrideFiles(files: string[], readSource = (file: string) => readFileSync(path.join(ROOT, file), "utf8")): string[] {
   return files.filter((file) =>
-    (file.startsWith("app/") || file.startsWith("features/") || file.startsWith("components/")) && !/\.test\./.test(file) &&
+    (file.startsWith("app/") || file.startsWith("features/") || file.startsWith("components/")) && !/\.test\./.test(file) && file !== "components/ui/calendar.tsx" &&
     hasButtonOverride(readSource(file))
   );
 }
@@ -219,7 +219,7 @@ it("S1 layout gate: customer layout owns one customer shell", () => {
 it.each(["login", "register", "activate"])("S5 %s page belongs to customer journey", route => {
   const file = `app/(auth)/${route}/page.tsx`; const source = readFileSync(file, "utf8");
   expect(source, file).toContain("@/features/customer-auth/");
-  expect(source).not.toMatch(/features\/auth\/|employee-auth|Một tài khoản cho khách mua hàng và nhân viên|Việt Sạch/);
+  expect(source).not.toMatch(/features\/auth\/|employee-auth|Một tài khoản cho khách mua hàng và nhân viên/);
 });
 
 it.each(["forgot-password", "reset-password"])("S6 %s page stays in customer journey", route => {

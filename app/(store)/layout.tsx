@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
+import { BRAND_NAME, SITE_URL } from "@/lib/brand";
 import type { ReactNode } from "react";
 import { StoreFrame } from "@/features/store/store-frame";
 import { Suspense } from "react";
 import { AuthPopup } from "@/features/customer-auth/auth-popup";
 import { CustomerAuthPopupBody } from "@/components/layout/customer-auth-shell";
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://vietsach.reborn.vn";
 
 export const metadata: Metadata = {
   robots: {
@@ -24,7 +23,7 @@ export const metadata: Metadata = {
 const jsonLdOrg = {
   "@context": "https://schema.org",
   "@type": "Organization",
-  name: "Việt Sạch",
+  name: BRAND_NAME,
   url: SITE_URL,
   logo: `${SITE_URL}/logo.png`,
   description:
@@ -45,7 +44,7 @@ const jsonLdOrg = {
 const jsonLdWebSite = {
   "@context": "https://schema.org",
   "@type": "WebSite",
-  name: "Việt Sạch",
+  name: BRAND_NAME,
   url: SITE_URL,
   potentialAction: {
     "@type": "SearchAction",

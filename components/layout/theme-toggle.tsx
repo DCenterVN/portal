@@ -2,24 +2,28 @@
 
 import { Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Tip } from "@/components/patterns/tip";
 import { useTheme } from "@/components/theme-provider";
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
   const next = theme === "dark" ? "light" : "dark";
+  const label = next === "dark" ? "Chuyển sang giao diện tối" : "Chuyển sang giao diện sáng";
   return (
-    <Button
-      type="button"
-      variant="ghost"
-      size="icon"
-      className="max-md:size-11"
-      aria-label={next === "dark" ? "Chuyển sang giao diện tối" : "Chuyển sang giao diện sáng"}
-      onClick={() => {
-        document.documentElement.dataset.theme = next;
-        setTheme(next);
-      }}
-    >
-      {next === "dark" ? <Moon aria-hidden="true" /> : <Sun aria-hidden="true" />}
-    </Button>
+    <Tip label={label}>
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        className="max-md:size-11"
+        aria-label={label}
+        onClick={() => {
+          document.documentElement.dataset.theme = next;
+          setTheme(next);
+        }}
+      >
+        {next === "dark" ? <Moon aria-hidden="true" /> : <Sun aria-hidden="true" />}
+      </Button>
+    </Tip>
   );
 }
