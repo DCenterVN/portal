@@ -2,34 +2,23 @@ import { afterEach, expect, it, vi } from "vitest";
 import * as React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { MembershipsView } from "./memberships-view";
-
-import { companyMemberships } from "@/lib/api/platform-client";
 import * as swr from "swr";
-import { NextIntlClientProvider } from "next-intl";
-import messages from "@/messages/vi.json";
 
 vi.mock("swr", () => ({ default: vi.fn() }));
-vi.mock("@/lib/access-boundary", () => ({ useAccess: () => ({ can: () => true }) }));
-afterEach(() => vi.unstubAllGlobals());
+vi.mock("@/lib/access-boundary", () => ({ useAccess: () => ({ can: () => true, scope: { userId: "x", roles: ["ADMIN"] } }), RequireAction: ({ children }: { children: React.ReactNode }) => children }));
+afterEach(() => vi.clearAllMocks());
 
-it("memberships_no_uuid", async () => {
-  const uuid = "0192f3a4-5b6c-7d8e-9f00-112233445566";
-  vi.stubGlobal("fetch", vi.fn<typeof fetch>().mockResolvedValue(Response.json({ code: 200, status: "success", message: "Success", data: {
-    items: [{ id: uuid, user_id: uuid, branch_id: uuid, role_codes: ["SALES"], status: "ACTIVE" }], page: 1, limit: 20,
-  } })));
-  const data = await companyMemberships(1);
-  vi.mocked(swr.default).mockReturnValue({ data, error: undefined, isLoading: false, isValidating: false, mutate: vi.fn() });
-  const html = renderToStaticMarkup(<NextIntlClientProvider locale="vi" timeZone="Asia/Ho_Chi_Minh" messages={messages}><MembershipsView /></NextIntlClientProvider>);
-  expect(html).toContain(messages.memberships.roleLabels.SALES);
-  expect(html).toContain(messages.memberships.ACTIVE);
-  expect(userFacingContent(html)).not.toMatch(/[0-9a-f]{8}-[0-9a-f]{4}-/);
+const uuid = "0192f3a4-5b6c-7d8e-9f00-112233445566";
+
+it("memberships_group_by_person_no_uuid", () => {
+  const members = [
+    { id: uuid, user_id: uuid, branch_id: uuid, role_codes: ["WAREHOUSE"], status: "ACTIVE", display_name: "An", email: "an@x.test", branch_name: "Bếp trung tâm", all_branches: false },
+    { id: "b", user_id: uuid, branch_id: "c", role_codes: ["SALES"], status: "ACTIVE", display_name: "An", email: "an@x.test", branch_name: "Cầu Giấy", all_branches: false },
+  ];
+  vi.mocked(swr.default).mockImplementation(((key: string) => ({ data: key === "role-holders" ? members : [], error: undefined, isLoading: false, mutate: vi.fn() })) as never);
+  const html = renderToStaticMarkup(<MembershipsView />);
+  expect(html.match(/<tr/g)).toHaveLength(2);
+  expect(html).toContain("Bếp trung tâm · Kho");
+  expect(html).toContain("Cầu Giấy · Bán hàng");
+  expect(html.replace(/<[^>]*>/g, " ")).not.toMatch(/[0-9a-f]{8}-[0-9a-f]{4}-/);
 });
-
-function userFacingContent(html: string): string {
-  const text = html.replace(/<[^>]*>/g, " ");
-  const labels = html.match(/\s(?:label|placeholder|title|aria-[\w-]+)="[^"]*"/g) ?? [];
-  const values = (html.match(/<input\b[^>]*>/g) ?? [])
-    .filter((input) => !input.includes('type="hidden"'))
-    .flatMap((input) => input.match(/\svalue="[^"]*"/g) ?? []);
-  return [text, ...labels, ...values].join(" ");
-}

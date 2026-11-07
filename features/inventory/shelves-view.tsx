@@ -1,5 +1,6 @@
 "use client";
 
+import { formatDate } from "@/lib/format-date";
 import Link from "next/link";
 import { ErrorState } from "@/components/patterns/empty-state";
 import { Button } from "@/components/ui/button";
@@ -57,7 +58,7 @@ export function ShelvesView({ initialPlacements }: ShelvesViewProps) {
                   onChange={(id) => setFinishedLotRef(id ?? "")}
                   getId={(order) => order.finished_lot_ref ?? ""}
                   getLabel={(order) => order.order_code}
-                  getMeta={(order) => order.finished_lot_expires_at ? `Hạn dùng ${new Date(order.finished_lot_expires_at).toLocaleDateString("vi-VN")}` : "Chưa có hạn dùng"}
+                  getMeta={(order) => order.finished_lot_expires_at ? `Hạn dùng ${formatDate(order.finished_lot_expires_at)}` : "Chưa có hạn dùng"}
                   placeholder="Tìm theo mã lệnh sản xuất"
                   emptyText="Chưa có lô thành phẩm đã QC đạt để chọn"
                 />

@@ -1,5 +1,6 @@
 "use client";
 
+import { toISODate } from "@/lib/format-date";
 import { FormEvent, useEffect, useState } from "react";
 import { useLoadedList } from "@/hooks/use-loaded-list";
 import { useAccess } from "@/lib/access-boundary";
@@ -10,7 +11,7 @@ import { getDraftProducts, createDraftProduct, type DraftProduct, type DataResul
 
 type TargetLine = { product_ref: string; target_quantity: string; uom: string };
 
-const dateInput = (date: Date) => date.toISOString().slice(0, 10);
+const dateInput = (date: Date) => toISODate(date);
 const messageOf = (error: unknown) => error instanceof Error ? error.message : "Lỗi không xác định";
 
 export function useTargets(initialTargets?: ProductionTarget[], initialShowCreate = false) {

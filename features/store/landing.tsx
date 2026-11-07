@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
+import { BRAND_NAME } from "@/lib/brand";
 
 const STEPS = [
   { title: "Hồ sơ nguồn gốc", copy: "Nhà cung cấp, chứng nhận và ngày thu hoạch được gắn vào từng lô." },
@@ -26,7 +27,7 @@ export function Landing() {
       <section aria-labelledby="hero-title" className={`${bleed} border-b border-border py-12 md:py-20`}>
         <div className={`max-w-3xl ${inner}`}>
           <h1 id="hero-title" className="text-3xl font-semibold text-balance md:text-4xl">Tươi là một cảm giác. Sạch là điều kiểm chứng được.</h1>
-          <p className="mt-4 max-w-[56ch] text-muted-foreground">Bếp Tươi kết nối nông trại, kho lạnh và bàn ăn bằng một chuỗi cung ứng minh bạch, để mỗi lựa chọn ngon lành cũng là một lựa chọn an tâm.</p>
+          <p className="mt-4 max-w-[56ch] text-muted-foreground">{BRAND_NAME} kết nối nông trại, kho lạnh và bàn ăn bằng một chuỗi cung ứng minh bạch, để mỗi lựa chọn ngon lành cũng là một lựa chọn an tâm.</p>
           <div className="mt-6 flex flex-wrap gap-2">
             <Link href="/products" className={cta}>Khám phá sản phẩm</Link>
             <Link href="/register" className={ctaSecondary}>Tạo tài khoản</Link>

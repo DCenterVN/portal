@@ -8,7 +8,7 @@ import type { PlaneAccess } from "@/lib/access-context";
 export type AuditFilters = { root_branch_id?: string; action?: string; since?: string; until?: string };
 
 export function useAudit(source: PlaneAccess["plane"], root: string, filters: AuditFilters, page: number) {
-  const key = !root ? null : ["audit", source, root, JSON.stringify(filters), page];
+  const key = ["audit", source, root, JSON.stringify(filters), page];
   return useSWR(key, () => companyAudit(root, filters, page), { revalidateOnFocus: false });
 }
 

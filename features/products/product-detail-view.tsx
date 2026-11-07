@@ -8,6 +8,7 @@ import { formatVND } from "@/lib/format";
 import { useProductDetail } from "./use-product-detail";
 import { PageShell } from "@/components/ui/page";
 import { PageHeading } from "@/components/patterns/page-heading";
+import { Tip } from "@/components/patterns/tip";
 
 export function ProductDetailView({ initialProduct: product }: { initialProduct: Product }) {
   const { addingToCart, quantity, setQuantity, canBuy, handleAddToCart } = useProductDetail(product);
@@ -27,9 +28,9 @@ export function ProductDetailView({ initialProduct: product }: { initialProduct:
           {product.uom && <p className="text-sm text-[var(--color-ink)]">Đơn vị tính: {product.uom}</p>}
           <p className="text-2xl font-bold text-[var(--color-ink)]">{formatVND(product.base_price_vnd)}</p>
           <div aria-label="Số lượng" className="flex flex-wrap items-center gap-3">
-            <Button variant="outline" size="icon" disabled={addingToCart || quantity <= 1} onClick={() => setQuantity(Math.max(1, quantity - 1))} aria-label="Giảm số lượng">−</Button>
+            <Tip label="Giảm số lượng"><Button variant="outline" size="icon" disabled={addingToCart || quantity <= 1} onClick={() => setQuantity(Math.max(1, quantity - 1))} aria-label="Giảm số lượng">−</Button></Tip>
             <span aria-live="polite">{quantity}</span>
-            <Button variant="outline" size="icon" disabled={addingToCart || product.available_quantity === undefined || quantity >= product.available_quantity} onClick={() => setQuantity(quantity + 1)} aria-label="Tăng số lượng">+</Button>
+            <Tip label="Tăng số lượng"><Button variant="outline" size="icon" disabled={addingToCart || product.available_quantity === undefined || quantity >= product.available_quantity} onClick={() => setQuantity(quantity + 1)} aria-label="Tăng số lượng">+</Button></Tip>
           </div>
           {!canBuy && <p className="text-sm text-[var(--color-muted)]">
             {product.available_quantity === undefined ? "Chưa có thông tin tồn kho để đặt món." : product.available_quantity < quantity ? "Không đủ số lượng để đặt món." : "Món chưa sẵn sàng để đặt."}

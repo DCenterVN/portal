@@ -1,3 +1,4 @@
+import { formatDateTime } from "@/lib/format-date";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
@@ -32,6 +33,6 @@ export function DishListView(props: {
       </TableRow>)}</TableBody></Table>}
       {props.next && <TablePager busy={props.busy} hasNext onNext={props.onNext} />}
     </CardContent></Card>
-    <Card><CardContent className="space-y-3 pt-6"><h2>Nháp đang soạn</h2>{!props.drafts.length ? <p>Chưa có nháp đang soạn.</p> : props.drafts.map(draft => <div key={draft.id} className="flex flex-wrap items-center justify-between gap-3 border-b border-border py-3"><span>{draft.title || "Món chưa đặt tên"} · {draft.updated_by.replace(/[0-9a-f]{8}-[0-9a-f-]{27,}/gi, "Thành viên chi nhánh")} · {new Date(draft.updated_at).toLocaleString("vi-VN")}</span><Button variant="outline" onClick={() => props.onDraft(draft.id)}>Tiếp tục nháp</Button></div>)}{props.draftNext && <Button variant="outline" disabled={props.busy || props.draftBusy} onClick={props.onMoreDrafts}>{props.draftBusy ? "Đang tải…" : "Tải thêm"}</Button>}</CardContent></Card>
+    <Card><CardContent className="space-y-3 pt-6"><h2>Nháp đang soạn</h2>{!props.drafts.length ? <p>Chưa có nháp đang soạn.</p> : props.drafts.map(draft => <div key={draft.id} className="flex flex-wrap items-center justify-between gap-3 border-b border-border py-3"><span>{draft.title || "Món chưa đặt tên"} · {draft.updated_by.replace(/[0-9a-f]{8}-[0-9a-f-]{27,}/gi, "Thành viên chi nhánh")} · {formatDateTime(draft.updated_at)}</span><Button variant="outline" onClick={() => props.onDraft(draft.id)}>Tiếp tục nháp</Button></div>)}{props.draftNext && <Button variant="outline" disabled={props.busy || props.draftBusy} onClick={props.onMoreDrafts}>{props.draftBusy ? "Đang tải…" : "Tải thêm"}</Button>}</CardContent></Card>
   </div>;
 }

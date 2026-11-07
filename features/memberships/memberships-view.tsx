@@ -1,148 +1,122 @@
 "use client";
 
-import React, { useState } from "react";
-import useSWR from "swr";
-import { useTranslations } from "next-intl";
-import { Button } from "@/components/ui/button";
+import { useMemo, useState } from "react";
+import { Search, UserPlus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { EntityPicker } from "@/components/patterns/entity-picker";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { StatusBadge } from "@/components/patterns/status-badge";
-import { Field, Checkbox } from "@/components/patterns/form-field";
-import { Input } from "@/components/ui/input";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { PageShell } from "@/components/ui/page";
 import { PageHeading } from "@/components/patterns/page-heading";
-import { EmptyState, ErrorState } from "@/components/patterns/empty-state";
-import { TablePager } from "@/components/patterns/table-pager";
-import { InlineAlert } from "@/components/patterns/inline-alert";
-import { toast } from "@/components/ui/toast";
-import { useAccess } from "@/lib/access-boundary";
-import { errorStatus } from "@/lib/access";
-import type { Membership } from "@/lib/api/platform-client";
-import { useMembershipApi } from "./use-membership-api";
+import { EmptyState, ErrorState, LoadingState } from "@/components/patterns/empty-state";
+import { RequireAction, useAccess } from "@/lib/access-boundary";
+import { branchLabel, branchMeta } from "@/lib/branch-label";
+import { roleName } from "@/lib/permission-labels";
+import { AddStaffDialog } from "@/features/branches/add-staff-dialog";
+import { useBranches } from "@/features/branches/use-branches";
+import { useMemberships } from "@/features/roles/use-roles";
+import { AssignSheet } from "./assign-sheet";
+import { filterPeople, groupByPerson, type Person } from "./people";
 
-type Editor = { kind: "create" } | { kind: "roles"; member: Membership };
+function chipText(branchName: string, roles: readonly string[], locked: boolean): string {
+  const text = roles.length ? `${branchName} · ${roles.map(roleName).join(", ")}` : branchName;
+  return locked ? `${text} (khoá)` : text;
+}
 
-export function MembershipsView() {
-  const t = useTranslations("memberships");
-  const { can } = useAccess();
-  const api = useMembershipApi();
-  const [page, setPage] = useState(1);
-  const { data, error, isLoading, mutate } = useSWR(can("org:membership:read") ? ["company-memberships", page] : null, () => api.list(page));
-  const [editor, setEditor] = useState<Editor | null>(null);
-  const [email, setEmail] = useState("");
-  const [name, setName] = useState("");
-  const [roles, setRoles] = useState<string[]>(["SALES"]);
-  const [busy, setBusy] = useState(false);
-  const [failure, setFailure] = useState("");
+export function MembershipsView({ membershipId }: { membershipId?: string }) {
+  const { can, scope } = useAccess();
+  const members = useMemberships(can("org:membership:read"));
+  const branches = useBranches(can("org:branch:read"));
+  const [branchId, setBranchId] = useState("");
+  const [query, setQuery] = useState("");
+  const [picked, setPicked] = useState<string | null | undefined>(undefined);
+  const [adding, setAdding] = useState(false);
+  const people = useMemo(() => groupByPerson(members.data ?? [], branches.data ?? []), [members.data, branches.data]);
+  const shown = filterPeople(people, branchId, query);
+  const fromLink = members.data?.find((member) => member.id === membershipId)?.user_id;
+  const selected = people.find((person) => person.userId === (picked === undefined ? fromLink : picked));
+  const openBranches = (branches.data ?? []).filter((branch) => branch.status !== "CLOSED");
+  const canAdd = can("org:employee:create") && openBranches.length > 0;
+  const add = canAdd ? <Button onClick={() => setAdding(true)}><UserPlus className="size-4" />Thêm nhân viên</Button> : undefined;
 
-  const openEditor = (next: Editor) => {
-    setFailure("");
-    setName("");
-    setEmail("");
-    setRoles(next.kind === "roles" ? next.member.role_codes : ["SALES"]);
-    setEditor(next);
-  };
+  function close() {
+    setPicked(null);
+    if (membershipId) window.history.replaceState(null, "", "/memberships");
+  }
 
-  const save = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (!editor || busy) return;
-    if (!can(editor.kind === "create" ? "org:employee:create" : "org:membership:update")) return;
-    setBusy(true);
-    setFailure("");
-    try {
-      if (editor.kind === "create") {
-        const form = event.currentTarget;
-        const input = { email: email.trim(), display_name: name.trim(), password: String(new FormData(form).get("password") ?? ""), role_codes: roles };
-        const pending = api.create(input);
-        input.password = "";
-        form.reset();
-        await pending;
-      }
-      else await api.replaceRoles(editor.member.id, roles);
-      await mutate();
-      setEditor(null);
-      toast.success(t("saved"));
-    } catch (error) {
-      setFailure(t(errorStatus(error) === 409 ? editor.kind === "create" ? "duplicate" : "lastAdmin" : "requestError"));
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const changeStatus = async (member: Membership) => {
-    if (busy || !can("org:membership:update")) return;
-    setBusy(true);
-    setFailure("");
-    try {
-      await api.updateStatus(member.id, member.status === "ACTIVE" ? "SUSPENDED" : "ACTIVE");
-      await mutate();
-      toast.success(t("saved"));
-    } catch (error) {
-      setFailure(t(errorStatus(error) === 409 ? "lastAdmin" : "requestError"));
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  if (!can("org:membership:read")) return <ErrorState denied title={t("denied")} />;
-  const add = can("org:employee:create") ? <Button disabled={busy} onClick={() => openEditor({ kind: "create" })}>{t("add")}</Button> : undefined;
+  const open = (person: Person) => setPicked(person.userId);
 
   return (
-    <PageShell>
-      <PageHeading title={t("title")} description={t("description")} actions={add} />
-      {failure && !editor && <InlineAlert>{failure}</InlineAlert>}
-      <div className="overflow-x-auto rounded-xl border border-[var(--color-line)] bg-[var(--color-surface)]">
-        <Table>
-          <TableHeader><TableRow>
-            <TableHead>{t("roles")}</TableHead>
-            <TableHead>{t("status")}</TableHead><TableHead>{t("actions")}</TableHead>
-          </TableRow></TableHeader>
-          <TableBody>
-            {isLoading ? <TableRow><TableCell colSpan={3}>
-              <div role="status" aria-label={t("loading")} className="space-y-4 py-4 motion-safe:animate-pulse">
-                {[1, 2, 3].map((row) => <div key={row} className="h-11 rounded-lg bg-[var(--color-tint)]" />)}
-              </div>
-            </TableCell></TableRow> : error ? <TableRow><TableCell colSpan={3}>
-              <ErrorState title={t("requestError")} action={<Button variant="outline" onClick={() => void mutate()}>{t("retry")}</Button>} />
-            </TableCell></TableRow> : data?.items.length === 0 ? <TableRow><TableCell colSpan={3}>
-              <EmptyState title={t("empty")} description={t("emptyHint")} action={add} />
-            </TableCell></TableRow> : data?.items.map((member) => <TableRow key={member.id}>
-
-              <TableCell>{member.role_codes.map((role) => <Badge key={role} variant="secondary">{t(`roleLabels.${role}`)}</Badge>)}</TableCell>
-              <TableCell><StatusBadge tone={member.status === "ACTIVE" ? "success" : "warning"}>{t(member.status)}</StatusBadge></TableCell>
-              <TableCell>{can("org:membership:update") && <div className="flex flex-wrap gap-2">
-                <Button size="sm" variant="outline" disabled={busy} onClick={() => openEditor({ kind: "roles", member })}>{t("editRoles")}</Button>
-                <Button size="sm" variant="outline" disabled={busy} onClick={() => void changeStatus(member)}>{t(member.status === "ACTIVE" ? "suspend" : "activate")}</Button>
-              </div>}</TableCell>
-            </TableRow>)}
-          </TableBody>
-        </Table>
-      </div>
-      <TablePager busy={isLoading || busy} previousLabel={t("previous")} nextLabel={t("next")} status={t("page", { page })} hasPrevious={page > 1} onPrevious={() => setPage(page - 1)} hasNext={!!data && data.items.length >= data.limit} onNext={() => setPage(page + 1)} />
-      <Sheet open={editor !== null} onOpenChange={(open) => { if (!open && !busy) setEditor(null); }}>
-        <SheetContent showCloseButton={false} className="overflow-y-auto sm:max-w-md">
-          <SheetHeader><SheetTitle>{t(editor?.kind === "roles" ? "editRoles" : "add")}</SheetTitle>
-            <SheetDescription>{t(editor?.kind === "roles" ? "rolesHint" : "createHint")}</SheetDescription>
-          </SheetHeader>
-          <form onSubmit={(event) => void save(event)} className="space-y-4 px-4">
-            {editor?.kind === "create" && <>
-              <Field label={t("name")} htmlFor="member-name"><Input id="member-name" value={name} onChange={(event) => setName(event.target.value)} required disabled={busy} autoFocus /></Field>
-              <Field label={t("email")} htmlFor="member-email"><Input id="member-email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} required disabled={busy} /></Field>
-              <Field label={t("password")} htmlFor="member-password"><Input id="member-password" name="password" type="password" autoComplete="new-password" required disabled={busy} /></Field>
-            </>}
-            <fieldset disabled={busy} className="space-y-2"><legend className="mb-2 text-sm font-medium">{t("roles")}</legend>
-              {api.employeeRoles.map((role) => <Checkbox key={role} label={t(`roleLabels.${role}`)} checked={roles.includes(role)} onChange={(event) => setRoles(event.target.checked ? [...roles, role] : roles.filter((value) => value !== role))} />)}
-            </fieldset>
-            {failure && <InlineAlert>{failure}</InlineAlert>}
-            {editor?.kind === "create" && (!name.trim() || !email.trim() || roles.length === 0) && <p className="text-sm text-[var(--color-muted)]">{t("required")}</p>}
-            <SheetFooter className="sticky bottom-0 bg-[var(--color-surface)] px-0">
-              <Button variant="outline" type="button" disabled={busy} onClick={() => setEditor(null)}>{t("cancel")}</Button>
-              <Button type="submit" disabled={busy || (editor?.kind === "create" && (!name.trim() || !email.trim() || roles.length === 0))}>{t(busy ? "saving" : "save")}</Button>
-            </SheetFooter>
-          </form>
-        </SheetContent>
-      </Sheet>
-    </PageShell>
+    <RequireAction action="org:membership:read">
+      <PageShell className="space-y-4">
+        <PageHeading title="Nhân viên" description="Mỗi người một dòng, làm ở những chi nhánh nào và giữ vai trò gì. Bấm vào một người để phân công." actions={add} />
+        <div className="flex flex-wrap items-end gap-3">
+          {(branches.data?.length ?? 0) > 0 && (
+            <EntityPicker
+              className="w-64"
+              label="Lọc theo chi nhánh"
+              name="memberships-branch-filter"
+              serializeValue={false}
+              items={branches.data}
+              status="ready"
+              getId={(branch) => branch.id}
+              getLabel={branchLabel}
+              getMeta={(branch) => branchMeta(branch)}
+              value={branchId || null}
+              onChange={(id) => setBranchId(id ?? "")}
+              placeholder="Tất cả chi nhánh"
+              searchPlaceholder="Gõ tên chi nhánh"
+            />
+          )}
+          <InputGroup className="w-72">
+            <InputGroupAddon><Search aria-hidden="true" /></InputGroupAddon>
+            <InputGroupInput placeholder="Tìm theo tên hoặc email" aria-label="Tìm nhân viên" value={query} onChange={(event) => setQuery(event.target.value)} />
+          </InputGroup>
+        </div>
+        {members.isLoading ? <LoadingState title="Đang tải nhân viên…" />
+          : members.error || !members.data ? <ErrorState title="Không tải được danh sách nhân viên." onRetry={() => void members.mutate()} />
+          : shown.length === 0 ? <EmptyState title={people.length === 0 ? "Chưa có nhân viên" : "Không có ai khớp"} description={people.length === 0 ? "Thêm nhân viên và chọn vai trò để bắt đầu làm việc." : "Đổi chi nhánh hoặc từ khoá tìm."} action={people.length === 0 ? add : undefined} />
+          : (
+            <div className="overflow-x-auto rounded-xl border border-border bg-card">
+              <Table>
+                <TableHeader><TableRow>
+                  <TableHead>Nhân viên</TableHead><TableHead>Chi nhánh và vai trò</TableHead><TableHead>Trạng thái</TableHead>
+                </TableRow></TableHeader>
+                <TableBody>
+                  {shown.map((person) => {
+                    const active = person.assignments.some((item) => !item.locked);
+                    return (
+                      <TableRow key={person.userId} className="cursor-pointer" tabIndex={0} onClick={() => open(person)} onKeyDown={(event) => { if (event.key === "Enter") open(person); }}>
+                        <TableCell className="align-top"><span className="block font-medium">{person.name || "—"}</span>{person.email && person.email !== person.name && <span className="block text-xs text-muted-foreground">{person.email}</span>}</TableCell>
+                        <TableCell><div className="flex flex-wrap gap-1.5">
+                          {person.allBranches && <Badge>Mọi chi nhánh</Badge>}
+                          {person.assignments.map((item) => <Badge key={item.branchId} variant="secondary">{chipText(item.branchName, item.roles, item.locked)}</Badge>)}
+                        </div></TableCell>
+                        <TableCell className="align-top"><StatusBadge tone={active ? "success" : "warning"}>{active ? "Đang hoạt động" : "Tạm khoá"}</StatusBadge></TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        {selected && (
+          <AssignSheet
+            key={selected.userId}
+            person={selected}
+            branches={branches.data ?? []}
+            viewerIsAdmin={scope?.roles.includes("ADMIN") ?? false}
+            isSelf={selected.userId === scope?.userId}
+            canUpdate={can("org:membership:update")}
+            canCreate={can("org:employee:create")}
+            onSaved={() => members.mutate()}
+            onClose={close}
+          />
+        )}
+        {canAdd && <AddStaffDialog open={adding} onOpenChange={setAdding} branch={openBranches.find((branch) => branch.id === branchId) ?? openBranches[0]} branches={openBranches} members={members.data ?? []} onSaved={() => members.mutate()} />}
+      </PageShell>
+    </RequireAction>
   );
 }

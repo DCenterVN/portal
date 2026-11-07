@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Field } from "@/components/patterns/form-field";
 import { Input } from "@/components/ui/input";
+import { toISODate } from "@/lib/format-date";
 
 export function parseReceiptDate(text: string): string {
   const match = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(text);
@@ -20,7 +21,7 @@ export function formatReceiptDate(iso: string): string {
 }
 
 export function receiptToday(now = new Date()): string {
-  return new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Ho_Chi_Minh" }).format(now);
+  return toISODate(now);
 }
 
 export interface ReceiptDateInputProps {

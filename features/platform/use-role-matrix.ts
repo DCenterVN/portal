@@ -5,7 +5,7 @@ import useSWR from "swr";
 import { companyRoleMatrix } from "@/lib/api/platform-client";
 
 export function useRoleMatrix(root: string) {
-  return useSWR(root ? ["role-matrix", root] : null, () => companyRoleMatrix(root), { revalidateOnFocus: false });
+  return useSWR(["role-matrix", root], () => companyRoleMatrix(root), { revalidateOnFocus: false });
 }
 
 export function actionChanges(before: string[], after: string[]) {

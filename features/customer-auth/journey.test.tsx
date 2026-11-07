@@ -38,7 +38,7 @@ async function submit(tree: ReactElement, fields: Record<string, string>) {
 }
 beforeEach(() => { vi.restoreAllMocks(); vi.unstubAllGlobals(); harness.slots = []; harness.cursor = 0; harness.effects = []; harness.query = new URLSearchParams(); harness.push.mockReset(); harness.refresh.mockReset(); });
 describe("S3 customer login", () => {
-  it("shell has one customer marker, one main, skip link and Bếp Tươi brand", () => {const html = renderToStaticMarkup(<CustomerAuthShell><span>form</span></CustomerAuthShell>); expect(html.match(/<main/g)).toHaveLength(1); expect(html.match(/data-auth-journey="customer"/g)).toHaveLength(1); expect(html).toContain('href="#main"'); expect(html).toContain("Bếp Tươi"); expect(html).not.toContain("employee"); });
+  it("shell has one customer marker, one main, skip link and Sunny brand", () => {const html = renderToStaticMarkup(<CustomerAuthShell><span>form</span></CustomerAuthShell>); expect(html.match(/<main/g)).toHaveLength(1); expect(html.match(/data-auth-journey="customer"/g)).toHaveLength(1); expect(html).toContain('href="#main"'); expect(html).toContain("Sunny"); expect(html).not.toContain("employee"); });
   it("real labels pair with unique IDs and current-password autocomplete", () => {const html = renderToStaticMarkup(render(LoginForm)); const ids = [...html.matchAll(/<label[^>]*for="([^"]+)"/g)].map(match => match[1]); expect(ids).toHaveLength(2); expect(new Set(ids).size).toBe(2); for (const id of ids) expect(html).toContain(`id="${id}"`); expect(html).toContain('autoComplete="current-password"'); expect(html).not.toContain("Nhân viên"); });
   it("submits identifier once while pending and uses server next_path without client redirect", async () => {
     let resolve!: (value: {next_path: string}) => void;

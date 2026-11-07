@@ -1,3 +1,4 @@
+import { formatDateTime } from "@/lib/format-date";
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -17,6 +18,6 @@ export function DishDetailView(props: { detail: DishDetail; selected: string; va
       </div>}</TabsContent>
     </Tabs>
   </CardContent></Card><Card><CardContent className="space-y-3 pt-6"><h2>Nháp đang mở của món</h2>{props.detail.open_drafts.length ? props.detail.open_drafts.map(row => <div key={row.id} className="flex flex-wrap items-center justify-between gap-3"><p>{row.title || "Món chưa đặt tên"} · {person(row.updated_by)}</p><Button variant="outline" onClick={() => props.onDraft(row.id)}>Tiếp tục nháp</Button></div>) : <p>Chưa có nháp đang mở.</p>}</CardContent></Card>
-    <Card><CardContent className="space-y-3 pt-6"><h2>Lịch sử bản sửa</h2>{props.detail.revision_history.length ? props.detail.revision_history.map(row => <p key={row.id}>Ngày hoàn tất: {row.completed_at ? new Date(row.completed_at).toLocaleString("vi-VN") : "Chưa có ngày"} · {person(row.updated_by)} · {row.reason}</p>) : <p>Chưa có bản sửa đã hoàn tất.</p>}</CardContent></Card>
+    <Card><CardContent className="space-y-3 pt-6"><h2>Lịch sử bản sửa</h2>{props.detail.revision_history.length ? props.detail.revision_history.map(row => <p key={row.id}>Ngày hoàn tất: {row.completed_at ? formatDateTime(row.completed_at) : "Chưa có ngày"} · {person(row.updated_by)} · {row.reason}</p>) : <p>Chưa có bản sửa đã hoàn tất.</p>}</CardContent></Card>
   </div>;
 }

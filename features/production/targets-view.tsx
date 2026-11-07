@@ -1,5 +1,6 @@
 "use client";
 
+import { formatDate } from "@/lib/format-date";
 import Link from "next/link";
 import { Trash2 } from "lucide-react";
 import { EmptyState, LoadingState } from "@/components/patterns/empty-state";
@@ -12,8 +13,10 @@ import { PageHeading } from "@/components/patterns/page-heading";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { ProductionTarget } from "@/lib/api/production";
 import { Input } from "@/components/ui/input";
+import { DatePicker } from "@/components/ui/date-picker";
 import { EntityPicker } from "@/components/patterns/entity-picker";
 import { useTargets } from "./use-targets";
+import { Tip } from "@/components/patterns/tip";
 
 export function TargetsView({ initialTargets, initialShowCreate = false }: { initialTargets?: ProductionTarget[]; initialShowCreate?: boolean }) {
   const { targets, listLoading, listError, can, branchName, branchRef, showCreate, setShowCreate, title, setTitle, periodStart, setPeriodStart, periodEnd, setPeriodEnd, lines, setLines, loading, products, productName, setProductName, productSlug, productError, availableProducts, addProduct, reloadProducts, canCreate, canApprove, primaryTargetId, validLines, updateLine, handleCreate, handleApprove } = useTargets(initialTargets, initialShowCreate);
@@ -36,8 +39,8 @@ export function TargetsView({ initialTargets, initialShowCreate = false }: { ini
             {branchName || "Chi nhánh hiện tại"}
           </p>
         </div>
-        <Field label="Từ ngày" value={periodStart} onChange={setPeriodStart} type="date" required />
-        <Field label="Đến ngày" value={periodEnd} onChange={setPeriodEnd} type="date" required />
+        <DateField label="Từ ngày" id="target-period-start" value={periodStart} onChange={setPeriodStart} max={periodEnd || undefined} />
+        <DateField label="Đến ngày" id="target-period-end" value={periodEnd} onChange={setPeriodEnd} min={periodStart || undefined} />
       </div>
       <div className="space-y-2">
         <div className="flex items-center justify-between"><p className="text-sm font-medium">Sản phẩm và tổng suất chỉ tiêu</p><Button type="button" size="sm" variant="outline" onClick={() => setLines((current) => [...current, { product_ref: "", target_quantity: "4", uom: "EA" }])}>Thêm sản phẩm</Button></div>
@@ -59,7 +62,7 @@ export function TargetsView({ initialTargets, initialShowCreate = false }: { ini
             />
           <Field label="Tổng suất chỉ tiêu" value={String(line.target_quantity)} onChange={(value) => updateLine(index, { target_quantity: value })} type="number" required />
           <label>Đơn vị<output aria-label="Đơn vị" className="block">suất</output></label>
-          <Button aria-label="Xóa dòng" className="mt-6" type="button" size="icon" variant="ghost" disabled={lines.length === 1} onClick={() => setLines((current) => current.filter((_, lineIndex) => lineIndex !== index))}><Trash2 className="h-4 w-4" /></Button>
+          <Tip label="Xóa dòng"><Button aria-label="Xóa dòng" className="mt-6" type="button" size="icon" variant="ghost" disabled={lines.length === 1} onClick={() => setLines((current) => current.filter((_, lineIndex) => lineIndex !== index))}><Trash2 className="h-4 w-4" /></Button></Tip>
         </div>)}
       </div>
       <div className="flex gap-2"><Button type="submit" disabled={loading || !branchRef || !validLines || !title.trim() || periodEnd < periodStart}>Lưu chỉ tiêu</Button><Button type="button" variant="outline" onClick={() => setShowCreate(false)}>Hủy</Button></div>
@@ -69,7 +72,7 @@ export function TargetsView({ initialTargets, initialShowCreate = false }: { ini
     <Card><CardContent aria-busy={loading} className="p-0"><Table><TableHeader><TableRow><TableHead>Mã</TableHead><TableHead>Tiêu đề</TableHead><TableHead>Kỳ</TableHead><TableHead>Trạng thái</TableHead><TableHead className="text-right">Thao tác</TableHead></TableRow></TableHeader><TableBody>
       {(loading || listLoading) && targets.length === 0 ? <TableRow><TableCell colSpan={5}><LoadingState title="Đang tải chỉ tiêu sản xuất…" /></TableCell></TableRow> : targets.length === 0 ? <TableRow><TableCell colSpan={5}><EmptyState title="Chưa có chỉ tiêu sản xuất" description="Chỉ tiêu xác định sản phẩm và tổng suất cần chuẩn bị cho chi nhánh." action={canCreate ? <Button onClick={() => setShowCreate(true)}>Tạo chỉ tiêu</Button> : undefined} /></TableCell></TableRow> : targets.map((target) => <TableRow key={target.id}>
         <TableCell className="font-mono font-medium">{target.target_code}</TableCell><TableCell>{target.title}</TableCell>
-        <TableCell>{new Date(target.period_start).toLocaleDateString("vi-VN")} – {new Date(target.period_end).toLocaleDateString("vi-VN")}</TableCell>
+        <TableCell>{formatDate(target.period_start)} – {formatDate(target.period_end)}</TableCell>
         <TableCell><StatusBadge tone={target.status === "APPROVED" ? "success" : target.status === "REJECTED" ? "danger" : "neutral"}>{target.status}</StatusBadge></TableCell>
         <TableCell className="text-right"><div className="flex justify-end gap-2">
           {target.status === "DRAFT" && canApprove && <><Button size="sm" variant={target.id === primaryTargetId ? "default" : "outline"} onClick={() => handleApprove(target.id, "APPROVE")}>Duyệt</Button><Button size="sm" variant="outline" onClick={() => handleApprove(target.id, "REJECT")}>Từ chối</Button></>}
@@ -78,6 +81,10 @@ export function TargetsView({ initialTargets, initialShowCreate = false }: { ini
       </TableRow>)}
     </TableBody></Table></CardContent></Card>
   </PageShell>;
+}
+
+function DateField({ label, id, ...props }: { label: string; id: string; value: string; onChange: (value: string) => void; min?: string; max?: string }) {
+  return <div className="grid gap-1.5 text-sm"><label htmlFor={id} className="text-muted-foreground">{label}</label><DatePicker id={id} {...props} /></div>;
 }
 
 function Field({ label, value, onChange, type = "text", required = false, disabled = false }: { label: string; value: string; onChange: (value: string) => void; type?: string; required?: boolean; disabled?: boolean }) {

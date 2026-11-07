@@ -1,3 +1,4 @@
+import { formatDateTime } from "@/lib/format-date";
 import { describe, it, expect, vi } from "vitest";
 import React from "react";
 import { clearCart, Product, formatVND, loadCartItems, recordCartResponse } from "@/lib/api/sales";
@@ -124,7 +125,7 @@ it("orders_no_uuid", async () => {
           const html = renderToStaticMarkup(view());
           expect(html).toContain(label);
           expect(html).toContain(order.order_code);
-          expect(html).toContain(new Date(createdAt).toLocaleString("vi-VN"));
+          expect(html).toContain(formatDateTime(createdAt));
           expect(html).toContain(formatVND(120000));
           expect(html).not.toContain("Giỏ");
           if (component === OrdersView) expect(html).toContain(`href="/orders/${uuid}"`);

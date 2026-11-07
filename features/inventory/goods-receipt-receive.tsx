@@ -1,5 +1,6 @@
 "use client";
 
+import { toISODate } from "@/lib/format-date";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/patterns/form-field";
 import { Input } from "@/components/ui/input";
@@ -73,7 +74,7 @@ export function GoodsReceiptReceive({ receiptID, supplierID }: { receiptID: stri
     {model.setup.kind === "empty" && <EmptyState title="Không tìm thấy phiếu trong chi nhánh đang làm việc" />}
     {model.setup.kind === "ready" && <div className="mt-6 grid min-w-0 gap-4">
       <p>{model.setup.supplier} · {statuses[model.setup.receipt.status] ?? "Đang xử lý"}</p>
-      <ReceiptDateInput value={new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Ho_Chi_Minh" }).format(new Date(model.setup.receipt.expected_at))} onChange={() => {}} disabled />
+      <ReceiptDateInput value={toISODate(model.setup.receipt.expected_at)} onChange={() => {}} disabled />
       {!model.open && <p role="status">Phiếu không còn nhận thêm hàng. Tải lại để xem trạng thái mới.</p>}
       {!model.rows.length && <EmptyState title="Phiếu chưa có dòng nguyên liệu" />}
       {model.rows.map((row, index) => <ReceiptLine key={row.line.receipt_line_ref} row={row} model={model} previous={model.rows[index - 1]?.document?.file} />)}

@@ -1,10 +1,11 @@
 "use client";
 
+import { formatDate } from "@/lib/format-date";
 import Link from "next/link";
 import { useAccess } from "@/lib/access-boundary";
 import { buttonVariants } from "@/components/ui/button";
 import { Field } from "@/components/patterns/form-field";
-import { Input } from "@/components/ui/input";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Table, TableHeader, TableHead, TableBody, TableRow, TableCell } from "@/components/ui/table";
 import { EmptyState, ErrorState, LoadingState } from "@/components/patterns/empty-state";
 import { TablePager } from "@/components/patterns/table-pager";
@@ -18,7 +19,7 @@ export type SupplierReceiptsViewProps = {
   hasPrevious: boolean; onPrevious: () => void; onNext: () => void; onRetry: () => void;
 };
 type ReceiptGroupProps = { receipt: SupplierReceipt; names: Record<string, string> };
-const date = (value: string) => new Intl.DateTimeFormat("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" }).format(new Date(value));
+const date = formatDate;
 const money = (value: number | null) => value === null ? "Chưa có dữ liệu" : value.toLocaleString("vi-VN");
 const quantity = (value: string) => value.replace(".", ",");
 const statuses: Record<string, string> = { DRAFT: "Nháp", IN_PROGRESS: "Đang nhận", COMPLETED: "Đã hoàn tất", CANCELLED: "Đã hủy" };
@@ -46,7 +47,7 @@ export function SupplierReceiptsView({ read, page, names, nameError, pending, em
   if (!read) return <ErrorState denied title="Bạn không có quyền xem lịch sử nhập" />;
   return <section className="mt-6 grid gap-4" aria-label="Lịch sử nhập">
     <h2 className="text-xl font-semibold">Lịch sử nhập</h2>
-    <div className="flex flex-wrap gap-3"><Field label="Từ ngày" htmlFor="supplier-history-from"><Input id="supplier-history-from" type="date" value={from} max={to || undefined} onChange={event => onFrom(event.target.value)} /></Field><Field label="Đến ngày" htmlFor="supplier-history-to"><Input id="supplier-history-to" type="date" value={to} min={from || undefined} onChange={event => onTo(event.target.value)} /></Field></div>
+    <div className="flex flex-wrap gap-3"><Field label="Từ ngày" htmlFor="supplier-history-from"><DatePicker id="supplier-history-from" value={from} max={to || undefined} onChange={onFrom} /></Field><Field label="Đến ngày" htmlFor="supplier-history-to"><DatePicker id="supplier-history-to" value={to} min={from || undefined} onChange={onTo} /></Field></div>
     {failure || (!page ? pending ?? <LoadingState title="Đang tải lịch sử nhập" /> : !page.items.length ? empty ?? <EmptyState title="Chưa có phiếu nhập cho nhà cung cấp này trong chi nhánh đang làm việc" /> : page.items.map(receipt => <ReceiptGroup key={receipt.id} receipt={receipt} names={names} />))}
     {nameError && <ErrorState title="Chưa tải được tên nguyên liệu" onRetry={onRetry} />}
     <TablePager busy={!page} hasPrevious={hasPrevious} onPrevious={onPrevious} hasNext={Boolean(page?.next_cursor)} onNext={onNext} />

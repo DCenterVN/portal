@@ -1,5 +1,6 @@
 "use client";
 
+import { toISODate } from "@/lib/format-date";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useAccess } from "@/lib/access-boundary";
 import { createAgreement, saveAgreementVersion, getContractMaterials, type Agreement, type AgreementInput, type AgreementLine } from "@/lib/api/supplier-agreements";
@@ -10,7 +11,7 @@ import messages from "@/messages/vi.json";
 import { FetchError } from "@/lib/fetcher";
 
 type Attachment = { kind: "empty" } | { kind: "selected"; file: File; key: string } | { kind: "uploaded"; uploadId: string; key: string } | { kind: "finalized"; document: ContractDocument };
-const todayVN = () => new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Ho_Chi_Minh" }).format(new Date());
+const todayVN = () => toISODate();
 function blankLine(date: string): AgreementLine { return { sku_ref: "", uom: "", unit_price_vnd: Number.NaN, valid_from: date, valid_to: date, tax_treatment: "VAT_INCLUDED", delivery_treatment: "DELIVERED" }; }
 
 export type SupplierAgreementOptions = { supplierId: string; agreement?: Agreement; onClose: () => void; onSaved: () => void; onConflict: () => void };

@@ -1,3 +1,4 @@
+import { formatDateTime } from "@/lib/format-date";
 import { permissionsSchema } from "@/lib/api/platform-contract";
 import { errorStatus } from "@/lib/access";
 
@@ -22,12 +23,10 @@ export function hasAction(access: AccessState, action: string): boolean {
   return access.status === "ready" && access.actions.has(action);
 }
 
-const timeFormat = new Intl.DateTimeFormat("vi-VN", { dateStyle: "short", timeStyle: "short", timeZone: "Asia/Ho_Chi_Minh" });
-
 export function formatTime(value?: string | null): string {
   if (!value) return "—";
   const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? "—" : timeFormat.format(date);
+  return Number.isNaN(date.getTime()) ? "—" : formatDateTime(date);
 }
 
 // Per-operation text for statuses whose meaning depends on the call (409 break-glass vs 409 last admin).

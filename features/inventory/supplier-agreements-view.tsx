@@ -1,5 +1,6 @@
 "use client";
 
+import { formatDate } from "@/lib/format-date";
 import { Button } from "@/components/ui/button";
 import { Table, TableHeader, TableHead, TableBody, TableRow, TableCell } from "@/components/ui/table";
 import { EmptyState, ErrorState, LoadingState } from "@/components/patterns/empty-state";
@@ -13,7 +14,7 @@ import { type useSupplierAgreements } from "./use-supplier-agreements";
 import { InlineAlert } from "@/components/patterns/inline-alert";
 
 type SupplierAgreementsViewProps = ReturnType<typeof useSupplierAgreements>;
-const displayDate = (value: string) => value.split("-").reverse().join("/");
+
 
 export function SupplierAgreementsView({ supplierId, can, read, items, materials, error, cursor, setRevision, editor, setEditor, suspending, setSuspending, reason, setReason, busy, attachment, setAttachment, attach, more, suspend, download }: SupplierAgreementsViewProps) {
   if (!read) return <ErrorState denied title="Bạn không có quyền xem hợp đồng" />;
@@ -21,9 +22,9 @@ export function SupplierAgreementsView({ supplierId, can, read, items, materials
     <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-xl font-semibold">Bảng giá</h2><p>Giá tham chiếu khi nhập hàng. Bạn vẫn có thể nhập giá thực tế.</p></div>{can("inventory:supplier:update") && <Button onClick={() => setEditor({ kind: "new" })}>Lập bảng giá mới</Button>}</div>
     {error ? <ErrorState title={error} onRetry={() => setRevision(value => value + 1)} /> : items === undefined ? <LoadingState title="Đang tải bảng giá" /> : items.length === 0 ? <EmptyState title="Chưa có bảng giá tham chiếu" description="Lập bảng giá để tham khảo đơn giá khi nhập hàng." /> : items.map(agreement => <article key={agreement.agreement_id} className="grid gap-3 rounded-lg border border-border p-4">
       <h3 className="font-semibold">{agreement.code} · phiên bản {agreement.version}</h3>
-      <p>{agreement.status === "SUSPENDED" ? "Đã ngừng dùng" : agreement.effective_status === "EXPIRED" ? "Hết hạn" : agreement.status === "ACTIVE" ? "Đã áp dụng" : "Nháp"} · {displayDate(agreement.valid_from)} đến {displayDate(agreement.valid_to)}</p>
+      <p>{agreement.status === "SUSPENDED" ? "Đã ngừng dùng" : agreement.effective_status === "EXPIRED" ? "Hết hạn" : agreement.status === "ACTIVE" ? "Đã áp dụng" : "Nháp"} · {formatDate(agreement.valid_from)} đến {formatDate(agreement.valid_to)}</p>
       {agreement.status_reason && <p>Lý do: {agreement.status_reason}</p>}
-      <Table><TableHeader><TableRow><TableHead>Nguyên liệu</TableHead><TableHead>Đơn vị</TableHead><TableHead>Giá VND</TableHead><TableHead>Hiệu lực</TableHead></TableRow></TableHeader><TableBody>{agreement.lines.map((line, index) => <TableRow key={index}><TableCell>{materials.find(material => material.id === line.sku_ref)?.name ?? "Chưa tải được tên nguyên liệu"}</TableCell><TableCell>{line.uom}</TableCell><TableCell className="text-right tabular-nums">{line.unit_price_vnd.toLocaleString("vi-VN")}</TableCell><TableCell>{displayDate(line.valid_from)} đến {displayDate(line.valid_to)}</TableCell></TableRow>)}</TableBody></Table>
+      <Table><TableHeader><TableRow><TableHead>Nguyên liệu</TableHead><TableHead>Đơn vị</TableHead><TableHead>Giá VND</TableHead><TableHead>Hiệu lực</TableHead></TableRow></TableHeader><TableBody>{agreement.lines.map((line, index) => <TableRow key={index}><TableCell>{materials.find(material => material.id === line.sku_ref)?.name ?? "Chưa tải được tên nguyên liệu"}</TableCell><TableCell>{line.uom}</TableCell><TableCell className="text-right tabular-nums">{line.unit_price_vnd.toLocaleString("vi-VN")}</TableCell><TableCell>{formatDate(line.valid_from)} đến {formatDate(line.valid_to)}</TableCell></TableRow>)}</TableBody></Table>
       <div className="flex flex-wrap items-center gap-3"><span>{(agreement.primary_document_ref ?? agreement.document_ref) ? "Có chứng từ" : "Chưa có chứng từ"}</span>{(agreement.primary_document_ref ?? agreement.document_ref) && <Button variant="outline" disabled={busy} onClick={() => void download((agreement.primary_document_ref ?? agreement.document_ref)!)}>Tải chứng từ</Button>}</div>
       {can("inventory:supplier:update") && agreement.status === "ACTIVE" && !(agreement.primary_document_ref ?? agreement.document_ref) && <Button variant="outline" disabled={busy} onClick={() => setAttachment({ agreement, file: null, key: crypto.randomUUID() })}>Gắn chứng từ</Button>}
       {can("inventory:supplier:update") && agreement.status === "DRAFT" && <Button variant="outline" onClick={() => setEditor({ kind: "draft", agreement })}>Mở bản nháp</Button>}

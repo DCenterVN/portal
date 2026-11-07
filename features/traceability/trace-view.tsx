@@ -1,5 +1,6 @@
 "use client";
 
+import { formatDate, formatDateTime } from "@/lib/format-date";
 import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { StatusBadge } from "@/components/patterns/status-badge";
@@ -7,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { EmptyState, ErrorState, LoadingState } from "@/components/patterns/empty-state";
 import { useTrace } from "./use-trace";
 import type { PublicTraceability } from "@/lib/api/production";
+import { BRAND_NAME } from "@/lib/brand";
 
 interface TraceViewProps {
   code?: string;
@@ -29,7 +31,7 @@ function TraceContent({ trace }: { trace: PublicTraceability }) {
       {/* Brand Header */}
       <header className="bg-card text-foreground py-8 px-4 text-center ">
         <div className="max-w-xl mx-auto flex flex-col items-center">
-          <h1 className="text-xl font-semibold">Hệ Thống Thực Phẩm Sạch Việt Sạch</h1>
+          <h1 className="text-xl font-semibold">Truy xuất nguồn gốc {BRAND_NAME}</h1>
           <p className="text-muted-foreground text-sm mt-1">Cổng thông tin Truy xuất Nguồn gốc & Minh bạch Dinh dưỡng (VT-01)</p>
           <div className="mt-3 inline-flex items-center rounded-lg bg-muted px-2 py-1 text-xs font-mono">
             Mã QR: {trace.trace_code}
@@ -65,13 +67,13 @@ function TraceContent({ trace }: { trace: PublicTraceability }) {
               <div>
                 <span className="text-xs text-muted-foreground block">Ngày sản xuất:</span>
                 <span className="font-medium text-foreground">
-                  {new Date(trace.produced_at).toLocaleDateString("vi-VN")}
+                  {formatDate(trace.produced_at)}
                 </span>
               </div>
               <div>
                 <span className="text-xs text-muted-foreground block">Hạn sử dụng:</span>
                 <span className="font-medium text-foreground font-semibold">
-                  {new Date(trace.expires_at).toLocaleDateString("vi-VN")}
+                  {formatDate(trace.expires_at)}
                 </span>
               </div>
             </div>
@@ -110,7 +112,7 @@ function TraceContent({ trace }: { trace: PublicTraceability }) {
                   <div>
                     <h4 className="text-sm font-semibold text-foreground">{step.title}</h4>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      {new Date(step.timestamp).toLocaleString("vi-VN")}
+                      {formatDateTime(step.timestamp)}
                     </p>
                   </div>
                 </div>

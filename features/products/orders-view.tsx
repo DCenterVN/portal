@@ -1,5 +1,6 @@
 "use client";
 
+import { formatDateTime } from "@/lib/format-date";
 import Link from "next/link";
 import { RefreshCw } from "lucide-react";
 import { StatusBadge } from "@/components/patterns/status-badge";
@@ -23,7 +24,7 @@ export function OrdersView() {
   return <PageShell className="space-y-6 py-8 border-[var(--color-line)] bg-[var(--color-surface)] text-[var(--color-ink)]">
     <PageHeading title="Đơn hàng của tôi" description="Danh sách được Sales giới hạn theo chủ giỏ của phiên đăng nhập" actions={<Button variant="outline" onClick={() => void load()} disabled={loading}><RefreshCw className={loading ? "animate-spin" : ""} /> Làm mới</Button>} />
     {loading ? <LoadingState title="Đang tải đơn hàng…" className="min-h-48 border-0" /> : error ? <ErrorState title="Không thể tải đơn hàng" description={error} onRetry={() => void load()} /> : orders.length === 0 ? <EmptyState title="Chưa có đơn hàng" description="Đơn hàng bạn đặt sẽ hiển thị ở đây." action={<Button asChild variant="outline"><Link href="/products">Chọn sản phẩm</Link></Button>} /> : <div className="grid gap-4">
-      {orders.map((order) => <Link key={order.id} className="rounded-[var(--radius-md)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus)]" href={`/orders/${order.id}`}><Card className="border-[var(--color-line)] bg-[var(--color-surface)] transition-colors hover:border-[var(--color-input-border)]"><CardHeader className="flex-row items-center justify-between"><div><CardTitle className="text-sm">{order.order_code && <span>{order.order_code} · </span>}{new Date(order.created_at).toLocaleString("vi-VN")}</CardTitle></div><StatusBadge tone={order.status === "CANCELLED" ? "danger" : "success"}><span className="text-[var(--color-ink)]">{orderStatusLabels[order.status] ?? "Đang cập nhật"}</span></StatusBadge></CardHeader><CardContent className="flex justify-between text-sm"><strong>{formatVND(order.total_vnd)}</strong></CardContent></Card></Link>)}
+      {orders.map((order) => <Link key={order.id} className="rounded-[var(--radius-md)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus)]" href={`/orders/${order.id}`}><Card className="border-[var(--color-line)] bg-[var(--color-surface)] transition-colors hover:border-[var(--color-input-border)]"><CardHeader className="flex-row items-center justify-between"><div><CardTitle className="text-sm">{order.order_code && <span>{order.order_code} · </span>}{formatDateTime(order.created_at)}</CardTitle></div><StatusBadge tone={order.status === "CANCELLED" ? "danger" : "success"}><span className="text-[var(--color-ink)]">{orderStatusLabels[order.status] ?? "Đang cập nhật"}</span></StatusBadge></CardHeader><CardContent className="flex justify-between text-sm"><strong>{formatVND(order.total_vnd)}</strong></CardContent></Card></Link>)}
     </div>}
   </PageShell>;
 }

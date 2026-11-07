@@ -28,7 +28,7 @@ async function submit(tree: ReactElement, fields: Record<string,string>) {
 }
 beforeEach(() => {vi.restoreAllMocks(); vi.unstubAllGlobals(); h.slots=[];h.cursor=0;h.effects=[];h.query=new URLSearchParams();h.push.mockReset();h.refresh.mockReset();});
 describe("S8 employee login", () => {
- it("owns one main, staff marker, skip link and solid branded shell", () => {const html=renderToStaticMarkup(<EmployeeAuthShell>staff</EmployeeAuthShell>);expect(html.match(/<main/g)).toHaveLength(1);expect(html.match(/data-auth-journey="employee"/g)).toHaveLength(1);expect(html).toContain('href="#main"');expect(html).toContain("Bếp Tươi");expect(html).not.toContain("<aside");expect(html).toContain("max-w-sm");expect(html).not.toMatch(/blur|gradient|bg-primary/);});
+ it("owns one main, staff marker, skip link and solid branded shell", () => {const html=renderToStaticMarkup(<EmployeeAuthShell>staff</EmployeeAuthShell>);expect(html.match(/<main/g)).toHaveLength(1);expect(html.match(/data-auth-journey="employee"/g)).toHaveLength(1);expect(html).toContain('href="#main"');expect(html).toContain("Sunny");expect(html).not.toContain("<aside");expect(html).toContain("max-w-sm");expect(html).not.toMatch(/blur|gradient|bg-primary/);});
  it("labels pair with unique IDs; staff has no self-register", () => {const html=renderToStaticMarkup(render(LoginForm));const ids=[...html.matchAll(/<label[^>]*for="([^"]+)"/g)].map(m=>m[1]);expect(ids).toHaveLength(2);expect(new Set(ids).size).toBe(2);for(const id of ids) expect(html).toContain(`id="${id}"`);expect(html).toContain('autoComplete="current-password"');expect(html).toContain('href="/staff/forgot-password"');expect(html).not.toContain('/register');});
  it("single pending request uses server staff next_path, ignores redirect query", async () => {let done!: (v:{next_path:string})=>void;const login=vi.spyOn(client,"login").mockImplementation(()=>new Promise(r=>{done=r;}));h.query=new URLSearchParams("redirect=https://evil.com");const tree=render(LoginForm);const pending=submit(tree,{identifier:" staff@example.com ",password:"password-1234"});await submit(tree,{identifier:"staff@example.com",password:"password-1234"});expect(login).toHaveBeenCalledTimes(1);expect(renderToStaticMarkup(render(LoginForm))).toContain('aria-busy="true"');done({next_path:"/staff/switch-org"});await pending;expect(h.push).toHaveBeenCalledWith("/staff/switch-org");expect(h.refresh).toHaveBeenCalledOnce();});
  it("validation focuses missing field; upstream denial clears busy with accessible feedback", async () => {const login=vi.spyOn(client,"login").mockRejectedValue(new FetchError("wrong journey",403,{error:"FORBIDDEN"}));const element=await submit(render(LoginForm),{identifier:"staff"});expect(login).not.toHaveBeenCalled();expect(element.querySelector).toHaveBeenCalledWith('[name="password"]');await submit(render(LoginForm),{identifier:"staff",password:"p"});const html=renderToStaticMarkup(render(LoginForm));expect(html).toContain('role="alert"');expect(html).toContain('aria-invalid="true"');expect(html).toContain('aria-describedby=');expect(html).toContain('aria-busy="false"');expect(html).toContain('href="/login"');});
@@ -38,7 +38,6 @@ describe("S8 employee login", () => {
 import {ForgotForm} from "./forgot-form";
 import {ResetForm} from "./reset-form";
 import {InviteForm} from "./invite-form";
-import {SwitchContext} from "./switch-context";
 describe("S9 staff onboarding, blocked recovery and contexts", () => {
  it.each([ForgotForm,ResetForm])("recovery explains availability without requesting or consuming token", component => {h.query=new URLSearchParams("token=secret");const html=renderToStaticMarkup(render(component));expect(html).toContain('role="status"');expect(html).toContain("Liên hệ quản trị");expect(html).toContain('href="/staff/login"');expect(html).not.toContain("secret");expect(html).not.toContain("<form");});
  it("missing invite token allows existing ACTIVE users to login without changing credentials", () => {const html=renderToStaticMarkup(render(InviteForm));expect(html).toContain('href="/staff/login"');expect(html).not.toContain("<form");});
@@ -46,9 +45,6 @@ describe("S9 staff onboarding, blocked recovery and contexts", () => {
  it("invite rejects mismatch; accepts token once while pending and links staff login", async () => {h.query=new URLSearchParams("token=invite-proof");let done!: (v:{status:string})=>void;const accept=vi.spyOn(client,"acceptInvite").mockImplementation(()=>new Promise(r=>{done=r;}));await submit(render(InviteForm),{password:"password-1234",confirm:"different"});expect(accept).not.toHaveBeenCalled();const tree=render(InviteForm);const pending=submit(tree,{password:"password-1234",confirm:"password-1234"});await submit(tree,{password:"password-1234",confirm:"password-1234"});expect(accept).toHaveBeenCalledTimes(1);expect(accept).toHaveBeenCalledWith("invite-proof","password-1234");expect(renderToStaticMarkup(render(InviteForm))).toContain('aria-busy="true"');done({status:"activated"});await pending;const html=renderToStaticMarkup(render(InviteForm));expect(html).toContain('role="status"');expect(html).toContain('href="/staff/login"');expect(html).not.toContain("invite-proof");});
  it("expired/replayed invite never claims activated", async () => {h.query=new URLSearchParams("token=expired");vi.spyOn(client,"acceptInvite").mockRejectedValue(Error("invalid_token"));await submit(render(InviteForm),{password:"password-1234",confirm:"password-1234"});const html=renderToStaticMarkup(render(InviteForm));expect(html).toContain('role="alert"');expect(html).not.toContain("Đã nhận lời mời");});
  it("invite labels and new-password autocomplete are accessible", () => {h.query=new URLSearchParams("token=t");const html=renderToStaticMarkup(render(InviteForm));const ids=[...html.matchAll(/<label[^>]*for="([^"]+)"/g)].map(m=>m[1]);expect(ids).toHaveLength(2);for(const id of ids)expect(html).toContain(`id="${id}"`);expect(html).toContain('autoComplete="new-password"');});
- it("context loads verified rows, dedupes roles and chooses org before branch", async () => {vi.spyOn(client,"listContexts").mockResolvedValue([{org_id:"org-a",branch_id:"one",roles:["A"]},{org_id:"org-a",branch_id:"one",roles:["B"]},{org_id:"org-a",branch_id:"two",roles:[]},{org_id:"org-b",branch_id:"three",roles:[]}]);render(()=> SwitchContext({selection:"org"}));h.effects[0]();await Promise.resolve();const tree=render(()=> SwitchContext({selection:"org"}));expect(renderToStaticMarkup(tree)).toContain("org-b");const switchOrg=vi.spyOn(client,"switchOrg");await submit(tree,{org_id:"org-a"});expect(switchOrg).not.toHaveBeenCalled();expect(h.push).toHaveBeenCalledWith("/staff/switch-branch?org_id=org-a");});
- it("one verified branch is submitted as a pair, pending duplicate suppressed", async () => {vi.spyOn(client,"listContexts").mockResolvedValue([{org_id:"a",branch_id:"b",roles:[]},{org_id:"a",branch_id:"b",roles:["A"]}]);h.query=new URLSearchParams("org_id=a");render(()=> SwitchContext({selection:"branch"}));h.effects[0]();await Promise.resolve();let done!: (v:{next_path:string})=>void;const switchBranch=vi.spyOn(client,"switchBranch").mockImplementation(()=>new Promise(r=>{done=r;}));const tree=render(()=> SwitchContext({selection:"branch"}));const pending=submit(tree,{branch_id:"b"});await submit(tree,{branch_id:"b"});expect(switchBranch).toHaveBeenCalledTimes(1);expect(switchBranch).toHaveBeenCalledWith("a","b");done({next_path:"/console"});await pending;expect(h.push).toHaveBeenCalledWith("/console");});
- it("foreign branch and failed context fetch fail closed", async () => {vi.spyOn(client,"listContexts").mockRejectedValue(Error("org unavailable"));render(()=> SwitchContext({selection:"branch"}));h.effects[0]();await Promise.resolve();await Promise.resolve();const switchBranch=vi.spyOn(client,"switchBranch");const tree=render(()=> SwitchContext({selection:"branch"}));expect(renderToStaticMarkup(tree)).toContain('role="alert"');await submit(tree,{org_id:"foreign",branch_id:"foreign"});expect(switchBranch).not.toHaveBeenCalled();expect(h.push).not.toHaveBeenCalled();});
 });
 
 describe("S10 staff public pages", () => {
@@ -56,7 +52,7 @@ describe("S10 staff public pages", () => {
  it("layout owns staff shell only", () => {const source=readFileSync("app/(employee-auth)/layout.tsx","utf8");expect(source).toContain("EmployeeAuthShell");expect(source).not.toContain("CustomerAuthShell");});
 });
 
-it.each(["switch-branch","switch-org"])("S12 %s page imports only staff context selector", route=>{const source=readFileSync(`app/(employee-auth)/staff/${route}/page.tsx`,"utf8");expect(source).toContain("@/features/employee-auth/switch-context");expect(source).toContain(`selection="${route==="switch-org" ? "org" : "branch"}"`);});
+it("S12 switch-branch page imports only the branch chooser; switch-org redirects straight to it", ()=>{expect(readFileSync("app/(employee-auth)/staff/switch-branch/page.tsx","utf8")).toContain("@/features/employee-auth/branch-chooser");expect(readFileSync("next.config.mjs","utf8")).toContain('{source: "/staff/switch-org", destination: "/staff/switch-branch"');});
 
 import BranchAlias from "@/app/(auth)/switch-branch/page";
 import OrgAlias from "@/app/(auth)/switch-org/page";
@@ -65,7 +61,7 @@ describe("S13 legacy redirects",()=>{
  it.each([[BranchAlias,"/staff/switch-branch"],[OrgAlias,"/staff/switch-org"]])("switch alias redirects without rendering shared auth",(page,target)=>{expect(()=>page()).toThrow("REDIRECT:"+target);});
  it("invite alias preserves token safely and strips untrusted redirect",async()=>{await expect(InviteAlias({searchParams:Promise.resolve({token:"a&b/+=",redirect:"https://evil.com"})})).rejects.toThrow("REDIRECT:/staff/invite/accept?token=a%26b%2F%2B%3D");});
  it("missing token invite alias goes to staff accept for existing-user instructions",async()=>{await expect(InviteAlias({searchParams:Promise.resolve({})})).rejects.toThrow("REDIRECT:/staff/invite/accept");});
- it("profile context link uses staff selector, never treats profile memberships as proof",()=>{const source=readFileSync("features/staff-profile/staff-profile-view.tsx","utf8");expect(source).toContain('router.push("/staff/switch-org")');expect(source).not.toContain('router.push("/switch-org")');});
+ it("profile context link uses staff selector, never treats profile memberships as proof",()=>{const source=readFileSync("features/account/staff/staff-account.tsx","utf8");expect(source).toContain('href="/staff/switch-branch"');expect(source).not.toContain('switch-org');});
 });
 
 const localeHarness = vi.hoisted(() => ({locale: "vi", real: false}));
@@ -90,12 +86,6 @@ it.each([[ForgotForm, "Staff password recovery is currently unavailable"], [Rese
  localeHarness.locale = "en";
  try {const html = renderToStaticMarkup(render(component)); expect(html).toContain(copy); expect(html).toContain('href="/staff/login"'); expect(html).not.toContain("<form");} finally {localeHarness.locale = "vi";}
 });
-it("FE-14 loaded empty contexts render recovery without enabling submit", async () => {
- vi.spyOn(client, "listContexts").mockResolvedValue([]);
- render(() => SwitchContext({selection:"org"})); h.effects[0](); await Promise.resolve();
- const html = renderToStaticMarkup(render(() => SwitchContext({selection:"org"})));
- expect(html).toContain('role="status"'); expect(html).not.toContain("lucide-inbox"); expect(html).toContain('href="/staff/login"'); expect(html).toMatch(/<button[^>]*disabled/);
-});
 it("FE-14 staff initial login and missing invitation have visible empty states", () => {
  expect(renderToStaticMarkup(render(LoginForm))).toContain("<form");
  h.slots = [];
@@ -119,7 +109,7 @@ it("S19 employee English provider drives the real next-intl hook in login", () =
  } finally {localeHarness.real = false;}
 });
 
-it.each([["login", "Staff sign in"], ["forgot-password", "Staff password recovery"], ["reset-password", "Staff password reset"], ["invite/accept", "Accept staff invitation"], ["switch-org", "Choose company"], ["switch-branch", "Choose branch"]])("S19 employee server page translates heading and metadata (%s)", async (route, title) => {
+it.each([["login", "Staff sign in"], ["forgot-password", "Staff password recovery"], ["reset-password", "Staff password reset"], ["invite/accept", "Accept staff invitation"], ["switch-branch", "Choose branch"]])("S19 employee server page translates heading and metadata (%s)", async (route, title) => {
  localeHarness.locale = "en";
  try {
   const page = route === "invite/accept" ? await import("../../app/(employee-auth)/staff/invite/accept/page") : await import(`../../app/(employee-auth)/staff/${route}/page.tsx`);
@@ -141,17 +131,4 @@ it.each([[400,"invalid_token","Không thể nhận lời mời."],[429,"rate_lim
  vi.stubGlobal("fetch",vi.fn().mockResolvedValue(new Response(JSON.stringify({error:code,message:"invalid or expired token"}),{status})));
  await submit(render(InviteForm),{password:"password-1234",confirm:"password-1234"});
  const html=renderToStaticMarkup(render(InviteForm));expect(html).toContain(copy);expect(html).not.toContain("invalid or expired token");
-});
-it("D-142 context loading never renders upstream English", async () => {
- vi.stubGlobal("fetch",vi.fn().mockResolvedValue(new Response(JSON.stringify({error:"INTERNAL_ERROR",message:"invalid or expired token"}),{status:503})));
- render(()=>SwitchContext({selection:"org"}));h.effects[0]();
- await new Promise(resolve=>setTimeout(resolve,0));
- const html=renderToStaticMarkup(render(()=>SwitchContext({selection:"org"})));expect(html).toContain("Không thể tải quyền nhân viên.");expect(html).not.toContain("invalid or expired token");
-});
-it("D-142 context switching never renders upstream English", async () => {
- vi.spyOn(client,"listContexts").mockResolvedValue([{org_id:"a",branch_id:"b",roles:[]}]);
- render(()=>SwitchContext({selection:"org"}));h.effects[0]();await Promise.resolve();
- vi.stubGlobal("fetch",vi.fn().mockResolvedValue(new Response(JSON.stringify({error:"FORBIDDEN",message:"invalid or expired token"}),{status:403})));
- await submit(render(()=>SwitchContext({selection:"org"})),{org_id:"a"});
- const html=renderToStaticMarkup(render(()=>SwitchContext({selection:"org"})));expect(html).toContain("Không thể chuyển ngữ cảnh.");expect(html).not.toContain("invalid or expired token");
 });

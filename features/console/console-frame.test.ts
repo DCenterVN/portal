@@ -26,7 +26,7 @@ describe("console session", () => {
       ],
     })).toEqual({
       user: { name: "Dawn", detail: profile.email },
-      context: { label: "Chi nhánh 2", sublabel: "Công ty" }, permissions: [],
+      context: { label: "Chi nhánh 2", sublabel: "Công ty" }, branches: [], permissions: [],
     });
   });
 
@@ -34,7 +34,7 @@ describe("console session", () => {
     const fetcher = vi.fn().mockResolvedValueOnce(new Response(JSON.stringify(contextPayload)));
     await expect(fetchConsoleSession(fetcher)).resolves.toEqual({
       user: { name: "Dawn", detail: profile.email },
-      context: { label: "Chưa chọn chi nhánh", sublabel: undefined }, permissions: [],
+      context: { label: "Chưa chọn chi nhánh", sublabel: undefined }, branches: [], permissions: [],
     });
     expect(fetcher).toHaveBeenCalledTimes(1);
     expect(fetcher).toHaveBeenCalledWith("/api/auth/context");
@@ -47,7 +47,7 @@ describe("console session", () => {
         { status: kind === "auth 503" ? 503 : 200 },
       ));
     expect(await fetchConsoleSession(fetcher)).toEqual({
-      user: { name: "Tài khoản" }, context: { label: "Chưa chọn chi nhánh" }, error: "Không tải được phiên làm việc.",
+      user: { name: "Tài khoản" }, context: { label: "Chưa chọn chi nhánh" }, branches: [], error: "Không tải được phiên làm việc.",
     });
   });
 
@@ -140,7 +140,7 @@ describe("console content authorization", () => {
     { name: "denied", permissions: [], error: undefined, visible: false, marker: "Không có quyền truy cập" },
     { name: "error", permissions: ["org:membership:read"], error: "Không tải được quyền", visible: false, marker: "Không tải được quyền" },
   ])("$name never mounts protected content without verified permission", ({ permissions, error, visible, marker }) => {
-    frameState.current = { user: { name: "Dawn" }, context: { label: "Chi nhánh" }, permissions, error };
+    frameState.current = { user: { name: "Dawn" }, context: { label: "Chi nhánh" }, branches: [], permissions, error };
     const child = vi.fn(() => React.createElement("p", null, "Protected content"));
     const html = renderToStaticMarkup(React.createElement(ConsoleFrame, { children: React.createElement(child) }));
     expect(child).toHaveBeenCalledTimes(visible ? 1 : 0);
