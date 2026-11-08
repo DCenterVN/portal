@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 import { POST as createOrder } from "./orders/route";
-import { POST as activateProduct } from "./products/[id]/activate/route";
+import { POST as transitionProduct } from "./products/[id]/lifecycle/route";
 import { POST as cancelOrder } from "./orders/[id]/cancel/route";
 
 const originalFetch = global.fetch;
@@ -35,11 +35,16 @@ describe("Sales BFF fail-closed forwarding", () => {
     expect(response.status).toBe(502);
     expect(await response.json()).toMatchObject({ error: "upstream_unavailable" });
   });
-  it("allows activate with an empty body and forwards no fabricated payload", async () => {
-    global.fetch = vi.fn().mockResolvedValue(new Response(JSON.stringify({ id: "product-id", status: "ACTIVE" }), { status: 200, headers: { "content-type": "application/json" } }));
-    const response = await activateProduct(request("/api/sales/products/product-id/activate"), { params: Promise.resolve({ id: "product-id" }) });
+  it("forwards lifecycle payload and matching operation key", async () => {
+    global.fetch = vi.fn().mockResolvedValue(Response.json({ data: { state: "ACTIVE" } }));
+    const body = { operation_id: "open-key", expected_version: 2, to_state: "ACTIVE", reason: "Mở bán", activate_variant_refs: ["serving"] };
+    const req = request("/api/sales/products/product-id/lifecycle", JSON.stringify(body));
+    req.headers.set("Idempotency-Key", body.operation_id);
+    const response = await transitionProduct(req, { params: Promise.resolve({ id: "product-id" }) });
     expect(response.status).toBe(200);
-    expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining("/sales/products/product-id/activate"), expect.not.objectContaining({ body: expect.anything() }));
+    expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining("/sales/products/product-id/lifecycle"), expect.objectContaining({
+      body: JSON.stringify(body), headers: expect.objectContaining({ "Idempotency-Key": "open-key" }),
+    }));
   });
   it("forwards the idempotency key on order cancellation", async () => {
     global.fetch = vi.fn().mockResolvedValue(new Response(JSON.stringify({ id: "order-id", status: "CANCELLED" }), { status: 200, headers: { "content-type": "application/json" } }));

@@ -231,8 +231,8 @@ describe("AC-3/AC-4 ProductsView là màn quản trị console", () => {
     expect(out).not.toContain(`href="/products/${DRAFT_ID}"`);
     expect(out).toContain(`href="/products/${PRODUCT_ID}"`);
   });
-  it("OD-4 console chưa có nút kích hoạt khi lifecycle API chưa đúng", () => {
-    expect(html(React.createElement(ProductsView, { initialProducts: staffRows, dataSource: "api", canCreate: true }))).not.toMatch(/Kích hoạt/);
+  it("ẩn mở bán khi chưa được cấp quyền cập nhật listing", () => {
+    expect(html(React.createElement(ProductsView, { initialProducts: staffRows, dataSource: "api", canCreate: true }))).not.toContain(">Mở bán</button>");
   });
   it("AC-6 nguồn lỗi hiện role alert và không dựng dòng giả", () => {
     const out = html(React.createElement(ProductsView, { initialProducts: [], dataSource: "unavailable", canCreate: true }));
@@ -261,8 +261,14 @@ describe("AC-2 chi tiết khách không còn thao tác/metadata quản trị", (
     const out = html(React.createElement(ProductDetailView, { initialProduct: customerProduct }));
     expect(out).toContain("Cá hồi tươi");
     expect(out).toContain(formatVND(300000));
+    expect(out).toContain(`<img src="${customerProduct.image_urls?.[0]}" alt="${customerProduct.name}" class="aspect-[4/3] w-full object-cover"`);
     expect(out).not.toMatch(/Kích hoạt|ACTIVE|DRAFT|Mã SKU|Barcode|Mã vạch|Ngày tạo SKU|8930000000017/);
     expect(userFacingContent(out)).not.toMatch(/[0-9a-f]{8}-[0-9a-f]{4}-/);
+  });
+  it.each([undefined, [], [""]])("hiện ảnh mặc định khi thiếu ảnh đầu tiên: %j", (image_urls) => {
+    const out = html(React.createElement(ProductDetailView, { initialProduct: { ...customerProduct, image_urls } }));
+    expect(out).toContain(`<img src="/images/mon-mac-dinh.svg" alt="${customerProduct.name}" class="aspect-[4/3] w-full object-cover"`);
+    expect(out).not.toContain("Chưa có ảnh");
   });
   it("AC-5 có nút thêm giỏ khi đủ sku_ref và branch_ref", () => {
     expect(html(React.createElement(ProductDetailView, { initialProduct: customerProduct }))).toContain("Thêm vào giỏ hàng");

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo } from "react";
 import Link from "next/link";
 import type { Route } from "next";
 import {
@@ -22,22 +22,26 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import type { Product, DataSource } from "@/lib/api/sales";
+import { safeMessage } from "@/lib/api/dishes";
 import { formatVND } from "@/lib/format";
 import { InlineAlert } from "@/components/patterns/inline-alert";
 import { EmptyState } from "@/components/patterns/empty-state";
 import { PageShell } from "@/components/ui/page";
 import { PageHeading } from "@/components/patterns/page-heading";
 import { ProductCreateDialog } from "./product-create-dialog";
+import { ProductActivateDialog } from "./product-activate-dialog";
 import motion from "./filter-motion.module.css";
 
 interface ProductsViewProps {
   initialProducts: Product[];
   dataSource?: DataSource;
   canCreate?: boolean;
+  canActivate?: boolean;
+  onActivated?: () => Promise<void>;
+  onProductCreated?: (product: Product) => void;
 }
 
-export function ProductsView({ initialProducts, dataSource = "api", canCreate = false }: ProductsViewProps) {
-  const [products, setProducts] = useState<Product[]>(initialProducts);
+export function ProductsView({ initialProducts: products, dataSource = "api", canCreate = false, canActivate = false, onActivated, onProductCreated }: ProductsViewProps) {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"ALL" | "ACTIVE" | "DRAFT">("ALL");
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -65,10 +69,6 @@ export function ProductsView({ initialProducts, dataSource = "api", canCreate = 
     return { filteredProducts: filtered, activeCount: active, draftCount: draft };
   }, [products, search, statusFilter]);
 
-  const handleProductCreated = useCallback((newProd: Product) => {
-    setProducts((prev) => [newProd, ...prev]);
-  }, []);
-
   return (
     <PageShell>
       {dataSource === "unavailable" && (
@@ -81,7 +81,7 @@ export function ProductsView({ initialProducts, dataSource = "api", canCreate = 
             {products.length} sản phẩm
           </Badge>
         }
-        description="Theo dõi sản phẩm và tạo bản nháp cho danh mục"
+        description="Theo dõi sản phẩm, tạo bản nháp và mở bán cho danh mục"
         actions={
           <div className="flex max-w-full flex-wrap items-center gap-2.5">
             {canCreate && <Button
@@ -106,7 +106,7 @@ export function ProductsView({ initialProducts, dataSource = "api", canCreate = 
         <Card className="border-border bg-card p-4">
           <CardContent className="p-0">
             <div className="text-xs font-semibold text-muted-foreground">
-              Đang mở bán (ACTIVE)
+              Đang mở bán
             </div>
             <div className="text-2xl font-semibold text-foreground mt-1">{activeCount}</div>
             <div className="text-xs text-muted-foreground mt-0.5">Sản phẩm có trạng thái mở bán</div>
@@ -116,7 +116,7 @@ export function ProductsView({ initialProducts, dataSource = "api", canCreate = 
         <Card className="border-border bg-card p-4">
           <CardContent className="p-0">
             <div className="text-xs font-semibold text-muted-foreground">
-              Bản nháp (DRAFT)
+              Bản nháp
             </div>
             <div className="text-2xl font-semibold text-foreground mt-1">{draftCount}</div>
             <div className="text-xs text-muted-foreground mt-0.5">Sản phẩm đang được chuẩn bị</div>
@@ -194,23 +194,23 @@ export function ProductsView({ initialProducts, dataSource = "api", canCreate = 
               filteredProducts.map((p) => (
                 <TableRow key={p.id} className="border-b border-border hover:bg-muted transition-colors">
                   <TableCell className="font-mono text-xs font-semibold text-foreground">
-                    {p.sku_code}
+                    {safeMessage(p.sku_code)}
                   </TableCell>
                   <TableCell>
                     {p.status === "ACTIVE" ? <Link
                       href={`/products/${p.id}` as Route}
                       className="font-semibold text-xs text-foreground hover:underline transition-colors"
                     >
-                      {p.name}
-                    </Link> : <span className="text-xs font-semibold">{p.name}</span>}
+                      {safeMessage(p.name)}
+                    </Link> : <span className="text-xs font-semibold">{safeMessage(p.name)}</span>}
                     {p.description && (
                       <p className="text-xs text-muted-foreground truncate max-w-md mt-0.5">
-                        {p.description}
+                        {safeMessage(p.description)}
                       </p>
                     )}
                   </TableCell>
                   <TableCell className="text-xs font-semibold text-muted-foreground">
-                    {p.uom}
+                    {safeMessage(p.uom)}
                   </TableCell>
                   <TableCell className="text-right font-semibold text-xs text-foreground">
                     {formatVND(p.base_price_vnd)}
@@ -231,10 +231,11 @@ export function ProductsView({ initialProducts, dataSource = "api", canCreate = 
                     )}
                   </TableCell>
                   <TableCell className="text-right">
+                    {onActivated && <ProductActivateDialog product={p} allowed={canActivate} onActivated={onActivated} />}
                     {p.status === "ACTIVE" ? (
                       <Link href={`/products/${p.id}` as Route} className="text-xs font-semibold">Xem catalog</Link>
                     ) : <details className="text-left text-xs"><summary className="min-h-11 cursor-pointer py-3">Chi tiết</summary>
-                      <p className="py-2">{p.sku_code ? `${p.sku_code} · ${p.uom}` : "Chưa có biến thể"}</p>
+                      <p className="py-2">{p.sku_code ? safeMessage(`${p.sku_code} · ${p.uom}`) : "Chưa có biến thể"}</p>
                     </details>}
                   </TableCell>
                 </TableRow>
@@ -253,7 +254,7 @@ export function ProductsView({ initialProducts, dataSource = "api", canCreate = 
       {canCreate && <ProductCreateDialog
         open={createDialogOpen}
         onOpenChange={setCreateDialogOpen}
-        onSuccess={handleProductCreated}
+        onSuccess={onProductCreated}
       />}
     </PageShell>
   );

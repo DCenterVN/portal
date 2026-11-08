@@ -12,7 +12,7 @@ export default defineConfig({
   test: {
     environment: "node",
     exclude: integrationRun
-      ? configDefaults.exclude
-      : [...configDefaults.exclude, "**/*.it.test.ts"],
+      ? [...configDefaults.exclude, "e2e/**"]
+      : [...configDefaults.exclude, "e2e/**", "**/*.it.test.ts"],
   },
 });

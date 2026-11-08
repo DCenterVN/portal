@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { decodePlatform } from "@/lib/api/platform-contract";
 import { apiFetch } from "@/lib/fetcher";
+import { allPages } from "./all-pages";
 export { getMaterials, createMaterial, getRawLabels, updateRawLabels } from "./sales-materials";
 export type { Material, MaterialPage, CreateMaterialInput, ExistingMaterial, RawAllergens, RawLabelsView, UpdateRawLabelsRequest } from "./sales-materials";
 
@@ -41,10 +42,14 @@ function mutationHeaders() { return { "Content-Type": "application/json", "Idemp
 
 export async function getProducts(): Promise<DataResult<Product[]>> {
   try {
-    const res = await apiFetch("/api/sales/products");
-    if (!res.ok) return { data: [], source: "unavailable", error: await errorMessage(res, `Sales API trả về ${res.status}`) };
-    const page = decodePlatform(await res.json(), catalogPageSchema);
-    return { data: page.items.map(entry => catalogToProduct(entry)), source: "api" };
+    // ponytail: Loads all pages; switch to server search + paging when products reach the thousands.
+    const items = await allPages(async cursor => {
+      const query = new URLSearchParams({ page_size: "100", cursor });
+      const res = await apiFetch(`/api/sales/products?${query}`);
+      if (!res.ok) throw new Error(await errorMessage(res, `Sales API trả về ${res.status}`));
+      return decodePlatform(await res.json(), catalogPageSchema);
+    });
+    return { data: items.map(catalogToProduct), source: "api" };
   } catch (error) {
     return { data: [], source: "unavailable", error: error instanceof Error ? error.message : "Không kết nối được Sales API" };
   }
@@ -119,12 +124,6 @@ export async function createProduct(input: CreateProductInput): Promise<Product>
   if (!res.ok) throw new Error(await errorMessage(res, "Không thể tạo sản phẩm"));
   return normalizeProduct(await res.json());
 }
-export async function activateProduct(id: string): Promise<Product> {
-  const res = await apiFetch(`/api/sales/products/${encodeURIComponent(id)}/activate`, { method: "POST", headers: mutationHeaders(), body: "{}" });
-  if (!res.ok) throw new Error(await errorMessage(res, "Không thể kích hoạt sản phẩm"));
-  return normalizeProduct(await res.json());
-}
-
 // ---------------- Pricing Floor & Price Book (VT-04 / VT-15) ----------------
 
 async function responseData<T>(res: Response): Promise<T> {

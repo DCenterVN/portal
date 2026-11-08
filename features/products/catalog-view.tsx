@@ -81,9 +81,7 @@ function CatalogProductCard({ product }: { product: Product }) {
   const { adding, add } = useCatalogCart(product);
   return <Card className="flex min-w-0 flex-col overflow-hidden p-0">
                 <Link href={`/products/${product.id}` as Route} className="block aspect-[4/3] overflow-hidden bg-[var(--color-tint)]">
-                  {product.image_urls?.[0] ?
-                    <img src={product.image_urls[0]} alt={product.name} className="size-full object-cover" /> :
-                    <span className="flex size-full items-center justify-center p-3 text-center text-xs text-[var(--color-muted)]">{t("noImage")}</span>}
+                  <img src={product.image_urls?.[0] || "/images/mon-mac-dinh.svg"} alt={product.name} className="size-full object-cover" />
                 </Link>
                 <div className="flex flex-1 flex-col gap-2 p-3">
                   <Link href={`/products/${product.id}` as Route} className="break-words text-sm font-bold">{product.name}</Link>

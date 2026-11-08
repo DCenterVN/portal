@@ -779,7 +779,7 @@ describe("review fix rendered accessibility and filter selection", () => {
   });
 
   it.each(["ALL", "ACTIVE", "DRAFT"])("uses secondary selection and outline alternatives without destructive styling (%s)", (filter) => {
-    const html = surfaceMarkup(React.createElement(ProductsView, { initialProducts: s8Products, canCreate: true }), [s8Products, "", filter, false]);
+    const html = surfaceMarkup(React.createElement(ProductsView, { initialProducts: s8Products, canCreate: true }), ["", filter, false]);
     const filters = catalogueFilters(html);
     expect(filters).toHaveLength(3);
     expect(filters.filter((button) => button.includes('aria-pressed="true"'))).toHaveLength(1);
@@ -812,12 +812,12 @@ describe("S8 rendered product and traceability roles", () => {
     expect(html).toContain('aria-label="Tăng số lượng"');
   });
   it.each(["ALL", "ACTIVE", "DRAFT"])("keeps one catalogue primary with neutral selected filter (%s)", (filter) => {
-    const html = surfaceMarkup(React.createElement(ProductsView, { initialProducts: s8Products, canCreate: true }), [s8Products, "", filter, false]);
+    const html = surfaceMarkup(React.createElement(ProductsView, { initialProducts: s8Products, canCreate: true }), ["", filter, false]);
     expectS7Roles(html, 1);
     expect(html).toContain("Tạo sản phẩm mới");
     expect(html.replace(/<svg\b[\s\S]*?<\/svg>/g, "")).not.toMatch(/text-\[var\(--color-leaf\)\]/);
-    expect(html).toContain("Đang mở bán (ACTIVE)");
-    expect(html).toContain("Bản nháp (DRAFT)");
+    expect(html).toContain("Đang mở bán (1)");
+    expect(html).toContain("Bản nháp (1)");
     if (filter === "ALL") {
       for (const label of ["Đang mở bán", "Bản nháp", "Tạm ngưng", "Chi tiết"]) expect(html).toContain(label);
       expect(html).not.toContain("+ Giỏ");

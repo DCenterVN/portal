@@ -38,11 +38,23 @@ describe("dishServices.complete (BFF thật, fetch giả)", () => {
     expect(hits.filter(hit => hit.method === "GET")).toHaveLength(0);
   });
 
+  it("sellable gọi production với revision sau PUT và mã lỗi được giữ để dịch", async () => {
+    const hits = stubFetch(hit => hit.method === "PUT"
+      ? { status: 200, body: { data: { updated_at: T1 } } }
+      : { status: 409, body: { error: "cost_fact_missing", message: "missing cost" } });
+    const service = deps();
+    const set = await service.replaceSlots("set-1", { slots: [], tags: [], expected_updated_at: T0 }, "slots-key");
+    expect(set.updated_at).toBe(T1);
+    await expect(service.createSellable("set-1", { expected_updated_at: set.updated_at, portion_count: 4 }, "sellable-key"))
+      .rejects.toMatchObject({ status: 409, code: "cost_fact_missing" });
+    expect(hits[1]).toEqual({ method: "POST", path: "/production/sets/set-1/sellable-variant", body: { expected_updated_at: T1, portion_count: 4 } });
+  });
+
   it("readSet: GET set giữ nguyên quantity/swappable/removable/tags", async () => {
     const setBody = { id: "set-1", updated_at: T1, slots: [slot("DAM", "pkg-dam", { swappable: true, options: [{ sku_ref: "pkg-dam", quantity: 3, is_default: true }] })], tags: TAGS };
     stubFetch(() => ({ status: 200, body: { data: setBody } }));
     const read = await (deps() as unknown as { readSet(ref: string): Promise<unknown> }).readSet("set-1");
-    expect(read).toEqual({ slots: setBody.slots, tags: TAGS });
+    expect(read).toEqual({ slots: setBody.slots, tags: TAGS, updated_at: T1 });
   });
 
   describe("completeDish qua service thật: PUT 409 rồi đối soát bằng GET", () => {
@@ -50,6 +62,17 @@ describe("dishServices.complete (BFF thật, fetch giả)", () => {
       id: "01960000-0000-7000-8000-00000000abcd", kind: "REVISION", revision: 3, progress: { claim: "r3" }, status: "OPEN",
       content: { ...content, tags: TAGS, name: "M", category_ref: "c", reason: "r", seasonings: [{ row: "g1", slot: "GIA_VI_THEM", package_ref: "pkg-gv", removable: false }], base: { product_ref: "p", set_ref: "set-1", set_updated_at: T0, slots: {} } },
     } as DishDraft);
+    it("409 envelope cost_fact_missing hướng dẫn nhập kho rồi hoàn tất lại", async () => {
+      stubFetch(hit => {
+        if (hit.path.endsWith("/sellable-variant")) return { status: 409, body: { code: 409, status: "error", message: "missing cost", errors: { error_code: "cost_fact_missing" }, retryable: false } };
+        if (hit.path.endsWith("/progress")) return { status: 204, body: {} };
+        return { status: 200, body: { data: { updated_at: T1 } } };
+      });
+      expect(await completeDish(draft(), deps())).toEqual({
+        ok: false, failed_step: "sellable",
+        error: { status: 409, message: "Nguyên liệu trong món chưa có giá vốn. Nhập kho nguyên liệu rồi bấm Hoàn tất món lại." },
+      });
+    });
     const run = async (readBack: { slots: unknown[]; tags?: string[] }, closureTags = TAGS) => {
       const hits = stubFetch(hit => {
         if (hit.method === "PUT") return { status: 409, body: { message: "stale" } };

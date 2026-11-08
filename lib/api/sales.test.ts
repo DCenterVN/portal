@@ -46,6 +46,21 @@ describe("AC-3 getProducts đọc envelope staff {product, variants}", () => {
     expect(result.error).toContain("sales:product:read");
   });
 
+  it("ghép đủ hai trang sản phẩm với page_size=100 và cursor", async () => {
+    const cursor = "next+/=";
+    vi.stubGlobal("fetch", fetchMock
+      .mockResolvedValueOnce(ok({ items: [items[0]], next_cursor: cursor }))
+      .mockResolvedValueOnce(ok({ items: [items[1]], next_cursor: null })));
+    const result = await getProducts();
+    expect(result.source).toBe("api");
+    expect(result.data.map(product => product.id)).toEqual([PRODUCT_ID, DRAFT_ID]);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    const queries = calls().map(call => new URL(call.url, "http://portal.test").searchParams);
+    expect(queries.map(query => query.get("page_size"))).toEqual(["100", "100"]);
+    expect(queries[0].get("cursor") ?? "").toBe("");
+    expect(queries[1].get("cursor")).toBe(cursor);
+  });
+
   it("body không đúng envelope thì báo lỗi, không trả danh sách rỗng giả thành công", async () => {
     stub(() => ok({ items: [{ id: PRODUCT_ID, name: "sai hình dạng" }] }));
     const result = await getProducts();

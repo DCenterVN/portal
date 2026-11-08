@@ -3,5 +3,5 @@ import { forwardSales } from "@/lib/api/sales-bff";
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  return forwardSales(request, `/sales/products/${encodeURIComponent(id)}/activate`, "POST", "none");
+  return forwardSales(request, `/sales/products/${encodeURIComponent(id)}/lifecycle`, "POST");
 }
