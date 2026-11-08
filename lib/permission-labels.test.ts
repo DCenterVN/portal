@@ -1,12 +1,11 @@
-import { existsSync, readFileSync } from "node:fs";
-import { homedir } from "node:os";
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { groupPermissions, missingLabels, permissionLabel, roleName, toggleGroup } from "./permission-labels";
 
-const templates = `${homedir()}/work/ticket/org/api/role-templates.yaml`;
+const templates = new URL("./contracts/org.role-templates.yaml", import.meta.url);
 
 describe("nhãn quyền", () => {
-  it.skipIf(!existsSync(templates))("mọi khoá trong role-templates.yaml đều có nhãn", () => {
+  it("mọi khoá trong role-templates.yaml đều có nhãn", () => {
     const keys = [...new Set(readFileSync(templates, "utf8").match(/[a-z_]+:[a-z_]+:[a-z]+/g))];
     expect(keys.length).toBeGreaterThan(60);
     expect(missingLabels(keys)).toEqual([]);

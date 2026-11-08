@@ -1,5 +1,12 @@
 # Contract Snapshots
 
+## Role templates snapshot
+
+- Source: DCenterVN/org, commit `80f6e2c320e6f0a807e47f65fe60d8af69f3398c`, `/home/dawn/work/ticket/org/api/role-templates.yaml`.
+- Captured: 2026-11-08; `org.role-templates.yaml` is byte-for-byte `api/role-templates.yaml` from that commit.
+- SHA256: `c6ced2dfa2622ac5b7f3c46dfc4160daf7c6208ff54d9aa3488fd1d81a1dd12e`.
+- Used by `lib/permission-labels.test.ts` to check permission labels without a local org checkout.
+
 ## Snapshot inventory cho SUPPLIER-CONTRACT-001
 
 Nguồn `.cache/worktrees/price-a/inventory/api/openapi.public.yaml`, HEAD `abd623767cb2fbc38bcdbf7ac9680c6f81e8749e` với working tree PRICE và delta S2. Chụp ngày 25/10/2026, SHA256 `147ece1db88eef7302cb703741be8ca3e03e663908048bd1dadac49946d49706`. Đã đồng bộ S2 sau chỉ đạo gỡ vòng chờ PRICE; snapshot không phải bằng chứng runtime document đã triển khai.
