@@ -86,7 +86,7 @@ test("FC-1/FC-3 — Chi nhánh & Phân quyền", async ({ page }, info) => {
   });
 
   // ── Bước 3: Màn Vai trò — thứ tự và mô tả ────────────────────────────────
-  await step("03 Màn Vai trò: thứ tự ADMIN FOOD_DEV WAREHOUSE PROCESSING_STAFF SALES CUSTOMER; có mô tả; ADMIN có dấu khoá", "03-roles-order-desc", async () => {
+  await step("03 Màn Vai trò: đúng 5 vai trò ADMIN FOOD_DEV WAREHOUSE PROCESSING_STAFF SALES; không có Khách hàng; có mô tả; ADMIN có dấu khoá", "03-roles-order-desc", async () => {
     await page.goto("/roles");
     // Đợi dữ liệu tải
     await expect(page.getByRole("radiogroup", { name: "Vai trò" })).toBeVisible({ timeout: 15_000 });
@@ -94,17 +94,16 @@ test("FC-1/FC-3 — Chi nhánh & Phân quyền", async ({ page }, info) => {
     // Thứ tự vai trò — lấy tất cả radio label
     const labels = page.getByRole("radiogroup", { name: "Vai trò" }).locator("label");
     await labels.first().waitFor({ state: "visible", timeout: 10_000 });
-    const count = await labels.count();
-    expect(count, "Có ít nhất 6 vai trò").toBeGreaterThanOrEqual(6);
+    await expect(labels, "Có đúng 5 vai trò").toHaveCount(5);
 
     // Lấy tên từ span font-medium trong mỗi label
     const names: string[] = [];
-    for (let i = 0; i < Math.min(count, 8); i++) {
+    for (let i = 0; i < 5; i++) {
       const nameSpan = labels.nth(i).locator("span.font-medium").first();
       names.push((await nameSpan.innerText()).trim());
     }
     // Thứ tự mong đợi (tiếng Việt từ catalog/permission-labels)
-    const expected = ["Quản trị hệ thống", "Dinh dưỡng", "Kho", "Chế biến", "Bán hàng", "Khách hàng"];
+    const expected = ["Quản trị hệ thống", "Dinh dưỡng", "Kho", "Chế biến", "Bán hàng"];
     for (let i = 0; i < expected.length; i++) {
       expect(names[i], `Vai trò ${i + 1} phải là "${expected[i]}"`).toBe(expected[i]);
     }
@@ -118,8 +117,7 @@ test("FC-1/FC-3 — Chi nhánh & Phân quyền", async ({ page }, info) => {
     const adminLabel = labels.first();
     await expect(adminLabel.locator('svg.lucide-lock[aria-label="Vai trò được bảo vệ"]')).toBeVisible();
     const customerLabel = labels.filter({ has: page.getByText("Khách hàng", { exact: true }) });
-    await expect(customerLabel).toHaveCount(1);
-    await expect(customerLabel.locator("span.text-muted-foreground")).not.toHaveText("Vai trò tuỳ chỉnh");
+    await expect(customerLabel).toHaveCount(0);
   });
 
   // ── Bước 4: Tạo chi nhánh mới ────────────────────────────────────────────

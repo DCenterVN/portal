@@ -38,8 +38,8 @@ export function RolesView() {
   const [busy, setBusy] = useState(false);
   const [failure, setFailure] = useState("");
 
-  const roles = data ? [...order.filter((code) => code in data), ...Object.keys(data).filter((code) => !order.includes(code)).sort()] : [];
-  const current = role && data?.[role] ? role : roles[0] ?? "";
+  const roles = data ? (catalog !== undefined ? order.filter((code) => code in data) : Object.keys(data).sort()) : [];
+  const current = roles.includes(role) ? role : roles[0] ?? "";
   const shown = current === role ? draft : data?.[current] ?? [];
   const changes = data ? actionChanges(data[current] ?? [], shown) : { added: [], removed: [] };
   const count = changes.added.length + changes.removed.length;
