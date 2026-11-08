@@ -1,4 +1,7 @@
+import { mkdirSync } from "node:fs";
+import { resolve } from "node:path";
 import { test, expect, type Page } from "@playwright/test";
+import messages from "../../messages/vi.json" with { type: "json" };
 import { a, credentials, login, response, saveName, resetPhoneKong } from "./helpers";
 
 test.use({ viewport: { width: 1280, height: 800 } });
@@ -258,7 +261,7 @@ test("02 Khách — tab Đăng nhập & bảo mật: mật khẩu, thiết bị"
   });
 });
 
-test("03 Nhân viên — email chỉ đọc, sửa tên, tổ chức không mã, đầu trang không lặp", async ({ page }, info) => {
+test("03 Nhân viên — thông tin, vai trò và bảo mật trong trang hồ sơ", async ({ page }, info) => {
   async function step(name: string, action: () => Promise<void>) {
     await test.step(name, action);
     await info.attach(name, { body: await page.screenshot(), contentType: "image/png" });
@@ -266,14 +269,14 @@ test("03 Nhân viên — email chỉ đọc, sửa tên, tổ chức không mã,
 
   await step("10 Nhân viên — email chỉ đọc, không nút đổi; sửa tên; tổ chức có tên; đầu trang không lặp ảnh/tên", async () => {
     await login(page, admin.email, admin.password, true);
-    const main = page.locator("#main").or(page.locator("main"));
+    const main = page.locator("main").first();
     await expect(main.getByText(admin.email).first()).toBeVisible();
-    await expect(main.getByText(/quản trị viên quản lý/).first()).toBeVisible();
+    await expect(main.getByText(messages.record.emailManaged).first()).toBeVisible();
     await expect(page.getByRole("button", { name: a.changeEmail, exact: true })).toHaveCount(0);
 
-    await expect(page.getByRole("heading", { name: a.title, exact: true })).toBeVisible();
+    await expect(page.getByRole("tab", { name: messages.record.info, exact: true })).toBeVisible();
 
-    const nameSection = section(page, a.displayName);
+    const nameSection = section(page, messages.record.personal);
     const nameInput = nameSection.getByLabel(a.displayName, { exact: true });
     adminName = (await nameInput.inputValue()) || "";
     adminNameDirty = true;
@@ -288,9 +291,16 @@ test("03 Nhân viên — email chỉ đọc, sửa tên, tổ chức không mã,
     expect((await restoreReq).status()).toBe(200);
     adminNameDirty = false;
 
-    const orgSection = section(page, a.staffOrg);
+    await page.getByRole("tab", { name: messages.record.rolesBranches, exact: true }).click();
+    await page.waitForURL((url) => url.searchParams.get("tab") === "roles");
+    await page.reload();
+    await expect(page.getByRole("tab", { name: messages.record.rolesBranches, exact: true })).toHaveAttribute("aria-selected", "true");
+    const orgSection = section(page, messages.record.rolesBranches);
     await expect(orgSection).toBeVisible();
     const orgText = await orgSection.innerText();
+    await page.getByRole("tab", { name: messages.record.security, exact: true }).click();
+    await expect(page.getByRole("heading", { name: a.password, level: 2 })).toBeVisible();
+    await expect(page.getByRole("heading", { name: messages.record.sessions, level: 2 })).toBeVisible();
     expect(orgText).not.toMatch(/\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b/i);
   });
 });
@@ -324,4 +334,151 @@ test("04 Chụp ảnh nhiều cảnh — 1280 sáng/tối, 375", async ({ page }
   await page.emulateMedia({ colorScheme: "dark" });
   await page.reload();
   await snap("16 nhan-vien-1280-toi");
+});
+
+
+test("05 Sidebar giữ nguyên khi mở Tài khoản; danh sách mở chi tiết nhân viên", async ({ page }, info) => {
+  const hosoDir = resolve(process.env.E2E_OUTPUT_DIR || "/home/dawn/work/ticket/.cache/video-nghiep-vu/07-tai-khoan/hoso");
+  mkdirSync(hosoDir, { recursive: true });
+  async function step(name: string, filename: string, action: () => Promise<void>) {
+    await test.step(name, action);
+    const shot = await page.screenshot({ path: `${hosoDir}/${filename}.png` });
+    await info.attach(name, { body: shot, contentType: "image/png" });
+  }
+
+  await test.step("1. Đăng nhập nhân viên, mở giao diện quản trị", async () => {
+    await login(page, admin.email, admin.password, true);
+    await page.goto("/memberships");
+    const sidebar = page.locator('[data-slot="sidebar"]');
+    await expect(sidebar).toBeVisible();
+  });
+
+  await step("2. Bấm 'Tài khoản' ở sidebar — sidebar vẫn giữ nguyên", "01-sidebar-tai-khoan", async () => {
+    const sidebar = page.locator('[data-slot="sidebar"]');
+    await sidebar.getByRole("button", { name: /^Tài khoản của / }).click();
+    await page.getByRole("menuitem", { name: "Tài khoản", exact: true }).click();
+    await expect(page).toHaveURL(/\/account$/);
+    await expect(sidebar).toBeVisible();
+    await expect(page.getByText(a.title).first()).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  });
+
+  await step("3. Header hồ sơ tài khoản: ảnh đại diện, tên, meta liên hệ, badge trạng thái và vai trò", "02-header-tai-khoan", async () => {
+    const main = page.locator("main").first();
+    await expect(main.locator('[data-slot="avatar"]').first()).toBeVisible();
+    await expect(main.getByText(admin.email).first()).toBeVisible();
+    await expect(main.getByText(/Tham gia \d{2}\/\d{2}\/\d{4}/).first()).toBeVisible();
+    await expect(main.getByText(messages.record.status).first()).toBeVisible();
+    await expect(main.getByText(messages.record.active).first()).toBeVisible();
+    await expect(main.getByText(messages.record.roles).first()).toBeVisible();
+    await expect(page.getByRole("button", { name: messages.record.edit, exact: true })).toBeVisible();
+  });
+
+  await step("4. Ba tab: Thông tin, Vai trò & chi nhánh, Bảo mật", "03-ba-tab-tai-khoan", async () => {
+    const infoTab = page.getByRole("tab", { name: messages.record.info, exact: true });
+    const rolesTab = page.getByRole("tab", { name: messages.record.rolesBranches, exact: true });
+    const securityTab = page.getByRole("tab", { name: messages.record.security, exact: true });
+
+    await expect(infoTab).toBeVisible();
+    await expect(rolesTab).toBeVisible();
+    await expect(securityTab).toBeVisible();
+
+    await expect(infoTab).toHaveAttribute("aria-selected", "true");
+    await expect(section(page, messages.record.personal)).toBeVisible();
+    await expect(section(page, messages.record.contact)).toBeVisible();
+
+    await rolesTab.click();
+    await page.waitForURL((url) => url.searchParams.get("tab") === "roles");
+    await expect(rolesTab).toHaveAttribute("aria-selected", "true");
+    await expect(section(page, messages.record.rolesBranches)).toBeVisible();
+
+    await securityTab.click();
+    await page.waitForURL((url) => url.searchParams.get("tab") === "security");
+    await expect(securityTab).toHaveAttribute("aria-selected", "true");
+    await expect(page.getByRole("heading", { name: a.password, level: 2 })).toBeVisible();
+    await expect(page.getByRole("heading", { name: messages.record.sessions, level: 2 })).toBeVisible();
+  });
+
+  await step("5. Nút Sửa ở header tự động chuyển sang tab Thông tin và focus ô Tên", "04-nut-sua-focus-ten", async () => {
+    const editBtn = page.getByRole("button", { name: messages.record.edit, exact: true });
+    await editBtn.click();
+    await page.waitForURL((url) => !url.searchParams.get("tab") || url.searchParams.get("tab") === "info");
+    const infoTab = page.getByRole("tab", { name: messages.record.info, exact: true });
+    await expect(infoTab).toHaveAttribute("aria-selected", "true");
+
+    const nameSection = section(page, messages.record.personal);
+    const nameInput = nameSection.getByLabel(a.displayName, { exact: true });
+    await expect(nameInput).toBeFocused();
+  });
+
+  await step("6. Đổi tên hiển thị rồi khôi phục lại", "05-doi-ten-va-khoi-phuc", async () => {
+    const nameSection = section(page, messages.record.personal);
+    const nameInput = nameSection.getByLabel(a.displayName, { exact: true });
+    const currentName = (await nameInput.inputValue()) || "";
+    const testName = "Admin kiểm thử hồ sơ";
+
+    await nameInput.fill(testName);
+    const saveReq = response(page, "/api/auth/profile", "PATCH");
+    await nameSection.getByRole("button", { name: a.save, exact: true }).click();
+    expect((await saveReq).status()).toBe(200);
+    await expect(page.getByText(a.nameSaved).first()).toBeVisible();
+    await expect(nameInput).toHaveValue(testName);
+
+    await nameInput.fill(currentName);
+    const restoreReq = response(page, "/api/auth/profile", "PATCH");
+    await nameSection.getByRole("button", { name: a.save, exact: true }).click();
+    expect((await restoreReq).status()).toBe(200);
+    await expect(page.getByText(a.nameSaved).last()).toBeVisible();
+    await expect(nameInput).toHaveValue(currentName);
+  });
+
+  await step("7. Mở danh sách Nhân viên, bấm tên người để vào chi tiết", "06-danh-sach-chi-tiet-nhan-vien", async () => {
+    const sidebar = page.locator('[data-slot="sidebar"]');
+    await page.goto("/memberships");
+    await expect(page).toHaveURL(/\/memberships$/);
+    await expect(sidebar).toBeVisible();
+
+    const employee = page.getByRole("table").getByRole("link").first();
+    const employeeName = (await employee.innerText()).trim();
+    await employee.click();
+    await expect(page).toHaveURL(/\/memberships\/[^/?]+$/);
+    await expect(sidebar).toBeVisible();
+
+    await expect(page.getByRole("heading", { name: employeeName, exact: true, level: 1 })).toBeVisible();
+    await expect(page.getByText(messages.record.status).first()).toBeVisible();
+    await expect(page.locator('a[href^="mailto:"]').first()).toBeVisible();
+  });
+
+  await step("8. Chi tiết nhân viên: tab Phân công và tab Thông tin chỉ đọc", "07-nhan-vien-phan-cong-thong-tin", async () => {
+    const assignmentsTab = page.getByRole("tab", { name: messages.record.assignments, exact: true });
+    const infoTab = page.getByRole("tab", { name: messages.record.info, exact: true });
+
+    await expect(assignmentsTab).toHaveAttribute("aria-selected", "true");
+    await expect(section(page, messages.record.assignments)).toBeVisible();
+
+    await infoTab.click();
+    await page.waitForURL((url) => url.searchParams.get("tab") === "info");
+    await expect(infoTab).toHaveAttribute("aria-selected", "true");
+
+    const infoSection = section(page, messages.record.personal);
+    await expect(infoSection).toBeVisible();
+    await expect(infoSection.getByLabel(a.displayName, { exact: true })).toBeDisabled();
+    await expect(infoSection.getByLabel(a.email, { exact: true })).toBeDisabled();
+    await expect(page.getByText(messages.record.selfManaged)).toBeVisible();
+  });
+
+  await step("9. Tải lại trang — vẫn giữ nguyên tab (?tab=) và không lộ UUID", "08-giu-tab-sau-reload", async () => {
+    await page.reload();
+    const infoTab = page.getByRole("tab", { name: messages.record.info, exact: true });
+    await expect(infoTab).toHaveAttribute("aria-selected", "true");
+    await expect(page.getByText(messages.record.selfManaged)).toBeVisible();
+
+    const assignmentsTab = page.getByRole("tab", { name: messages.record.assignments, exact: true });
+    await assignmentsTab.click();
+    await page.waitForURL((url) => url.searchParams.get("tab") === "assignments");
+    await page.reload();
+    await expect(assignmentsTab).toHaveAttribute("aria-selected", "true");
+
+    expect(await page.locator("main").innerText()).not.toMatch(/\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b/i);
+  });
 });

@@ -87,10 +87,16 @@ export function navFor(plane: "platform" | "company", actions: ReadonlySet<strin
     .map((rule) => ({ href: `${rule.href}${suffix}`, label: rule.label, match: rule.href, icon: rule.icon }));
 }
 
-export type Crumb = { label: string; href?: string };
+export type Crumb = ({ label: string } | { labelKey: string }) & { href?: string };
+
+const AUXILIARY_ROUTES = [
+  { href: "/account", labelKey: "account.title" },
+];
 
 /** Group title > item label for the deepest item matching `pathname`; empty when no item matches. */
 export function breadcrumbFor(nav: NavGroup[], pathname: string): Crumb[] {
+  const auxiliary = AUXILIARY_ROUTES.find(route => route.href === pathname);
+  if (auxiliary) return [{ labelKey: auxiliary.labelKey }];
   let best: { group: string; item: NavItem } | undefined;
   for (const group of nav) {
     for (const item of group.items) {

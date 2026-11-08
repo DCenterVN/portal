@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment, type ReactNode } from "react";
+import { useTranslations } from "next-intl";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
@@ -13,6 +14,11 @@ type Props = {
   actions?: ReactNode;
 };
 
+function TranslatedLabel({ labelKey }: { labelKey: string }) {
+  const t = useTranslations();
+  return t(labelKey);
+}
+
 export function ConsoleHeader({ crumbs, actions }: Props) {
   return (
     <header className="sticky top-0 z-(--z-header) flex h-14 shrink-0 items-center gap-2 border-b border-border/60 bg-background px-4">
@@ -22,10 +28,12 @@ export function ConsoleHeader({ crumbs, actions }: Props) {
         <Breadcrumb className="min-w-0">
           <BreadcrumbList>
             {crumbs.map((crumb, index) => (
-              <Fragment key={crumb.label}>
+              <Fragment key={"label" in crumb ? crumb.label : crumb.labelKey}>
                 {index > 0 && <BreadcrumbSeparator className="hidden md:block" />}
                 <BreadcrumbItem className={index === crumbs.length - 1 ? "min-w-0" : "hidden md:block"}>
-                  {index === crumbs.length - 1 ? <BreadcrumbPage className="truncate">{crumb.label}</BreadcrumbPage> : crumb.label}
+                  {index === crumbs.length - 1 ? (
+                    <BreadcrumbPage className="truncate">{"label" in crumb ? crumb.label : <TranslatedLabel labelKey={crumb.labelKey} />}</BreadcrumbPage>
+                  ) : "label" in crumb ? crumb.label : <TranslatedLabel labelKey={crumb.labelKey} />}
                 </BreadcrumbItem>
               </Fragment>
             ))}

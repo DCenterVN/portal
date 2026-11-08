@@ -30,14 +30,14 @@ export async function login(page: Page, email: string, password: string, staff =
   expect((await logged).status(), "Đăng nhập thành công").toBe(200);
   await page.waitForURL(url => staff ? !url.pathname.startsWith("/staff/login") : url.pathname === "/" && !url.searchParams.has("auth"));
   if (staff) await enterFirstBranch(page);
-  await page.goto(staff ? "/platform/account" : "/me");
+  await page.goto(staff ? "/account" : "/me");
   if (staff && new URL(page.url()).pathname.startsWith("/staff/switch-")) {
     await enterFirstBranch(page);
-    await page.goto("/platform/account");
+    await page.goto("/account");
   }
   if (staff) {
-    await expect(page.getByRole("heading", { name: a.title, exact: true })).toBeVisible();
-    await expect(page.getByRole("heading", { name: a.displayName, level: 2 })).toBeVisible();
+    await expect(page.getByRole("tab", { name: messages.record.info, exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { name: messages.record.personal, level: 2 })).toBeVisible();
   } else {
     await expect(page.getByRole("heading", { name: a.title, exact: true })).toBeVisible();
     await expect(page.getByRole("heading", { name: a.displayName, level: 2 })).toBeVisible();
@@ -51,7 +51,7 @@ export async function enterFirstBranch(page: Page) {
 }
 function secretInputFailure(): never { throw Error("Không nhập được trường bảo mật"); }
 export async function saveName(page: Page, name: string) {
-  const nameSection = page.getByRole("heading", { name: a.displayName, level: 2 }).locator("xpath=ancestor::section");
+  const nameSection = page.getByLabel(a.displayName, { exact: true }).locator("xpath=ancestor::form");
   const input = nameSection.getByLabel(a.displayName, { exact: true });
   await input.waitFor({ state: "visible" });
   if ((await input.inputValue()) === name) return;
