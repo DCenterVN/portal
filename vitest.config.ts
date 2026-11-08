@@ -13,6 +13,6 @@ export default defineConfig({
     environment: "node",
     exclude: integrationRun
       ? configDefaults.exclude
-      : [...configDefaults.exclude, "**/*.it.test.ts", ".aidlc/**"],
+      : [...configDefaults.exclude, "**/*.it.test.ts"],
   },
 });

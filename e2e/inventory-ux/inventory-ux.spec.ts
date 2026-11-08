@@ -8,7 +8,7 @@ type PersistedReceipt = { id: string };
 type SeedLine = { name: string; sku_ref: string; unit_price_vnd: number; uom: string };
 type Seed = { fixture: { supplier_id: string; supplier_name: string; valid_from: string; lines: SeedLine[] } };
 const { fixture } = JSON.parse(readFileSync(process.env.SUPPLIER_CONTRACT_CONTEXT ?? "/home/dawn/work/ticket/.cache/tmp/ux8-context.json", "utf8")) as Seed;
-const evidence = ".aidlc/runs/PORTAL-INVENTORY-UX-001/artifacts/e2e-web";
+const evidence = "e2e-report/evidence/PORTAL-INVENTORY-UX-001/e2e-web";
 async function shot(page: Page, info: TestInfo, name: string) {
   await page.screenshot({ path: `${evidence}/repeat-${info.repeatEachIndex}/${info.line}-${name}.png`, fullPage: true, animations: "disabled" });
 }

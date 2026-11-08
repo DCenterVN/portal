@@ -2,7 +2,7 @@
 
 Status: DRAFT
 
-Source: [FLOW-001 plan Design (a), (b), (c), PORTAL-FLOW-001 U1–U9](/mnt/win_d/feature/ticket/.aidlc/runs/FLOW-001/plan.md). Dawn approved OD-1..OD-9 defaults on 2026-10-07 with `--accept-assumed`; they are rules. This slice specifies screens/BFF composition only; routes and contract extensions below are planned, not runtime evidence.
+Source: [FLOW-001 plan Design (a), (b), (c), PORTAL-FLOW-001 U1–U9](/home/dawn/archive/aidlc-261107/ticket-root-aidlc/runs/FLOW-001/plan.md). Dawn approved OD-1..OD-9 defaults on 2026-10-07 with `--accept-assumed`; they are rules. This slice specifies screens/BFF composition only; routes and contract extensions below are planned, not runtime evidence.
 
 ## Usecase
 
@@ -21,13 +21,13 @@ Rules: make ahead and sell at one branch; no preorder/transfer/AI planning/new f
 
 | Reference | Owning contract |
 |---|---|
-| N | [production nutrition-material-request](/home/dawn/orca/workspaces/production/flow-001/.aidlc/specs/nutrition-material-request.md): plan/BOM snapshot, requirement preview, request operation/ACK; existing target/food-plan routes remain production OpenAPI authority |
-| P | [production actual-production-trace](/home/dawn/orca/workspaces/production/flow-001/.aidlc/specs/actual-production-trace.md): completion, actual genealogy, output, finished QC and public trace |
-| I | [inventory material-request-fulfillment](/home/dawn/orca/workspaces/inventory/flow-001/.aidlc/specs/material-request-fulfillment.md): request/receipt-line correlation, authoritative receipt facts; inbound receiving/QC remains INVENTORY-INBOUND-001 ownership |
-| C | [inventory production-actual-consume](/home/dawn/orca/workspaces/inventory/flow-001/.aidlc/specs/production-actual-consume.md): actual consume, residual release, output receipt/release ACK and redacted lot facts; shelf/reservation remains INVENTORY-SALES-STOCK-001 ownership |
-| L | [sales product-lifecycle](/home/dawn/orca/workspaces/sales/flow-001/.aidlc/specs/product-lifecycle.md): product 1:N variants, transitions, per-output projection and checkout eligibility |
-| R | [sales flow-reconciliation](/home/dawn/orca/workspaces/sales/flow-001/.aidlc/specs/flow-reconciliation.md): immutable receipt-money decision and CHECKED revision gate |
-| O | [org flow-permissions](/home/dawn/orca/workspaces/org/flow-001/.aidlc/specs/flow-permissions.md): action keys, actor grants, branch scope and separation of duties |
+| N | [production nutrition-material-request](/home/dawn/orca/workspaces/production/flow-001/docs/specs/nutrition-material-request.md): plan/BOM snapshot, requirement preview, request operation/ACK; existing target/food-plan routes remain production OpenAPI authority |
+| P | [production actual-production-trace](/home/dawn/orca/workspaces/production/flow-001/docs/specs/actual-production-trace.md): completion, actual genealogy, output, finished QC and public trace |
+| I | [inventory material-request-fulfillment](/home/dawn/orca/workspaces/inventory/flow-001/docs/specs/material-request-fulfillment.md): request/receipt-line correlation, authoritative receipt facts; inbound receiving/QC remains INVENTORY-INBOUND-001 ownership |
+| C | [inventory production-actual-consume](/home/dawn/orca/workspaces/inventory/flow-001/docs/specs/production-actual-consume.md): actual consume, residual release, output receipt/release ACK and redacted lot facts; shelf/reservation remains INVENTORY-SALES-STOCK-001 ownership |
+| L | [sales product-lifecycle](/home/dawn/orca/workspaces/sales/flow-001/docs/specs/product-lifecycle.md): product 1:N variants, transitions, per-output projection and checkout eligibility |
+| R | [sales flow-reconciliation](/home/dawn/orca/workspaces/sales/flow-001/docs/specs/flow-reconciliation.md): immutable receipt-money decision and CHECKED revision gate |
+| O | [org flow-permissions](/home/dawn/orca/workspaces/org/flow-001/docs/specs/flow-permissions.md): action keys, actor grants, branch scope and separation of duties |
 
 Links resolve to the exact sibling worktrees reviewed for this child; service specs remain the authority for schemas, DB/events and response codes. When integrating into the ticket workspace, remap these links to its service checkouts without copying the contracts. Portal does not duplicate their DTO/DB contracts or call cross-service DBs.
 
@@ -138,4 +138,4 @@ Child U2–U9 covers unit logic, real BFF/backend integration and browser accept
 4. AC-8/9: real org grants, wrong branch/tenant, expired identity, customer/internal denial and QA/accountant separation; operation/event replay10 converges without extra records or stock. TC-E-500 uses APIs through Kong and browser, never direct finished-stock/genealogy/order seeds. Mutating actual-use guard, dedup or provenance source must fail assertions.
 5. Each changed route has four distinct state screenshots and accessible role/label browser selectors; accessibility ≥90, mobile LCP ≤2.5s, First Load JS ≤200kB, runtime console errors/5xx=0 in the healthy scenario. Forced dependency-failure scenarios separately verify expected 503 UI.
 
-S4 evidence is document lint only: `python3 ~/agent_skills/sdlc/engine/speccheck.py --lint .aidlc/specs/food-flow.md`. Runtime/unit/integration/browser/arch/migrations NOT_RUN; no claim that TC-E-500 or backend endpoints are implemented. DRAFT awaits child contract freeze/approval and implementation gates.
+S4 evidence is document lint only: `python3 ~/agent_skills/sdlc/engine/speccheck.py --lint docs/specs/food-flow.md`. Runtime/unit/integration/browser/arch/migrations NOT_RUN; no claim that TC-E-500 or backend endpoints are implemented. DRAFT awaits child contract freeze/approval and implementation gates.

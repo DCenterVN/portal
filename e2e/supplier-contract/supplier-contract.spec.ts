@@ -91,5 +91,5 @@ test("TC-01/03/04/10/11: NCC, nháp, tệp, áp dụng và ngừng dùng bằng 
   await expect(card).toContainText("Đã ngừng dùng");
   await expect(card).toContainText("25.000");
   await expect(card.getByRole("button", { name: "Mở bản nháp", exact: true })).toHaveCount(0);
-  await page.screenshot({ path: `.aidlc/runs/PORTAL-INVENTORY-UX-001/artifacts/e2e-web/repeat-${info.repeatEachIndex}/suspended.png`, fullPage: true });
+  await page.screenshot({ path: `e2e-report/evidence/PORTAL-INVENTORY-UX-001/e2e-web/repeat-${info.repeatEachIndex}/suspended.png`, fullPage: true });
 });

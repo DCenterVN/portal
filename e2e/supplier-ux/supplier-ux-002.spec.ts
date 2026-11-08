@@ -5,7 +5,7 @@ import { dirname, join } from 'node:path';
 import { randomBytes } from 'node:crypto';
 const base = process.env.PORTAL_BASE_URL || 'http://127.0.0.1:3003';
 const state = process.env.PORTAL_WAREHOUSE_STATE || '/home/dawn/work/ticket/.cache/tmp/supplier-bf3-storage.json';
-const evidence = process.env.SUPPLIER_UX_EVIDENCE || '/home/dawn/work/ticket/.aidlc/runs/SUPPLIER-UX-002/artifacts/e2e-web/fix-review';
+const evidence = process.env.SUPPLIER_UX_EVIDENCE || 'e2e-report/evidence/SUPPLIER-UX-002/fix-review';
 test.use({ storageState: state });
 test.beforeAll(async ({ browser }) => {
   mkdirSync(evidence, { recursive: true });

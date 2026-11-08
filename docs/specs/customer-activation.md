@@ -9,8 +9,8 @@ shows a fixed `/login` link; it never creates a session or logs in automatically
 
 Source contract: `contracts/auth.public.yaml`, auth commit
 `86294eecfa9aa8c6513da77f5585d960a557edff`, `api/openapi.public.yaml`.
-Upstream behavior belongs to auth: `../auth/.aidlc/specs/activation-security.md`
-and `../auth/.aidlc/specs/invite.md`; error vocabulary is documented in
+Upstream behavior belongs to auth: `../auth/docs/specs/activation-security.md`
+and `../auth/docs/specs/invite.md`; error vocabulary is documented in
 `../platform-docs/docs/api/error-code-usage.md`.
 
 ## API

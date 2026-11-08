@@ -2,7 +2,7 @@
 
 Trạng thái: PROMOTED S2 của SUPPLIER-CONTRACT-001 theo plan được duyệt. Đây là contract đích; chưa xác nhận runtime/E2E. Giữ các operation PRICE và supplier hiện hữu ngoài delta đã duyệt.
 
-Đích: portal/.aidlc/specs/supplier-contract.md. Spec portal dùng Usecase/API, không Go DTO giả.
+Đích: portal/docs/specs/supplier-contract.md. Spec portal dùng Usecase/API, không Go DTO giả.
 
 ## Usecase
 

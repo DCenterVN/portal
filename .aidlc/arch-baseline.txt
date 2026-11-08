@@ -1,8 +1,0 @@
-# archcheck baseline: known debt, remove a line when fixed; growth is refused.
-FE-03 app/api/auth/context/route.ts
-FE-03 app/api/auth/logout/route.ts
-FE-03 app/api/auth/me/route.ts
-FE-03 app/api/auth/refresh/route.ts
-FE-03 app/readyz/route.ts
-FE-10 features/branches/branches-view.tsx
-FE-14 features/memberships/memberships-view.tsx missing loading

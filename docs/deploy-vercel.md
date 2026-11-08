@@ -3,7 +3,7 @@
 ## Trước khi public
 - Đọc báo cáo audit `codex-portal-public-vercel.out.md` trong thư mục plans của ticket.
 - Dawn quyết định giữ lịch sử hay tạo bản public một commit; chưa tự động đổi visibility.
-- Rà email cá nhân, ảnh, `.aidlc/` và ghi chú nội bộ; token hết hạn vẫn là dữ liệu từng bị lộ.
+- Rà email cá nhân, ảnh và ghi chú nội bộ; token hết hạn vẫn là dữ liệu từng bị lộ.
 - CI phải xanh cả `verify` và `secrets`; đặt hai job này làm required checks cho main.
 
 ## Project

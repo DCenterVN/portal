@@ -70,7 +70,7 @@ const config = [
     rules: { "no-restricted-imports": "off" },
   },
   {
-    ignores: [".aidlc/**", ".next/**", "node_modules/**", "coverage/**", "next-env.d.ts"]
+    ignores: [".next/**", "node_modules/**", "coverage/**", "next-env.d.ts"]
   }
 ];
 
