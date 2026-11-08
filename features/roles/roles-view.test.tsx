@@ -15,7 +15,7 @@ vi.mock("./use-roles", () => ({
   ] }),
 }));
 
-it("renders an accessible lock only beside protected roles and leaves missing descriptions blank", () => {
+it("renders catalog roles in order with an accessible lock only beside protected roles and leaves missing descriptions blank", () => {
   const html = renderToStaticMarkup(
     <AccessProvider value={{ plane: "company", root: "", actions: new Set(["org:company:read", "org:role:read"]) }}>
       <RolesView />
@@ -27,6 +27,10 @@ it("renders an accessible lock only beside protected roles and leaves missing de
   expect(admin?.match(/<svg[^>]*lucide-lock[^>]*>/)?.[0]).not.toContain('aria-hidden="true"');
   expect(admin).toContain("Toàn quyền");
   expect(labels.filter((label) => label.includes('aria-label="Vai trò được bảo vệ"'))).toHaveLength(1);
-  expect(labels.find((label) => label.includes("Khách hàng"))).toMatch(/text-muted-foreground"><\/span>/);
+  expect(labels).toHaveLength(2);
+  expect(labels[0]).toContain("Quản trị hệ thống");
+  expect(labels[1]).toContain("Đặc biệt");
+  expect(labels[1]).toMatch(/text-muted-foreground"><\/span>/);
+  expect(html).not.toContain("Khách hàng");
   expect(html).not.toContain("Vai trò tuỳ chỉnh");
 });
