@@ -17,9 +17,7 @@ export function ProductDetailView({ initialProduct: product }: { initialProduct:
     <PageHeading title={product.name} description={product.description || "Thông tin món và quy cách phục vụ"} />
     <div className="mt-6 grid min-w-0 gap-6 lg:grid-cols-2">
       <Card className="overflow-hidden border-[var(--color-line)] bg-[var(--color-surface)] p-0">
-        {product.image_urls?.[0] ?
-          <img src={product.image_urls[0]} alt={product.name} className="aspect-[4/3] w-full object-cover" /> :
-          <div className="flex aspect-[4/3] items-center justify-center bg-[var(--color-tint)] text-sm text-[var(--color-muted)]">Chưa có ảnh</div>}
+        <img src={product.image_urls?.[0] || "/images/mon-mac-dinh.svg"} alt={product.name} className="aspect-[4/3] w-full object-cover" />
         {product.description && <CardContent className="p-5"><p className="text-sm text-[var(--color-ink)]">{product.description}</p></CardContent>}
       </Card>
       <Card className="border-[var(--color-line)] bg-[var(--color-surface)]">

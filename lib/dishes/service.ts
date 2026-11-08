@@ -4,6 +4,7 @@ import type { CompleteDeps } from "./complete-dish";
 import type { DetailDeps, Product, SetDetail } from "./dish-detail";
 import type { DishContent, DraftRow, GroupNode, Line } from "./types";
 import { draftSchema } from "@/lib/api/dishes";
+import { allPages } from "@/lib/api/all-pages";
 
 type Service = "sales" | "production" | "inventory";
 export function dishServices(request: NextRequest) {
@@ -21,7 +22,7 @@ export function dishServices(request: NextRequest) {
     const res = await forwardService(forwarded, { baseUrl: baseUrls[service], path, method, bodyPolicy: body === undefined ? "none" : "required", unavailableMessage: "Dịch vụ món hiện không khả dụng" });
     if (res.status === 204) return undefined as T;
     const data = await res.json();
-    if (!res.ok) throw Object.assign(new Error(typeof data.message === "string" ? data.message : "Không xử lý được món"), { status: res.status });
+    if (!res.ok) throw Object.assign(new Error(typeof data.message === "string" ? data.message : "Không xử lý được món"), { status: res.status, code: data.errors?.error_code ?? data.error });
     return (data.data ?? data) as T;
   }
   async function listDrafts(query: { product_ref: string; status: "OPEN" | "COMPLETED"; kind?: string }) {
@@ -49,23 +50,18 @@ export function dishServices(request: NextRequest) {
   }
   function complete(tree: GroupNode[], skuGroups: Record<string, string | null>, _content?: DishContent): CompleteDeps {
     return {
-      tree, skuGroups, getActiveRecipe: activeRecipe, readSet: async id => { const set = await getSet(id); return { slots: set.slots, tags: set.tags }; },
+      tree, skuGroups, getActiveRecipe: activeRecipe, readSet: async id => { const set = await getSet(id); return { slots: set.slots, tags: set.tags, updated_at: set.updated_at }; },
       createProduct: async (input, key) => (await call<{ product: { id: string } }>("sales", "/sales/products", "POST", input, key)).product,
       createPackage: (input, key) => call("sales", "/sales/packages", "POST", input, key),
       createRecipe: async (id, input, key) => { await call("production", `/production/packages/${id}/recipes`, "POST", input, key); },
       createSet: (input, key) => call("sales", "/sales/sets", "POST", { ...input, uom_code: "EA" }, key),
       replaceSlots: async (id, input, key) => {
-        await call("sales", `/sales/sets/${id}`, "PUT", input, key);
+        return call("sales", `/sales/sets/${id}`, "PUT", input, key);
       },
+      createSellable: (id, input, key) => call("production", `/production/sets/${id}/sellable-variant`, "POST", input, key),
       recordProgress: async (id, input) => { await call("sales", `/sales/dish-drafts/${id}/progress`, "POST", input); },
       completeDraft: async (id, input, key) => { await call("sales", `/sales/dish-drafts/${id}/complete`, "POST", input, key); },
     };
   }
   return { detail, context, complete, getDraft: async (id: string) => draftSchema.parse((await call<{ draft: unknown }>("sales", `/sales/dish-drafts/${id}`)).draft) };
-}
-async function allPages<T>(load: (cursor: string) => Promise<{ items: T[]; next_cursor?: string | null }>): Promise<T[]> {
-  const result: T[] = [];
-  let cursor = "";
-  do { const page = await load(cursor); result.push(...page.items); cursor = page.next_cursor ?? ""; } while (cursor);
-  return result;
 }

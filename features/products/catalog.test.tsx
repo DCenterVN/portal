@@ -48,10 +48,13 @@ describe("AC-1 catalog khách không lộ điều khiển quản trị", () => {
   it("AC-1 ghi rõ số món đã tải", () => {
     expect(visible(render())).toContain("3 món đã tải");
   });
-  it("AC-8 ảnh thật dùng image_urls, món thiếu ảnh hiện khung Chưa có ảnh", () => {
+  it("AC-8 ảnh thật dùng image_urls, món thiếu ảnh hiện ảnh mặc định", () => {
     const out = render();
     expect(out.includes("https://cdn.example.test/bun-bo.jpg") || out.includes(encodeURIComponent("https://cdn.example.test/bun-bo.jpg"))).toBe(true);
-    expect((out.match(/Chưa có ảnh/g) ?? []).length).toBe(2);
+    for (const product of products.slice(1)) {
+      expect(out).toContain(`<img src="/images/mon-mac-dinh.svg" alt="${product.name}" class="size-full object-cover"`);
+    }
+    expect(out).not.toContain("Chưa có ảnh");
     expect(out).toMatch(/alt="Bún bò Huế"/);
   });
   it("AC-8 không UUID trong nội dung/nhãn người dùng", () => {

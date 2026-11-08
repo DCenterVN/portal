@@ -20,7 +20,8 @@ export type CompleteDeps = {
   createPackage(input: PackageInput, key: string): Promise<{ id: string }>;
   createRecipe(packageRef: string, input: { components: Line[]; prep_steps: [] }, key: string): Promise<void>;
   createSet(input: Omit<PackageInput, "uom_code"> & { tags: string[] }, key: string): Promise<{ id: string; updated_at: string }>;
-  replaceSlots(setRef: string, input: { slots: Slot[]; tags: string[]; expected_updated_at: string }, key: string): Promise<void>;
+  replaceSlots(setRef: string, input: { slots: Slot[]; tags: string[]; expected_updated_at: string }, key: string): Promise<{ updated_at: string }>;
+  createSellable(setRef: string, input: { expected_updated_at: string; portion_count: number }, key: string): Promise<{ sku_ref: string }>;
   recordProgress(draftId: string, input: { step: string; ref: string; expected_revision: number }): Promise<void>;
   getActiveRecipe(packageRef: string): Promise<{ components: Line[] } | null>;
   readSet?(setRef: string): Promise<unknown>;
@@ -116,19 +117,35 @@ export async function completeDish(draft: DishDraft, deps: CompleteDeps): Promis
       target = readTarget(ref, draft, content);
     }
     const { set_ref, ...mutation } = target;
-    await run("slots", async () => {
-      try { await deps.replaceSlots(set_ref, mutation, key("slots")); }
+    const revision = await run("slots", async () => {
+      try { return (await deps.replaceSlots(set_ref, mutation, key("slots"))).updated_at; }
       catch (error) {
         if (!isConflict(error)) throw error;
-        if (!deps.readSet || !sameSet(target, await deps.readSet(set_ref))) throw error;
+        const actual = deps.readSet ? await deps.readSet(set_ref) : null;
+        if (!sameSet(target, actual)) throw error;
+        return z.object({ updated_at: z.string().datetime({ offset: true }) }).parse(actual).updated_at;
       }
-      return set_ref;
+    });
+    await run("sellable", async () => {
+      let expected_updated_at = revision;
+      if (revision === set_ref) {
+        const actual = deps.readSet ? await deps.readSet(set_ref) : null;
+        if (!sameSet(target, actual)) throw Object.assign(new Error("Món đã bị sửa ở nơi khác, mở lại bản sửa"), { status: 409 });
+        expected_updated_at = z.object({ updated_at: z.string().datetime({ offset: true }) }).parse(actual).updated_at;
+      }
+      return (await deps.createSellable(set_ref, { expected_updated_at, portion_count: z.number().int().positive().parse(content.servings) }, key("sellable"))).sku_ref;
     });
     failed_step = "complete";
     await deps.completeDraft(draft.id, { product_ref, set_ref }, key("complete"));
     return { ok: true, product_ref, set_ref };
   } catch (error) {
     const status = error && typeof error === "object" && "status" in error && typeof error.status === "number" ? error.status : 500;
+    const code = error && typeof error === "object" && "code" in error ? error.code : "";
+    if (failed_step === "sellable") {
+      if (code === "cost_fact_missing") return { ok: false, failed_step, error: { status, message: "Nguyên liệu trong món chưa có giá vốn. Nhập kho nguyên liệu rồi bấm Hoàn tất món lại." } };
+      if (status === 409) return { ok: false, failed_step, error: { status, message: "Món chưa chốt hoặc số suất đã thay đổi. Mở lại bản sửa để kiểm tra." } };
+      if (status === 503) return { ok: false, failed_step, error: { status, message: "Hệ thống tạm bận, thử hoàn tất món lại sau ít phút." } };
+    }
     return { ok: false, failed_step, error: { status, message: failed_step === "slots" && status === 409 ? "Món đã bị sửa ở nơi khác, mở lại bản sửa" : error instanceof Error ? error.message : "Không hoàn tất được món" } };
   }
 }
