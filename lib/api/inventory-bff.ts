@@ -1,10 +1,5 @@
 import { NextRequest } from "next/server";
-import { forwardService } from "@/lib/api/service-bff";
-
-const INVENTORY_SERVICE_URL =
-  process.env.INVENTORY_INTERNAL_URL ||
-  process.env.INVENTORY_SERVICE_URL ||
-  "http://localhost:8085";
+import { forwardService, serviceUrl } from "@/lib/api/service-bff";
 
 export async function forwardInventory(
   request: NextRequest,
@@ -14,7 +9,7 @@ export async function forwardInventory(
   requireAuth: boolean = true,
 ) {
   return forwardService(request, {
-    baseUrl: INVENTORY_SERVICE_URL, path, method, bodyPolicy, requireAuth,
+    baseUrl: serviceUrl("inventory"), path, method, bodyPolicy, requireAuth,
     unavailableMessage: "Dịch vụ kho hiện không khả dụng",
   });
 }

@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { forwardService } from "@/lib/api/service-bff";
+import { forwardService, serviceUrl } from "@/lib/api/service-bff";
 import type { CompleteDeps } from "./complete-dish";
 import type { DetailDeps, Product, SetDetail } from "./dish-detail";
 import type { DishContent, DraftRow, GroupNode, Line } from "./types";
@@ -8,9 +8,9 @@ import { draftSchema } from "@/lib/api/dishes";
 type Service = "sales" | "production" | "inventory";
 export function dishServices(request: NextRequest) {
   const baseUrls = {
-    sales: process.env.SALES_INTERNAL_URL || process.env.SALES_SERVICE_URL || "http://localhost:8086",
-    production: process.env.PRODUCTION_INTERNAL_URL || process.env.PRODUCTION_SERVICE_URL || "http://localhost:8087",
-    inventory: process.env.INVENTORY_INTERNAL_URL || process.env.INVENTORY_SERVICE_URL || "http://localhost:8085",
+    sales: serviceUrl("sales"),
+    production: serviceUrl("production"),
+    inventory: serviceUrl("inventory"),
   };
   async function call<T>(service: Service, path: string, method: "GET" | "POST" | "PUT" = "GET", body?: unknown, key?: string): Promise<T> {
     const headers = new Headers(request.headers);

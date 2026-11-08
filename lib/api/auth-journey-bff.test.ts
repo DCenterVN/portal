@@ -92,7 +92,7 @@ describe("S2 login policy", () => {
   it("switch failure never publishes cookie or console landing", async () => { const fetch = upstream([row()], 200, 403); const res = await staff(request()); expect(res.status).toBe(403); expect(res.headers.get("set-cookie")).toBeNull(); expect(await res.json()).not.toHaveProperty("next_path"); expect(fetch.mock.calls.at(-1)?.[0]).toContain("logout"); });
   it("transport failure is canonical INTERNAL_ERROR and does not expose exception", async () => { vi.stubGlobal("fetch", vi.fn().mockRejectedValue(Error("secret"))); const res = await staff(request()); expect(res.status).toBe(503); expect(await res.json()).toEqual({error: "INTERNAL_ERROR", message: "Dịch vụ xác thực hiện không khả dụng"}); });
   it.each(["https://evil.test", "//evil.test", "/\\evil.test", "/%5cevil.test", "/%2f%2fevil.test", "/%63onsole", "/store/../console", "/staff/../console", "/platform", "/console", "/staff/login"])("rejects cross-plane/encoded/external store landing %s", target => { expect(safeLanding(target, "customer")).toBe("/"); });
-  it("accepts store-only and fixed staff destinations", () => { expect(safeLanding("/products?q=food", "customer")).toBe("/products?q=food"); expect(safeLanding("/platform", "employee")).toBe("/platform"); expect(safeLanding("/", "employee")).toBe("/staff/switch-branch"); });
+  it("accepts store-only and fixed staff destinations", () => { expect(safeLanding("/products?q=food", "customer")).toBe("/products?q=food"); expect(safeLanding("/roles", "employee")).toBe("/roles"); expect(safeLanding("/", "employee")).toBe("/staff/switch-branch"); });
 });
 
 describe("S2 rejected-session redaction", () => {

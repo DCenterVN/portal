@@ -8,7 +8,7 @@ const objectValue = (value: unknown): Record<string, unknown> | null =>
 function parse(value: unknown): BranchChoice | null {
   const item = objectValue(value);
   if (typeof item?.branch_id !== "string" || typeof item.branch_name !== "string") return null;
-  if (item.branch_type !== "CENTRAL_KITCHEN" && item.branch_type !== "STORE") return null;
+  if (typeof item.branch_type !== "string") return null;
   if (item.branch_status === "CLOSED") return null;
   const roles = Array.isArray(item.roles) ? item.roles.filter((role): role is string => typeof role === "string") : [];
   const org = typeof item.org_name === "string" ? item.org_name : undefined;

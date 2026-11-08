@@ -1,9 +1,8 @@
+import { serviceUrl } from "@/lib/api/service-bff";
 import { NextRequest, NextResponse } from "next/server";
 import { decodeJwt } from "jose";
 import { publicError } from "@/lib/api/public-error";
 
-const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL || "http://localhost:8080";
-const ORG_SERVICE_URL = process.env.ORG_INTERNAL_URL || process.env.ORG_SERVICE_URL || "http://localhost:8081";
 
 interface AccessContextItem {
   org_id: string;
@@ -43,8 +42,8 @@ export async function GET(req: NextRequest) {
     // 1+2. Profile (Auth) and access contexts (Org) are independent: fetch together.
     const headers = { "Authorization": `Bearer ${accessToken}` };
     const [meResult, contextsResult] = await Promise.allSettled([
-      fetch(`${AUTH_SERVICE_URL}/auth/me`, { headers }),
-      fetch(`${ORG_SERVICE_URL}/org/access-contexts/me`, { headers }),
+      fetch(`${serviceUrl("auth")}/auth/me`, { headers }),
+      fetch(`${serviceUrl("org")}/org/access-contexts/me`, { headers }),
     ]);
     if (meResult.status === "rejected") throw meResult.reason;
     const meRes = meResult.value;
@@ -77,7 +76,7 @@ export async function GET(req: NextRequest) {
     let permissions: string[] = [];
     if (activeOrgId && activeBranchId) {
       const params = new URLSearchParams({ org_id: activeOrgId, branch_id: activeBranchId });
-      const permsRes = await fetch(`${ORG_SERVICE_URL}/org/permissions/me?${params}`, {
+      const permsRes = await fetch(`${serviceUrl("org")}/org/permissions/me?${params}`, {
           headers: {
             "Authorization": `Bearer ${accessToken}`,
           },

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { OPERATIONS, type OperationId } from "@/lib/contracts/operations.generated";
-import { forwardService } from "@/lib/api/service-bff";
+import { forwardService, serviceUrl } from "@/lib/api/service-bff";
 
 const packIds = [
   "createDishDraft", "listDishDrafts", "getDishDraft", "updateDishDraft", "recordDishDraftProgress",
@@ -29,8 +29,8 @@ async function forward(request: NextRequest, context: Context) {
   const operation = packOperations.find(op => op.method === request.method && matches(op.path, path));
   if (!operation) return NextResponse.json({ error: "not_found" }, { status: 404 });
   const baseUrl = operation.service === "sales"
-    ? process.env.SALES_INTERNAL_URL || process.env.SALES_SERVICE_URL || "http://localhost:8086"
-    : process.env.PRODUCTION_INTERNAL_URL || process.env.PRODUCTION_SERVICE_URL || "http://localhost:8087";
+    ? serviceUrl("sales")
+    : serviceUrl("production");
   const noBody = operation.method === "GET" || (operation.method === "DELETE" && operation.id !== "retirePackageRecipe");
   return forwardService(request, {
     baseUrl, path: `/${path.join("/")}${request.nextUrl.search}`, method: operation.method,

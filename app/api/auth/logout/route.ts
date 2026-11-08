@@ -1,7 +1,7 @@
+import { serviceUrl } from "@/lib/api/service-bff";
 import { NextRequest, NextResponse } from "next/server";
 import {authHeaders, resolveClientIP} from "@/lib/api/client-ip";
 
-const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL || "http://localhost:8080";
 
 const SESSION_COOKIES = ["access_token", "__Host-refresh_token", "refresh_token", "CSRF-Token", "portal_plane"];
 
@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
     const csrfToken = req.cookies.get("CSRF-Token")?.value || "";
     const accessToken = req.cookies.get("access_token")?.value || "";
 
-    const res = await fetch(`${AUTH_SERVICE_URL}/auth/web/logout`, {
+    const res = await fetch(`${serviceUrl("auth")}/auth/web/logout`, {
       method: "POST",
       headers: authHeaders(clientIP, {
         "Cookie": cookies,

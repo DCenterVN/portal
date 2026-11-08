@@ -97,7 +97,7 @@ async function restoreStatus() {
 }
 
 async function togglePermission(enabled: boolean) {
-  await adminPage.goto("/platform/role-matrix");
+  await adminPage.goto("/roles");
   await adminPage.getByRole("radio", { name: "SALES", exact: true }).click();
   const checkbox = adminPage.getByRole("checkbox", { name: permission, exact: true });
   await checkbox.setChecked(enabled);
@@ -222,9 +222,9 @@ test.describe("RBAC trên stack thật", () => {
 
   test("3. CUSTOMER không mở được khu quản trị và ma trận", async ({ page }) => {
     await login(page, "CUSTOMER");
-    await page.goto("/platform");
+    await page.goto("/roles");
     await expect.poll(async () => {
-      const redirected = !new URL(page.url()).pathname.startsWith("/platform");
+      const redirected = !new URL(page.url()).pathname.startsWith("/roles");
       const denied = await page.getByText(/Tài khoản này không có quyền mở nội dung|Bạn không có quyền/).isVisible();
       return redirected || denied;
     }).toBe(true);

@@ -1,10 +1,5 @@
 import { NextRequest } from "next/server";
-import { forwardService } from "@/lib/api/service-bff";
-
-const PRODUCTION_SERVICE_URL =
-  process.env.PRODUCTION_INTERNAL_URL ||
-  process.env.PRODUCTION_SERVICE_URL ||
-  "http://localhost:8087";
+import { forwardService, serviceUrl } from "@/lib/api/service-bff";
 
 export async function forwardProduction(
   request: NextRequest,
@@ -14,7 +9,7 @@ export async function forwardProduction(
   requireAuth: boolean = true,
 ) {
   return forwardService(request, {
-    baseUrl: PRODUCTION_SERVICE_URL, path, method, bodyPolicy, requireAuth,
+    baseUrl: serviceUrl("production"), path, method, bodyPolicy, requireAuth,
     unavailableMessage: "Dịch vụ sản xuất hiện không khả dụng",
   });
 }

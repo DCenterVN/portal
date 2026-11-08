@@ -2,6 +2,7 @@ import { test, expect, type Page, type Locator } from '@playwright/test';
 import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { resolve } from 'node:path';
+import { stripVTControlCharacters } from 'node:util';
 
 const root = resolve(process.cwd(), '..');
 const evidence = resolve(root, 'plans/261029-merge-chain/dev-e2e');
@@ -17,7 +18,7 @@ for (const line of readFileSync(`${homedir()}/.local/state/dcentervn/qa/role-acc
 const secrets = Object.entries(accounts).filter(([key]) => /PASSWORD|TOKEN|SECRET/.test(key)).map(([, value]) => value).filter(Boolean);
 function safe(value: string): string {
   for (const secret of secrets) value = value.replaceAll(secret, '[redacted]');
-  return value.replace(/\u001b\[[0-9;]*m/g, '').replace(/eyJ[A-Za-z0-9_.-]+/g, '[token redacted]')
+  return stripVTControlCharacters(value).replace(/eyJ[A-Za-z0-9_.-]+/g, '[token redacted]')
     .replace(/https?:\/\/[^\s"<>]+/g, url => { try { const parsed = new URL(url); return parsed.origin + parsed.pathname; } catch { return '[URL redacted]'; } });
 }
 function clean(value: unknown): unknown {

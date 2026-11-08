@@ -30,3 +30,13 @@ it("dòng phụ không nhắc lại loại chi nhánh khi nhãn đã nói loại
   expect(branchMeta({ name: "Cầu Giấy", type: "STORE", status: "SUSPENDED" })).toBe("Cửa hàng · Tạm ngừng");
   expect(branchMeta({ type: "STORE", status: "ACTIVE" })).toBe("Cửa hàng · Đang hoạt động");
 });
+
+it("loại chi nhánh lạ vẫn hiện, kèm mã thô", async () => {
+  const { branchChoices } = await import("./branch-choices");
+  const choices = branchChoices([
+    { branch_id: "b", branch_name: "Kho lạnh", branch_type: "COLD_HUB" },
+    { branch_id: "a", branch_name: "Bếp", branch_type: "CENTRAL_KITCHEN" },
+  ]);
+  expect(choices.map((choice) => choice.name)).toEqual(["Bếp", "Kho lạnh"]);
+  expect(branchTypeLabel("COLD_HUB")).toBe("COLD_HUB");
+});

@@ -1,5 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 
+export type ServiceName = "auth" | "org" | "integration" | "notification" | "inventory" | "sales" | "production";
+const DEV_PORTS: Record<ServiceName, number> = { auth: 8080, org: 8081, integration: 8082, notification: 8083, inventory: 8085, sales: 8086, production: 8087 };
+
+export function serviceUrl(service: ServiceName): string {
+  const prefix = service.toUpperCase();
+  const url = process.env[`${prefix}_INTERNAL_URL`] || process.env[`${prefix}_SERVICE_URL`];
+  if (url) return url;
+  if (process.env.NODE_ENV === "production") throw new Error(`SERVICE_URL_MISSING: ${prefix}_SERVICE_URL`);
+  return `http://localhost:${DEV_PORTS[service]}`;
+}
+
 type ServiceMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
 interface ForwardServiceOptions {

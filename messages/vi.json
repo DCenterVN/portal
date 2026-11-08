@@ -28,16 +28,6 @@
       "SALES": "Bán hàng"
     }
   },
-  "platform": {
-    "title": "Nền tảng",
-    "roleMatrix": "Ma trận quyền",
-    "audit": "Nhật ký",
-    "myCompany": "Công ty của tôi",
-    "loading": "Đang xác minh quyền truy cập…",
-    "denied": "Tài khoản này không có quyền mở nội dung.",
-    "blocked": "Không thể xác minh quyền. Truy cập đang bị chặn; hãy thử lại sau.",
-    "retry": "Thử lại"
-  },
   "customerAuth": {
     "phIdentifier": "email@vidu.com hoặc số điện thoại",
     "phPassword": "Nhập mật khẩu",

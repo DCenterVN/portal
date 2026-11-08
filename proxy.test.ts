@@ -52,7 +52,7 @@ describe("S15 staff proxy boundary",()=>{
  it.each(["/staff/switch-org","/staff/switch-branch","/console","/console/orders"])("protected staff route %s needs session and redirects staff login",path=>{const res=proxy(request(path));expect(res.status).toBe(307);expect(res.headers.get("location")).toContain("/staff/login?redirect="+encodeURIComponent(path));expect(proxy(request(path,"refresh_token=session; portal_plane=employee")).status).toBe(200);});
  it.each(["/staff/login/evil","/staff/login-evil","/staff/invite/accept/evil"])("staff public route lookalike %s is protected",path=>{expect(proxy(request(path)).status).toBe(307);});
  it.each(["/login","/register","/staff/login"])("cookie alone never skips %s or decides eligibility",path=>{expect(proxy(request(path,"access_token=jwt")).status).toBe(200);});
- it("store redirects customer and platform path stays reachable with session",()=>{expect(proxy(request("/me")).headers.get("location")).toContain("/login?redirect=%2Fme");expect(proxy(request("/platform/companies","access_token=platform")).status).toBe(200);});
+ it("store redirects customer path redirects to customer login",()=>{expect(proxy(request("/me")).headers.get("location")).toContain("/login?redirect=%2Fme");});
 });
 
 // The app route group is authoritative; every new console page must join this family.
@@ -64,7 +64,7 @@ function pages(dir: string): string[] {
 }
 const consolePages = pages(consoleRoot);
 describe("review R3 real route groups", () => {
- it.each([...consolePages,"/platform/companies","/platform/staff","/switch-branch","/switch-org"])("R3 unauthenticated %s uses staff login", path => {
+ it.each([...consolePages,"/switch-branch","/switch-org"])("R3 unauthenticated %s uses staff login", path => {
   expect(proxy(request(path)).headers.get("location")).toBe("http://localhost:3000/staff/login?redirect=" + encodeURIComponent(path));
  });
  it.each(["/orders","/me","/cart","/checkout"])("R3 customer %s uses customer login", path => {
@@ -97,7 +97,7 @@ describe("R4-1 employee console marker", () => {
   expect(proxy(request("/console", "portal_plane=employee")).headers.get("location")).toContain("/staff/login?");
   expect(proxy(request("/console", "access_token=customer; portal_plane=customer")).headers.get("location")).toContain("/staff/switch-org?");
  });
- it.each(["/staff/switch-org", "/staff/switch-branch", "/platform/companies", "/orders", "/branches-lookalike"])("session without marker still permits unchanged route %s", path => {
+ it.each(["/staff/switch-org", "/staff/switch-branch", "/orders", "/branches-lookalike"])("session without marker still permits unchanged route %s", path => {
   expect(proxy(request(path, "access_token=session")).headers.get("x-middleware-next")).toBe("1");
  });
 });

@@ -1,10 +1,5 @@
 import { NextRequest } from "next/server";
-import { forwardService } from "@/lib/api/service-bff";
-
-const SALES_SERVICE_URL =
-  process.env.SALES_INTERNAL_URL ||
-  process.env.SALES_SERVICE_URL ||
-  "http://localhost:8086";
+import { forwardService, serviceUrl } from "@/lib/api/service-bff";
 
 export async function forwardSales(
   request: NextRequest,
@@ -14,7 +9,7 @@ export async function forwardSales(
   requireAuth: boolean = true,
 ) {
   return forwardService(request, {
-    baseUrl: SALES_SERVICE_URL, path, method, bodyPolicy, requireAuth,
+    baseUrl: serviceUrl("sales"), path, method, bodyPolicy, requireAuth,
     unavailableMessage: "Dịch vụ bán hàng hiện không khả dụng",
   });
 }

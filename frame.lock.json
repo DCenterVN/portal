@@ -2,7 +2,7 @@
   "files": {
     "app/frame-lock.test.ts": "a7c96e51446f1bdff57c45a78a3d8639985c345cdd9c962e305e4be67983021d",
     "app/globals.css": "8606dfba05d9e0ba228ab9e6a75ed74e4291098cf988f3b112115afe4d06fbd9",
-    "app/layout-gate.test.ts": "f74495fc51b9705db3ff8f5fd8e9ecf265a5b60ca06c635be2db384ede411bd1",
+    "app/layout-gate.test.ts": "e5ef042c75f977a1f819573b694cb4f47748125dd216e38802535fe46a52e5a6",
     "app/layout.tsx": "0dad3f2286c2d912a860d8ed9b8f5189af62e774b7d4f76ec3725db6570ee5d7",
     "app/tokens.generated.css": "b772f113e0d7cb24cb8dba4c7856e1c53d3657668a8bfa2314b62bf2795d24bb",
     "app/ui-rules-gate.test.ts": "0724c6eaef77c9ec570d856d660eab2b9d221d02c221f5e4ff5071cf3e73d43e",

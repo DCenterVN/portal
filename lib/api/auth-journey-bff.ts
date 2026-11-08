@@ -1,3 +1,4 @@
+import { serviceUrl } from "@/lib/api/service-bff";
 import "server-only";
 import {decodeJwt} from "jose";
 import {authHeaders, resolveClientIP} from "./client-ip";
@@ -6,8 +7,8 @@ import {CONSOLE_ROUTES} from "../fetcher";
 import { NextRequest, NextResponse } from "next/server";
 import { publicError } from "./public-error";
 
-const authUrl = () => process.env.AUTH_SERVICE_URL || "http://localhost:8080";
-const orgUrl = () => process.env.ORG_INTERNAL_URL || process.env.ORG_SERVICE_URL || "http://localhost:8081";
+const authUrl = () => serviceUrl("auth");
+const orgUrl = () => serviceUrl("org");
 type Journey = "customer" | "employee";
 type Json = Record<string, unknown>;
 const object = (value: unknown): value is Json => !!value && typeof value === "object" && !Array.isArray(value);
@@ -32,7 +33,7 @@ export function safeLanding(target: string, journey: Journey): string {
     if (url.origin !== "https://portal.invalid") return fallback;
     const pathname = url.pathname;
     if (journey === "employee") {
-      if (["/staff/switch-branch", "/platform"].includes(pathname)) return !url.search && !url.hash ? pathname : fallback;
+      if (["/staff/switch-branch"].includes(pathname)) return !url.search && !url.hash ? pathname : fallback;
       return CONSOLE_ROUTES.some(path => pathname === path || pathname.startsWith(`${path}/`)) ? `${pathname}${url.search}${url.hash}` : fallback;
     }
     if (pathname !== "/" && !/^\/(products|cart|checkout|orders|me)(\/|$)/.test(pathname)) return fallback;
@@ -135,7 +136,7 @@ async function staffDecision(token: string, session: Session): Promise<Decision 
   const permissions = await fetch(`${orgUrl()}/org/permissions/me?${new URLSearchParams({org_id, branch_id})}`, {headers: {Authorization: `Bearer ${active}`}, cache: "no-store"});
   if (!permissions.ok) return upstreamError(permissions);
   const {action_keys} = permissionsSchema.parse(await permissions.json());
-  return {next_path: action_keys.includes("org:role:update") ? "/platform" : "/console", token: active, expires_in, cookies};
+  return {next_path: action_keys.includes("org:role:update") ? "/roles" : "/console", token: active, expires_in, cookies};
 }
 
 export async function loginJourney(req: NextRequest, journey: Journey): Promise<NextResponse> {
@@ -164,7 +165,7 @@ async function authenticateJourney(req: NextRequest, journey: Journey): Promise<
     const decision = journey === "customer" ? {next_path: "/", token: temporaryToken, expires_in: undefined, cookies: undefined} : await staffDecision(temporaryToken, {clientIP, userAgent: req.headers.get("user-agent") || "portal-bff", cookies});
     if (decision instanceof NextResponse) return decision;
     const requested = typeof redirect === "string" && redirect ? safeLanding(redirect, journey) : "";
-    const landing = requested && requested !== "/staff/switch-branch" && requested !== "/platform" && (journey === "customer" || decision.next_path === "/console") ? requested : safeLanding(decision.next_path, journey);
+    const landing = requested && requested !== "/staff/switch-branch" && (journey === "customer" || decision.next_path === "/console") ? requested : safeLanding(decision.next_path, journey);
     const result = response({user: {id: user.id, email: user.email, phone: user.phone, display_name: user.display_name, status: user.status}, expires_in: decision.expires_in ?? data.expires_in, next_path: landing});
     const issuedCookies = decision.cookies?.length ? decision.cookies : cookies;
     result.cookies.set("access_token", decision.token, {path: "/", maxAge: decision.expires_in ?? (typeof data.expires_in === "number" && data.expires_in > 0 ? data.expires_in : 900), sameSite: "strict", httpOnly: true, secure: true});
@@ -209,7 +210,7 @@ export async function acceptStaffInvite(request: NextRequest) {
  if (fields instanceof NextResponse) return fields;
  if ([...(fields.password as string)].length<12 || new TextEncoder().encode(fields.password as string).length>256) return response({error:"VALIDATION_ERROR"},400);
  try {
-  const upstream=await fetch(`${process.env.AUTH_SERVICE_URL || "http://localhost:8080"}/auth/invite/accept`,{method:"POST",cache:"no-store",headers:authHeaders(resolveClientIP(request.headers), {"Content-Type":"application/json"}),body:JSON.stringify({token:fields.token,password:fields.password})});
+  const upstream=await fetch(`${authUrl()}/auth/invite/accept`,{method:"POST",cache:"no-store",headers:authHeaders(resolveClientIP(request.headers), {"Content-Type":"application/json"}),body:JSON.stringify({token:fields.token,password:fields.password})});
   if (!upstream.ok) return upstreamError(upstream);
   const data=decodePlatform(await upstream.json(), {parse(value: unknown) {
    if (!object(value) || value.status !== "activated") throw Error("Invalid invite response");

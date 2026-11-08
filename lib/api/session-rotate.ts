@@ -1,8 +1,8 @@
+import { serviceUrl } from "@/lib/api/service-bff";
 import { NextRequest, NextResponse } from "next/server";
 import { authHeaders, resolveClientIP } from "@/lib/api/client-ip";
 import { setPortalPlane } from "@/lib/api/auth-journey-bff";
 
-const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL || "http://localhost:8080";
 
 export async function rotateSession(req: NextRequest, path: string, body?: unknown, employee = false) {
   let clientIP: string | undefined;
@@ -14,7 +14,7 @@ export async function rotateSession(req: NextRequest, path: string, body?: unkno
     const cookies = req.headers.get("cookie") || "";
     const csrfToken = req.cookies.get("CSRF-Token")?.value || "";
 
-    const res = await fetch(`${AUTH_SERVICE_URL}${path}`, {
+    const res = await fetch(`${serviceUrl("auth")}${path}`, {
       method: "POST",
       headers: authHeaders(clientIP, {
         "Cookie": cookies,
