@@ -3,65 +3,8 @@ info:
   title: org public API
   version: 0.1.0
 security:
-  - bearerAuth: []
+- bearerAuth: []
 paths:
-  /orgs/{org_id}/branches:
-    post:
-      x-action-key: org:branch:create
-      x-scope: none
-      x-exposure: public
-      operationId: createBranch
-      parameters: [{$ref: "#/components/parameters/OrgID"}]
-      responses:
-        "201": {description: Branch created}
-  /orgs/{org_id}:
-    patch:
-      x-action-key: org:org:update
-      x-scope: none
-      x-exposure: public
-      operationId: updateOrg
-      parameters: [{$ref: "#/components/parameters/OrgID"}]
-      responses:
-        "200": {description: Org updated}
-  /orgs/{org_id}/memberships:
-    get:
-      x-action-key: org:membership:list
-      x-scope: none
-      x-exposure: public
-      operationId: listMemberships
-      parameters: [{$ref: "#/components/parameters/OrgID"}]
-      responses:
-        "200": {description: Membership page}
-    post:
-      x-action-key: org:membership:create
-      x-scope: none
-      x-exposure: public
-      operationId: createMembership
-      parameters: [{$ref: "#/components/parameters/OrgID"}]
-      responses:
-        "201": {description: Membership created}
-  /orgs/{org_id}/memberships/{membership_id}:
-    patch:
-      x-action-key: org:membership:update
-      x-scope: none
-      x-exposure: public
-      operationId: updateMembership
-      parameters:
-        - {$ref: "#/components/parameters/OrgID"}
-        - {$ref: "#/components/parameters/MembershipID"}
-      responses:
-        "200": {description: Membership updated}
-  /orgs/{org_id}/memberships/{membership_id}/roles:
-    put:
-      x-action-key: org:membership:manage
-      x-scope: none
-      x-exposure: public
-      operationId: replaceMembershipRoles
-      parameters:
-        - {$ref: "#/components/parameters/OrgID"}
-        - {$ref: "#/components/parameters/MembershipID"}
-      responses:
-        "200": {description: Roles replaced}
   /org/access-contexts/me:
     get:
       x-action-key: self
@@ -69,7 +12,8 @@ paths:
       x-exposure: public
       operationId: getMyAccessContexts
       responses:
-        "200": {description: Caller memberships (employee branches); empty for a customer}
+        '200':
+          description: Branches the caller can enter (membership or all_branches, not CLOSED), each with branch_code, branch_name, branch_type and branch_status; empty for a customer
   /org/permissions/me:
     get:
       x-action-key: self
@@ -77,215 +21,623 @@ paths:
       x-exposure: public
       operationId: getMyPermissions
       parameters:
-        - {$ref: "#/components/parameters/OrgIDQuery"}
-        - {name: branch_id, in: query, required: true, schema: {type: string, format: uuid}}
+      - $ref: '#/components/parameters/OrgIDQuery'
+      - name: branch_id
+        in: query
+        required: true
+        schema:
+          type: string
+          format: uuid
       responses:
-        "200": {description: Caller actions at the branch}
-  /platform/me:
+        '200':
+          description: Caller actions at the branch
+  /org/company/roles:
     get:
-      x-action-key: self
+      x-action-key: org:role:read
       x-scope: none
       x-exposure: public
-      operationId: getPlatformMe
+      operationId: listCompanyRoles
       responses:
-        "200": {description: Caller platform role and actions (404 when not platform staff)}
-  /platform/companies:
-    get:
-      x-action-key: platform:org:read
-      x-scope: none
-      x-exposure: public
-      operationId: listCompanies
-      responses:
-        "200": {description: Company page}
-    post:
-      x-action-key: platform:org:onboard
-      x-scope: none
-      x-exposure: public
-      operationId: onboardCompany
-      responses:
-        "201": {description: Company onboarded by contract}
-  /platform/companies/{root_branch_id}/modules:
-    get:
-      x-action-key: platform:org:read
-      x-scope: none
-      x-exposure: public
-      operationId: listCompanyModulesPlatform
-      parameters:
-        - {$ref: "#/components/parameters/RootBranchID"}
-      responses:
-        "200": {description: Company modules}
-  /platform/companies/{root_branch_id}/modules/{module_code}:
-    put:
-      x-action-key: platform:module:manage
-      x-scope: none
-      x-exposure: public
-      operationId: setCompanyModule
-      parameters:
-        - {$ref: "#/components/parameters/RootBranchID"}
-        - {$ref: "#/components/parameters/ModuleCode"}
-      responses:
-        "200": {description: Module set}
-  /platform/companies/{root_branch_id}/role-matrix:
-    get:
-      x-action-key: platform:role_matrix:read
-      x-scope: none
-      x-exposure: public
-      operationId: getCompanyRoleMatrixPlatform
-      parameters:
-        - {$ref: "#/components/parameters/RootBranchID"}
-      responses:
-        "200": {description: Role to actions of the company}
-  /platform/companies/{root_branch_id}/role-matrix/roles/{role_code}:
-    put:
-      x-action-key: platform:role_matrix:update
-      x-scope: none
-      x-exposure: public
-      operationId: replaceCompanyRoleActions
-      parameters:
-        - {$ref: "#/components/parameters/RootBranchID"}
-        - {$ref: "#/components/parameters/RoleCode"}
-      responses:
-        "200": {description: Role actions replaced in every branch of the company}
-  /platform/staff:
-    get:
-      x-action-key: platform:staff:manage
-      x-scope: none
-      x-exposure: public
-      operationId: listPlatformStaff
-      responses:
-        "200": {description: Platform staff}
-    post:
-      x-action-key: platform:staff:manage
-      x-scope: none
-      x-exposure: public
-      operationId: grantPlatformStaff
-      responses:
-        "201": {description: Platform role granted}
-  /platform/staff/{user_id}/revoke:
-    post:
-      x-action-key: platform:staff:manage
-      x-scope: none
-      x-exposure: public
-      operationId: revokePlatformStaff
-      parameters:
-        - {$ref: "#/components/parameters/UserID"}
-      responses:
-        "200": {description: Platform role revoked}
-  /platform/support-access:
-    get:
-      x-action-key: platform:support_access:request
-      x-scope: none
-      x-exposure: public
-      operationId: listMySupportAccess
-      responses:
-        "200": {description: Grants requested by the caller}
-    post:
-      x-action-key: platform:support_access:request
-      x-scope: none
-      x-exposure: public
-      operationId: requestSupportAccess
-      responses:
-        "201": {description: Grant requested (STANDING when the company consents)}
-  /platform/support-access/break-glass:
-    post:
-      x-action-key: platform:support_access:break_glass
-      x-scope: none
-      x-exposure: public
-      operationId: breakGlass
-      responses:
-        "201": {description: Break-glass grant, 4h max}
-  /platform/audit-logs:
-    get:
-      x-action-key: platform:audit:read
-      x-scope: none
-      x-exposure: public
-      operationId: listAuditLogsPlatform
-      responses:
-        "200": {description: Audit page without before/after}
+        '200':
+          description: Assignable employee roles, each with the branch types it may be assigned at
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/RoleResponse'
+        '401':
+          description: Authentication required
+        '403':
+          description: Missing permission
+        '503':
+          description: UNAVAILABLE
   /org/company/role-matrix:
     get:
       x-action-key: org:company:read
       x-scope: none
       x-exposure: public
       operationId: getCompanyRoleMatrix
-      parameters:
-        - {$ref: "#/components/parameters/OrgIDQuery"}
       responses:
-        "200": {description: Role to actions of the company}
-  /org/company/modules:
-    get:
-      x-action-key: org:company:read
-      x-scope: none
-      x-exposure: public
-      operationId: listCompanyModules
-      parameters:
-        - {$ref: "#/components/parameters/OrgIDQuery"}
-      responses:
-        "200": {description: Company modules}
+        '200':
+          description: Role to actions of the company
   /org/company/audit-logs:
     get:
       x-action-key: org:company:read
       x-scope: none
       x-exposure: public
       operationId: listCompanyAuditLogs
-      parameters:
-        - {$ref: "#/components/parameters/OrgIDQuery"}
       responses:
-        "200": {description: Company audit page}
-  /org/company/support-access:
+        '200':
+          description: Company audit page
+  /org/company/role-matrix/roles/{role_code}:
+    put:
+      x-action-key: org:role:update
+      x-scope: none
+      x-exposure: public
+      operationId: replaceCompanyRoleActions
+      parameters:
+      - $ref: '#/components/parameters/RoleCode'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - actions
+              properties:
+                actions:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: Role actions replaced
+        '400':
+          description: Invalid request
+        '401':
+          description: Authentication required
+        '403':
+          description: Missing permission
+        '404':
+          description: Role not found
+  /org/company:
     get:
       x-action-key: org:company:read
       x-scope: none
       x-exposure: public
-      operationId: listCompanySupportAccess
-      parameters:
-        - {$ref: "#/components/parameters/OrgIDQuery"}
+      operationId: getCompany
       responses:
-        "200": {description: Support grants of the company}
-  /org/company/settings:
+        '200':
+          description: Company id and name (MAIN branch)
+        '404':
+          description: Company not found
+  /org/company/memberships:
+    get:
+      x-action-key: org:membership:read
+      x-scope: none
+      x-exposure: public
+      operationId: listCompanyMemberships
+      parameters:
+      - name: branch_id
+        in: query
+        schema:
+          type: string
+          format: uuid
+      - name: page
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/CompanyMembershipResponse'
+                      page:
+                        type: integer
+                      limit:
+                        type: integer
+        '400':
+          description: VALIDATION_ERROR
+        '401':
+          description: UNAUTHORIZED
+        '403':
+          description: FORBIDDEN
+        '503':
+          description: UNAVAILABLE
+    post:
+      x-action-key: org:employee:create
+      x-scope: none
+      x-exposure: public
+      operationId: createCompanyMembership
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCompanyMembershipRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/CompanyMembershipResponse'
+        '400':
+          description: VALIDATION_ERROR
+        '401':
+          description: UNAUTHORIZED
+        '403':
+          description: FORBIDDEN
+        '404':
+          description: NOT_FOUND
+        '409':
+          description: CONFLICT
+        '503':
+          description: UNAVAILABLE
+  /org/company/memberships/{membership_id}/roles:
     put:
-      x-action-key: org:support_access:approve
+      x-action-key: org:membership:update
       x-scope: none
       x-exposure: public
-      operationId: updateCompanySettings
+      operationId: replaceCompanyMembershipRoles
       parameters:
-        - {$ref: "#/components/parameters/OrgIDQuery"}
+      - $ref: '#/components/parameters/MembershipID'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReplaceCompanyMembershipRolesRequest'
       responses:
-        "200": {description: Standing support consent set}
-  /org/support-access/{grant_id}/approve:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/CompanyMembershipRolesResponse'
+        '400':
+          description: VALIDATION_ERROR
+        '401':
+          description: UNAUTHORIZED
+        '403':
+          description: FORBIDDEN
+        '404':
+          description: NOT_FOUND
+        '409':
+          description: CONFLICT
+        '503':
+          description: UNAVAILABLE
+  /org/company/memberships/{membership_id}:
+    patch:
+      x-action-key: org:membership:update
+      x-scope: none
+      x-exposure: public
+      operationId: updateCompanyMembership
+      parameters:
+      - $ref: '#/components/parameters/MembershipID'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCompanyMembershipRequest'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/CompanyMembershipStatusResponse'
+        '400':
+          description: VALIDATION_ERROR
+        '401':
+          description: UNAUTHORIZED
+        '403':
+          description: FORBIDDEN
+        '404':
+          description: NOT_FOUND
+        '409':
+          description: CONFLICT
+        '503':
+          description: UNAVAILABLE
+    delete:
+      x-action-key: org:membership:update
+      x-scope: none
+      x-exposure: public
+      operationId: deleteCompanyMembership
+      parameters:
+      - $ref: '#/components/parameters/MembershipID'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/DeleteCompanyMembershipResponse'
+        '400':
+          description: VALIDATION_ERROR
+        '401':
+          description: UNAUTHORIZED
+        '403':
+          description: FORBIDDEN
+        '404':
+          description: NOT_FOUND
+        '409':
+          description: CONFLICT
+        '503':
+          description: UNAVAILABLE
+  /org/company/branches:
+    get:
+      x-action-key: org:branch:read
+      x-scope: none
+      x-exposure: public
+      operationId: listCompanyBranches
+      parameters:
+      - name: page
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/BranchResponse'
+                      page:
+                        type: integer
+                      limit:
+                        type: integer
+        '400':
+          description: VALIDATION_ERROR
+        '401':
+          description: UNAUTHORIZED
+        '403':
+          description: FORBIDDEN
+        '503':
+          description: UNAVAILABLE
     post:
-      x-action-key: org:support_access:approve
+      x-action-key: org:branch:create
       x-scope: none
       x-exposure: public
-      operationId: approveSupportAccess
-      parameters:
-        - {$ref: "#/components/parameters/OrgIDQuery"}
-        - {$ref: "#/components/parameters/GrantID"}
+      operationId: createCompanyBranch
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBranchRequest'
       responses:
-        "200": {description: Grant active for 24h}
-  /org/support-access/{grant_id}/revoke:
-    post:
-      x-action-key: org:support_access:approve
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/BranchResponse'
+        '400':
+          description: VALIDATION_ERROR
+        '401':
+          description: UNAUTHORIZED
+        '403':
+          description: FORBIDDEN
+        '409':
+          description: CONFLICT
+        '503':
+          description: UNAVAILABLE
+  /org/company/branches/{branch_id}:
+    patch:
+      x-action-key: org:branch:update
       x-scope: none
       x-exposure: public
-      operationId: revokeSupportAccess
+      operationId: updateCompanyBranch
       parameters:
-        - {$ref: "#/components/parameters/OrgIDQuery"}
-        - {$ref: "#/components/parameters/GrantID"}
+      - name: branch_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateBranchRequest'
       responses:
-        "200": {description: Grant revoked}
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/BranchResponse'
+        '400':
+          description: VALIDATION_ERROR
+        '401':
+          description: UNAUTHORIZED
+        '403':
+          description: FORBIDDEN
+        '404':
+          description: NOT_FOUND
+        '409':
+          description: CONFLICT
+        '503':
+          description: UNAVAILABLE
 components:
+  schemas:
+    RoleResponse:
+      type: object
+      required:
+      - code
+      - name
+      - description
+      - sort_order
+      - protected
+      - branch_types
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        sort_order:
+          type: integer
+        protected:
+          type: boolean
+        branch_types:
+          type: array
+          items:
+            type: string
+            enum:
+            - CENTRAL_KITCHEN
+            - STORE
+    CreateCompanyMembershipRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - role_codes
+      properties:
+        user_id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        display_name:
+          type: string
+        role_codes:
+          type: array
+          items: &id001
+            type: string
+          minItems: 1
+        branch_id:
+          type: string
+          format: uuid
+    ReplaceCompanyMembershipRolesRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - role_codes
+      properties:
+        role_codes: &id002
+          type: array
+          items: *id001
+    UpdateCompanyMembershipRequest:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        status: &id003
+          type: string
+          enum:
+          - ACTIVE
+          - SUSPENDED
+        all_branches:
+          type: boolean
+    CompanyMembershipResponse:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - user_id
+      - branch_id
+      - branch_name
+      - all_branches
+      - role_codes
+      - status
+      - display_name
+      - email
+      properties:
+        id:
+          type: string
+        user_id:
+          type: string
+        branch_id:
+          type: string
+        branch_name:
+          type: string
+        all_branches:
+          type: boolean
+        role_codes: *id002
+        status: *id003
+        display_name:
+          type: string
+        email:
+          type: string
+    DeleteCompanyMembershipResponse:
+      type: object
+      properties:
+        membership_id:
+          type: string
+          format: uuid
+    CompanyMembershipRolesResponse:
+      type: object
+      additionalProperties: false
+      required:
+      - membership_id
+      - role_codes
+      properties:
+        membership_id:
+          type: string
+        role_codes: *id002
+    CompanyMembershipStatusResponse:
+      type: object
+      additionalProperties: false
+      required:
+      - membership_id
+      - status
+      - all_branches
+      properties:
+        membership_id:
+          type: string
+        status: *id003
+        all_branches:
+          type: boolean
+    CreateBranchRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - code
+      - name
+      properties:
+        code:
+          type: string
+          minLength: 2
+          maxLength: 64
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        type:
+          type: string
+          enum:
+          - CENTRAL_KITCHEN
+          - STORE
+          default: STORE
+    UpdateBranchRequest:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        status:
+          type: string
+          enum:
+          - ACTIVE
+          - SUSPENDED
+          - CLOSED
+    BranchResponse:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - code
+      - name
+      - type
+      - status
+      - employee_count
+      properties:
+        id:
+          type: string
+        code:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+          enum:
+          - CENTRAL_KITCHEN
+          - STORE
+        status:
+          type: string
+          enum:
+          - ACTIVE
+          - SUSPENDED
+          - CLOSED
+        employee_count:
+          type: integer
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
   parameters:
-    OrgID: {name: org_id, in: path, required: true, schema: {type: string, format: uuid}}
-    MembershipID: {name: membership_id, in: path, required: true, schema: {type: string, format: uuid}}
-    RootBranchID: {name: root_branch_id, in: path, required: true, schema: {type: string, format: uuid}}
-    ModuleCode: {name: module_code, in: path, required: true, schema: {type: string}}
-    RoleCode: {name: role_code, in: path, required: true, schema: {type: string}}
-    UserID: {name: user_id, in: path, required: true, schema: {type: string, format: uuid}}
-    GrantID: {name: grant_id, in: path, required: true, schema: {type: string, format: uuid}}
-    OrgIDQuery: {name: org_id, in: query, required: true, schema: {type: string, format: uuid}}
+    MembershipID:
+      name: membership_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    RoleCode:
+      name: role_code
+      in: path
+      required: true
+      schema:
+        type: string
+    OrgIDQuery:
+      name: org_id
+      in: query
+      required: true
+      schema:
+        type: string
+        format: uuid

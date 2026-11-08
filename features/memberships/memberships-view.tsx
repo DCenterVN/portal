@@ -14,15 +14,17 @@ import { PageHeading } from "@/components/patterns/page-heading";
 import { EmptyState, ErrorState, LoadingState } from "@/components/patterns/empty-state";
 import { RequireAction, useAccess } from "@/lib/access-boundary";
 import { branchLabel, branchMeta } from "@/lib/branch-label";
-import { roleName } from "@/lib/permission-labels";
+import { ADMIN_ROLE } from "@/lib/permission-labels";
+import { catalogRoleName } from "@/lib/role-catalog";
+import type { RoleCatalogItem } from "@/lib/api/platform-client";
 import { AddStaffDialog } from "@/features/branches/add-staff-dialog";
 import { useBranches } from "@/features/branches/use-branches";
-import { useMemberships } from "@/features/roles/use-roles";
+import { useMemberships, useRoleCatalog } from "@/features/roles/use-roles";
 import { AssignSheet } from "./assign-sheet";
 import { filterPeople, groupByPerson } from "./people";
 
-function chipText(branchName: string, roles: readonly string[], locked: boolean): string {
-  const text = roles.length ? `${branchName} · ${roles.map(roleName).join(", ")}` : branchName;
+function chipText(catalog: readonly RoleCatalogItem[] | undefined, branchName: string, roles: readonly string[], locked: boolean): string {
+  const text = roles.length ? `${branchName} · ${roles.map((code) => catalogRoleName(catalog, code)).join(", ")}` : branchName;
   return locked ? `${text} (khoá)` : text;
 }
 
@@ -30,6 +32,7 @@ export function MembershipsView({ membershipId }: { membershipId?: string }) {
   const { can, scope } = useAccess();
   const members = useMemberships(can("org:membership:read"));
   const branches = useBranches(can("org:branch:read"));
+  const catalog = useRoleCatalog(can("org:role:read"));
   const [branchId, setBranchId] = useState("");
   const [query, setQuery] = useState("");
   const [picked, setPicked] = useState<string | null | undefined>(undefined);
@@ -91,7 +94,7 @@ export function MembershipsView({ membershipId }: { membershipId?: string }) {
                         <TableCell className="align-top"><Link href={`/memberships/${person.userId}`} className="block font-medium text-primary hover:underline">{person.name || "—"}</Link>{person.email && person.email !== person.name && <span className="block text-xs text-muted-foreground">{person.email}</span>}</TableCell>
                         <TableCell><div className="flex flex-wrap gap-1.5">
                           {person.allBranches && <Badge>Mọi chi nhánh</Badge>}
-                          {person.assignments.map((item) => <Badge key={item.branchId} variant="secondary">{chipText(item.branchName, item.roles, item.locked)}</Badge>)}
+                          {person.assignments.map((item) => <Badge key={item.branchId} variant="secondary">{chipText(catalog.data, item.branchName, item.roles, item.locked)}</Badge>)}
                         </div></TableCell>
                         <TableCell className="align-top"><StatusBadge tone={active ? "success" : "warning"}>{active ? "Đang hoạt động" : "Tạm khoá"}</StatusBadge></TableCell>
                       </TableRow>
@@ -106,7 +109,7 @@ export function MembershipsView({ membershipId }: { membershipId?: string }) {
             key={selected.userId}
             person={selected}
             branches={branches.data ?? []}
-            viewerIsAdmin={scope?.roles.includes("ADMIN") ?? false}
+            viewerIsAdmin={scope?.roles.includes(ADMIN_ROLE) ?? false}
             isSelf={selected.userId === scope?.userId}
             canUpdate={can("org:membership:update")}
             canCreate={can("org:employee:create")}

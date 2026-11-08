@@ -50,7 +50,7 @@ export function AddStaffDialog({ open, onOpenChange, branch: initial, branches, 
   const form = useForm<Values>({ resolver, mode: "onTouched", defaultValues: { roles: [], name: "", email: "" } });
   const { errors, isSubmitting } = form.formState;
   const catalog = useRoleCatalog(open);
-  const roleOptions = roleOptionsFor(catalog.data ?? [], branch.type).filter((option) => option.code !== "ADMIN");
+  const roleOptions = roleOptionsFor(catalog.data ?? [], branch.type).filter((option) => !option.protected);
   const matches = candidatePeople(members, branch.id, query);
   const ready = mode === "new" || person !== null;
 

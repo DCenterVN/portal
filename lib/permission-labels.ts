@@ -7,6 +7,8 @@ export const AREAS = [
   { prefix: "auth", name: "Tài khoản" },
 ] as const;
 
+export const ADMIN_ROLE = "ADMIN";
+
 export const ROLE_INFO: Record<string, { name: string; job: string }> = {
   ADMIN: { name: "Quản trị hệ thống", job: "Toàn quyền: quản lý nhân viên, vai trò, duyệt giá và chỉ tiêu sản xuất" },
   FOOD_DEV: { name: "Dinh dưỡng", job: "Soạn món, gói, công thức, thực đơn và lập chỉ tiêu sản xuất" },
