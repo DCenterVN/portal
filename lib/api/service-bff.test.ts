@@ -1,6 +1,6 @@
 import { afterEach, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
-import { forwardService } from "./service-bff";
+import { forwardService, serviceUrl } from "./service-bff";
 afterEach(() => vi.unstubAllGlobals());
 const options = { baseUrl: "http://inventory.test", path: "/inventory/suppliers", method: "POST" as const, unavailableMessage: "Kho không sẵn sàng" };
 it("forward If-Match/key, không forward role; response luôn no-store", async () => {
@@ -17,4 +17,12 @@ it("thiếu cookie hoặc JSON sai không gọi upstream", async () => {
   expect((await forwardService(new NextRequest("http://portal.test", { method: "POST", body: "{}" }), options)).status).toBe(401);
   expect((await forwardService(new NextRequest("http://portal.test", { method: "POST", headers: { cookie: "access_token=test-only" }, body: "bad" }), options)).status).toBe(400);
   expect(fetch).not.toHaveBeenCalled();
+});
+it("thiếu env ở production báo lỗi nêu tên biến, ngoài production dùng localhost", () => {
+  vi.stubEnv("ORG_INTERNAL_URL", ""); vi.stubEnv("ORG_SERVICE_URL", "");
+  vi.stubEnv("NODE_ENV", "production");
+  expect(() => serviceUrl("org")).toThrow("SERVICE_URL_MISSING: ORG_SERVICE_URL");
+  vi.stubEnv("NODE_ENV", "development");
+  expect(serviceUrl("org")).toBe("http://localhost:8081");
+  vi.unstubAllEnvs();
 });

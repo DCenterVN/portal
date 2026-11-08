@@ -152,15 +152,25 @@ describe("company client contracts", () => {
 describe("role catalog client", () => {
   it("reads branch types and tolerates a role without any", async () => {
     global.fetch = vi.fn().mockResolvedValue(new Response(JSON.stringify({ code: 200, status: "success", message: "OK", data: { items: [{ code: "SALES", name: "Bán hàng", branch_types: ["CENTRAL_KITCHEN", "STORE"] }, { code: "NEW", name: "Mới", branch_types: null }] } })));
-    expect(await companyRoles()).toEqual([{ code: "SALES", name: "Bán hàng", branch_types: ["CENTRAL_KITCHEN", "STORE"] }, { code: "NEW", name: "Mới", branch_types: [] }]);
+    expect(await companyRoles()).toEqual([{ code: "SALES", name: "Bán hàng", description: "", sort_order: 0, protected: false, branch_types: ["CENTRAL_KITCHEN", "STORE"] }, { code: "NEW", name: "Mới", description: "", sort_order: 0, protected: false, branch_types: [] }]);
     expect(new URL(String((global.fetch as ReturnType<typeof vi.fn>).mock.calls[0][0]), "http://localhost").pathname).toBe("/api/org/company/roles");
   });
 });
 
 describe("branch list client", () => {
-  it("gives every branch the company name, taken from the central kitchen", async () => {
+  it("takes the company name from GET /org/company and keeps unknown branch types", async () => {
     const row = (name: string, type: string) => ({ id: root, code: "X", name, type, status: "ACTIVE", employee_count: 1 });
-    global.fetch = vi.fn().mockResolvedValue(new Response(JSON.stringify({ code: 200, status: "success", message: "OK", data: { items: [row("Cửa hàng Cầu Giấy", "STORE"), row("Sunny", "CENTRAL_KITCHEN")], page: 1, limit: 100 } })));
-    expect((await companyBranches()).map((branch) => branch.org)).toEqual(["Sunny", "Sunny"]);
+    const envelope = (data: unknown) => new Response(JSON.stringify({ code: 200, status: "success", message: "OK", data }));
+    global.fetch = vi.fn().mockImplementation((url: string) => Promise.resolve(String(url).endsWith("/company")
+      ? envelope({ id: root, name: "Sunny" })
+      : envelope({ items: [row("Cửa hàng Cầu Giấy", "STORE"), row("Kho lạnh", "COLD_HUB")], page: 1, limit: 100 })));
+    const branches = await companyBranches();
+    expect(branches.map((branch) => branch.org)).toEqual(["Sunny", "Sunny"]);
+    expect(branches.map((branch) => branch.type)).toEqual(["STORE", "COLD_HUB"]);
+  });
+  it("parses a membership with an unknown role code", async () => {
+    const row = { id: member, user_id: root, branch_id: root, role_codes: ["NEW_ROLE"], status: "ACTIVE", display_name: "A", email: "a@x.test", branch_name: "B", all_branches: false };
+    global.fetch = vi.fn().mockResolvedValue(new Response(JSON.stringify({ code: 200, status: "success", message: "OK", data: { items: [row], page: 1, limit: 20 } })));
+    expect((await companyMemberships(1)).items[0].role_codes).toEqual(["NEW_ROLE"]);
   });
 });

@@ -36,7 +36,7 @@ describe("S17 platform entry survives shared resolver removal", () => {
       .mockResolvedValueOnce(json({action_keys:["org:role:update"]}));
   vi.stubGlobal("fetch",fetch);
   const res=await login(request({identifier:"platform",password:"password-1234"}));
-  expect(res.status).toBe(200);expect(await res.json()).toMatchObject({next_path:"/platform"});
+  expect(res.status).toBe(200);expect(await res.json()).toMatchObject({next_path:"/roles"});
   expect(res.headers.get("set-cookie")).toMatch(new RegExp(`access_token=${identityToken.replaceAll(".", "\\.")}`));
   expect(res.headers.get("set-cookie")).toMatch(/HttpOnly/);
 
@@ -54,7 +54,7 @@ describe("R4-1 staff marker issuance", () => {
       .mockResolvedValueOnce(json({action_keys:["org:role:update"]})));
   const res = await login(request({identifier:"platform",password:"password-1234"},"access_token=old; portal_plane=employee"));
   expect(res.status).toBe(200);
-  expect(await res.json()).toMatchObject({next_path:"/platform"});
+  expect(await res.json()).toMatchObject({next_path:"/roles"});
   expect(res.cookies.get("portal_plane")).toMatchObject({value:"",maxAge:0,httpOnly:true,secure:true,path:"/",sameSite:"strict"});
   expect(res.headers.getSetCookie().some(cookie=>cookie.startsWith("portal_plane=employee"))).toBe(false);
  });

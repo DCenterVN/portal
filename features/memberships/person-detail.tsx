@@ -1,5 +1,6 @@
 "use client";
 
+import { ADMIN_ROLE } from "@/lib/permission-labels";
 import Link from "next/link";
 import { Building2, Mail, Pencil } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -30,7 +31,7 @@ function DetailBody({ userId }: { userId: string }) {
     <Field><FieldLabel htmlFor="person-email">{a("email")}</FieldLabel><Input id="person-email" readOnly disabled value={person.email} aria-describedby="person-info-hint" /></Field>
     <p id="person-info-hint" className="text-xs text-muted-foreground md:col-span-2">{t("selfManaged")}</p>
   </RecordSection>;
-  const assignments = <RecordSection title={t("assignments")}><div ref={editTarget} className="md:col-span-2"><AssignmentPanel key={person.userId} person={person} branches={branches.data ?? []} viewerIsAdmin={scope?.roles.includes("ADMIN") ?? false} isSelf={person.userId === scope?.userId} canUpdate={can("org:membership:update")} canCreate={can("org:employee:create")} onSaved={() => members.mutate()} /></div></RecordSection>;
+  const assignments = <RecordSection title={t("assignments")}><div ref={editTarget} className="md:col-span-2"><AssignmentPanel key={person.userId} person={person} branches={branches.data ?? []} viewerIsAdmin={scope?.roles.includes(ADMIN_ROLE) ?? false} isSelf={person.userId === scope?.userId} canUpdate={can("org:membership:update")} canCreate={can("org:employee:create")} onSaved={() => members.mutate()} /></div></RecordSection>;
   return <>
     <Breadcrumb><BreadcrumbList><BreadcrumbItem><BreadcrumbLink asChild><Link href="/memberships">{t("employees")}</Link></BreadcrumbLink></BreadcrumbItem><BreadcrumbSeparator /><BreadcrumbItem><BreadcrumbPage>{person.name}</BreadcrumbPage></BreadcrumbItem></BreadcrumbList></Breadcrumb>
     <RecordHeader name={person.name} contacts={<a href={`mailto:${person.email}`} aria-label={t("sendEmail")} className="text-muted-foreground"><Mail className="size-4" /></a>}

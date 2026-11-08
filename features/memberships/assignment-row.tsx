@@ -27,7 +27,7 @@ type Props = {
 };
 
 export function roleChoices(catalog: readonly RoleCatalogItem[], branch: Branch | undefined, current: readonly string[], viewerIsAdmin: boolean) {
-  return roleOptionsFor(catalog, branch?.type, current).filter((option) => option.code !== "ADMIN" || viewerIsAdmin || current.includes("ADMIN"));
+  return roleOptionsFor(catalog, branch?.type, current).filter((option) => !option.protected || viewerIsAdmin || current.includes(option.code));
 }
 
 const branchLabelOf = (branches: readonly Branch[], id: string) => {
@@ -64,7 +64,7 @@ export function AssignmentRow({ row, branch, freeBranches, catalog, viewerIsAdmi
       </div>
       {picking ? <p className="text-sm text-muted-foreground">Chọn chi nhánh trước để thấy các vai trò dùng được ở đó.</p>
         : !catalog ? <p className="text-sm text-muted-foreground">Đang tải danh sách vai trò…</p>
-        : <RolePicker label={`Vai trò ở ${row.branchName || "chi nhánh mới"}`} options={choices} selected={row.roles} onToggle={toggle} disabled={readOnly} lockedCodes={viewerIsAdmin ? [] : ["ADMIN"]} emptyText="Chi nhánh này chưa có vai trò nào dùng được." />}
+        : <RolePicker label={`Vai trò ở ${row.branchName || "chi nhánh mới"}`} options={choices} selected={row.roles} onToggle={toggle} disabled={readOnly} lockedCodes={viewerIsAdmin ? [] : choices.filter((option) => option.protected).map((option) => option.code)} emptyText="Chi nhánh này chưa có vai trò nào dùng được." />}
       {row.membershipId && (
         <label className="flex items-center gap-2 text-sm">
           <Switch checked={row.locked} disabled={readOnly} onCheckedChange={(locked) => onChange({ ...row, locked })} />

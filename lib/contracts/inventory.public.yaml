@@ -127,10 +127,12 @@ paths:
       operationId: listSuppliers
       parameters:
       - name: q
+        description: Case-insensitive substring of code, name or tax code; trimmed.
         in: query
         required: false
         schema:
           type: string
+          maxLength: 100
       - name: status
         in: query
         required: false
@@ -139,6 +141,7 @@ paths:
           enum:
           - ACTIVE
           - SUSPENDED
+          - CLOSED
       - name: limit
         in: query
         required: false
@@ -152,6 +155,20 @@ paths:
         required: false
         schema:
           type: string
+      - name: category_code
+        in: query
+        description: Leaf material category code.
+        schema: {type: string}
+      - name: sort
+        in: query
+        description: Keyset order with id as the secondary key. Reset cursor when changing filters or sort.
+        schema:
+          type: string
+          enum: [code, '-code', name, '-name', created_at, '-created_at']
+          default: code
+      - name: include_total
+        in: query
+        schema: {type: boolean, default: false}
       responses:
         '200':
           description: OK
@@ -160,7 +177,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/SupplierPageEnvelope200'
         '400':
-          description: Error
+          description: VALIDATION_FAILED for invalid query or cursor, changed sort or filters; page is unsupported.
           content:
             application/json:
               schema:
@@ -428,8 +445,13 @@ paths:
           in: path
           required: true
           schema: {type: string, format: uuid}
+        - name: limit
+          in: query
+          schema: {type: integer, minimum: 1, maximum: 100, default: 20}
         - name: page_size
           in: query
+          deprecated: true
+          description: Legacy alias of limit until batch 22; sending both is invalid.
           schema: {type: integer, minimum: 1, maximum: 100, default: 20}
         - name: cursor
           in: query
@@ -442,15 +464,29 @@ paths:
           in: query
           description: Inclusive creation date in Asia/Ho_Chi_Minh.
           schema: {type: string, format: date}
+        - name: sort
+          in: query
+          description: Keyset order with id as secondary key; completed_at nulls first ascending and last descending.
+          schema:
+            type: string
+            enum: [created_at, '-created_at', completed_at, '-completed_at', total_amount_vnd, '-total_amount_vnd']
+            default: '-created_at'
+        - name: status
+          in: query
+          schema: {type: string, enum: [DRAFT, RECEIVING, COMPLETED]}
+        - name: include_total
+          in: query
+          description: Accepted for the common list contract; total is always returned until batch 22.
+          schema: {type: boolean, default: false}
       responses:
         '200':
-          description: Receipt page scoped to verified branch; total is the number of receipts in this page.
+          description: Receipt page scoped to authorized branches; total counts all receipts matching supplier, dates and status.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/SupplierReceiptHistoryEnvelope'
         '400':
-          description: Invalid supplier ID
+          description: Invalid supplier ID or query; paging errors return 400 VALIDATION_FAILED. Cursor must match filters and sort; page is unsupported.
           content:
             application/json:
               schema:
@@ -2754,6 +2790,507 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorEnvelope'
+  /inventory/stock-transfers:
+    post:
+      operationId: createStockTransfer
+      x-action-key: inventory:transfer:create
+      x-scope: none
+      x-exposure: public
+      security:
+      - bearerJWT: []
+      parameters:
+      - in: header
+        name: Idempotency-Key
+        required: false
+        schema:
+          type: string
+          minLength: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateStockTransferRequest'
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StockTransferEnvelope201'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '409':
+          description: State conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '422':
+          description: Validation failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '503':
+          description: Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+      description: Send goods from the token branch to another ACTIVE branch. Creating is sending - status IN_TRANSIT, lots and stock are deducted in the same transaction. Lot by FEFO or lot_ref.
+    get:
+      operationId: listStockTransfers
+      x-action-key: inventory:transfer:read
+      x-scope: none
+      x-exposure: public
+      security:
+      - bearerJWT: []
+      parameters:
+      - in: query
+        name: status
+        required: false
+        schema:
+          type: string
+          enum: [IN_TRANSIT, RECEIVED, CANCELLED]
+      - in: query
+        name: page_size
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+      - in: query
+        name: cursor
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StockTransferListEnvelope200'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '422':
+          description: Validation failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '503':
+          description: Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+      description: Transfers whose from or to branch is in the caller allowed branches.
+  /inventory/stock-transfers/{transfer_id}:
+    get:
+      operationId: getStockTransfer
+      x-action-key: inventory:transfer:read
+      x-scope: none
+      x-exposure: public
+      security:
+      - bearerJWT: []
+      parameters:
+      - in: path
+        name: transfer_id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StockTransferEnvelope200'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '503':
+          description: Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+      description: 404 when neither end is in the caller allowed branches.
+  /inventory/stock-transfers/{transfer_id}/receive:
+    post:
+      operationId: receiveStockTransfer
+      x-action-key: inventory:transfer_receipt:create
+      x-scope: none
+      x-exposure: public
+      security:
+      - bearerJWT: []
+      parameters:
+      - in: path
+        name: transfer_id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReceiveStockTransferRequest'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StockTransferEnvelope200'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '409':
+          description: State conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '422':
+          description: Validation failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '503':
+          description: Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+      description: Only the to branch, once, while IN_TRANSIT. Every line gets received_qty (0..sent_qty); a short line needs variance_reason and the transfer needs at least one finalized photo.
+  /inventory/stock-transfers/{transfer_id}/cancel:
+    post:
+      operationId: cancelStockTransfer
+      x-action-key: inventory:transfer:create
+      x-scope: none
+      x-exposure: public
+      security:
+      - bearerJWT: []
+      parameters:
+      - in: path
+        name: transfer_id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StockTransferEnvelope200'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '409':
+          description: State conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '503':
+          description: Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+      description: Only the sending branch, only while IN_TRANSIT. Restores lots and stock with reversal ledger rows.
+  /inventory/stock-transfers/{transfer_id}/evidence-uploads:
+    post:
+      operationId: presignStockTransferEvidence
+      x-action-key: inventory:transfer_receipt:create
+      x-scope: none
+      x-exposure: public
+      security:
+      - bearerJWT: []
+      parameters:
+      - in: path
+        name: transfer_id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PresignStockTransferEvidenceRequest'
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PresignReceiptEvidenceResponseEnvelope201'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '409':
+          description: State conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '422':
+          description: Validation failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '503':
+          description: Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+      description: Metadata only. Upload bytes directly to MinIO through Kong. TTL 300s.
+  /inventory/stock-transfers/{transfer_id}/evidence-uploads/{upload_id}/finalize:
+    post:
+      operationId: finalizeStockTransferEvidence
+      x-action-key: inventory:transfer_receipt:create
+      x-scope: none
+      x-exposure: public
+      security:
+      - bearerJWT: []
+      parameters:
+      - in: path
+        name: transfer_id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: path
+        name: upload_id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinalizeReceiptEvidenceResponseEnvelope200'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '409':
+          description: State conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '503':
+          description: Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+      description: No request body. Verify then finalize idempotently.
+  /inventory/stock-transfers/{transfer_id}/evidence/{media_ref}/download:
+    get:
+      operationId: downloadStockTransferEvidence
+      x-action-key: inventory:transfer:read
+      x-scope: none
+      x-exposure: public
+      security:
+      - bearerJWT: []
+      parameters:
+      - in: path
+        name: transfer_id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: path
+        name: media_ref
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReceiptEvidenceDownloadResponseEnvelope200'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '503':
+          description: Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+      description: Presigned download for a photo attached to the transfer.
 components:
   securitySchemes:
     bearerJWT:
@@ -2783,7 +3320,9 @@ components:
             $ref: '#/components/schemas/SupplierReceiptHistoryItem'
         total:
           type: integer
-          description: Number of receipts in this page, retained for legacy clients.
+          format: int64
+          minimum: 0
+          description: Total receipts matching authorized branches and all filters, always returned for legacy clients.
         next_cursor: {type: string}
     SupplierReceiptHistoryItem:
       type: object
@@ -2823,8 +3362,12 @@ components:
           type: string
         name:
           type: string
+        confirm_duplicate_tax_code:
+          type: boolean
+          default: false
         tax_code:
           type: string
+          description: Trim; 10 digits or 10-3 digits or 13 digits normalized with dash; branch suffix 000 forbidden; empty allowed.
         address:
           $ref: '#/components/schemas/SupplierAddress'
         contact_name:
@@ -2847,10 +3390,6 @@ components:
           items:
             type: string
             pattern: '^[A-Z][A-Z0-9_]{0,63}$'
-        material_categories:
-          type: array
-          items:
-            type: string
         food_safety_credential_media_ref:
           type: string
           format: uuid
@@ -2863,8 +3402,12 @@ components:
       properties:
         name:
           type: string
+        confirm_duplicate_tax_code:
+          type: boolean
+          default: false
         tax_code:
           type: string
+          description: Trim; 10 digits or 10-3 digits or 13 digits normalized with dash; branch suffix 000 forbidden; empty allowed.
         address:
           $ref: '#/components/schemas/SupplierAddress'
         contact_name:
@@ -2887,10 +3430,6 @@ components:
           items:
             type: string
             pattern: '^[A-Z][A-Z0-9_]{0,63}$'
-        material_categories:
-          type: array
-          items:
-            type: string
         food_safety_credential_media_ref:
           type: string
           format: uuid
@@ -2899,16 +3438,25 @@ components:
       type: object
       additionalProperties: false
       properties:
-        operation:
-          type: string
-          enum:
-          - SUSPEND
-          - ACTIVATE
-        reason:
-          type: string
-      required:
-      - operation
-      - reason
+        operation: {type: string, enum: [SUSPEND, ACTIVATE, CLOSE]}
+        reason_code: {type: string, enum: [QUALITY, DELIVERY, DOCUMENTS, BUSINESS_CLOSED, OTHER]}
+        reason_note: {type: string, minLength: 1, maxLength: 500}
+      required: [operation]
+      allOf:
+      - if:
+          properties:
+            operation: {enum: [SUSPEND, CLOSE]}
+        then:
+          required: [reason_code]
+      - if:
+          anyOf:
+          - properties:
+              operation: {const: ACTIVATE}
+          - required: [reason_code]
+            properties:
+              reason_code: {const: OTHER}
+        then:
+          required: [reason_note]
     SupplierAddress:
       type: object
       additionalProperties: false
@@ -2921,6 +3469,9 @@ components:
       type: object
       additionalProperties: false
       properties:
+        status_reason_code: {type: string, nullable: true}
+        status_reason_note: {type: string, nullable: true}
+        status_changed_at: {type: string, format: date-time, nullable: true}
         photo:
           allOf:
           - $ref: '#/components/schemas/SupplierPhotoResponse'
@@ -2966,12 +3517,6 @@ components:
           maxItems: 100
           items:
             $ref: '#/components/schemas/SupplierCategoryLabel'
-        category_migration_required:
-          type: boolean
-        material_categories:
-          type: array
-          items:
-            type: string
         food_safety_credential_media_ref:
           anyOf:
           - type: string
@@ -2982,6 +3527,7 @@ components:
           enum:
           - ACTIVE
           - SUSPENDED
+          - CLOSED
         rating_grade:
           type: string
         created_at:
@@ -2991,6 +3537,9 @@ components:
           type: string
           format: date-time
       required:
+      - status_reason_code
+      - status_reason_note
+      - status_changed_at
       - id
       - code
       - name
@@ -3012,6 +3561,11 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SupplierResponse'
+        total:
+          type: integer
+          format: int64
+          minimum: 0
+          description: Total suppliers matching all filters; present only when include_total=true.
         next_cursor:
           type: string
       required:
@@ -4235,6 +4789,28 @@ components:
       properties:
         error_code: *id003
         fields: {}
+        details:
+          oneOf:
+          - type: object
+            additionalProperties: false
+            required: [tax_code]
+            properties:
+              tax_code: {type: string}
+          - type: object
+            additionalProperties: false
+            required: [tax_code, suppliers]
+            properties:
+              tax_code: {type: string}
+              suppliers:
+                type: array
+                minItems: 1
+                items:
+                  type: object
+                  additionalProperties: false
+                  required: [code, name]
+                  properties:
+                    code: {type: string}
+                    name: {type: string}
       required:
       - error_code
     ErrorEnvelope:
@@ -4718,3 +5294,184 @@ components:
         mime: {type: string, enum: [image/jpeg, image/png, image/webp]}
         size_bytes: {type: integer, minimum: 1, maximum: 5242880}
         updated_at: {type: string, format: date-time}
+    StockTransferEnvelope200:
+      type: object
+      additionalProperties: false
+      properties:
+        code:
+          type: integer
+          const: 200
+        status:
+          type: string
+          enum:
+          - success
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/StockTransferResponse'
+      required:
+      - code
+      - status
+      - message
+      - data
+    StockTransferEnvelope201:
+      type: object
+      additionalProperties: false
+      properties:
+        code:
+          type: integer
+          const: 201
+        status:
+          type: string
+          enum:
+          - success
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/StockTransferResponse'
+      required:
+      - code
+      - status
+      - message
+      - data
+    StockTransferListEnvelope200:
+      type: object
+      additionalProperties: false
+      properties:
+        code:
+          type: integer
+          const: 200
+        status:
+          type: string
+          enum:
+          - success
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/StockTransferListResponse'
+      required:
+      - code
+      - status
+      - message
+      - data
+    CreateStockTransferLine:
+      type: object
+      additionalProperties: false
+      required: [sku_ref, uom, quantity]
+      properties:
+        sku_ref: {type: string, format: uuid}
+        uom: {type: string, minLength: 1}
+        quantity: {type: string, pattern: '^(?:0|[1-9][0-9]*)(\.[0-9]{1,3})?$'}
+        lot_ref: {type: string, format: uuid}
+    CreateStockTransferRequest:
+      type: object
+      additionalProperties: false
+      required: [to_branch_ref, lines]
+      properties:
+        to_branch_ref: {type: string, format: uuid}
+        lines:
+          type: array
+          minItems: 1
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/CreateStockTransferLine'
+    ReceiveStockTransferLine:
+      type: object
+      additionalProperties: false
+      required: [line_id, received_qty]
+      properties:
+        line_id: {type: string, format: uuid}
+        received_qty: {type: string, pattern: '^(?:0|[1-9][0-9]*)(\.[0-9]{1,3})?$'}
+        variance_reason: {type: string, enum: [SHORT, DAMAGED, OTHER]}
+    ReceiveStockTransferRequest:
+      type: object
+      additionalProperties: false
+      required: [lines, evidence_refs]
+      properties:
+        lines:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/ReceiveStockTransferLine'
+        evidence_refs:
+          type: array
+          maxItems: 10
+          items: {type: string, format: uuid}
+    PresignStockTransferEvidenceRequest:
+      type: object
+      additionalProperties: false
+      required: [content_type, size_bytes, sha256]
+      properties:
+        content_type: {type: string, enum: [image/jpeg, image/png, image/webp]}
+        size_bytes: {type: integer, minimum: 1, maximum: 5242880}
+        sha256: {type: string, pattern: '^[0-9a-f]{64}$'}
+    StockTransferLineResponse:
+      type: object
+      additionalProperties: false
+      required: [id, lot_ref, sku_ref, uom, sent_qty, received_qty, variance_reason, dest_lot_ref, source_lot_code, source_lot_expires_at]
+      properties:
+        id: {type: string, format: uuid}
+        lot_ref: {type: string, format: uuid}
+        sku_ref: {type: string, format: uuid}
+        uom: {type: string}
+        sent_qty: {type: string}
+        received_qty: {type: [string, 'null']}
+        variance_reason: {type: [string, 'null'], enum: [SHORT, DAMAGED, OTHER, null]}
+        dest_lot_ref: {type: [string, 'null'], format: uuid}
+        source_lot_code: {type: string}
+        source_lot_expires_at: {type: string, format: date-time}
+    StockTransferEvidenceResponse:
+      type: object
+      additionalProperties: false
+      required: [media_ref, sha256, content_type, size_bytes, attached_at]
+      properties:
+        media_ref: {type: string, format: uuid}
+        sha256: {type: string}
+        content_type: {type: string}
+        size_bytes: {type: integer}
+        attached_at: {type: string, format: date-time}
+    StockTransferResponse:
+      type: object
+      additionalProperties: false
+      required: [id, code, from_branch_ref, from_branch_name, to_branch_ref, to_branch_name, status, sent_by_ref, sent_at, received_by_ref, received_at, cancelled_by_ref, cancelled_at, lines, evidence]
+      properties:
+        id: {type: string, format: uuid}
+        code: {type: string, pattern: '^CK-[0-9]{6}-[0-9]{4}$'}
+        from_branch_ref: {type: string, format: uuid}
+        from_branch_name: {type: string}
+        to_branch_ref: {type: string, format: uuid}
+        to_branch_name: {type: string}
+        status: {type: string, enum: [IN_TRANSIT, RECEIVED, CANCELLED]}
+        sent_by_ref: {type: string, format: uuid}
+        sent_at: {type: string, format: date-time}
+        received_by_ref: {type: [string, 'null'], format: uuid}
+        received_at: {type: [string, 'null'], format: date-time}
+        cancelled_by_ref: {type: [string, 'null'], format: uuid}
+        cancelled_at: {type: [string, 'null'], format: date-time}
+        lines:
+          type: array
+          items:
+            $ref: '#/components/schemas/StockTransferLineResponse'
+        evidence:
+          type: array
+          items:
+            $ref: '#/components/schemas/StockTransferEvidenceResponse'
+    StockTransferListResponse:
+      type: object
+      additionalProperties: false
+      required: [items, next_cursor]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/StockTransferResponse'
+        next_cursor: {type: string}
+
+# ## 07 delta (08/11)
+# Supplier tax_code: trim, 10 / 10-3 / 13 digits; normalize dash; reject suffix 000; empty allowed.
+# Create/PATCH confirm_duplicate_tax_code=true acknowledges matching company tax code, audited by actor.
+# Invalid tax code: 422 VALIDATION_FAILED, errors.details.tax_code only; duplicate: 409 STATE_CONFLICT, errors.details tax_code and suppliers code/name.
+# Supplier statuses ACTIVE/SUSPENDED/CLOSED; CLOSED terminal and available in list status filter.
+# Suspend operation accepts CLOSE; reason_code required for SUSPEND/CLOSE, reason_note for OTHER/ACTIVATE, max 500 characters.
+# Response exposes nullable status_reason_code/status_reason_note/status_changed_at; event inventory.supplier.closed.v1.
+# INV-05 scope guard and INV-06 cursor pagination unchanged.

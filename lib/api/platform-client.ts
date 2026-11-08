@@ -27,14 +27,14 @@ export async function companyCall<T>(path: string, _root: string, init?: Request
 export const employeeRoles = ["ADMIN", "FOOD_DEV", "WAREHOUSE", "PROCESSING_STAFF", "SALES"] as const;
 const membershipSchema = z.object({
   id: z.string().uuid(), user_id: z.string().uuid(), branch_id: z.string().uuid(),
-  role_codes: z.array(z.enum(employeeRoles)).nullable().transform((roles) => roles ?? []),
+  role_codes: z.array(z.string()).nullable().transform((roles) => roles ?? []),
   status: z.enum(["ACTIVE", "SUSPENDED"]),
   display_name: z.string().default(""), email: z.string().default(""),
   branch_name: z.string().default(""), all_branches: z.boolean().default(false),
 });
 export type Membership = z.infer<typeof membershipSchema>;
 const roleCatalogSchema = z.object({
-  items: z.array(z.object({ code: z.string(), name: z.string(), branch_types: z.array(z.string()).nullable().transform((types) => types ?? []) })),
+  items: z.array(z.object({ code: z.string(), name: z.string(), description: z.string().default(""), sort_order: z.number().default(0), protected: z.boolean().default(false), branch_types: z.array(z.string()).nullable().transform((types) => types ?? []) })),
 });
 export type RoleCatalogItem = z.infer<typeof roleCatalogSchema>["items"][number];
 export async function companyRoles(): Promise<RoleCatalogItem[]> {
@@ -55,7 +55,7 @@ export async function deleteMembership(id: string) {
 export async function replaceMembershipRoles(id: string, role_codes: string[]) {
   return decodePlatform(await companyCall<unknown>(`company/memberships/${encodeURIComponent(id)}/roles`, "", {
     method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify({ role_codes }),
-  }), z.object({ membership_id: z.string().uuid(), role_codes: z.array(z.enum(employeeRoles)).nullable() }));
+  }), z.object({ membership_id: z.string().uuid(), role_codes: z.array(z.string()).nullable() }));
 }
 export async function updateMembership(id: string, patch: { status?: Membership["status"]; all_branches?: boolean }) {
   await companyCall<unknown>(`company/memberships/${encodeURIComponent(id)}`, "", {

@@ -1,9 +1,10 @@
 import { roleName } from "@/lib/permission-labels";
 
-export type BranchType = "CENTRAL_KITCHEN" | "STORE";
+export type BranchType = string;
 
 export function branchTypeLabel(type: BranchType): string {
-  return type === "CENTRAL_KITCHEN" ? "Bếp trung tâm" : "Cửa hàng";
+  if (type === "CENTRAL_KITCHEN") return "Bếp trung tâm";
+  return type === "STORE" ? "Cửa hàng" : type;
 }
 
 const hasText = (text: string, part: string) => text.toLowerCase().includes(part.toLowerCase());

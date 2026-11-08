@@ -70,23 +70,6 @@ export function consoleRouteAllowed(pathname: string, actions: ReadonlySet<strin
   return !item?.action || actions.has(item.action);
 }
 
-type WorkspaceRule = { href: string; label: string; action: string; icon: LucideIcon };
-const WORKSPACE_NAV: Record<"platform" | "company", WorkspaceRule[]> = {
-  platform: [
-    { href: "/platform/role-matrix", label: "roleMatrix", action: "org:role:update", icon: KeyRound },
-    { href: "/platform/audit", label: "audit", action: "org:company:read", icon: ScrollText },
-  ],
-  company: [{ href: "/company", label: "myCompany", action: "org:company:read", icon: Building2 }],
-};
-
-/** Platform / company workspace menu; `label` is an i18n key resolved by the caller. */
-export function navFor(plane: "platform" | "company", actions: ReadonlySet<string>, root: string): NavItem[] {
-  const suffix = plane === "company" ? `?org_id=${encodeURIComponent(root)}` : "";
-  return WORKSPACE_NAV[plane]
-    .filter((rule) => actions.has(rule.action))
-    .map((rule) => ({ href: `${rule.href}${suffix}`, label: rule.label, match: rule.href, icon: rule.icon }));
-}
-
 export type Crumb = ({ label: string } | { labelKey: string }) & { href?: string };
 
 const AUXILIARY_ROUTES = [

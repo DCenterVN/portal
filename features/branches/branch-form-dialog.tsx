@@ -6,10 +6,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Field } from "@/components/patterns/form-field";
 import { InlineAlert } from "@/components/patterns/inline-alert";
 import { createBranch } from "@/lib/api/branches-client";
+import { branchTypeLabel } from "@/lib/branch-label";
 import { BRANCH_CODE_PATTERN, branchCodeFromName } from "@/lib/branch-code";
 import { errorStatus } from "@/lib/access";
 import { errorText } from "@/features/platform/access";
@@ -17,6 +19,7 @@ import { errorText } from "@/features/platform/access";
 const schema = z.object({
   name: z.string().trim().min(1, "Nhập tên cửa hàng.").max(255, "Tên tối đa 255 ký tự."),
   code: z.string().trim().regex(BRANCH_CODE_PATTERN, "Mã gồm 2 đến 64 ký tự: chữ không dấu, số, gạch ngang hoặc gạch dưới."),
+  type: z.enum(["STORE", "CENTRAL_KITCHEN"]),
 });
 type Values = z.infer<typeof schema>;
 
@@ -24,7 +27,7 @@ type Props = { open: boolean; onOpenChange: (open: boolean) => void; onCreated: 
 
 export function BranchFormDialog({ open, onOpenChange, onCreated }: Props) {
   const router = useRouter();
-  const form = useForm<Values>({ resolver: zodResolver(schema), mode: "onTouched", defaultValues: { name: "", code: "" } });
+  const form = useForm<Values>({ resolver: zodResolver(schema), mode: "onTouched", defaultValues: { name: "", code: "", type: "STORE" } });
   const { errors, isSubmitting } = form.formState;
 
   const name = form.register("name", {
@@ -35,7 +38,7 @@ export function BranchFormDialog({ open, onOpenChange, onCreated }: Props) {
 
   async function submit(values: Values) {
     try {
-      const branch = await createBranch({ name: values.name.trim(), code: values.code.trim() });
+      const branch = await createBranch({ name: values.name.trim(), code: values.code.trim(), type: values.type });
       await onCreated();
       form.reset();
       onOpenChange(false);
@@ -59,6 +62,12 @@ export function BranchFormDialog({ open, onOpenChange, onCreated }: Props) {
           </Field>
           <Field label="Mã" htmlFor="branch-code" hint="Dùng để nhận diện cửa hàng trong hệ thống." error={errors.code?.message}>
             <Input id="branch-code" autoComplete="off" className="font-mono" disabled={isSubmitting} {...form.register("code")} />
+          </Field>
+          <Field label="Loại chi nhánh" htmlFor="branch-type">
+            <NativeSelect id="branch-type" disabled={isSubmitting} {...form.register("type")}>
+              <NativeSelectOption value="STORE">{branchTypeLabel("STORE")}</NativeSelectOption>
+              <NativeSelectOption value="CENTRAL_KITCHEN">{branchTypeLabel("CENTRAL_KITCHEN")}</NativeSelectOption>
+            </NativeSelect>
           </Field>
           {errors.root?.message && <InlineAlert>{errors.root.message}</InlineAlert>}
           <DialogFooter>

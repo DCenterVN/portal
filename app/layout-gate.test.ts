@@ -26,11 +26,11 @@ function matches(pattern: RegExp): string[] {
 
 function violatesShellBoundary(file: string, source: string): boolean {
   if (/\.test\./.test(file)) return false;
-  if (file.startsWith("app/") && file.endsWith("/page.tsx") && !/^app\/(?:\(store\)|\(console\)|\(auth\)|\(employee-auth\)|platform|company)\//.test(file)) return true;
+  if (file.startsWith("app/") && file.endsWith("/page.tsx") && !/^app\/(?:\(store\)|\(console\)|\(auth\)|\(employee-auth\))\//.test(file)) return true;
   if (/from\s*["']@\/components\/navbar["']/.test(source)) return true;
   if (!/from\s*["']@\/components\/layout(?:\/|["'])/.test(source)) return false;
   return !/^app\/.*\/layout\.tsx$/.test(file) && file !== "app/layout.tsx" && file !== "app/not-found.tsx" &&
-    !["features/store/store-frame.tsx", "features/console/console-frame.tsx", "features/platform/workspace.tsx"].includes(file);
+    !["features/store/store-frame.tsx", "features/console/console-frame.tsx"].includes(file);
 }
 
 function hasButtonOverride(source: string): boolean {
@@ -71,7 +71,6 @@ describe("layout architecture gate", () => {
       "components/layout/auth-frame.tsx",
       "components/layout/console-shell.tsx",
       "components/layout/store-shell.tsx",
-      "features/platform/workspace.tsx",
     ]);
   });
 
@@ -125,19 +124,6 @@ describe("review regression gates", () => {
       violatesShellBoundary(file, readFileSync(path.join(ROOT, file), "utf8")))).toEqual([]);
   });
 
-  it("gives Gate, CompanyPicker and Suspense fallback main landmarks", () => {
-    const source = readFileSync("features/platform/workspace.tsx", "utf8");
-    const tree = ts.createSourceFile("workspace.tsx", source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
-    const landmarks: string[] = [];
-    const visit = (node: ts.Node) => {
-      if (ts.isJsxOpeningElement(node) && node.tagName.getText(tree) === "main") landmarks.push(node.getText(tree));
-      ts.forEachChild(node, visit);
-    };
-    visit(tree);
-    expect(landmarks).toHaveLength(3);
-    for (const main of landmarks) expect(main).toContain('id="main"');
-  });
-
   it("labels the console sidebar navigation landmark", () => {
     expect(readFileSync("components/layout/console-sidebar.tsx", "utf8")).toMatch(/<nav\s+aria-label="[^"]+"/);
   });
@@ -155,14 +141,13 @@ it.each([
 
 it.each([
   "app/(store)/page.tsx", "app/(console)/console/page.tsx", "app/(auth)/login/page.tsx",
-  "app/platform/staff/page.tsx", "app/company/settings/page.tsx",
 ])("accepts AC-1 shell-root fixture: %s", (file) => {
   expect(violatesShellBoundary(file, "")).toBe(false);
 });
 
 it.each([
   "app/layout.tsx", "app/(store)/layout.tsx", "app/not-found.tsx",
-  "features/store/store-frame.tsx", "features/console/console-frame.tsx", "features/platform/workspace.tsx",
+  "features/store/store-frame.tsx", "features/console/console-frame.tsx",
 ])("accepts AC-1 shell-import fixture: %s", (file) => {
   expect(violatesShellBoundary(file, 'import { StoreShell } from "@/components/layout";')).toBe(false);
 });

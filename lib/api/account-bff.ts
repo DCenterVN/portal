@@ -1,3 +1,4 @@
+import { serviceUrl } from "@/lib/api/service-bff";
 import { z } from "zod";
 import { NextRequest, NextResponse } from "next/server";
 import { decodePlatform } from "./platform-contract";
@@ -83,7 +84,7 @@ export async function accountMutation(req: NextRequest, operation: AccountOperat
     const body = await readBody(req, operation);
     if (body instanceof NextResponse) return body;
     const contract = accountOperations[operation];
-    const upstream = await fetch(`${process.env.AUTH_SERVICE_URL || "http://localhost:8080"}/auth/${contract.path}`, {
+    const upstream = await fetch(`${serviceUrl("auth")}/auth/${contract.path}`, {
       method: contract.method, cache: "no-store", signal: AbortSignal.timeout(10000), headers: upstreamHeaders(req),
       ...(body === undefined ? {} : { body: JSON.stringify(body) }),
     });
@@ -99,7 +100,7 @@ export async function accountSessions(req: NextRequest, id?: string) {
   if (!id && !/^[1-9]\d{0,5}$/.test(page)) return failure("BAD_REQUEST", 400);
   const path = id ? `sessions/${encodeURIComponent(id)}` : `sessions?page=${page}&limit=10`;
   try {
-    const upstream = await fetch(`${process.env.AUTH_SERVICE_URL || "http://localhost:8080"}/auth/${path}`, {
+    const upstream = await fetch(`${serviceUrl("auth")}/auth/${path}`, {
       method: id ? "DELETE" : "GET", cache: "no-store", signal: AbortSignal.timeout(10000), headers: upstreamHeaders(req),
     });
     if (!upstream.ok) return await upstreamFailure(upstream);

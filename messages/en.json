@@ -28,16 +28,6 @@
       "SALES": "Sales"
     }
   },
-  "platform": {
-    "title": "Platform",
-    "roleMatrix": "Role matrix",
-    "audit": "Audit log",
-    "myCompany": "My company",
-    "loading": "Verifying access…",
-    "denied": "This account cannot access this content.",
-    "blocked": "Access could not be verified. Access is blocked; try again later.",
-    "retry": "Retry"
-  },
   "customerAuth": {
     "phIdentifier": "email@example.com or phone number",
     "phPassword": "Enter your password",

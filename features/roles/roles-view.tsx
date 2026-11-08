@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Lock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -12,22 +13,24 @@ import { ErrorState, LoadingState } from "@/components/patterns/empty-state";
 import { InlineAlert } from "@/components/patterns/inline-alert";
 import { toast } from "@/components/ui/toast";
 import { RequireAction, useAccess } from "@/lib/access-boundary";
-import { ROLE_INFO, roleName } from "@/lib/permission-labels";
+import { catalogRoleName } from "@/lib/role-catalog";
 import { cn } from "@/lib/utils";
 import { errorText } from "@/features/platform/access";
 import { actionChanges, catalogOf, replaceRole, useRoleMatrix } from "@/features/platform/use-role-matrix";
 import { HoldersPanel } from "./holders-panel";
 import { PermissionPanel } from "./permission-panel";
 import { countHolders } from "@/features/memberships/people";
-import { useMemberships } from "./use-roles";
-
-const ORDER = Object.keys(ROLE_INFO);
+import { useMemberships, useRoleCatalog } from "./use-roles";
 
 export function RolesView() {
   const { root, can } = useAccess();
   const editable = can("org:role:update");
   const { data, error, isLoading, mutate } = useRoleMatrix(root);
   const members = useMemberships(can("org:membership:read"));
+  const catalogQuery = useRoleCatalog(can("org:role:read"));
+  const catalog = catalogQuery.data;
+  const roleName = (code: string) => catalogRoleName(catalog, code);
+  const order = catalog?.map((item) => item.code) ?? [];
   const [role, setRole] = useState("");
   const [draft, setDraft] = useState<string[]>([]);
   const [target, setTarget] = useState<string | null>(null);
@@ -35,12 +38,12 @@ export function RolesView() {
   const [busy, setBusy] = useState(false);
   const [failure, setFailure] = useState("");
 
-  const roles = data ? [...ORDER.filter((code) => code in data), ...Object.keys(data).filter((code) => !ORDER.includes(code)).sort()] : [];
+  const roles = data ? [...order.filter((code) => code in data), ...Object.keys(data).filter((code) => !order.includes(code)).sort()] : [];
   const current = role && data?.[role] ? role : roles[0] ?? "";
   const shown = current === role ? draft : data?.[current] ?? [];
   const changes = data ? actionChanges(data[current] ?? [], shown) : { added: [], removed: [] };
   const count = changes.added.length + changes.removed.length;
-  const dropsAdminOrg = current === "ADMIN" && changes.removed.some((key) => key.startsWith("org:"));
+  const dropsAdminOrg = catalog?.find((item) => item.code === current)?.protected && changes.removed.some((key) => key.startsWith("org:"));
 
   function choose(code: string) {
     setRole(code);
@@ -86,10 +89,13 @@ export function RolesView() {
                     <RadioGroupItem value={code} className="mt-1" />
                     <span className="min-w-0 flex-1">
                       <span className="flex items-center justify-between gap-2">
-                        <span className="font-medium">{roleName(code)}</span>
+                        <span className="inline-flex items-center gap-2 font-medium">
+                          {roleName(code)}
+                          {catalog?.find((item) => item.code === code)?.protected && <Lock className="size-4 shrink-0 text-muted-foreground" aria-label="Vai trò được bảo vệ" />}
+                        </span>
                         <Badge variant="secondary">{members.data ? `${countHolders(members.data, code)} người` : "…"}</Badge>
                       </span>
-                      <span className="mt-1 block text-xs text-muted-foreground">{ROLE_INFO[code]?.job ?? "Vai trò tuỳ chỉnh"}</span>
+                      <span className="mt-1 block text-xs text-muted-foreground">{catalog?.find((item) => item.code === code)?.description}</span>
                     </span>
                   </label>
                 ))}
@@ -103,7 +109,7 @@ export function RolesView() {
                   <PermissionPanel catalog={[...catalogOf(data)]} draft={shown} editable={editable && !busy} onChange={change} />
                 </TabsContent>
                 <TabsContent value="holders">
-                  <HoldersPanel role={current} members={members.data} error={!!members.error} loading={members.isLoading} onRetry={() => void members.mutate()} />
+                  <HoldersPanel role={current} members={members.data} error={!!members.error} loading={members.isLoading} onRetry={() => void members.mutate()} nameOf={roleName} />
                 </TabsContent>
               </Tabs>
             </div>

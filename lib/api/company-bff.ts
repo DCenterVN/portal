@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { forwardService } from "@/lib/api/service-bff";
+import { forwardService, serviceUrl } from "@/lib/api/service-bff";
 
-const ORG_SERVICE_URL = process.env.ORG_INTERNAL_URL || process.env.ORG_SERVICE_URL || "http://localhost:8081";
 type Method = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 type Rule = { method: Method; path: RegExp; body: "none" | "required"; query: readonly string[] };
 const rules: Rule[] = [
+  { method: "GET", path: /^company$/, body: "none", query: [] },
   { method: "GET", path: /^company\/memberships$/, body: "none", query: ["page", "limit", "branch_id"] },
   { method: "GET", path: /^company\/branches$/, body: "none", query: ["page", "limit"] },
   { method: "POST", path: /^company\/branches$/, body: "required", query: [] },
@@ -42,7 +42,7 @@ export async function forwardCompany(request: NextRequest, segments: string[]) {
   const query = queryFor(request, rule);
   if (query === null) return NextResponse.json({ error: "validation_failed" }, { status: 400 });
   return forwardService(request, {
-    baseUrl: ORG_SERVICE_URL,
+    baseUrl: serviceUrl("org"),
     path: `/org/${relativePath}${query ? `?${query}` : ""}`,
     method: rule.method,
     bodyPolicy: rule.body,

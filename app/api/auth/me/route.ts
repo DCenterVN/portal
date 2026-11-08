@@ -1,7 +1,7 @@
+import { serviceUrl } from "@/lib/api/service-bff";
 import { publicError } from "@/lib/api/public-error";
 import { NextRequest, NextResponse } from "next/server";
 
-const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL || "http://localhost:8080";
 
 export async function GET(req: NextRequest) {
   try {
@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
     if (!accessToken) {
       return NextResponse.json({ error: "unauthorized", message: "Chưa đăng nhập" }, { status: 401 });
     }
-    const res = await fetch(`${AUTH_SERVICE_URL}/auth/me`, {
+    const res = await fetch(`${serviceUrl("auth")}/auth/me`, {
       headers: {
         "Authorization": `Bearer ${accessToken}`,
       },

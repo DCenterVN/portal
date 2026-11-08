@@ -1,5 +1,6 @@
 import {authHeaders} from "./client-ip";
 import {z} from "zod";
+import {serviceUrl} from "./service-bff";
 
 export type OperationRisk = "read" | "mutation" | "credential";
 
@@ -42,37 +43,8 @@ export class BackendError extends Error {
   }
 }
 
-export function getServiceBaseUrl(
-  service: "auth" | "org" | "integration" | "notification"
-): string {
-  switch (service) {
-    case "auth":
-      return (
-        process.env.AUTH_INTERNAL_URL ||
-        process.env.AUTH_SERVICE_URL ||
-        "http://localhost:8080"
-      );
-    case "org":
-      return (
-        process.env.ORG_INTERNAL_URL ||
-        process.env.ORG_SERVICE_URL ||
-        "http://localhost:8081"
-      );
-    case "integration":
-      return (
-        process.env.INTEGRATION_INTERNAL_URL ||
-        process.env.INTEGRATION_SERVICE_URL ||
-        "http://localhost:8082"
-      );
-    case "notification":
-      return (
-        process.env.NOTIFICATION_INTERNAL_URL ||
-        process.env.NOTIFICATION_SERVICE_URL ||
-        "http://localhost:8083"
-      );
-    default:
-      return "http://localhost:8080";
-  }
+export function getServiceBaseUrl(service: "auth" | "org" | "integration" | "notification"): string {
+  return serviceUrl(service);
 }
 
 export async function callBackend<T = unknown>(
