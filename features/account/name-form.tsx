@@ -12,9 +12,9 @@ import { TextField } from "./text-field";
 import { useAccountName } from "./use-account-forms";
 
 type Values = z.infer<typeof nameSchema>;
-type NameFormProps = { profile: UserProfile; refresh: () => Promise<void> };
+type NameFormProps = { profile: UserProfile; refresh: () => Promise<void>; showLabel?: boolean };
 
-export function NameForm({ profile, refresh }: NameFormProps) {
+export function NameForm({ profile, refresh, showLabel = false }: NameFormProps) {
   const t = useTranslations("account");
   const account = useAccountName(refresh);
   const form = useForm<Values>({ resolver: zodResolver(nameSchema), mode: "onTouched", defaultValues: { display_name: profile.display_name } });
@@ -25,7 +25,7 @@ export function NameForm({ profile, refresh }: NameFormProps) {
     catch (error) { form.setError("display_name", { type: "server", message: accountErrorMessage(error, t) }); }
   }
   return <form onSubmit={form.handleSubmit(submit)} className="max-w-md space-y-3" noValidate>
-    <TextField control={form.control} name="display_name" label={t("displayName")} hideLabel autoComplete="name" disabled={isSubmitting} />
+    <TextField control={form.control} name="display_name" label={t("displayName")} hideLabel={!showLabel} autoComplete="name" disabled={isSubmitting} />
     <FormActions dirty={isDirty} valid={isValid} busy={isSubmitting} onCancel={cancel} />
   </form>;
 }

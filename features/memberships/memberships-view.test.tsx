@@ -20,5 +20,6 @@ it("memberships_group_by_person_no_uuid", () => {
   expect(html.match(/<tr/g)).toHaveLength(2);
   expect(html).toContain("Bếp trung tâm · Kho");
   expect(html).toContain("Cầu Giấy · Bán hàng");
+  expect(html).toContain(`href="/memberships/${uuid}"`);
   expect(html.replace(/<[^>]*>/g, " ")).not.toMatch(/[0-9a-f]{8}-[0-9a-f]{4}-/);
 });

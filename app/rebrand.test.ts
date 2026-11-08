@@ -41,7 +41,7 @@ import type { UserProfile } from "../lib/auth/client";
 // SSR cannot mount a portal. Only expose its rendered tree; effects/keyboard are
 // covered by the existing dialog behavior tests and the later browser audit.
 const portalRender = vi.hoisted(() => ({
-  mounted: false, states: [] as unknown[],
+  recordTab: "info", mounted: false, states: [] as unknown[],
   filter: undefined as string | undefined,
   filterClicks: {} as Record<string, () => void>,
 }));
@@ -63,7 +63,7 @@ vi.mock("../components/ui/dialog", () => {
     DialogHeader: part("header"), DialogTitle: part("h2"), DialogDescription: part("p"), DialogFooter: part("footer"),
   };
 });
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }), useSearchParams: () => new URLSearchParams() }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }), usePathname: () => "/account", useSearchParams: () => new URLSearchParams(`tab=${portalRender.recordTab}`) }));
 vi.mock("react", async (importOriginal) => {
   const actual = await importOriginal<typeof React>();
   return { ...actual, useState: (initial: unknown) => {
@@ -411,8 +411,15 @@ describe("S5 rendered auth, profile, branch and membership roles", () => {
     const html = surfaceMarkup(staffProfile(profileFixture));
     expectRoleSurface(html, true);
     expect(html).toContain("Dawn");
-    expect(html).toContain("Đăng xuất");
-    expect(html).toContain("Bếp Hà Nội");
+    expect(html).toContain("Thông tin cá nhân");
+    expect(html).toContain("Vai trò &amp; chi nhánh");
+    expect(html).toContain("29/09/2026");
+    portalRender.recordTab = "roles";
+    try {
+      expect(surfaceMarkup(staffProfile(profileFixture))).toContain("Bếp Hà Nội");
+    } finally {
+      portalRender.recordTab = "info";
+    }
   });
 
   it.each([401, 500])("renders profile error %s with readable danger cue", (status) => {
@@ -426,9 +433,14 @@ describe("S5 rendered auth, profile, branch and membership roles", () => {
     const loading = surfaceMarkup(React.createElement(StaffProfileView));
     expect(loading).toContain("Đang tải tài khoản…");
     expect(loading).not.toMatch(rawSurface);
-    const empty = surfaceMarkup(staffProfile({ ...profileFixture, memberships: [] }));
-    expectRoleSurface(empty, true);
-    expect(empty).toContain("Tài khoản chưa có phạm vi truy cập.");
+    portalRender.recordTab = "roles";
+    try {
+      const empty = surfaceMarkup(staffProfile({ ...profileFixture, memberships: [] }));
+      expectRoleSurface(empty, true);
+      expect(empty).toContain("Tài khoản chưa có phạm vi truy cập.");
+    } finally {
+      portalRender.recordTab = "info";
+    }
   });
 
   it("renders the branch table with type, status and add button, without ids", () => {
@@ -449,7 +461,7 @@ describe("S5 rendered auth, profile, branch and membership roles", () => {
     expect(html).toContain("Tìm theo tên hoặc email");
     if (empty) expect(html).toContain("Chưa có nhân viên");
     else {
-      for (const member of membershipFixtures) expect(html).not.toContain(member.user_id);
+      for (const member of membershipFixtures) expect(html.replace(/<[^>]*>/g, " ")).not.toContain(member.user_id);
       expect(html.match(/<tr\b/g)).toHaveLength(membershipFixtures.length + 1);
       for (const label of ["Đang hoạt động", "Tạm khoá", "Bếp trung tâm · Bán hàng", "Chi nhánh và vai trò"]) expect(html).toContain(label);
     }
@@ -458,7 +470,7 @@ describe("S5 rendered auth, profile, branch and membership roles", () => {
   it("keeps membership mutations hidden for read-only access and denies unverified access", () => {
     const html = surfaceMarkup(memberships(membershipFixtures, ["org:membership:read"]));
     expect(html).toContain("Đang hoạt động");
-    expect(html).not.toContain("user-ACTIVE");
+    expect(html.replace(/<[^>]*>/g, " ")).not.toContain("user-ACTIVE");
     for (const label of ["Thêm nhân viên"]) expect(html).not.toMatch(new RegExp(`<button[^>]*>${label}</button>`));
     const denied = surfaceMarkup(React.createElement(MembershipsView));
     expect(denied).toContain("Bạn không có quyền mở nội dung này.");

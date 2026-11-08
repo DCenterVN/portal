@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { Search, UserPlus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,7 +19,7 @@ import { AddStaffDialog } from "@/features/branches/add-staff-dialog";
 import { useBranches } from "@/features/branches/use-branches";
 import { useMemberships } from "@/features/roles/use-roles";
 import { AssignSheet } from "./assign-sheet";
-import { filterPeople, groupByPerson, type Person } from "./people";
+import { filterPeople, groupByPerson } from "./people";
 
 function chipText(branchName: string, roles: readonly string[], locked: boolean): string {
   const text = roles.length ? `${branchName} · ${roles.map(roleName).join(", ")}` : branchName;
@@ -45,8 +46,6 @@ export function MembershipsView({ membershipId }: { membershipId?: string }) {
     setPicked(null);
     if (membershipId) window.history.replaceState(null, "", "/memberships");
   }
-
-  const open = (person: Person) => setPicked(person.userId);
 
   return (
     <RequireAction action="org:membership:read">
@@ -88,8 +87,8 @@ export function MembershipsView({ membershipId }: { membershipId?: string }) {
                   {shown.map((person) => {
                     const active = person.assignments.some((item) => !item.locked);
                     return (
-                      <TableRow key={person.userId} className="cursor-pointer" tabIndex={0} onClick={() => open(person)} onKeyDown={(event) => { if (event.key === "Enter") open(person); }}>
-                        <TableCell className="align-top"><span className="block font-medium">{person.name || "—"}</span>{person.email && person.email !== person.name && <span className="block text-xs text-muted-foreground">{person.email}</span>}</TableCell>
+                      <TableRow key={person.userId}>
+                        <TableCell className="align-top"><Link href={`/memberships/${person.userId}`} className="block font-medium text-primary hover:underline">{person.name || "—"}</Link>{person.email && person.email !== person.name && <span className="block text-xs text-muted-foreground">{person.email}</span>}</TableCell>
                         <TableCell><div className="flex flex-wrap gap-1.5">
                           {person.allBranches && <Badge>Mọi chi nhánh</Badge>}
                           {person.assignments.map((item) => <Badge key={item.branchId} variant="secondary">{chipText(item.branchName, item.roles, item.locked)}</Badge>)}

@@ -124,10 +124,10 @@ export function ConsoleFrame({ children }: { children: ReactNode }) {
   const branchSwitch = session.branch ? { branch: session.branch, branches: session.branches, busy, onSelect: (id: string) => void select(id) } : undefined;
 
   return (
-    <ConsoleShell nav={nav} context={session.context} user={session.user} branchSwitch={branchSwitch} onLogout={() => void logoutTo("/staff/login", toast.error)}>
-      <NextIntlClientProvider key={session.scope?.branchId} locale="vi" messages={messages}>
-        <AccessProvider value={{ plane: "company", actions, root: "", scope: session.scope }}>{body}</AccessProvider>
-      </NextIntlClientProvider>
-    </ConsoleShell>
+    <NextIntlClientProvider locale="vi" messages={messages} timeZone="Asia/Ho_Chi_Minh">
+      <ConsoleShell nav={nav} context={session.context} user={session.user} branchSwitch={branchSwitch} onLogout={() => void logoutTo("/staff/login", toast.error)}>
+        <AccessProvider key={session.scope?.branchId} value={{ plane: "company", actions, root: "", scope: session.scope }}>{body}</AccessProvider>
+      </ConsoleShell>
+    </NextIntlClientProvider>
   );
 }
