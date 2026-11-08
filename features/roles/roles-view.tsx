@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Lock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -88,10 +89,13 @@ export function RolesView() {
                     <RadioGroupItem value={code} className="mt-1" />
                     <span className="min-w-0 flex-1">
                       <span className="flex items-center justify-between gap-2">
-                        <span className="font-medium">{roleName(code)}</span>
+                        <span className="inline-flex items-center gap-2 font-medium">
+                          {roleName(code)}
+                          {catalog?.find((item) => item.code === code)?.protected && <Lock className="size-4 shrink-0 text-muted-foreground" aria-label="Vai trò được bảo vệ" />}
+                        </span>
                         <Badge variant="secondary">{members.data ? `${countHolders(members.data, code)} người` : "…"}</Badge>
                       </span>
-                      <span className="mt-1 block text-xs text-muted-foreground">{catalog?.find((item) => item.code === code)?.description || "Vai trò tuỳ chỉnh"}</span>
+                      <span className="mt-1 block text-xs text-muted-foreground">{catalog?.find((item) => item.code === code)?.description}</span>
                     </span>
                   </label>
                 ))}
