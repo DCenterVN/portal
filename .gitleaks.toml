@@ -11,3 +11,14 @@ condition = "AND"
 paths = ['''^frame\.lock\.json$''']
 regexTarget = "secret"
 regexes = ['''^[a-f0-9]{64}$''']
+
+[[rules.allowlists]]
+description = "Token giả gán cho identityToken/storeToken trong unit test"
+condition = "AND"
+paths = ['''\.test\.tsx?$''']
+regexTarget = "match"
+regexes = ['''\b(identityToken|storeToken)\s*=\s*["'`]''']
+
+[[rules.allowlists]]
+description = "Log và dữ liệu kiểm thử của quy trình AIDLC cũ đã bỏ"
+paths = ['''^\.aidlc/''']
