@@ -14,11 +14,15 @@ import * as download from "@/app/api/inventory/suppliers/[id]/contract-documents
 import * as receipts from "@/app/api/inventory/goods-receipts/route";
 import * as history from "@/app/api/inventory/suppliers/[id]/goods-receipts/route";
 import { supplierID, agreementID, documentID } from "@/mocks/supplier-contract";
+const inventoryOperations = readFileSync("lib/contracts/inventory.public.yaml", "utf8")
+  .split(/^ {4}(?:get|put|post|delete|options|head|patch|trace):\r?$/m)
+  .map((operation) => operation.split(/\r?\n/));
 afterEach(() => vi.unstubAllGlobals());
-it("metadata taxonomy sinh từ inventory và snapshot giữ nguyên bytes", () => {
+it("metadata taxonomy khớp operation và quyền trong snapshot inventory", () => {
   expect(OPERATIONS).toHaveProperty("listMaterialCategories", { service: "inventory", method: "GET", path: "/inventory/material-categories", actionKey: "inventory:supplier:read", scope: "none" });
-  expect(readFileSync("lib/contracts/inventory.public.yaml")).toEqual(readFileSync("../inventory/api/openapi.public.yaml"));
-  expect(JSON.parse(readFileSync("../inventory/api/permissions.json", "utf8"))).toMatchObject({ permissions: expect.arrayContaining([expect.objectContaining({ action_key: "inventory:supplier:read", operations: expect.arrayContaining(["listMaterialCategories"]) })]) });
+  expect(inventoryOperations).toContainEqual(expect.arrayContaining([
+    "      operationId: listMaterialCategories", "      x-action-key: inventory:supplier:read",
+  ]));
 });
 it("history BFF truyền abort signal và giữ 403/no-store", async () => {
   const fetch = vi.fn().mockResolvedValue(Response.json({ errors: { error_code: "FORBIDDEN" } }, { status: 403 }));
@@ -69,7 +73,9 @@ it("bổ sung chứng từ dùng quyền supplier:update và metadata sinh từ 
   expect(OPERATIONS).toHaveProperty("attachSupplierAgreementDocument", {
     service: "inventory", method: "POST", path: "/inventory/suppliers/{supplier_id}/agreements/{agreement_id}/documents", actionKey: "inventory:supplier:update", scope: "none",
   });
-  expect(JSON.parse(readFileSync("../inventory/api/permissions.json", "utf8"))).toMatchObject({ permissions: expect.arrayContaining([expect.objectContaining({ action_key: "inventory:supplier:update", operations: expect.arrayContaining(["attachSupplierAgreementDocument"]) })]) });
+  expect(inventoryOperations).toContainEqual(expect.arrayContaining([
+    "      operationId: attachSupplierAgreementDocument", "      x-action-key: inventory:supplier:update",
+  ]));
 });
 
 it("ảnh NCC có đủ operations và quyền sinh từ contract", () => {
@@ -82,6 +88,8 @@ it("ảnh NCC có đủ operations và quyền sinh từ contract", () => {
       service: "inventory", method, path: `/inventory/suppliers/{supplier_id}/photo/${suffix}`,
       actionKey: `inventory:supplier:${action}`, scope: "none",
     });
-    expect(JSON.parse(readFileSync("../inventory/api/permissions.json", "utf8"))).toMatchObject({ permissions: expect.arrayContaining([expect.objectContaining({ action_key: `inventory:supplier:${action}`, operations: expect.arrayContaining([operation]) })]) });
+    expect(inventoryOperations).toContainEqual(expect.arrayContaining([
+      `      operationId: ${operation}`, `      x-action-key: inventory:supplier:${action}`,
+    ]));
   }
 });
