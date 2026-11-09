@@ -86,6 +86,7 @@
     "components/ui/tabs.tsx": "bc6b1c115fcc9d63d8f14cecd4fcb43cd0b8b201a5d295419296fe9e0ba1623f",
     "components/ui/textarea.tsx": "9823fb89d8b22e8b72bc8a92b9411ac4480c525ae1114ff156c63812db4b2013",
     "components/ui/toast.ts": "37c0cdf155781c3fd1b8ceeb7be9007559bf0ac10ccd11a8023e3d824f00d730",
+    "components/ui/toggle-group.tsx": "5f3f3d7e10047d54c77fbb8773840cd824d3f2ebee84655eb39cc7c0206b7f42",
     "components/ui/tooltip.tsx": "345bc589a285ece3622bf18f4c842107836cf6fc8a9055b0a604db0cf6c83551",
     "e2e/visual/baseline/tokens-desktop.png": "b2dfceb4d7784d090c467d8d545428f5997d86a8a9edc7923509c22beec19e41",
     "e2e/visual/baseline/tokens-mobile.png": "b2dfceb4d7784d090c467d8d545428f5997d86a8a9edc7923509c22beec19e41",
