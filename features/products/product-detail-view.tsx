@@ -1,5 +1,7 @@
 "use client";
 
+import type { Route } from "next";
+
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,10 +12,12 @@ import { PageShell } from "@/components/ui/page";
 import { PageHeading } from "@/components/patterns/page-heading";
 import { Tip } from "@/components/patterns/tip";
 
-export function ProductDetailView({ initialProduct: product }: { initialProduct: Product }) {
+import { NutritionDetail } from "./nutrition-view";
+
+export function ProductDetailView({ initialProduct: product, branchId }: { initialProduct: Product; branchId?: string }) {
   const { addingToCart, quantity, setQuantity, canBuy, handleAddToCart } = useProductDetail(product);
   return <PageShell>
-    <Link href="/products" className="mb-4 inline-flex min-h-11 items-center text-sm">Quay lại danh mục món</Link>
+    <Link href={(branchId ? `/products?branch_id=${encodeURIComponent(branchId)}` : "/products") as Route} className="mb-4 inline-flex min-h-11 items-center text-sm">Quay lại danh mục món</Link>
     <PageHeading title={product.name} description={product.description || "Thông tin món và quy cách phục vụ"} />
     <div className="mt-6 grid min-w-0 gap-6 lg:grid-cols-2">
       <Card className="overflow-hidden border-[var(--color-line)] bg-[var(--color-surface)] p-0">
@@ -23,8 +27,7 @@ export function ProductDetailView({ initialProduct: product }: { initialProduct:
       <Card className="border-[var(--color-line)] bg-[var(--color-surface)]">
         <CardHeader><CardTitle className="text-[var(--color-ink)]">Giá và quy cách</CardTitle></CardHeader>
         <CardContent className="space-y-5">
-          {product.uom && <p className="text-sm text-[var(--color-ink)]">Đơn vị tính: {product.uom}</p>}
-          <p className="text-2xl font-bold text-[var(--color-ink)]">{formatVND(product.base_price_vnd)}</p>
+          <p className="text-2xl font-bold text-[var(--color-ink)]">{formatVND(product.base_price_vnd)}/suất</p>
           <div aria-label="Số lượng" className="flex flex-wrap items-center gap-3">
             <Tip label="Giảm số lượng"><Button variant="outline" size="icon" disabled={addingToCart || quantity <= 1} onClick={() => setQuantity(Math.max(1, quantity - 1))} aria-label="Giảm số lượng">−</Button></Tip>
             <span aria-live="polite">{quantity}</span>
@@ -39,5 +42,6 @@ export function ProductDetailView({ initialProduct: product }: { initialProduct:
         </CardContent>
       </Card>
     </div>
+    <NutritionDetail nutrition={product.nutrition} />
   </PageShell>;
 }

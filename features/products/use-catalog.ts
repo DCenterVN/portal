@@ -1,33 +1,53 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import type { Route } from "next";
+import useSWRInfinite from "swr/infinite";
+import { buildCatalogQuery, readNutritionFilters } from "@/lib/api/catalog-query";
+import type { CatalogFilterValues } from "./catalog-filters";
 import { useTranslations } from "next-intl";
 import { toast } from "@/components/ui/toast";
 import { addToCart, getCatalog, getOrCreateCartId, recordCartResponse, type Product } from "@/lib/api/sales";
 
 export function useCatalog() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [nextCursor, setNextCursor] = useState<string>();
-  const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [error, setError] = useState("");
-  const load = useCallback(async () => {
-    setLoading(true); setError("");
-    const result = await getCatalog();
-    setProducts(result.data); setNextCursor(result.next_cursor); setError(result.error ?? ""); setLoading(false);
-  }, []);
-  useEffect(() => { void load(); }, [load]);
-  const loadMore = useCallback(async () => {
-    if (!nextCursor || loadingMore) return;
-    setLoadingMore(true);
-    const result = await getCatalog({ cursor: nextCursor });
-    if (result.source === "api") {
-      setProducts(previous => Array.from(new Map([...previous, ...result.data].map(item => [item.id, item])).values()));
-      setNextCursor(result.next_cursor);
+  const search = useSearchParams();
+  const router = useRouter();
+  const filters: CatalogFilterValues = {
+    ...readNutritionFilters(new URLSearchParams(search.toString())),
+    query: search.get("q") ?? undefined,
+    minPrice: search.has("minPrice") ? Number(search.get("minPrice")) : undefined,
+    maxPrice: search.has("maxPrice") ? Number(search.get("maxPrice")) : undefined,
+    sort: search.get("sort") === "price-asc" ? "price-asc" : search.get("sort") === "price-desc" ? "price-desc" : undefined,
+  };
+  const branchId = search.get("branch_id") ?? undefined;
+  const requestedQuery = buildCatalogQuery({ ...filters, branch_id: branchId }).toString();
+  const [query, setQuery] = useState(requestedQuery);
+  useEffect(() => {
+    const timer = setTimeout(() => setQuery(requestedQuery), 250);
+    return () => clearTimeout(timer);
+  }, [requestedQuery]);
+  const { data, error, isLoading, isValidating, size, setSize, mutate } = useSWRInfinite(
+    (index, previous: Awaited<ReturnType<typeof getCatalog>> | null) => index && !previous?.next_cursor ? null : [query, index ? previous?.next_cursor : undefined],
+    ([requestQuery, cursor]: [string, string | undefined]) => getCatalog({ ...readNutritionFilters(new URLSearchParams(requestQuery)), branch_id: new URLSearchParams(requestQuery).get("branch_id") ?? undefined, cursor }),
+    { keepPreviousData: true, revalidateFirstPage: false },
+  );
+  const onFiltersChange = (value: CatalogFilterValues) => {
+    const next = new URLSearchParams(search.toString());
+    for (const key of ["kcal_max", "protein_min", "label", "q", "minPrice", "maxPrice", "sort", "cursor"]) next.delete(key);
+    const nutrition = buildCatalogQuery(value); nutrition.delete("page_size");
+    nutrition.forEach((value, key) => next.append(key, value));
+    for (const key of ["query", "minPrice", "maxPrice", "sort"] as const) {
+      if (value[key] !== undefined && value[key] !== "") next.set(key === "query" ? "q" : key, String(value[key]));
     }
-    setError(result.error ?? ""); setLoadingMore(false);
-  }, [nextCursor, loadingMore]);
-  return { products, loading, error, nextCursor, loadingMore, loadMore, reload: load };
+    router.replace(`/products${next.size ? `?${next}` : ""}` as Route, { scroll: false });
+  };
+  return {
+    products: data?.flatMap(page => page.data) ?? [], loading: isLoading && !data,
+    error: error instanceof Error ? error.message : data?.find(page => page.error)?.error,
+    nextCursor: data?.at(-1)?.next_cursor, loadingMore: isValidating,
+    loadMore: () => setSize(size + 1), reload: () => mutate(), filters, onFiltersChange, branchId,
+  };
 }
 
 export function useCatalogCart(product: Product) {

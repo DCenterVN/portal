@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { addToCart, createDraftProduct, getCatalog, getCatalogProduct, getProducts } from "./sales";
+import { addToCart, createDraftProduct, getCart, getCatalog, getCatalogProduct, getProducts } from "./sales";
 
 const ORG = "0198fd55-3f46-7a01-9e52-f4c0de000010";
 const BRANCH = "0198fd55-3f46-7a01-9e52-f4c0de000020";
@@ -155,5 +155,15 @@ describe("AC-1/AC-5 getCatalog giữ dữ liệu card", () => {
     stub(() => ok(publicItem));
     const { data } = await getCatalogProduct(PRODUCT_ID);
     expect(data).toMatchObject({ sku_ref: SKU_ID, branch_ref: BRANCH, image_urls: ["https://cdn.example.test/ca-hoi.jpg"] });
+  });
+});
+
+describe("GET giỏ thật", () => {
+  it("gửi chi nhánh đã lưu và giải mã envelope Sales", async () => {
+    vi.stubGlobal("window", { localStorage: { getItem: () => BRANCH } });
+    const cart = { cart: { id: "cart-1", status: "ACTIVE", version: 1 }, items: [{ sku_ref: SKU_ID, quantity: 1, price_snapshot_vnd: 85000 }] };
+    stub(() => ok(cart));
+    expect(await getCart("cart-1")).toEqual(cart);
+    expect(new URL(calls()[0].url, "http://portal.test").searchParams.get("branch_id")).toBe(BRANCH);
   });
 });

@@ -1,3 +1,4 @@
+import { MaterialNutritionForm } from "./material-nutrition-form";
 import { Button } from "@/components/ui/button";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { Card, CardContent } from "@/components/ui/card";
@@ -20,5 +21,6 @@ export function RawLabelsForm({ s }: { s: PackagesState }) {
       <p>Kiêng</p><div className="grid gap-2 md:grid-cols-3">{avoidance.map(value => <Checkbox key={value} label={value} checked={labels.avoidance_flags.includes(value)} onChange={e => setLabels(current => current && ({ ...current, avoidance_flags: e.target.checked ? [...current.avoidance_flags, value] : current.avoidance_flags.filter(item => item !== value) }))} />)}</div>
       <label>Chế độ ăn nguyên liệu<NativeSelect value={dietValue(labels.diet_flags)} onChange={e => { const value = e.target.value; setLabels(current => current && ({ ...current, diet_flags: value === "unknown" ? null : value === "VEGETARIAN" ? ["VEGETARIAN"] : value === "VEGAN" ? ["VEGAN"] : [] })); }}><NativeSelectOption value="unknown">Chưa biết</NativeSelectOption><NativeSelectOption value="none">Không khẳng định chế độ ăn</NativeSelectOption><NativeSelectOption value="VEGETARIAN">Chay</NativeSelectOption><NativeSelectOption value="VEGAN">Thuần chay</NativeSelectOption></NativeSelect></label>
     </fieldset>{canEdit && <Button type="submit" disabled={s.detailBusy}>{s.detailBusy ? "Đang lưu…" : "Lưu nhãn nguyên liệu"}</Button>}</form>}
+    {s.raw && <MaterialNutritionForm key={s.raw.id} material={s.raw} canEdit={canEdit} />}
   </CardContent></Card>;
 }

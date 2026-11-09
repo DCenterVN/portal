@@ -101,3 +101,14 @@ it("forwards material creation and preserves duplicate details and idempotency",
   expect(await response.json()).toMatchObject({ existing });
   expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining("/sales/skus"), expect.objectContaining({ method: "POST", headers: expect.objectContaining({ "Idempotency-Key": "material-key" }) }));
 });
+
+it("GET giỏ chỉ forward branch_id, bỏ query ngoài phạm vi", async () => {
+  const branch = "0198fd55-3f46-7a01-9e52-f4c0de000020";
+  global.fetch = vi.fn().mockResolvedValue(Response.json({ data: { items: [] } }));
+  const { GET } = await import("./carts/[cart_id]/route");
+  const response = await GET(new NextRequest(`http://localhost:3002/api/sales/carts/cart-1?branch_id=${branch}&org_id=evil`, { headers: { cookie: "access_token=jwt" } }), { params: Promise.resolve({ cart_id: "cart-1" }) });
+  expect(response.status).toBe(200);
+  const url = new URL(String(vi.mocked(global.fetch).mock.calls[0][0]));
+  expect(url.pathname).toBe("/sales/carts/cart-1");
+  expect([...url.searchParams]).toEqual([["branch_id", branch]]);
+});

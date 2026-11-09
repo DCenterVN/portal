@@ -17,7 +17,12 @@ import { formatVND } from "@/lib/format";
 import { useCatalog, useCatalogCart } from "./use-catalog";
 import { applyCatalogFilters, CatalogFilters, type CatalogFilterValues } from "./catalog-filters";
 
+import { NutritionChip } from "./nutrition-view";
+
 interface CatalogViewProps {
+  branchId?: string;
+  filters?: CatalogFilterValues;
+  onFiltersChange?: (filters: CatalogFilterValues) => void;
   products: Product[];
   loading?: boolean;
   error?: string;
@@ -32,11 +37,14 @@ export function CatalogLoader() {
   return <NextIntlClientProvider locale="vi" messages={{ Catalog: viMessages.Catalog }} timeZone="Asia/Ho_Chi_Minh"><CatalogView {...state} onLoadMore={() => void state.loadMore()} onRetry={() => void state.reload()} /></NextIntlClientProvider>;
 }
 
-export function CatalogView({ products, loading, error, nextCursor, onLoadMore, loadingMore, onRetry }: CatalogViewProps) {
+export function CatalogView({ products, loading, error, nextCursor, onLoadMore, loadingMore, onRetry, filters: externalFilters, onFiltersChange, branchId }: CatalogViewProps) {
   const t = useTranslations("Catalog");
-  const [filters, setFilters] = useState<CatalogFilterValues>({});
+  const [localFilters, setLocalFilters] = useState<CatalogFilterValues>({});
+  const filters = externalFilters ?? localFilters;
+  const setFilters = onFiltersChange ?? setLocalFilters;
   const [filterOpen, setFilterOpen] = useState(false);
   const visible = applyCatalogFilters(products, filters);
+  const hasFilters = !!filters.query || filters.minPrice !== undefined || filters.maxPrice !== undefined || filters.kcal_max !== undefined || filters.protein_min !== undefined || !!filters.label?.length;
   return <PageShell>
     <PageHeading title={t("title")} description={t("loaded", { count: products.length })} />
     {loading ? <LoadingState title={t("loading")} /> : error ? <ErrorState title={t("loadError")} description={error} onRetry={onRetry} /> :
@@ -59,9 +67,9 @@ export function CatalogView({ products, loading, error, nextCursor, onLoadMore, 
               </NativeSelect></span>
             </label>
           </div>
-          {visible.length === 0 ? <EmptyState title={products.length ? t("noMatch") : t("empty")} description={products.length ? t("tryFilters") : t("emptyDescription")} /> :
+          {visible.length === 0 ? <EmptyState title={hasFilters ? t("noMatch") : t("empty")} description={hasFilters ? t("tryFilters") : t("emptyDescription")} action={<Button variant="outline" onClick={() => setFilters({})}>Xoá lọc</Button>} /> :
             <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
-              {visible.map(product => <CatalogProductCard key={product.id} product={product} />)}
+              {visible.map(product => <CatalogProductCard key={product.id} product={product} branchId={branchId} />)}
             </div>}
           {nextCursor && <div className="text-center"><Button variant="outline" disabled={loadingMore} onClick={onLoadMore}>{loadingMore ? t("loading") : t("more")}</Button></div>}
         </section>
@@ -76,17 +84,18 @@ export function CatalogView({ products, loading, error, nextCursor, onLoadMore, 
   </PageShell>;
 }
 
-function CatalogProductCard({ product }: { product: Product }) {
+function CatalogProductCard({ product, branchId }: { product: Product; branchId?: string }) {
   const t = useTranslations("Catalog");
   const { adding, add } = useCatalogCart(product);
+  const href = `/products/${product.id}${branchId ? `?branch_id=${encodeURIComponent(branchId)}` : ""}` as Route;
   return <Card className="flex min-w-0 flex-col overflow-hidden p-0">
-                <Link href={`/products/${product.id}` as Route} className="block aspect-[4/3] overflow-hidden bg-[var(--color-tint)]">
+                <Link href={href} className="block aspect-[4/3] overflow-hidden bg-[var(--color-tint)]">
                   <img src={product.image_urls?.[0] || "/images/mon-mac-dinh.svg"} alt={product.name} className="size-full object-cover" />
                 </Link>
                 <div className="flex flex-1 flex-col gap-2 p-3">
-                  <Link href={`/products/${product.id}` as Route} className="break-words text-sm font-bold">{product.name}</Link>
-                  {product.uom && <p className="text-xs text-[var(--color-muted)]">{product.uom}</p>}
-                  <p className="mt-auto text-sm font-bold">{product.base_price_vnd === undefined ? t("noPrice") : formatVND(product.base_price_vnd)}</p>
+                  <Link href={href} className="break-words text-sm font-bold">{product.name}</Link>
+                  <p className="mt-auto text-sm font-bold">{product.base_price_vnd === undefined ? t("noPrice") : `${formatVND(product.base_price_vnd)}/suất`}</p>
+                  <NutritionChip nutrition={product.nutrition} />
                   {product.sku_ref && product.branch_ref && product.base_price_vnd !== undefined && <Button
                     className="w-full whitespace-normal text-xs"
                     disabled={adding || product.available_quantity === undefined || product.available_quantity <= 0}

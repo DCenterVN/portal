@@ -1,3 +1,5 @@
+import { catalogNutritionSchema, type CatalogNutrition } from "@/lib/nutrition";
+import { buildCatalogQuery, type NutritionFilters } from "@/lib/api/catalog-query";
 import { z } from "zod";
 import { decodePlatform } from "@/lib/api/platform-contract";
 import { apiFetch } from "@/lib/fetcher";
@@ -5,9 +7,9 @@ import { allPages } from "./all-pages";
 export { getMaterials, createMaterial, getRawLabels, updateRawLabels } from "./sales-materials";
 export type { Material, MaterialPage, CreateMaterialInput, ExistingMaterial, RawAllergens, RawLabelsView, UpdateRawLabelsRequest } from "./sales-materials";
 
-export interface Product { id: string; sku_code: string; name: string; description?: string; barcode?: string; uom: string; base_price_vnd?: number; status: "DRAFT" | "ACTIVE" | "SUSPENDED"; created_at: string; updated_at?: string; sku_ref?: string; branch_ref?: string; image_urls?: string[]; available_quantity?: number; }
+export interface Product { nutrition?: CatalogNutrition | null; id: string; sku_code: string; name: string; description?: string; barcode?: string; uom: string; base_price_vnd?: number; status: "DRAFT" | "ACTIVE" | "SUSPENDED"; created_at: string; updated_at?: string; sku_ref?: string; branch_ref?: string; image_urls?: string[]; available_quantity?: number; }
 export interface CreateProductInput { sku_code: string; name: string; description?: string; uom: string; base_price_vnd: number; }
-export interface CartItem { product_id: string; sku_code: string; name: string; quantity: number; price_snapshot_vnd: number; uom: string; }
+export interface CartItem { product_id: string; sku_code: string; name: string; quantity: number; price_snapshot_vnd: number; uom: string; image_url?: string; }
 export interface Cart { id: string; items: CartItem[]; total_amount_vnd: number; }
 export type Order = z.infer<typeof orderDisplaySchema>;
 export interface SalesCartResponse { cart: { id: string; status: "ACTIVE" | "CHECKED_OUT"; version: number }; items: Array<{ sku_ref: string; quantity: number; price_snapshot_vnd: number }> }
@@ -67,6 +69,7 @@ export async function getProductById(id: string): Promise<DataResult<Product | n
 }
 
 const catalogEntrySchema = z.object({
+  nutrition: catalogNutritionSchema.nullish(),
   product: z.object({
     id: z.string(), name: z.string(), description: z.string().nullish(),
     status: z.enum(["DRAFT", "ACTIVE", "SUSPENDED"]).optional(),
@@ -83,10 +86,10 @@ const catalogPageSchema = z.object({
   items: z.array(catalogEntrySchema).nullable().transform(items => items ?? []),
   next_cursor: z.string().nullish(),
 });
-function catalogToProduct({ product, variants }: z.infer<typeof catalogEntrySchema>): Product {
+function catalogToProduct({ product, variants, nutrition }: z.infer<typeof catalogEntrySchema>): Product {
   const variant = variants[0];
   return {
-    id: product.id, name: product.name, description: product.description ?? undefined,
+    nutrition, id: product.id, name: product.name, description: product.description ?? undefined,
     status: product.status ?? "ACTIVE", created_at: product.created_at,
     branch_ref: product.branch_ref, image_urls: product.image_urls ?? [],
     sku_ref: variant?.id, sku_code: variant?.sku_code ?? "", uom: variant?.uom_code ?? "",
@@ -95,10 +98,9 @@ function catalogToProduct({ product, variants }: z.infer<typeof catalogEntrySche
   };
 }
 
-export async function getCatalog({ cursor }: { cursor?: string } = {}): Promise<DataResult<Product[]> & { next_cursor?: string }> {
+export async function getCatalog({ cursor, ...filters }: NutritionFilters & { cursor?: string; branch_id?: string } = {}): Promise<DataResult<Product[]> & { next_cursor?: string }> {
   try {
-    const query = new URLSearchParams({ page_size: "100" });
-    if (cursor) query.set("cursor", cursor);
+    const query = buildCatalogQuery(filters, cursor);
     const res = await fetch(`/api/public/catalog?${query}`);
     if (!res.ok) return { data: [], source: "unavailable", error: await errorMessage(res, `Sales API trả về ${res.status}`) };
     const page = decodePlatform(await res.json(), catalogPageSchema);
@@ -108,9 +110,9 @@ export async function getCatalog({ cursor }: { cursor?: string } = {}): Promise<
   }
 }
 
-export async function getCatalogProduct(id: string): Promise<DataResult<Product | null>> {
+export async function getCatalogProduct(id: string, branchId?: string): Promise<DataResult<Product | null>> {
   try {
-    const res = await fetch(`/api/public/catalog/${encodeURIComponent(id)}`);
+    const res = await fetch(`/api/public/catalog/${encodeURIComponent(id)}${branchId ? `?branch_id=${encodeURIComponent(branchId)}` : ""}`);
     if (res.status === 404) return { data: null, source: "api" };
     if (!res.ok) return { data: null, source: "unavailable", error: await errorMessage(res, `Sales API trả về ${res.status}`) };
     return { data: catalogToProduct(decodePlatform(await res.json(), catalogEntrySchema)), source: "api" };
@@ -187,15 +189,20 @@ export async function addToCart(cartId: string, item: { sku_ref: string; branch_
     body: JSON.stringify({ sku_ref: item.sku_ref, quantity: item.quantity }),
   });
   if (!res.ok) throw new Error(await errorMessage(res, "Không thể thêm vào giỏ hàng"));
-  return decodePlatform(await res.json(), z.object({
-    cart: z.object({ id: z.string(), status: z.enum(["ACTIVE", "CHECKED_OUT"]), version: z.number() }),
-    items: z.array(z.object({ sku_ref: z.string(), quantity: z.number(), price_snapshot_vnd: z.number() })),
-  }));
+  const cart = decodePlatform(await res.json(), salesCartSchema);
+  if (typeof window !== "undefined") window.localStorage.setItem("vietsach.cart_branch", item.branch_id);
+  return cart;
 }
+const salesCartSchema = z.object({
+  cart: z.object({ id: z.string(), status: z.enum(["ACTIVE", "CHECKED_OUT"]), version: z.number() }),
+  items: z.array(z.object({ sku_ref: z.string(), quantity: z.number(), price_snapshot_vnd: z.number() })),
+});
 export async function getCart(cartId: string): Promise<SalesCartResponse> {
-  const res = await apiFetch(`/api/sales/carts/${encodeURIComponent(cartId)}`);
+  const branch = typeof window !== "undefined" ? window.localStorage.getItem("vietsach.cart_branch") : null;
+  const query = branch ? `?${new URLSearchParams({ branch_id: branch })}` : "";
+  const res = await apiFetch(`/api/sales/carts/${encodeURIComponent(cartId)}${query}`);
   if (!res.ok) throw new Error(await errorMessage(res, "Không thể tải giỏ hàng"));
-  return res.json();
+  return decodePlatform(await res.json(), salesCartSchema);
 }
 export async function createOrder(cartRef: string): Promise<Order> {
   const res = await apiFetch("/api/sales/orders", { method: "POST", headers: { "Content-Type": "application/json", "Idempotency-Key": crypto.randomUUID() }, body: JSON.stringify({ cart_ref: cartRef }) });
@@ -245,7 +252,7 @@ export function recordCartResponse(response: SalesCartResponse, knownProduct?: P
   const next = response.items.map((item) => {
     const known = previous.find((entry) => entry.product_id === item.sku_ref);
     const product = (knownProduct?.sku_ref ?? knownProduct?.id) === item.sku_ref ? knownProduct : undefined;
-    return { product_id: item.sku_ref, sku_code: product?.sku_code || known?.sku_code || item.sku_ref, name: product?.name || known?.name || `SKU ${item.sku_ref}`, quantity: item.quantity, price_snapshot_vnd: item.price_snapshot_vnd, uom: product?.uom || known?.uom || "—" };
+    return { product_id: item.sku_ref, sku_code: product?.sku_code || known?.sku_code || "", name: product?.name || (known?.name?.includes(item.sku_ref) ? undefined : known?.name) || "Món đã chọn", quantity: item.quantity, price_snapshot_vnd: item.price_snapshot_vnd, uom: product?.uom || known?.uom || "—", image_url: product?.image_urls?.[0] || known?.image_url };
   });
   window.localStorage.setItem(cartItemsKey, JSON.stringify(next));
 }
@@ -253,6 +260,7 @@ export function clearCart(): void {
   if (typeof window === "undefined") return;
   window.localStorage.removeItem(cartItemsKey);
   window.localStorage.removeItem("vietsach.cart_id");
+  window.localStorage.removeItem("vietsach.cart_branch");
 }
 export { formatVND } from "@/lib/format";
 

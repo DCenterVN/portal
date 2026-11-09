@@ -68,6 +68,27 @@ describe("Sales & Products UI Feature", () => {
     Reflect.deleteProperty(globalThis, "window");
   });
 
+  it("giữ tên và ảnh sau GET giỏ, không dùng UUID làm tên khi thiếu cache", () => {
+    const storage = new Map<string, string>();
+    vi.stubGlobal("window", { localStorage: { getItem: (key: string) => storage.get(key) ?? null, setItem: (key: string, value: string) => storage.set(key, value) } });
+    try {
+      const response = { cart: { id: "cart", status: "ACTIVE" as const, version: 1 }, items: [{ sku_ref: products[0].id, quantity: 2, price_snapshot_vnd: 275000 }] };
+      recordCartResponse(response, { ...products[0], image_urls: ["/ca-hoi.jpg"] });
+      recordCartResponse(response);
+      expect(loadCartItems()[0]).toMatchObject({ name: "Cá hồi", image_url: "/ca-hoi.jpg", price_snapshot_vnd: 275000 });
+      recordCartResponse({ ...response, items: [{ ...response.items[0], sku_ref: "0198fd55-3f46-7a01-9e52-f4c0de000002" }] });
+      expect(loadCartItems()[0].name).toBe("Món đã chọn");
+    } finally { vi.unstubAllGlobals(); }
+  });
+
+  it("giỏ hiển thị tên, ảnh mặc định và câu cho khách, không lộ UUID", () => {
+    const out = html(React.createElement(CartView, { initialCart: { id: "cart", total_amount_vnd: 300000, items: [{ product_id: products[0].id, sku_code: products[0].id, name: "Cá hồi", quantity: 1, price_snapshot_vnd: 300000, uom: "EA" }] } }));
+    expect(out).toContain("Cá hồi");
+    expect(out).toContain("/images/mon-mac-dinh.svg");
+    expect(out).toContain("Tổng tiền cuối cùng được xác nhận khi đặt đơn.");
+    expect(userFacingContent(out)).not.toMatch(/backend|cache|SKU|EA|[0-9a-f]{8}-[0-9a-f]{4}-/i);
+  });
+
   it("rotates a checked-out cart by clearing cached items and its id", () => {
     const storage = new Map<string, string>([
       ["vietsach.cart_id", "checked-out-cart"],

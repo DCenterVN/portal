@@ -1,10 +1,12 @@
 import { ProductDetailLoader } from "@/features/products/product-detail-loader";
 
 export default async function ProductDetailPage({
-  params,
+  params, searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ branch_id?: string }>;
 }) {
   const { id } = await params;
-  return <ProductDetailLoader id={id} />;
+  const { branch_id } = await searchParams;
+  return <ProductDetailLoader id={id} branchId={branch_id} />;
 }

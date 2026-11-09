@@ -5,7 +5,11 @@ import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
-export interface CatalogFilterValues {
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { nutritionLabels } from "@/lib/nutrition";
+import type { NutritionFilters } from "@/lib/api/catalog-query";
+
+export interface CatalogFilterValues extends NutritionFilters {
   query?: string;
   minPrice?: number;
   maxPrice?: number;
@@ -43,6 +47,15 @@ export function CatalogFilters({ value, onChange }: { value: CatalogFilterValues
           <Input type="number" min="0" inputMode="numeric" value={value[key] ?? ""} onChange={e => onChange({ ...value, [key]: e.target.value === "" ? undefined : Number(e.target.value) })} />
         </label>)}
       </div>
+    </fieldset>
+    {(["kcal_max", "protein_min"] as const).map(key => <label key={key} className="block space-y-2 text-sm font-semibold">
+      <span>{key === "kcal_max" ? "Tối đa kcal/suất" : "Từ g đạm/suất"}</span>
+      <Input type="number" min="0" step={key === "kcal_max" ? "1" : "any"} inputMode="decimal" value={value[key] ?? ""} onChange={event => onChange({ ...value, [key]: event.target.value === "" ? undefined : Number(event.target.value) })} />
+    </label>)}
+    <fieldset className="space-y-2"><legend className="text-sm font-semibold">Nhãn dinh dưỡng</legend>
+      <ToggleGroup type="multiple" aria-label="Nhãn dinh dưỡng" value={value.label ?? []} onValueChange={label => onChange({ ...value, label })}>
+        {Object.entries(nutritionLabels).map(([key, label]) => <ToggleGroupItem key={key} value={key}>{label}</ToggleGroupItem>)}
+      </ToggleGroup>
     </fieldset>
     <Button variant="outline" className="w-full" onClick={() => onChange({})}>{t("clear")}</Button>
   </div>;

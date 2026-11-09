@@ -63,7 +63,9 @@ describe("AC-1 catalog khách không lộ điều khiển quản trị", () => {
   it("AC-8 không tim yêu thích, khuyến mãi, đánh giá, thời gian nấu giả (OD-1)", () => {
     const out = render();
     expect(out).not.toMatch(/yêu thích|wishlist|favorite|Khuyến mãi|Đánh giá|đã bán|phút/i);
-    expect(out).not.toMatch(/aria-pressed/);
+    const cards = out.match(/<div data-slot="card"[\s\S]*?<\/section>/)?.[0] ?? "";
+    expect(cards).not.toMatch(/aria-pressed/);
+    expect(out).toContain('aria-label="Nhãn dinh dưỡng"');
   });
   it("AC-5 nút thêm giỏ chỉ có khi món có sku_ref và branch_ref thật", () => {
     const out = render({ products: [make(1, "Bún bò Huế", 120000), make(2, "Cá hồi áp chảo", 300000, { sku_ref: undefined })] });
@@ -73,6 +75,12 @@ describe("AC-1 catalog khách không lộ điều khiển quản trị", () => {
 });
 
 describe("AC-6 trạng thái loading / empty / error / success khác nhau", () => {
+  it("filtered empty data has a reset action and guidance to change filters", () => {
+    const out = render({ products: [], filters: { protein_min: 999 } });
+    expect(out).toContain(messages.Catalog.noMatch);
+    expect(out).toContain(messages.Catalog.tryFilters);
+    expect(out).toContain("Xoá lọc");
+  });
   const loading = render({ loading: true, products: [] });
   const empty = render({ products: [] });
   const error = render({ products: [], error: "Sales API trả về 503" });
@@ -165,4 +173,10 @@ describe("AC-7 console ProductsView giữ #019 và sửa wrap / căn giữa icon
   it("không tạo style effect thứ hai trong console", () => {
     expect(source).not.toMatch(/@keyframes|checkFade|checkSlide|\.module\.css["'];[\s\S]*\.module\.css["']/);
   });
+});
+
+it("thẻ dùng /suất và không hiển thị EA", () => {
+  const out = visible(render({ products: [make(1, "Cá hồi", 85000, { uom: "EA" })] }));
+  expect(out).toContain("/suất");
+  expect(out).not.toMatch(/\bEA\b/);
 });

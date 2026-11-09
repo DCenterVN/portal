@@ -58,7 +58,7 @@ export function CartView({ initialCart }: CartViewProps) {
             {items.length} mặt hàng
           </Badge>
         }
-        description="Giỏ hiển thị cache từ phản hồi Sales; tổng tiền chính thức luôn do backend tính khi tạo đơn"
+        description="Kiểm tra món và số lượng trước khi đặt đơn."
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
@@ -70,7 +70,7 @@ export function CartView({ initialCart }: CartViewProps) {
                 <TableHeader>
                   <TableRow className="border-b border-border bg-muted">
                     <TableHead className="text-xs font-semibold text-muted-foreground">
-                      Mặt Hàng & SKU
+                      Món đã chọn
                     </TableHead>
                     <TableHead className="w-28 text-xs font-semibold text-muted-foreground text-right">
                       Đơn Giá
@@ -87,11 +87,9 @@ export function CartView({ initialCart }: CartViewProps) {
                   {items.map((item) => (
                     <TableRow key={item.product_id} className="border-b border-border">
                       <TableCell>
-                        <div className="font-semibold text-xs text-foreground">
-                          {item.name}
-                        </div>
-                        <div className="text-xs font-mono text-muted-foreground mt-0.5">
-                          {item.sku_code} · {item.uom}
+                        <div className="flex items-center gap-3">
+                          <img src={item.image_url || "/images/mon-mac-dinh.svg"} alt="" className="size-10 shrink-0 rounded-sm object-cover" />
+                          <span className="font-semibold text-xs text-foreground">{item.name}</span>
                         </div>
                       </TableCell>
 
@@ -125,7 +123,7 @@ export function CartView({ initialCart }: CartViewProps) {
                 <span>Tóm Tắt Đơn Hàng</span>
               </CardTitle>
               <CardDescription className="text-xs text-muted-foreground">
-                Giá trị bên dưới để tham khảo; backend quyết định tổng cuối cùng
+                Tổng tiền cuối cùng được xác nhận khi đặt đơn.
               </CardDescription>
             </CardHeader>
 
@@ -175,7 +173,7 @@ export function CartView({ initialCart }: CartViewProps) {
               Đã Tạo Đơn Hàng Thành Công!
             </DialogTitle>
             <DialogDescription className="text-center">
-              Đơn hàng đã được backend ghi nhận ở trạng thái CREATED.
+              Đơn hàng đã được ghi nhận. Bạn có thể theo dõi trong mục đơn hàng.
             </DialogDescription>
           </DialogHeader>
 

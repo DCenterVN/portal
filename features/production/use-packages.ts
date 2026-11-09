@@ -26,7 +26,7 @@ export function usePackages() {
   const [recipeEditing, setRecipeEditing] = useState(false);
   const [components, setComponents] = useState<ComponentDraft[]>([]);
   const [steps, setSteps] = useState<PrepStep[]>([]);
-  const [raw, setRaw] = useState<{ id: string; name: string } | null>(null);
+  const [raw, setRaw] = useState<{ id: string; name: string; uom_code?: string } | null>(null);
   const [labels, setLabels] = useState<RawLabelsView | null>(null);
   const [confirm, setConfirm] = useState<"" | "package" | "recipe">("");
   const load = async () => {
@@ -55,7 +55,7 @@ export function usePackages() {
     catch (e) { setError(packMessage(e)); }
     finally { setDetailBusy(false); }
   };
-  const readLabels = async (item: { id: string; name: string }) => {
+  const readLabels = async (item: { id: string; name: string; uom_code?: string }) => {
     setDetailBusy(true); setError(""); setLabels(null); setRaw(item);
     try { setLabels(await getRawLabels(item.id)); }
     catch (e) { setError(packMessage(e)); }
