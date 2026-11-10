@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useRef, useState, type CSSProperties } from "react";
 import { toast } from "@/components/ui/toast";
 import { addToCart, getOrCreateCartId, recordCartResponse, type Product } from "@/lib/api/sales";
 
@@ -45,15 +45,16 @@ export function useProductDetail(initialProduct: Product) {
   const components = productComponents(product.nutrition, product.name);
   const selected = selectedComponent === null ? undefined : components[selectedComponent];
   function resetComponent() { setSelectedComponent(null); }
-  useEffect(() => {
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.key !== "Escape" || event.defaultPrevented || selectedComponent === null) return;
-      setSelectedComponent(null);
-      dishRef.current?.focus();
-    }
-    document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
-  }, [selectedComponent]);
+  function onDrawerOpenChange(open: boolean) { if (!open) resetComponent(); }
+  const componentTriggerRef = useRef<HTMLButtonElement | null>(null);
+  function selectComponent(index: number, trigger: HTMLButtonElement) {
+    componentTriggerRef.current = trigger;
+    setSelectedComponent(index);
+  }
+  function restoreComponentFocus(event: Event) {
+    event.preventDefault();
+    componentTriggerRef.current?.focus();
+  }
   const summary = [
     product.portion_count ? `Cho ${product.portion_count.toLocaleString("vi-VN")} người` : null,
     product.net_weight_g ? `${product.net_weight_g.toLocaleString("vi-VN")} g` : null,
@@ -82,5 +83,5 @@ export function useProductDetail(initialProduct: Product) {
     } catch (error) { toast.error("Không thể thêm vào giỏ", { description: error instanceof Error ? error.message : "Vui lòng thử lại." }); }
     finally { setAddingToCart(false); }
   }
-  return { product, variantOptions, variantLabel, summary, pricePerPerson, components, selected, selectedComponent, setSelectedComponent, resetComponent, dishRef, cover, onImageError: () => setFailedImage(image ?? ""), variants, selectVariant, addingToCart, quantity, setQuantity, canBuy, handleAddToCart };
+  return { product, variantOptions, variantLabel, summary, pricePerPerson, components, selected, selectedComponent, selectComponent, resetComponent, onDrawerOpenChange, restoreComponentFocus, dishRef, cover, onImageError: () => setFailedImage(image ?? ""), variants, selectVariant, addingToCart, quantity, setQuantity, canBuy, handleAddToCart };
 }

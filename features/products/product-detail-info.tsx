@@ -1,7 +1,6 @@
 import { ProductOrigin } from "./product-origin";
 import type { Product } from "@/lib/api/sales";
 import { nutrientFields, nutritionNumber } from "@/lib/nutrition";
-import type { useProductDetail } from "./use-product-detail";
 import { Badge } from "@/components/ui/badge";
 import type { RawAllergens } from "@/lib/api/sales-materials";
 
@@ -12,7 +11,7 @@ const allergenLabels: Record<RawAllergens["contains"][number], string> = {
   SULPHITES: "Sulphite", LUPIN: "Đậu lupin", MOLLUSCS: "Nhuyễn thể (mực, nghêu)",
 };
 
-export function ProductDetailInfo({ product, selected }: { product: Product; selected?: ReturnType<typeof useProductDetail>["selected"] }) {
+export function ProductDetailInfo({ product }: { product: Product }) {
   const nutrition = product.nutrition;
   const allergens = product.allergen_summary;
   const contains = allergens?.contains ?? [];
@@ -21,13 +20,6 @@ export function ProductDetailInfo({ product, selected }: { product: Product; sel
     : allergens?.known ? "Không chứa 14 nhóm dị ứng phổ biến (theo khai báo)" : "Chưa có thông tin dị ứng";
   const incomplete = !nutrition || nutrition.missing.length > 0 || nutrientFields.some(([key]) => nutrition.per_serving[key] === null);
   return <div className="mt-8 space-y-7">
-    {selected && <section id="selected-compartment" aria-live="polite" className="rounded-sm bg-muted/50 p-4">
-      <h2 className="text-lg font-semibold">Ngăn {selected.name}</h2>
-      <p className="mt-1 text-sm text-muted-foreground">{selected.grams} g/người · {selected.share}</p>
-      <dl className="mt-4 grid grid-cols-2 gap-4">{selected.nutrients.map(nutrient => <div key={nutrient.key}>
-        <dt className="text-xs text-muted-foreground">{nutrient.label}</dt><dd className="mt-1 font-medium tabular-nums">{nutrient.value}</dd>
-      </div>)}</dl>
-    </section>}
     <section aria-labelledby="serving-nutrition" className="py-1">
       <h2 id="serving-nutrition" className="text-xl font-semibold">Dinh dưỡng mỗi người (1 suất)</h2>
       {incomplete && <p className="mt-3 text-sm text-muted-foreground">Chưa đủ dữ liệu dinh dưỡng. Các chỉ số còn thiếu sẽ được cập nhật.</p>}

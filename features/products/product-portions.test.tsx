@@ -64,11 +64,15 @@ describe("ngăn dinh dưỡng vệ tinh", () => {
     expect(selected.name).toBe("Gói đạm");
     expect(selected.grams).toBe("175");
     expect(selected.share).toBe("50% kcal của món");
-    const out = renderToStaticMarkup(<ProductDetailInfo product={product} selected={selected} />);
-    expect(out).toContain("Ngăn Gói đạm");
-    expect(out).toContain("175 g/người · 50% kcal của món");
-    expect(out).toContain("24 g");
-    expect(out).toContain("Chưa có");
+    expect(selected.nutrients).toEqual([
+      { key: "kcal", label: "Năng lượng", value: "120 kcal" },
+      { key: "protein_g", label: "Đạm", value: "24 g" },
+      { key: "fat_g", label: "Béo", value: "Chưa có" },
+      { key: "carb_g", label: "Tinh bột", value: "0 g" },
+    ]);
+    const out = renderToStaticMarkup(<ProductDetailInfo product={product} />);
+    expect(out).not.toContain("Ngăn Gói đạm");
+    expect(out).not.toContain("selected-compartment");
   });
   it("không đoán tỉ lệ khi kcal món bằng 0 hoặc thiếu", () => {
     for (const kcal of ["0", null]) {

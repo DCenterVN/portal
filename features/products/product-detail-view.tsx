@@ -9,6 +9,7 @@ import type { Product } from "@/lib/api/sales";
 import { formatVND } from "@/lib/format";
 import { useProductDetail } from "./use-product-detail";
 import { PageShell } from "@/components/ui/page";
+import { ProductCompartmentDrawer } from "./product-compartment-drawer";
 import { ProductOrbit } from "./product-orbit";
 import styles from "./product-orbit.module.css";
 import { ProductDetailInfo } from "./product-detail-info";
@@ -49,9 +50,10 @@ export function ProductDetailView({ initialProduct, branchId }: { initialProduct
           </div>
           {!canBuy && <p className="pt-2 text-sm text-muted-foreground">{product.available_quantity === undefined ? "Chưa có thông tin tồn kho để đặt món." : product.available_quantity < quantity ? "Không đủ số lượng để đặt món." : "Món chưa sẵn sàng để đặt."}</p>}
         </div>
-        <ProductDetailInfo product={product} selected={detail.selected} />
+        <ProductDetailInfo product={product} />
       </div>
     </div>
+    <ProductCompartmentDrawer detail={detail} />
     <RelatedProducts productId={product.id} branchId={branchId ?? product.branch_ref} />
   </PageShell>;
 }
