@@ -179,7 +179,7 @@
   },
   "Catalog": {
     "title": "Món ngon",
-    "loaded": "{count} món đã tải",
+    "loaded": "{count} món",
     "search": "Tên món",
     "searchPlaceholder": "Tìm món theo tên",
     "price": "Giá (đ)",

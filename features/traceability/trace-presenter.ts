@@ -1,5 +1,5 @@
-export function publicText(value: string, fallback = "Chưa có thông tin") {
-  return !value?.trim() || /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i.test(value) ? fallback : value;
+export function publicText(value: string | null | undefined, fallback = "Chưa có thông tin") {
+  return !value?.trim() || /KHO-|SEED-|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i.test(value) ? fallback : value;
 }
 
 export function qualityLabel(status: string) {

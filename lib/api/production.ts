@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { apiFetch } from "@/lib/fetcher";
 import { errorMessage, mutationHeaders, responseData } from "@/lib/api/production-http";
 import type { FoodSlot } from "@/lib/api/production-pack";
@@ -76,15 +77,30 @@ export interface ShelfPlacement {
   placed_at: string;
 }
 
-export interface PublicTraceability {
-  trace_code: string;
-  product_name: string;
-  variant_name: string;
-  produced_at: string;
-  expires_at: string;
-  qc_status: string;
-  ingredients: Array<{ material_name: string; supplier_code: string }>;
-  timeline: Array<{ stage: string; title: string; timestamp: string; passed: boolean }>;
+const publicTraceabilitySchema = z.object({
+  trace_code: z.string(),
+  product_name: z.string(),
+  variant_name: z.string(),
+  produced_at: z.string(),
+  expires_at: z.string(),
+  qc_status: z.string(),
+  production_branch_name: z.string().nullish(),
+  ingredients: z.array(z.object({
+    material_name: z.string().nullish(),
+    supplier_name: z.string().nullish(),
+    received_at: z.string().nullish(),
+    expires_at: z.string().nullish(),
+    inbound_qc: z.object({ decision: z.enum(["PASS", "FAIL"]).nullish(), inspected_at: z.string().nullish() }).nullish(),
+  })),
+  timeline: z.array(z.object({ stage: z.string(), title: z.string(), timestamp: z.string(), passed: z.boolean() })),
+});
+
+export interface PublicTraceability extends z.infer<typeof publicTraceabilitySchema> {
+  ingredients: Array<z.infer<typeof publicTraceabilitySchema>["ingredients"][number] & { supplier_code?: string }>;
+}
+
+export function parsePublicTraceability(payload: unknown): PublicTraceability {
+  return publicTraceabilitySchema.parse(payload);
 }
 
 export interface QCInspectionResult {
@@ -260,7 +276,7 @@ export async function placeOnShelf(input: { finished_lot_ref: string; branch_ref
 export async function getPublicTraceability(traceCode: string): Promise<PublicTraceability> {
   const res = await apiFetch(`/api/public/traceability/${encodeURIComponent(traceCode)}`);
   if (!res.ok) throw new Error(await errorMessage(res, "Không tìm thấy xuất xứ sản phẩm"));
-  return responseData<PublicTraceability>(res);
+  return parsePublicTraceability(await responseData<unknown>(res));
 }
 
 export interface PackPlanInput {

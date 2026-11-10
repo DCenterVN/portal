@@ -35,13 +35,15 @@ function TraceStep({ number, title, children }: { number: string; title: string;
 function TraceContent({ trace }: { trace: PublicTraceability }) {
   const production = trace.timeline.filter(step => !["QC", "SHELF_PLACEMENT"].includes(step.stage));
   const quality = trace.timeline.filter(step => step.stage === "QC");
+  const shelfPlacement = trace.timeline.filter(step => step.stage === "SHELF_PLACEMENT");
   return <>
     <header className="mt-5">
       <p className="text-sm font-medium text-primary">Hồ sơ nguồn gốc</p>
       <h1 className="mt-2 text-3xl font-semibold tracking-tight">{publicText(trace.product_name, "Thông tin món ăn")}</h1>
       <p className="mt-3 text-muted-foreground">{publicText(trace.variant_name)} · Mã {publicText(trace.trace_code, "trên tem hộp món")}</p>
+      <p className="mt-2 text-sm text-muted-foreground">Bếp sản xuất: {publicText(trace.production_branch_name)}</p>
     </header>
-    <dl className="mt-7 grid gap-5 rounded-lg bg-muted/40 p-5 sm:grid-cols-3">
+    <dl className="mt-7 grid gap-5 rounded-md bg-muted/40 p-5 sm:grid-cols-3">
       <div><dt className="text-sm text-muted-foreground">Chất lượng thành phẩm</dt><dd className="mt-2 font-medium">{qualityLabel(trace.qc_status)}</dd></div>
       <div><dt className="text-sm text-muted-foreground">Ngày sản xuất</dt><dd className="mt-2 font-medium tabular-nums">{formatDate(trace.produced_at) || "Chưa có thông tin"}</dd></div>
       <div><dt className="text-sm text-muted-foreground">Hạn sử dụng</dt><dd className="mt-2 font-medium tabular-nums">{formatDate(trace.expires_at) || "Chưa có thông tin"}</dd></div>
@@ -51,14 +53,18 @@ function TraceContent({ trace }: { trace: PublicTraceability }) {
       <ol>
         <TraceStep number="1" title="Lô nguyên liệu">
           {trace.ingredients.length ? trace.ingredients.map((ingredient, index) => <div key={index} className="rounded-md bg-muted/40 px-4 py-3">
-            <p className="font-medium">{publicText(ingredient.material_name, "Nguyên liệu")}</p>
-            <p className="text-muted-foreground">Nhà cung cấp: {publicText(ingredient.supplier_code)}</p>
+            <p className="font-medium">{publicText(ingredient.material_name)}</p>
+            <p className="mt-1 text-muted-foreground">Nhà cung cấp: {publicText(ingredient.supplier_name)}</p>
+            <div className="mt-3 grid gap-x-6 gap-y-1 text-muted-foreground sm:grid-cols-2">
+              <p>Ngày nhập: {formatDate(ingredient.received_at) || "Chưa có thông tin"}</p>
+              <p>Hạn dùng: {formatDate(ingredient.expires_at) || "Chưa có thông tin"}</p>
+              <p>QC đầu vào: {ingredient.inbound_qc?.decision === "PASS" ? "Đạt" : ingredient.inbound_qc?.decision === "FAIL" ? "Không đạt" : "Chưa có thông tin"}</p>
+              <p>Ngày kiểm: {formatDateTime(ingredient.inbound_qc?.inspected_at) || "Chưa có thông tin"}</p>
+            </div>
           </div>) : <p className="text-muted-foreground">Chưa có thông tin nguyên liệu.</p>}
-          <p className="text-muted-foreground">Ngày nhập · QC nguyên liệu: Chưa có thông tin trong hồ sơ công khai.</p>
         </TraceStep>
         <TraceStep number="2" title="Bếp sản xuất">
           <p>Ngày sản xuất: {formatDate(trace.produced_at) || "Chưa có thông tin"}</p>
-          <p className="text-muted-foreground">Bếp: Chưa có thông tin trong hồ sơ công khai.</p>
           {production.map((step, index) => <div key={index} className="flex flex-wrap justify-between gap-x-4 gap-y-1"><span>{stageLabels[step.stage] ?? "Bước sản xuất"}</span><time className="text-muted-foreground tabular-nums">{formatDateTime(step.timestamp)}</time></div>)}
         </TraceStep>
         <TraceStep number="3" title="Kiểm tra chất lượng thành phẩm">
@@ -66,6 +72,9 @@ function TraceContent({ trace }: { trace: PublicTraceability }) {
           {quality.map((step, index) => <p key={index} className="text-muted-foreground">{formatDateTime(step.timestamp)} · {step.passed ? "Đạt" : "Chưa đạt"}</p>)}
           {!quality.length && <p className="text-muted-foreground">Chưa có thời điểm kiểm tra trong hồ sơ công khai.</p>}
         </TraceStep>
+        {shelfPlacement.length > 0 && <TraceStep number="4" title={stageLabels.SHELF_PLACEMENT}>
+          {shelfPlacement.map((step, index) => <time key={index} className="block text-muted-foreground tabular-nums">{formatDateTime(step.timestamp)}</time>)}
+        </TraceStep>}
       </ol>
     </section>
     <section className="mt-12"><h2 className="text-lg font-semibold">Tra cứu hộp món khác</h2><TraceLookup /></section>
