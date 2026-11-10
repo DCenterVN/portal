@@ -4,6 +4,7 @@ import React from "react";
 import { clearCart, Product, formatVND, loadCartItems, recordCartResponse } from "@/lib/api/sales";
 import { ProductsView } from "./products-view";
 import { ProductDetailView } from "./product-detail-view";
+import { productComponents } from "./use-product-detail";
 import { ProductCreateDialog } from "./product-create-dialog";
 import { CartView } from "./cart-view";
 
@@ -278,17 +279,31 @@ describe("AC-3 form tạo sản phẩm nháp chỉ tên + mã", () => {
 
 describe("AC-2 chi tiết khách không còn thao tác/metadata quản trị", () => {
   const customerProduct: Product = { ...staffRows[0], barcode: "8930000000017", branch_ref: BRANCH_ID, image_urls: ["https://cdn.example.test/ca-hoi.jpg"] };
+  it("thành phần dùng tên nhóm Việt khi API lặp tên món, lấy định lượng từ cột khối lượng", () => {
+    const nutrients = { kcal: "85", protein_g: "3.6", fat_g: "3.7", carb_g: "9.3", fiber_g: "3.5", sugar_g: "4.7", sodium_mg: "367" };
+    const component = { ...nutrients, grams: "250", name: "Cải chíp xào gừng · RAU" };
+    const product: Product = { ...customerProduct, name: "Cải chíp xào gừng", nutrition: {
+      per_serving: nutrients, labels: ["LOW_FAT"], missing: [], summary: "", components: [component,
+        { ...component, name: "Gói gia vị gừng có dầu đậu nành 6 g", grams: "4.9" },
+        { ...component, name: "Cà rốt · RAU", grams: "50" },
+      ],
+    } };
+    const out = productComponents(product.nutrition, product.name);
+    expect(out.map(component => component.name)).toEqual(["Rau", "Gói gia vị gừng có dầu đậu nành", "Cà rốt · Rau"]);
+    expect(out[1].grams).toBe("4,9");
+  });
   it("không có kích hoạt, mã SKU, barcode, DRAFT, ngày tạo SKU", () => {
     const out = html(React.createElement(ProductDetailView, { initialProduct: customerProduct }));
     expect(out).toContain("Cá hồi tươi");
     expect(out).toContain(formatVND(300000));
-    expect(out).toContain(`<img src="${customerProduct.image_urls?.[0]}" alt="${customerProduct.name}" class="aspect-[4/3] w-full object-cover"`);
+    expect(out).toContain(`<img src="${customerProduct.image_urls?.[0]}" alt="${customerProduct.name}" class="size-full object-cover"`);
     expect(out).not.toMatch(/Kích hoạt|ACTIVE|DRAFT|Mã SKU|Barcode|Mã vạch|Ngày tạo SKU|8930000000017/);
     expect(userFacingContent(out)).not.toMatch(/[0-9a-f]{8}-[0-9a-f]{4}-/);
   });
   it.each([undefined, [], [""]])("hiện ảnh mặc định khi thiếu ảnh đầu tiên: %j", (image_urls) => {
     const out = html(React.createElement(ProductDetailView, { initialProduct: { ...customerProduct, image_urls } }));
-    expect(out).toContain(`<img src="/images/mon-mac-dinh.svg" alt="${customerProduct.name}" class="aspect-[4/3] w-full object-cover"`);
+    expect(out).toContain(`role="img" aria-label="${customerProduct.name}"`);
+    expect(out).not.toContain("/images/mon-mac-dinh.svg");
     expect(out).not.toContain("Chưa có ảnh");
   });
   it("AC-5 có nút thêm giỏ khi đủ sku_ref và branch_ref", () => {

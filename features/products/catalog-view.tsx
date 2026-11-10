@@ -1,23 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
-import type { Route } from "next";
 import { NextIntlClientProvider, useTranslations } from "next-intl";
 import viMessages from "@/messages/vi.json";
 import { Button } from "@/components/ui/button";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
-import { Card } from "@/components/ui/card";
 import { PageShell } from "@/components/ui/page";
-import { PageHeading } from "@/components/patterns/page-heading";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { SlidersHorizontal } from "lucide-react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { EmptyState, ErrorState, LoadingState } from "@/components/patterns/empty-state";
 import type { Product } from "@/lib/api/sales";
-import { formatVND } from "@/lib/format";
-import { useCatalog, useCatalogCart } from "./use-catalog";
-import { applyCatalogFilters, CatalogFilters, type CatalogFilterValues } from "./catalog-filters";
+import { useCatalog } from "./use-catalog";
+import { applyCatalogFilters, CatalogFilters, CatalogQuickFilters, type CatalogFilterValues } from "./catalog-filters";
 
-import { NutritionChip } from "./nutrition-view";
+import { CatalogProductCard } from "./catalog-product-card";
 
 interface CatalogViewProps {
   branchId?: string;
@@ -45,18 +41,22 @@ export function CatalogView({ products, loading, error, nextCursor, onLoadMore, 
   const [filterOpen, setFilterOpen] = useState(false);
   const visible = applyCatalogFilters(products, filters);
   const hasFilters = !!filters.query || filters.minPrice !== undefined || filters.maxPrice !== undefined || filters.kcal_max !== undefined || filters.protein_min !== undefined || !!filters.label?.length;
-  return <PageShell>
-    <PageHeading title={t("title")} description={t("loaded", { count: products.length })} />
+  return <PageShell className="catalog">
+    <header className="catalog-banner rounded-lg px-6 py-8 sm:px-8 sm:py-10">
+      <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Món ngon, vừa ý bạn</h1>
+      <p className="mt-3 text-base text-muted-foreground">Món dân dã, sạch, hợp túi tiền.</p>
+    </header>
     {loading ? <LoadingState title={t("loading")} /> : error ? <ErrorState title={t("loadError")} description={error} onRetry={onRetry} /> :
-      <div className="mt-6 flex min-w-0 gap-6">
-        <aside aria-label={t("filters")} className="hidden w-56 shrink-0 lg:block">
-          <CatalogFilters value={filters} onChange={setFilters} />
-        </aside>
-        <section aria-label={t("list")} className="min-w-0 flex-1 space-y-4">
+      <div className="mt-8 min-w-0">
+        <section aria-label={t("list")} className="min-w-0 flex-1 space-y-6">
+          <div className="flex items-start gap-3">
+            <CatalogQuickFilters value={filters} onChange={setFilters} />
+            <Button variant="outline" className="h-10 shrink-0" aria-haspopup="dialog" aria-expanded={filterOpen} onClick={() => setFilterOpen(true)}><SlidersHorizontal className="size-4 text-muted-foreground" />{t("filters")}</Button>
+          </div>
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <Button variant="outline" className="lg:hidden" aria-haspopup="dialog" aria-expanded={filterOpen} onClick={() => setFilterOpen(true)}>{t("filters")}</Button>
-            <label className="ml-auto flex min-w-0 flex-wrap items-center gap-2 text-sm">
-              <span>{t("sort")}</span>
+            <p className="text-sm text-muted-foreground">{t("loaded", { count: visible.length })}</p>
+            <label className="ml-auto flex min-w-0 flex-wrap items-center gap-3 text-sm">
+              <span className="text-muted-foreground">{t("sort")}</span>
               <span className="w-48"><NativeSelect value={filters.sort ?? ""} onChange={e => {
                 const sort = e.target.value;
                 setFilters({ ...filters, sort: sort === "price-asc" || sort === "price-desc" ? sort : undefined });
@@ -67,40 +67,19 @@ export function CatalogView({ products, loading, error, nextCursor, onLoadMore, 
               </NativeSelect></span>
             </label>
           </div>
-          {visible.length === 0 ? <EmptyState title={hasFilters ? t("noMatch") : t("empty")} description={hasFilters ? t("tryFilters") : t("emptyDescription")} action={<Button variant="outline" onClick={() => setFilters({})}>Xoá lọc</Button>} /> :
-            <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
+          {visible.length === 0 ? <EmptyState title={hasFilters ? t("noMatch") : t("empty")} description={hasFilters ? t("tryFilters") : t("emptyDescription")} action={<Button variant="outline" className="h-10" onClick={() => setFilters({})}>Xoá lọc</Button>} /> :
+            <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4">
               {visible.map(product => <CatalogProductCard key={product.id} product={product} branchId={branchId} />)}
             </div>}
-          {nextCursor && <div className="text-center"><Button variant="outline" disabled={loadingMore} onClick={onLoadMore}>{loadingMore ? t("loading") : t("more")}</Button></div>}
+          {nextCursor && <div className="text-center"><Button variant="outline" className="h-10" disabled={loadingMore} onClick={onLoadMore}>{loadingMore ? t("loading") : t("more")}</Button></div>}
         </section>
         <Sheet open={filterOpen} onOpenChange={setFilterOpen}>
-          <SheetContent side="bottom" className="max-h-dvh overflow-y-auto">
-            <SheetHeader><SheetTitle>{t("filters")}</SheetTitle></SheetHeader>
+          <SheetContent side="right" className="catalog w-full overflow-y-auto sm:max-w-sm">
+            <SheetHeader><SheetTitle>{t("filters")}</SheetTitle><SheetDescription>Chọn món theo nhu cầu và ngân sách của bạn.</SheetDescription></SheetHeader>
             <div className="px-4"><CatalogFilters value={filters} onChange={setFilters} /></div>
-            <div className="p-4 pt-0"><Button className="w-full" onClick={() => setFilterOpen(false)}>{t("showResults")}</Button></div>
+            <div className="p-4 pt-0"><Button className="h-10 w-full" onClick={() => setFilterOpen(false)}>{t("showResults")}</Button></div>
           </SheetContent>
         </Sheet>
       </div>}
   </PageShell>;
-}
-
-function CatalogProductCard({ product, branchId }: { product: Product; branchId?: string }) {
-  const t = useTranslations("Catalog");
-  const { adding, add } = useCatalogCart(product);
-  const href = `/products/${product.id}${branchId ? `?branch_id=${encodeURIComponent(branchId)}` : ""}` as Route;
-  return <Card className="flex min-w-0 flex-col overflow-hidden p-0">
-                <Link href={href} className="block aspect-[4/3] overflow-hidden bg-[var(--color-tint)]">
-                  <img src={product.image_urls?.[0] || "/images/mon-mac-dinh.svg"} alt={product.name} className="size-full object-cover" />
-                </Link>
-                <div className="flex flex-1 flex-col gap-2 p-3">
-                  <Link href={href} className="break-words text-sm font-bold">{product.name}</Link>
-                  <p className="mt-auto text-sm font-bold">{product.base_price_vnd === undefined ? t("noPrice") : `${formatVND(product.base_price_vnd)}/suất`}</p>
-                  <NutritionChip nutrition={product.nutrition} />
-                  {product.sku_ref && product.branch_ref && product.base_price_vnd !== undefined && <Button
-                    className="w-full whitespace-normal text-xs"
-                    disabled={adding || product.available_quantity === undefined || product.available_quantity <= 0}
-                    onClick={() => void add()}
-                  >{adding ? t("adding") : product.available_quantity === undefined ? t("unknownStock") : product.available_quantity <= 0 ? t("outOfStock") : t("add")}</Button>}
-                </div>
-              </Card>;
 }

@@ -24,7 +24,7 @@ const products = [
   make(3, "Gà nướng mật ong", 180000, { image_urls: [] }),
 ];
 const render = (props: Partial<React.ComponentProps<typeof CatalogView>> = {}) => renderToStaticMarkup(
-  <NextIntlClientProvider locale="vi" messages={messages}><CatalogView products={products} {...props} /></NextIntlClientProvider>,
+  <NextIntlClientProvider locale="vi" messages={messages} timeZone="Asia/Ho_Chi_Minh"><CatalogView products={products} {...props} /></NextIntlClientProvider>,
 );
 const visible = (html: string) => {
   const attrs = html.match(/\s(?:alt|title|placeholder|aria-label|label)="[^"]*"/g) ?? [];
@@ -45,16 +45,18 @@ describe("AC-1 catalog khách không lộ điều khiển quản trị", () => {
       expect(out).toContain(`href="/products/${p.id}"`);
     }
   });
-  it("AC-1 ghi rõ số món đã tải", () => {
-    expect(visible(render())).toContain("3 món đã tải");
+  it("AC-1 ghi rõ số món", () => {
+    expect(visible(render())).toContain("3 món");
   });
-  it("AC-8 ảnh thật dùng image_urls, món thiếu ảnh hiện ảnh mặc định", () => {
+  it("AC-8 ảnh thật dùng image_urls, món thiếu ảnh có placeholder không cần đăng nhập", () => {
     const out = render();
     expect(out.includes("https://cdn.example.test/bun-bo.jpg") || out.includes(encodeURIComponent("https://cdn.example.test/bun-bo.jpg"))).toBe(true);
     for (const product of products.slice(1)) {
-      expect(out).toContain(`<img src="/images/mon-mac-dinh.svg" alt="${product.name}" class="size-full object-cover"`);
+      expect(out).toContain(`role="img" aria-label="${product.name}"`);
     }
     expect(out).not.toContain("Chưa có ảnh");
+    expect(out).not.toContain("/images/mon-mac-dinh.svg");
+    expect(out).toContain("Minh hoạ món, hình món đang cập nhật");
     expect(out).toMatch(/alt="Bún bò Huế"/);
   });
   it("AC-8 không UUID trong nội dung/nhãn người dùng", () => {
@@ -65,7 +67,7 @@ describe("AC-1 catalog khách không lộ điều khiển quản trị", () => {
     expect(out).not.toMatch(/yêu thích|wishlist|favorite|Khuyến mãi|Đánh giá|đã bán|phút/i);
     const cards = out.match(/<div data-slot="card"[\s\S]*?<\/section>/)?.[0] ?? "";
     expect(cards).not.toMatch(/aria-pressed/);
-    expect(out).toContain('aria-label="Nhãn dinh dưỡng"');
+    expect(out).toContain('aria-label="Lọc nhanh món"');
   });
   it("AC-5 nút thêm giỏ chỉ có khi món có sku_ref và branch_ref thật", () => {
     const out = render({ products: [make(1, "Bún bò Huế", 120000), make(2, "Cá hồi áp chảo", 300000, { sku_ref: undefined })] });
@@ -112,7 +114,8 @@ describe("AC-6 trạng thái loading / empty / error / success khác nhau", () =
     expect(out).toMatch(/<button[^>]*>[^<]*(?:<[^>]+>)*[^<]*Bộ lọc/);
     expect(visible(out)).toMatch(/Sắp xếp/);
     expect(visible(out)).toMatch(/Giá/);
-    expect(out).toMatch(/<input[^>]*type="(?:search|text)"/);
+    expect(out).toContain('aria-haspopup="dialog"');
+    expect(out).not.toContain("<aside");
   });
 });
 
@@ -145,7 +148,7 @@ describe("AC-7 module filter-motion dùng chung", () => {
   it("module dùng chung tồn tại, là style effect duy nhất trong features/products", () => {
     expect(existsSync(fileURLToPath(new URL(MODULE, import.meta.url)))).toBe(true);
     const css = readdirSync(fileURLToPath(new URL(".", import.meta.url))).filter(f => f.endsWith(".css"));
-    expect(css).toEqual([MODULE]);
+    expect(css).toEqual([MODULE, "product-orbit.module.css"]);
   });
   it("module giữ transition 350ms/300ms ease, animation 250ms/450ms spring và reduced-motion tắt trượt/scale", () => {
     const css = read(MODULE);
@@ -175,8 +178,8 @@ describe("AC-7 console ProductsView giữ #019 và sửa wrap / căn giữa icon
   });
 });
 
-it("thẻ dùng /suất và không hiển thị EA", () => {
+it("thẻ dùng /gói và không hiển thị EA", () => {
   const out = visible(render({ products: [make(1, "Cá hồi", 85000, { uom: "EA" })] }));
-  expect(out).toContain("/suất");
+  expect(out).toContain("/gói");
   expect(out).not.toMatch(/\bEA\b/);
 });

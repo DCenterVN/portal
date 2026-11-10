@@ -8,8 +8,8 @@ export type SiteFooterContent = {
 
 export function SiteFooter({ footer }: { footer: SiteFooterContent }) {
   return (
-    <footer className="border-t border-border bg-background px-4 py-7 text-muted-foreground md:px-6 lg:px-8">
-      <div className="mx-auto grid w-full max-w-screen-xl grid-cols-2 gap-5 lg:grid-cols-[1.4fr_repeat(3,1fr)]">
+    <footer className="mt-12 bg-muted/40 px-4 py-12 text-muted-foreground md:px-10">
+      <div className="mx-auto grid w-full max-w-340 grid-cols-2 gap-8 lg:grid-cols-[1.4fr_repeat(3,1fr)]">
         {footer.columns.map((column) => (
           <section key={column.title}>
             <h2 className="mb-3 text-sm font-medium text-foreground">{column.title}</h2>
@@ -23,7 +23,7 @@ export function SiteFooter({ footer }: { footer: SiteFooterContent }) {
           </section>
         ))}
       </div>
-      <div className="mx-auto mt-6 flex w-full max-w-screen-xl flex-wrap gap-x-5 gap-y-2 border-t border-border pt-4 text-xs">
+      <div className="mx-auto mt-10 flex w-full max-w-340 flex-wrap gap-x-5 gap-y-2 text-xs">
         {footer.legal.map((item) => <span key={item}>{item}</span>)}
       </div>
     </footer>

@@ -1,0 +1,57 @@
+.layout { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); align-items: start; gap: 40px; }
+.visual { position: sticky; top: 88px; min-width: 0; }
+.stage { position: relative; isolation: isolate; width: 100%; max-width: 600px; aspect-ratio: 1; margin: 12px auto 0; }
+.orbitLine { position: absolute; inset: 21%; border: 1px solid color-mix(in srgb, var(--primary) 16%, transparent); border-radius: 50%; transition: opacity .18s; }
+.ring { position: absolute; inset: 0; pointer-events: none; }
+.slot { position: absolute; width: 0; height: 0; }
+.upright { width: 0; height: 0; }
+.arrival { position: relative; width: 0; height: 0; animation: arrive .4s cubic-bezier(.2,.7,.3,1) backwards; }
+.component { position: absolute; left: -64px; top: -53px; display: flex; align-items: center; flex-direction: column; width: 128px; min-height: 106px; padding: 0; border: 0; background: transparent; cursor: pointer; pointer-events: auto; transition: opacity .18s; }
+.componentArt { display: grid; place-items: center; color: var(--muted-foreground); width: 64px; height: 64px; overflow: hidden; border-radius: 50%; background: var(--muted); }
+.component[aria-pressed=true] .componentArt { color: var(--color-green-700, #15803d); }
+.componentName { font-size: 12px; line-height: 1.4; font-weight: 600; margin-top: 7px; max-width: 128px; }
+.grams { font-size: 11px; color: var(--muted-foreground); margin-top: 3px; font-variant-numeric: tabular-nums; }
+.component:focus-visible, .dish:focus-visible { outline: 2px solid var(--ring); outline-offset: 5px; border-radius: var(--r-6); }
+.component:hover .componentArt, .component[aria-pressed=true] .componentArt { outline: 2px solid var(--primary); outline-offset: 3px; }
+.dish { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); display: flex; flex-direction: column; align-items: center; width: 180px; padding: 0; border: 0; background: transparent; cursor: pointer; }
+.dishArt { display: block; width: 172px; height: 172px; border: 1px solid var(--border); box-shadow: none; overflow: hidden; border-radius: 50%; }
+.dishArt :global(.catalog-artwork) { padding: 0; background: transparent; }
+.dishArt :global(.catalog-plate) { width: 80%; }
+.dish strong { margin-top: 14px; font-size: 14px; line-height: 1.5; font-weight: 600; }
+.dish small { margin-top: 5px; font-size: 11px; color: var(--muted-foreground); }
+.stage:hover .ring, .stage:hover .upright, .stage:focus-within .ring, .stage:focus-within .upright, .stage[data-selected=true] .ring, .stage[data-selected=true] .upright { animation-play-state: paused; }
+.stage[data-selected=true] .orbitLine { opacity: 0; }
+.stage[data-selected=true] .component { opacity: .25; }
+.stage[data-selected=true] .slot[data-active=true] { z-index: 2; }
+.stage[data-selected=true] .slot[data-active=true] .component { opacity: 1; }
+.nutrientRing { position: absolute; inset: 4%; border: 1px solid color-mix(in srgb, var(--primary) 20%, transparent); border-radius: 50%; pointer-events: none; }
+.nutrient { position: absolute; display: flex; flex-direction: column; gap: 4px; justify-content: center; text-align: center; width: 88px; min-height: 48px; border-radius: var(--r-6); background: var(--background); animation: arrive .4s both; }
+.nutrient span { font-size: 10px; color: var(--muted-foreground); }
+.nutrient strong { font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.nutrient:nth-child(1) { left: 15%; top: 15%; transform: translate(-50%, -50%); }
+.nutrient:nth-child(2) { left: 85%; top: 15%; transform: translate(-50%, -50%); animation-delay: 40ms; }
+.nutrient:nth-child(3) { left: 85%; top: 85%; transform: translate(-50%, -50%); animation-delay: 80ms; }
+.nutrient:nth-child(4) { left: 15%; top: 85%; transform: translate(-50%, -50%); animation-delay: 120ms; }
+.caption { display: flex; justify-content: space-between; gap: 12px; max-width: 600px; margin: 8px auto 0; font-size: 11px; color: var(--muted-foreground); line-height: 1.6; }
+@keyframes arrive { from { opacity: 0; translate: var(--from, 0 0); scale: .5; } to { opacity: 1; translate: 0 0; scale: 1; } }
+@media (min-width: 1001px) { .stage[data-selected=false] { margin-bottom: -100px; } }
+@media (max-width: 1000px) {
+  .visual { position: static; }
+  .layout { display: flex; flex-direction: column; gap: 28px; }
+  .layout > * { width: 100%; min-width: 0; }
+  .stage { display: flex; flex-direction: column; aspect-ratio: auto; gap: 22px; margin: 24px 0 14px; }
+  .orbitLine { display: none; }
+  .dish { position: static; transform: none; align-self: center; width: min(220px, 100%); }
+  .dishArt { width: 172px; height: 172px; }
+  .ring { position: static; display: grid; gap: 10px; animation: none; }
+  .slot { position: static; width: auto; height: auto; }
+  .upright, .arrival { width: auto; height: auto; animation: none; }
+  .component { position: static; width: 100%; min-height: 80px; display: grid; grid-template-columns: 52px minmax(0,1fr); column-gap: 14px; padding: 12px; border-radius: var(--r-6); background: var(--muted); text-align: left; }
+  .componentArt { width: 48px; height: 48px; grid-row: span 2; }
+  .componentName { max-width: none; font-size: 14px; margin: 0; align-self: end; }
+  .grams { margin-top: 4px; align-self: start; }
+  .stage[data-selected=true] .component { opacity: .5; }
+  .nutrientRing { position: static; display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; padding: 16px; border: 0; border-radius: 0; }
+  .nutrient, .nutrient:nth-child(n) { position: static; transform: none; width: auto; min-width: 0; text-align: left; animation: none; }
+}
+@media (prefers-reduced-motion: reduce) { .ring, .upright, .arrival, .nutrient { animation: none; } .component, .orbitLine { transition: none; } }

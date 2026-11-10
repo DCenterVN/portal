@@ -34,29 +34,40 @@ export function applyCatalogFilters<T extends { name: string; base_price_vnd?: n
 export function CatalogFilters({ value, onChange }: { value: CatalogFilterValues; onChange: (value: CatalogFilterValues) => void }) {
   const t = useTranslations("Catalog");
   const id = useId();
-  return <div className="space-y-5">
-    <label htmlFor={id} className="block space-y-2 text-sm font-semibold">
+  return <div className="space-y-6">
+    <label htmlFor={id} className="block space-y-2 text-xs font-medium">
       <span>{t("search")}</span>
       <Input id={id} type="text" value={value.query ?? ""} onChange={e => onChange({ ...value, query: e.target.value })} placeholder={t("searchPlaceholder")} />
     </label>
     <fieldset className="min-w-0 space-y-2">
-      <legend className="text-sm font-semibold">{t("price")}</legend>
+      <legend className="text-xs font-medium">{t("price")}</legend>
       <div className="flex gap-2">
-        {(["minPrice", "maxPrice"] as const).map((key, index) => <label key={key} className="min-w-0 flex-1 space-y-1 text-xs">
+        {(["minPrice", "maxPrice"] as const).map((key, index) => <label key={key} className="min-w-0 flex-1 space-y-2 text-xs text-muted-foreground">
           <span>{t(index === 0 ? "from" : "to")}</span>
           <Input type="number" min="0" inputMode="numeric" value={value[key] ?? ""} onChange={e => onChange({ ...value, [key]: e.target.value === "" ? undefined : Number(e.target.value) })} />
         </label>)}
       </div>
     </fieldset>
-    {(["kcal_max", "protein_min"] as const).map(key => <label key={key} className="block space-y-2 text-sm font-semibold">
+    {(["kcal_max", "protein_min"] as const).map(key => <label key={key} className="block space-y-2 text-xs font-medium">
       <span>{key === "kcal_max" ? "Tối đa kcal/suất" : "Từ g đạm/suất"}</span>
       <Input type="number" min="0" step={key === "kcal_max" ? "1" : "any"} inputMode="decimal" value={value[key] ?? ""} onChange={event => onChange({ ...value, [key]: event.target.value === "" ? undefined : Number(event.target.value) })} />
     </label>)}
-    <fieldset className="space-y-2"><legend className="text-sm font-semibold">Nhãn dinh dưỡng</legend>
+    <fieldset className="space-y-3"><legend className="text-xs font-medium">Nhãn dinh dưỡng</legend>
       <ToggleGroup type="multiple" aria-label="Nhãn dinh dưỡng" value={value.label ?? []} onValueChange={label => onChange({ ...value, label })}>
-        {Object.entries(nutritionLabels).map(([key, label]) => <ToggleGroupItem key={key} value={key}>{label}</ToggleGroupItem>)}
+        {Object.entries(nutritionLabels).map(([key, label]) => <ToggleGroupItem key={key} value={key} className="border-border px-3 text-xs data-[state=on]:border-primary data-[state=on]:bg-primary/10 data-[state=on]:text-primary">{label}</ToggleGroupItem>)}
       </ToggleGroup>
     </fieldset>
-    <Button variant="outline" className="w-full" onClick={() => onChange({})}>{t("clear")}</Button>
+    <Button variant="outline" className="h-10 w-full" onClick={() => onChange({})}>{t("clear")}</Button>
+  </div>;
+}
+
+export function CatalogQuickFilters({ value, onChange }: { value: CatalogFilterValues; onChange: (value: CatalogFilterValues) => void }) {
+  const toggleLabel = (key: string) => onChange({ ...value, label: value.label?.includes(key) ? value.label.filter(label => label !== key) : [...(value.label ?? []), key] });
+  const priceSelected = value.minPrice === undefined && value.maxPrice === 80000;
+  return <div role="group" aria-label="Lọc nhanh món" className="flex min-w-0 flex-1 gap-2 overflow-x-auto pb-2">
+    {Object.entries(nutritionLabels).map(([key, label]) => <Button key={key} variant="outline" aria-pressed={value.label?.includes(key) ?? false} className="catalog-chip h-10 shrink-0 px-3 text-xs" onClick={() => toggleLabel(key)}>{label}</Button>)}
+    <Button variant="outline" aria-pressed={value.kcal_max === 500} className="catalog-chip h-10 shrink-0 px-3 text-xs" onClick={() => onChange({ ...value, kcal_max: value.kcal_max === 500 ? undefined : 500 })}>≤500 kcal</Button>
+    <Button variant="outline" aria-pressed={value.protein_min === 30} className="catalog-chip h-10 shrink-0 px-3 text-xs" onClick={() => onChange({ ...value, protein_min: value.protein_min === 30 ? undefined : 30 })}>≥30 g đạm</Button>
+    <Button variant="outline" aria-pressed={priceSelected} className="catalog-chip h-10 shrink-0 px-3 text-xs" onClick={() => onChange({ ...value, minPrice: undefined, maxPrice: priceSelected ? undefined : 80000 })}>Giá ≤80.000 đ</Button>
   </div>;
 }

@@ -19,6 +19,7 @@
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
+  --color-media: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
@@ -61,7 +62,85 @@
   --shadow-sm: none;
   --shadow-md: 0 4px 12px rgb(24 24 27 / .08);
   --shadow-lg: 0 8px 24px rgb(24 24 27 / .12);
+  --duration-feedback: var(--motion-hover);
 }
+
+.catalog, [data-surface="store"] {
+  --primary: #15803d;
+  --primary-foreground: #ffffff;
+  --primary-hover: #166534;
+  --ring: #15803d;
+}
+
+.dark .catalog, [data-theme="dark"] .catalog,
+.dark [data-surface="store"], [data-theme="dark"] [data-surface="store"] {
+  --primary: #4caf7d;
+  --primary-foreground: #09090b;
+  --primary-hover: #5bbf8a;
+  --ring: #4caf7d;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .catalog,
+  :root:not([data-theme="light"]) [data-surface="store"] {
+    --primary: #4caf7d;
+    --primary-foreground: #09090b;
+    --primary-hover: #5bbf8a;
+    --ring: #4caf7d;
+  }
+}
+
+.catalog [data-slot="card"], .catalog [data-slot="button"],
+.catalog [data-slot="input"], .catalog [data-slot="native-select"],
+.catalog [data-slot="toggle-group-item"] {
+  transition-property: color, background-color, border-color, box-shadow;
+  transition-duration: var(--duration-feedback);
+  transition-timing-function: var(--motion-ease-out);
+}
+
+.catalog [data-slot="input"], .catalog [data-slot="native-select"] {
+  height: 2.5rem;
+  font-weight: 400;
+}
+
+.catalog [data-slot="badge"] {
+  border-radius: var(--r-6);
+  padding: .125rem .5rem;
+  font-weight: 500;
+}
+
+
+.store-nav-link[aria-current="page"] { background: transparent; }
+.store-nav-link[aria-current="page"]::after { content: ""; position: absolute; bottom: 3px; left: 50%; width: 16px; height: 2px; background: currentColor; transform: translateX(-50%); }
+.store-header-actions > button { width: 44px; height: 44px; }
+.store-header-actions > button[aria-label="Đăng nhập"] { width: auto; }
+.store-header-actions > button > svg { width: 20px; height: 20px; }
+.catalog [data-slot="native-select"], .catalog-chip, .catalog button[aria-haspopup="dialog"] { border: 0; background-color: var(--muted); box-shadow: none; }
+.catalog-chip[aria-pressed="true"] { background: color-mix(in srgb, var(--primary) 10%, var(--background)); box-shadow: inset 0 0 0 1px var(--primary); }
+.store-search { border-radius: var(--r-6); }
+
+.catalog-banner { background: #f4f5ed; }
+.catalog-chip[aria-pressed="true"] { border-color: var(--primary); background: color-mix(in srgb, var(--primary) 8%, var(--background)); color: var(--primary); }
+.catalog-nutrition [data-slot="badge"] { border: 0; background: none; padding: 0; font-weight: 400; }
+.catalog-nutrition > div > div { gap: .75rem; }
+.product-detail > div .catalog-nutrition [data-slot="badge"], .product-detail > div .catalog-nutrition > p { font-size: 14px; line-height: 1.5; }
+.product-detail > div .catalog-nutrition > div > div [data-slot="badge"] { background: color-mix(in srgb, var(--primary) 8%, var(--background)); color: var(--primary); padding: .25rem .625rem; }
+.catalog-artwork { --dish: #b58153; --dish-bg: #f4eee4; background: var(--dish-bg); color: #625545; }
+.catalog-artwork-fish { --dish: #829e97; --dish-bg: #edf2ef; }
+.catalog-artwork-vegetable { --dish: #8a9d65; --dish-bg: #eff1e4; }
+.catalog-artwork-soup { --dish: #d6af6d; --dish-bg: #f6f0df; }
+.catalog-plate { position: relative; width: 44%; aspect-ratio: 1; border-radius: 50%; border: 8px solid #fdfcf7; background: #e9e4d7; outline: 1px solid #ddd6c6; transform: rotate(-15deg); }
+.catalog-plate i { position: absolute; width: 48%; height: 19%; left: 15%; top: 22%; border-radius: 45%; background: var(--dish); }
+.catalog-plate i:nth-child(2) { top: 43%; left: 20%; }
+.catalog-plate i:nth-child(3) { top: 64%; left: 25%; }
+.catalog-plate b { position: absolute; width: 19%; height: 29%; right: 9%; top: 17%; border-radius: 70% 10% 70% 10%; background: #799266; transform: rotate(20deg); }
+.catalog-plate b:nth-last-child(2) { top: 41%; right: 15%; transform: rotate(70deg); }
+.catalog-plate b:last-child { top: 58%; right: 3%; transform: rotate(10deg); }
+.catalog-artwork-soup .catalog-plate { background: #dcc594; }
+.catalog-artwork-soup .catalog-plate i { width: 18%; height: 18%; background: #f6efcf; }
+.catalog-artwork-fish .catalog-plate i { border-radius: 65% 15% 65% 15%; }
+.dark .catalog-banner { background: var(--muted); }
+.dark .catalog-artwork { filter: brightness(.78); }
 
 /* Stacking order of floating layers; utilities read them as z-(--z-*). */
 :root {

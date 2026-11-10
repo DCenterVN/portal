@@ -4,10 +4,11 @@ import { z } from "zod";
 import { decodePlatform } from "@/lib/api/platform-contract";
 import { apiFetch } from "@/lib/fetcher";
 import { allPages } from "./all-pages";
+import { RawAllergensSchema } from "./sales-materials";
 export { getMaterials, createMaterial, getRawLabels, updateRawLabels } from "./sales-materials";
 export type { Material, MaterialPage, CreateMaterialInput, ExistingMaterial, RawAllergens, RawLabelsView, UpdateRawLabelsRequest } from "./sales-materials";
-
-export interface Product { nutrition?: CatalogNutrition | null; id: string; sku_code: string; name: string; description?: string; barcode?: string; uom: string; base_price_vnd?: number; status: "DRAFT" | "ACTIVE" | "SUSPENDED"; created_at: string; updated_at?: string; sku_ref?: string; branch_ref?: string; image_urls?: string[]; available_quantity?: number; }
+export type ProductVariant = z.infer<typeof catalogEntrySchema>["variants"][number];
+export interface Product { allergen_summary?: z.infer<typeof catalogAllergensSchema> | null; variants?: ProductVariant[]; variant_label?: string | null; portion_count?: number | null; net_weight_g?: number | null; nutrition?: CatalogNutrition | null; id: string; sku_code: string; name: string; description?: string; barcode?: string; uom: string; base_price_vnd?: number; status: "DRAFT" | "ACTIVE" | "SUSPENDED"; created_at: string; updated_at?: string; sku_ref?: string; branch_ref?: string; image_urls?: string[]; available_quantity?: number; }
 export interface CreateProductInput { sku_code: string; name: string; description?: string; uom: string; base_price_vnd: number; }
 export interface CartItem { product_id: string; sku_code: string; name: string; quantity: number; price_snapshot_vnd: number; uom: string; image_url?: string; }
 export interface Cart { id: string; items: CartItem[]; total_amount_vnd: number; }
@@ -15,7 +16,6 @@ export type Order = z.infer<typeof orderDisplaySchema>;
 export interface SalesCartResponse { cart: { id: string; status: "ACTIVE" | "CHECKED_OUT"; version: number }; items: Array<{ sku_ref: string; quantity: number; price_snapshot_vnd: number }> }
 export type DataSource = "api" | "unavailable";
 export interface DataResult<T> { data: T; source: DataSource; error?: string; }
-
 export interface PricingPreview {
   output_sku_ref: string;
   cost_snapshot_ref: string;
@@ -27,7 +27,6 @@ export interface PricingPreview {
   compliance_status: string;
 	component_breakdown: Array<{ input_sku_ref: string; quantity: number; uom: string; unit_cost_vnd: number; subtotal_vnd: number }>;
 }
-
 export interface PriceFloorPolicy {
   id: string;
   policy_code: string;
@@ -36,12 +35,10 @@ export interface PriceFloorPolicy {
   status: string;
   multiplier_bps: number;
 }
-
 type SalesProduct = Omit<Product, "uom"> & { uom_code: string };
 function normalizeProduct(product: SalesProduct): Product { return { ...product, uom: product.uom_code }; }
 async function errorMessage(res: Response, fallback: string) { const body = await res.json().catch(() => ({})); return body.message || body.error || fallback; }
 function mutationHeaders() { return { "Content-Type": "application/json", "Idempotency-Key": crypto.randomUUID() }; }
-
 export async function getProducts(): Promise<DataResult<Product[]>> {
   try {
     // ponytail: Loads all pages; switch to server search + paging when products reach the thousands.
@@ -56,7 +53,6 @@ export async function getProducts(): Promise<DataResult<Product[]>> {
     return { data: [], source: "unavailable", error: error instanceof Error ? error.message : "Không kết nối được Sales API" };
   }
 }
-
 export async function getProductById(id: string): Promise<DataResult<Product | null>> {
   try {
     const res = await apiFetch(`/api/sales/products/${encodeURIComponent(id)}`);
@@ -67,7 +63,11 @@ export async function getProductById(id: string): Promise<DataResult<Product | n
     return { data: null, source: "unavailable", error: error instanceof Error ? error.message : "Không kết nối được Sales API" };
   }
 }
-
+const catalogAllergensSchema = z.object({
+  known: z.boolean().default(false),
+  contains: RawAllergensSchema.innerType().shape.contains.default([]),
+  unknown: z.array(z.string()).default([]),
+}).nullish().transform(value => value ?? { known: false, contains: [], unknown: [] });
 const catalogEntrySchema = z.object({
   nutrition: catalogNutritionSchema.nullish(),
   product: z.object({
@@ -79,7 +79,10 @@ const catalogEntrySchema = z.object({
   variants: z.array(z.object({
     id: z.string(), sku_code: z.string(), uom_code: z.string(),
     base_price_vnd: z.number().optional(), unit_price_vnd: z.number().optional(),
-    available_quantity: z.number().nullish(),
+    available_quantity: z.number().nullish(), sellable: z.boolean().optional(),
+    variant_label: z.string().nullish(), portion_count: z.number().positive().nullish(), net_weight_g: z.number().positive().nullish(),
+    nutrition: catalogNutritionSchema.nullish(),
+    allergen_summary: catalogAllergensSchema,
   })).nullable().transform(items => items ?? []),
 });
 const catalogPageSchema = z.object({
@@ -87,9 +90,11 @@ const catalogPageSchema = z.object({
   next_cursor: z.string().nullish(),
 });
 function catalogToProduct({ product, variants, nutrition }: z.infer<typeof catalogEntrySchema>): Product {
-  const variant = variants[0];
+  const sellableVariants = variants.filter(variant => variant.sellable === true);
+  const variant = sellableVariants[0];
   return {
-    nutrition, id: product.id, name: product.name, description: product.description ?? undefined,
+    variants: sellableVariants, variant_label: variant?.variant_label, portion_count: variant?.portion_count, net_weight_g: variant?.net_weight_g,
+    nutrition: variant?.nutrition ?? nutrition, id: product.id, name: product.name, description: product.description ?? undefined,
     status: product.status ?? "ACTIVE", created_at: product.created_at,
     branch_ref: product.branch_ref, image_urls: product.image_urls ?? [],
     sku_ref: variant?.id, sku_code: variant?.sku_code ?? "", uom: variant?.uom_code ?? "",
@@ -322,29 +327,24 @@ const UpdatePackageRequestSchema = z.object({
   variant_label: z.string().min(1), net_weight_g: z.number().int().min(1).max(2147483647), uom_code: z.enum(["EA"]),
   temperature_regime: z.string().min(1), expected_updated_at: z.string().datetime({ offset: true })
 }).strict();
-
 const CreateFoodSetRequestSchema = z.object({
   product_ref: z.string().uuid(), code: z.string().min(1), name: z.string().min(1), variant_label: z.string().min(1),
   net_weight_g: z.number().int().min(1).max(2147483647), uom_code: z.enum(["EA"]), temperature_regime: z.string().min(1),
   tags: ManualHashtagsSchema
 }).strict();
-
 const ReplaceFoodSetRequestSchema = z.object({
   tags: ManualHashtagsSchema, slots: z.array(SetSlotSchema).min(2).max(6), expected_updated_at: z.string().datetime({ offset: true })
 }).strict();
-
 const FoodPackagePageEnvelopeSchema = z.object({
   code: z.number().int(), status: z.string(), message: z.string(), data: z.object({
   items: z.array(FoodPackageSchema), next_cursor: z.string().nullable()
 }).strict()
 }).strict();
-
 const FoodSetPageEnvelopeSchema = z.object({
   code: z.number().int(), status: z.string(), message: z.string(), data: z.object({
   items: z.array(FoodSetSchema), next_cursor: z.string().nullable()
 }).strict()
 }).strict();
-
 export type FoodPackage = z.infer<typeof FoodPackageSchema>;
 export type ManualHashtags = z.infer<typeof ManualHashtagsSchema>;
 export type FoodSlot = z.infer<typeof FoodSlotSchema>;
@@ -355,7 +355,6 @@ export type CreatePackageRequest = z.infer<typeof CreatePackageRequestSchema>;
 export type UpdatePackageRequest = z.infer<typeof UpdatePackageRequestSchema>;
 export type CreateFoodSetRequest = z.infer<typeof CreateFoodSetRequestSchema>;
 export type ReplaceFoodSetRequest = z.infer<typeof ReplaceFoodSetRequestSchema>;
-
 async function salesPackRequest<T>(path: string, schema: z.ZodType<T>, method = "GET", input?: unknown): Promise<T> {
   const res = await apiFetch(`/api/food-packs/sales${path}`, {
     method, ...(input === undefined ? {} : { headers: mutationHeaders(), body: JSON.stringify(input) }),
@@ -368,7 +367,6 @@ async function retireSalesPack(path: string): Promise<void> {
   const res = await apiFetch(`/api/food-packs/sales${path}`, { method: "DELETE" });
   if (!res.ok) throw new Error(await errorMessage(res, `Sales API trả về ${res.status}`));
 }
-
 export function createPackage(input: CreatePackageRequest) {
   return salesPackRequest("/packages", FoodPackageSchema, "POST", CreatePackageRequestSchema.parse(input));
 }
