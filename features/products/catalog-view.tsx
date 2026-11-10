@@ -51,7 +51,7 @@ export function CatalogView({ products, loading, error, nextCursor, onLoadMore, 
         <section aria-label={t("list")} className="min-w-0 flex-1 space-y-6">
           <div className="flex items-start gap-3">
             <CatalogQuickFilters value={filters} onChange={setFilters} />
-            <Button variant="outline" className="h-10 shrink-0" aria-haspopup="dialog" aria-expanded={filterOpen} onClick={() => setFilterOpen(true)}><SlidersHorizontal className="size-4 text-muted-foreground" />{t("filters")}</Button>
+            <Button variant="outline" size="md" className="shrink-0" aria-haspopup="dialog" aria-expanded={filterOpen} onClick={() => setFilterOpen(true)}><SlidersHorizontal className="size-4 text-muted-foreground" />{t("filters")}</Button>
           </div>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-sm text-muted-foreground">{t("loaded", { count: visible.length })}</p>
@@ -67,17 +67,17 @@ export function CatalogView({ products, loading, error, nextCursor, onLoadMore, 
               </NativeSelect></span>
             </label>
           </div>
-          {visible.length === 0 ? <EmptyState title={hasFilters ? t("noMatch") : t("empty")} description={hasFilters ? t("tryFilters") : t("emptyDescription")} action={<Button variant="outline" className="h-10" onClick={() => setFilters({})}>Xoá lọc</Button>} /> :
+          {visible.length === 0 ? <EmptyState title={hasFilters ? t("noMatch") : t("empty")} description={hasFilters ? t("tryFilters") : t("emptyDescription")} action={<Button variant="outline" size="md" onClick={() => setFilters({})}>Xoá lọc</Button>} /> :
             <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4">
               {visible.map(product => <CatalogProductCard key={product.id} product={product} branchId={branchId} />)}
             </div>}
-          {nextCursor && <div className="text-center"><Button variant="outline" className="h-10" disabled={loadingMore} onClick={onLoadMore}>{loadingMore ? t("loading") : t("more")}</Button></div>}
+          {nextCursor && <div className="text-center"><Button variant="outline" size="md" disabled={loadingMore} onClick={onLoadMore}>{loadingMore ? t("loading") : t("more")}</Button></div>}
         </section>
         <Sheet open={filterOpen} onOpenChange={setFilterOpen}>
           <SheetContent side="right" className="catalog w-full overflow-y-auto sm:max-w-sm">
             <SheetHeader><SheetTitle>{t("filters")}</SheetTitle><SheetDescription>Chọn món theo nhu cầu và ngân sách của bạn.</SheetDescription></SheetHeader>
             <div className="px-4"><CatalogFilters value={filters} onChange={setFilters} /></div>
-            <div className="p-4 pt-0"><Button className="h-10 w-full" onClick={() => setFilterOpen(false)}>{t("showResults")}</Button></div>
+            <div className="p-4 pt-0"><Button size="md" className="w-full" onClick={() => setFilterOpen(false)}>{t("showResults")}</Button></div>
           </SheetContent>
         </Sheet>
       </div>}

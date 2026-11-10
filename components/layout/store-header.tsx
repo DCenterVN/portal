@@ -135,7 +135,7 @@ export function StoreHeader({ nav, pathname, user, cartHref, cartItems, favorite
           {user ? (
             <AccountMenu user={user} favoritesCount={favoritesCount} onLogout={onLogout} />
           ) : (
-            <Button type="button" variant="ghost" aria-label="Đăng nhập" className="h-11 px-3 max-md:w-11" aria-haspopup={onLoginClick ? "dialog" : undefined} onClick={onLoginClick ?? (() => router.push(loginHref as Route))}>
+            <Button type="button" variant="ghost" size="touch" aria-label="Đăng nhập" className="max-md:w-11" aria-haspopup={onLoginClick ? "dialog" : undefined} onClick={onLoginClick ?? (() => router.push(loginHref as Route))}>
               <UserRound className="size-5" aria-hidden="true" />
               <span className="hidden md:inline">Đăng nhập</span>
             </Button>

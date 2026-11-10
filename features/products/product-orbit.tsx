@@ -1,4 +1,5 @@
 import { Drumstick, Fish, Leaf, Package, Wheat } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { CatalogArtwork } from "./catalog-artwork";
 import type { useProductDetail } from "./use-product-detail";
 import styles from "./product-orbit.module.css";
@@ -18,21 +19,21 @@ export function ProductOrbit({ detail }: { detail: ReturnType<typeof useProductD
     <p className="mt-2 text-sm leading-6 text-muted-foreground">Chọn từng ngăn để khám phá dinh dưỡng mỗi người.</p>
     <div className={styles.stage} data-selected={false} role="group" aria-label="Món ăn và các ngăn dinh dưỡng">
       <div className={styles.orbitLine} aria-hidden="true" />
-      <button ref={dishRef} type="button" className={styles.dish} onClick={resetComponent} aria-label={`${product.name}, trở về thông tin món`}>
+      <Button variant="ghost" size="content" ref={dishRef} type="button" className={styles.dish} onClick={resetComponent} aria-label={`${product.name}, trở về thông tin món`}>
         <span className={styles.dishArt}>{cover ? <img src={cover} alt={product.name} className="size-full object-cover" onError={onImageError} /> : <CatalogArtwork name={product.name} />}</span>
         <strong>{product.name}</strong>
         <small>{product.portion_count ? `Cho ${product.portion_count.toLocaleString("vi-VN")} người` : "Thông tin món"}</small>
-      </button>
+      </Button>
       <div className={styles.ring}>
         {components.map((component, index) => {
           const Icon = compartmentIcon(component.name, product.name);
           return <div key={index} className={styles.slot} style={component.position} data-active={selectedComponent === index}>
           <div className={styles.upright}>
             <div className={styles.arrival} style={component.arrival}>
-              <button type="button" className={styles.component} aria-label={`Ngăn ${component.name}, ${component.grams} g/người, xem dinh dưỡng`} aria-pressed={selectedComponent === index} aria-haspopup="dialog" aria-controls={selectedComponent === index ? "selected-compartment" : undefined} onClick={event => selectComponent(index, event.currentTarget)}>
+              <Button variant="ghost" size="content" type="button" className={styles.component} aria-label={`Ngăn ${component.name}, ${component.grams} g/người, xem dinh dưỡng`} aria-pressed={selectedComponent === index} aria-haspopup="dialog" aria-controls={selectedComponent === index ? "selected-compartment" : undefined} onClick={event => selectComponent(index, event.currentTarget)}>
                 <span className={styles.componentArt} aria-hidden="true"><Icon size={24} strokeWidth={1.75} /></span>
                 <span className={styles.componentName}>{component.name}</span><span className={styles.grams}>{component.grams} g/người</span>
-              </button>
+              </Button>
             </div>
           </div>
         </div>; })}

@@ -18,7 +18,7 @@ import { RelatedProducts } from "./related-products";
 export function ProductDetailView({ initialProduct, branchId }: { initialProduct: Product; branchId?: string }) {
   const detail = useProductDetail(initialProduct);
   const { product, variantOptions, variantLabel, summary, pricePerPerson, selectVariant, addingToCart, quantity, setQuantity, canBuy, handleAddToCart } = detail;
-  return <PageShell className="catalog product-detail">
+  return <PageShell className="catalog product-detail bg-background">
     <nav aria-label="Đường dẫn" className="mb-6 flex min-w-0 items-center gap-2 text-sm text-muted-foreground">
       <Link href={(branchId ? `/products?branch_id=${encodeURIComponent(branchId)}` : "/products") as Route} className="inline-flex min-h-11 shrink-0 items-center hover:text-primary focus-visible:ring-2 focus-visible:ring-ring">Sản phẩm</Link>
       <ChevronRight aria-hidden="true" className="size-4 shrink-0" /><span aria-current="page" className="truncate text-foreground">{product.name}</span>
@@ -46,7 +46,7 @@ export function ProductDetailView({ initialProduct, branchId }: { initialProduct
               <span aria-live="polite" className="min-w-10 text-center font-medium tabular-nums">{quantity}</span>
               <Button variant="ghost" className="size-11" disabled={addingToCart || product.available_quantity === undefined || quantity >= product.available_quantity} onClick={() => setQuantity(quantity + 1)} aria-label="Tăng số lượng"><Plus aria-hidden="true" className="size-5" /></Button>
             </div>
-            <Button className="h-11 min-w-44 flex-1" disabled={addingToCart || !canBuy} onClick={() => void handleAddToCart()}><ShoppingBag aria-hidden="true" className="size-5" />{addingToCart ? "Đang thêm..." : "Thêm vào giỏ hàng"}</Button>
+            <Button size="touch" className="min-w-44 flex-1" disabled={addingToCart || !canBuy} onClick={() => void handleAddToCart()}><ShoppingBag aria-hidden="true" className="size-5" />{addingToCart ? "Đang thêm..." : "Thêm vào giỏ hàng"}</Button>
           </div>
           {!canBuy && <p className="pt-2 text-sm text-muted-foreground">{product.available_quantity === undefined ? "Chưa có thông tin tồn kho để đặt món." : product.available_quantity < quantity ? "Không đủ số lượng để đặt món." : "Món chưa sẵn sàng để đặt."}</p>}
         </div>

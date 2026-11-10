@@ -135,8 +135,10 @@ describe("Production & Traceability Portal Features", () => {
     const html = renderToStaticMarkup(React.createElement(TraceView, { trace: sampleTrace }));
     expect(html).toContain(sampleTrace.product_name);
     expect(html).toContain(sampleTrace.variant_name);
-    expect(html).toContain(sampleTrace.ingredients[0].supplier_code);
-    expect(html).toContain(sampleTrace.qc_status);
+    for (const ingredient of sampleTrace.ingredients) expect(html).not.toContain(ingredient.supplier_code);
+    expect(html).not.toContain(sampleTrace.qc_status);
+    expect(html).toContain("Đạt kiểm tra chất lượng");
+    expect(html).toContain("QC đầu vào: Chưa có thông tin");
     expect(html).not.toContain("Chính hãng");
     expect(html).not.toContain("Nguyên liệu Chuẩn VietGAP");
   });

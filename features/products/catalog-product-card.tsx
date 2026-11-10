@@ -29,7 +29,7 @@ export function CatalogProductCard({ product, branchId }: { product: Product; br
                   <div className="mt-auto flex flex-wrap items-center justify-between gap-2 pt-2">
                   <p className="text-base font-semibold tabular-nums">{product.base_price_vnd === undefined ? t("noPrice") : <>{formatVND(product.base_price_vnd)}<span className="text-xs font-normal text-muted-foreground">/gói</span></>}</p>
                   {product.sku_ref && product.branch_ref && product.base_price_vnd !== undefined && <Button
-                    variant="secondary" className="h-10 whitespace-normal px-3 text-xs"
+                    variant="secondary" size="compact" className="whitespace-normal text-xs"
                     disabled={adding || product.available_quantity === undefined || product.available_quantity <= 0}
                     onClick={() => void add()}
                   ><Plus aria-hidden="true" className="size-4 text-muted-foreground" />{adding ? t("adding") : product.available_quantity === undefined ? t("unknownStock") : product.available_quantity <= 0 ? t("outOfStock") : "Thêm giỏ"}</Button>}

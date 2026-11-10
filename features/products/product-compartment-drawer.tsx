@@ -12,14 +12,14 @@ export function ProductCompartmentDrawer({ detail }: { detail: ReturnType<typeof
       </DrawerHeader>
       <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-5">
         <dl className="grid grid-cols-2 gap-3">
-          {selected?.nutrients.map(nutrient => <div key={nutrient.key} className="rounded-md border p-4">
+          {selected?.nutrients.map(nutrient => <div key={nutrient.key} className="rounded-[var(--r-6)] border p-4">
             <dt className="text-xs text-muted-foreground">{nutrient.label}</dt>
             <dd className="mt-2 text-lg font-medium tabular-nums">{nutrient.value}</dd>
           </div>)}
         </dl>
       </div>
       <DrawerFooter className="p-5">
-        <DrawerClose asChild><Button variant="outline" className="h-11">Đóng</Button></DrawerClose>
+        <DrawerClose asChild><Button variant="outline" size="touch">Đóng</Button></DrawerClose>
       </DrawerFooter>
     </DrawerContent>
   </Drawer>;

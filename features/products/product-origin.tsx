@@ -13,8 +13,8 @@ export function ProductOrigin() {
     <p className="mt-2 text-sm leading-6 text-muted-foreground">Dùng mã truy xuất trên bao bì để xem nguồn nguyên liệu và thông tin lô sản xuất.</p>
     <label htmlFor="meal-trace-code" className="mt-4 block text-sm font-medium">Mã truy xuất trên bao bì</label>
     <div className="mt-2 flex flex-wrap gap-3">
-      <Input id="meal-trace-code" value={code} onChange={event => setCode(event.target.value)} placeholder="Nhập mã truy xuất" className="h-11 min-w-0 flex-1 border-0 bg-muted/60 shadow-none focus-visible:ring-1 focus-visible:ring-primary" />
-      {code.trim() ? <Link href={`/traceability/${encodeURIComponent(code.trim())}` as Route} className={buttonVariants({ variant: "secondary", className: "h-11 bg-primary/10 text-primary hover:bg-primary/15" })}>Truy xuất nguồn gốc →</Link> : <Button variant="secondary" disabled className="h-11 bg-primary/10 text-primary disabled:opacity-70">Truy xuất nguồn gốc →</Button>}
+      <Input id="meal-trace-code" value={code} onChange={event => setCode(event.target.value)} placeholder="Nhập mã truy xuất" className="h-11 min-w-0 flex-1 border-0 bg-muted/60 shadow-none focus-visible:ring-1" />
+      {code.trim() ? <Link href={`/traceability/${encodeURIComponent(code.trim())}` as Route} className={buttonVariants({ variant: "soft", size: "touch" })}>Truy xuất nguồn gốc →</Link> : <Button variant="soft" size="touch" disabled className="disabled:opacity-70">Truy xuất nguồn gốc →</Button>}
     </div>
   </section>;
 }

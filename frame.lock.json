@@ -1,7 +1,7 @@
 {
   "files": {
     "app/frame-lock.test.ts": "a7c96e51446f1bdff57c45a78a3d8639985c345cdd9c962e305e4be67983021d",
-    "app/globals.css": "8606dfba05d9e0ba228ab9e6a75ed74e4291098cf988f3b112115afe4d06fbd9",
+    "app/globals.css": "a6fe8398b15572ea39fbe510a287cd1fd921500150b554567e6dc1af34bc370f",
     "app/layout-gate.test.ts": "e5ef042c75f977a1f819573b694cb4f47748125dd216e38802535fe46a52e5a6",
     "app/layout.tsx": "0dad3f2286c2d912a860d8ed9b8f5189af62e774b7d4f76ec3725db6570ee5d7",
     "app/tokens.generated.css": "b772f113e0d7cb24cb8dba4c7856e1c53d3657668a8bfa2314b62bf2795d24bb",
@@ -16,9 +16,9 @@
     "components/layout/customer-auth-shell.tsx": "b9b0bd7e69c552f6351fcedc3897f55745ad241fff655ddeb8414632f26fe35b",
     "components/layout/employee-auth-shell.tsx": "cd628aeecde97541fef902fe4b35bcce00c8e75b9ca37354183240728faac968",
     "components/layout/mini-cart.tsx": "657d491c3565fac1da446b2203e8cc6d4e18f3cbe1d0cf27df85daf25ce79ee7",
-    "components/layout/site-footer.tsx": "bcbad3faa1e2d790842a3237e97c471143c13fa54b98c3ffd4836b60a168e43d",
-    "components/layout/store-header.tsx": "85ebc177f0ba0a2a9fff8b8af9ad7c9edd1e9fb403804bee6538fb9f79fba96f",
-    "components/layout/store-shell.test.tsx": "ed70236243de7d164c3ad4268efa067cee4706c7c6e220ee6908686d867d5af4",
+    "components/layout/site-footer.tsx": "a653294c5bfe9d061c156bf4cd2e27097b7155cce0c8cc7e69473b341b44906f",
+    "components/layout/store-header.tsx": "58f91ab7cd1806dc63f4f413e73f22f82c0474c7059d1485f1e6791d3d3521a8",
+    "components/layout/store-shell.test.tsx": "115072e7f1176d7fc831478ce6211011f4bad917a62a6a2e85ee8bdc971f6fad",
     "components/layout/store-shell.tsx": "465b01d2e9d3207ae1954c894a576de5638da1368aed943ac93ebaddaa809b69",
     "components/layout/theme-toggle.tsx": "15c60ceee992ff2298483d39b79723ac4e1f5f8e24f2efb177008e37cb198030",
     "components/patterns/action-button.test.tsx": "b82701d1fb9dde520c2b8d5b840950f62b5c71fa471eedafdb8dfa708b80fa51",
@@ -51,7 +51,7 @@
     "components/ui/badge.tsx": "6f829965259e44fa0a8e2b5e38308c3be567a66fae58028fa6aaf1e15ee3c56c",
     "components/ui/breadcrumb.tsx": "38b323cd1ab64e41cb19958ad6bc0282beeaabaf0cf400f076781bbcdc5228b0",
     "components/ui/button.test.tsx": "5fe6b557890b64a015603eba1884982c35a00901d5de065f87199edca7de3ff5",
-    "components/ui/button.tsx": "557e27d5d3159c338da761c5aec138dcd32d313b5a55774ea8001c3f3bfc620c",
+    "components/ui/button.tsx": "31387b8731aeaf594e52874e0082df64d59036635348c706e0b9e9e44678cc27",
     "components/ui/calendar.tsx": "f27d8963bb12dbc0886b1bf9e77fd30f68efd502dd6d0392db3132205d5d24d9",
     "components/ui/card.tsx": "7b8cb3d29b2870fc36355462786ff804666287df0b72395327d419e6e6aa9a37",
     "components/ui/checkbox.tsx": "a7068fe7b1840081a0dfdb62a29a39bda24e3cff6752a8788249301a8a79e331",
@@ -60,6 +60,7 @@
     "components/ui/controls.test.tsx": "60bd3d053e55c934bb2ea5181e88c9ebd225499923345b28e0c469883583b6dd",
     "components/ui/date-picker.tsx": "2ad28ef68080184b0d3c21a0fbdc273df00d77e6ea0665e915bdd0bbb9ece0ae",
     "components/ui/dialog.tsx": "a2da81876cb8de8d1f23af424b408ff85347ec39d5e3a200eabec90f2ebbcfcd",
+    "components/ui/drawer.tsx": "2190d08dca91983fd03eb15e52ac77f1ad0bb05c97ecf35191ecd7c1ef415654",
     "components/ui/dropdown-menu.tsx": "c84b54bc6c8ae8f3ec5a8999000623b25776318739f2e91de3c70d85bb56e95a",
     "components/ui/empty.tsx": "a506c7665171485de08aa790d8d05c56f00bbf2b85175026f26686feda4bb514",
     "components/ui/field.tsx": "9d8bb9290eb9a9a523fb746c955d2538703be7f8990cedc30d6b26f587134ec5",
@@ -92,9 +93,9 @@
     "e2e/visual/baseline/tokens-mobile.png": "b2dfceb4d7784d090c467d8d545428f5997d86a8a9edc7923509c22beec19e41",
     "e2e/visual/preview.spec.ts": "a8370d6fad7d152028d7cc380e303d67536cf47eea259643c6d8f87156af3e7e",
     "eslint.config.mjs": "7bba77499b3385e683159b0af90b2359160b628ee1e8d38fa6473a8cd4ba8663",
-    "package.json": "1af994f1b2c51555b2957fb791e51317043d212201297e6cae6d4b57ff9386ca",
+    "package.json": "c11ffd93c989053a87be1e7b5d8f7cd645f92f8f8b835a9f363d78243e89651a",
     "playwright.config.ts": "a57bc7c6c50d7903a93221ebf6274b6070def2d75f05d4191c2631d314133207",
-    "pnpm-lock.yaml": "830a660a386a743ccf4b95e752dce07e3d03aae58ff52fa15990a0acff9728b7",
+    "pnpm-lock.yaml": "28d8735216e97c604a24d49a0e1d8c86ec5d9b5670bf99b35df67579101f1d34",
     "scripts/frame-lock.mjs": "8fc91a057421cb1bdc9b10aed4e63b6983f1464aee3791b1e08a144a681aa41d"
   }
 }

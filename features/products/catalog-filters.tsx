@@ -57,7 +57,7 @@ export function CatalogFilters({ value, onChange }: { value: CatalogFilterValues
         {Object.entries(nutritionLabels).map(([key, label]) => <ToggleGroupItem key={key} value={key} className="border-border px-3 text-xs data-[state=on]:border-primary data-[state=on]:bg-primary/10 data-[state=on]:text-primary">{label}</ToggleGroupItem>)}
       </ToggleGroup>
     </fieldset>
-    <Button variant="outline" className="h-10 w-full" onClick={() => onChange({})}>{t("clear")}</Button>
+    <Button variant="outline" size="md" className="w-full" onClick={() => onChange({})}>{t("clear")}</Button>
   </div>;
 }
 
@@ -65,9 +65,9 @@ export function CatalogQuickFilters({ value, onChange }: { value: CatalogFilterV
   const toggleLabel = (key: string) => onChange({ ...value, label: value.label?.includes(key) ? value.label.filter(label => label !== key) : [...(value.label ?? []), key] });
   const priceSelected = value.minPrice === undefined && value.maxPrice === 80000;
   return <div role="group" aria-label="Lọc nhanh món" className="flex min-w-0 flex-1 gap-2 overflow-x-auto pb-2">
-    {Object.entries(nutritionLabels).map(([key, label]) => <Button key={key} variant="outline" aria-pressed={value.label?.includes(key) ?? false} className="catalog-chip h-10 shrink-0 px-3 text-xs" onClick={() => toggleLabel(key)}>{label}</Button>)}
-    <Button variant="outline" aria-pressed={value.kcal_max === 500} className="catalog-chip h-10 shrink-0 px-3 text-xs" onClick={() => onChange({ ...value, kcal_max: value.kcal_max === 500 ? undefined : 500 })}>≤500 kcal</Button>
-    <Button variant="outline" aria-pressed={value.protein_min === 30} className="catalog-chip h-10 shrink-0 px-3 text-xs" onClick={() => onChange({ ...value, protein_min: value.protein_min === 30 ? undefined : 30 })}>≥30 g đạm</Button>
-    <Button variant="outline" aria-pressed={priceSelected} className="catalog-chip h-10 shrink-0 px-3 text-xs" onClick={() => onChange({ ...value, minPrice: undefined, maxPrice: priceSelected ? undefined : 80000 })}>Giá ≤80.000 đ</Button>
+    {Object.entries(nutritionLabels).map(([key, label]) => <Button key={key} variant="filter" size="compact" aria-pressed={value.label?.includes(key) ?? false} className="shrink-0 text-xs" onClick={() => toggleLabel(key)}>{label}</Button>)}
+    <Button variant="filter" size="compact" aria-pressed={value.kcal_max === 500} className="shrink-0 text-xs" onClick={() => onChange({ ...value, kcal_max: value.kcal_max === 500 ? undefined : 500 })}>≤500 kcal</Button>
+    <Button variant="filter" size="compact" aria-pressed={value.protein_min === 30} className="shrink-0 text-xs" onClick={() => onChange({ ...value, protein_min: value.protein_min === 30 ? undefined : 30 })}>≥30 g đạm</Button>
+    <Button variant="filter" size="compact" aria-pressed={priceSelected} className="shrink-0 text-xs" onClick={() => onChange({ ...value, minPrice: undefined, maxPrice: priceSelected ? undefined : 80000 })}>Giá ≤80.000 đ</Button>
   </div>;
 }

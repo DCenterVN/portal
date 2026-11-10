@@ -842,16 +842,18 @@ describe("S8 rendered product and traceability roles", () => {
     expectS7Roles(html, 0);
     expect(html).toContain("bg-background");
     expect(html).toContain("TRACE-42");
-    expect(html).toContain("PASS");
+    expect(html).toContain("Đạt kiểm tra chất lượng");
+    expect(html).not.toContain(s8Trace.qc_status);
+    expect(html).not.toContain(s8Trace.ingredients[0].supplier_code);
     expect(html).toContain("250 g");
     expect(html).not.toMatch(/lucide-(?:shield-check|leaf|award|clock|qr-code)/);
     expect(html).toContain("text-foreground");
     expect(html).not.toMatch(/<img\b/);
     if (!empty) {
-      const title = (html.match(/<h4\b[^>]*>[^<]*<\/h4>/g) ?? [])[0];
-      expect(title).toContain("Kiểm định hoàn tất");
-      expect(title).toContain("text-foreground");
-      expect(html).toContain("SUP-42");
+      expect(html).toContain("Kiểm tra chất lượng thành phẩm</h3>");
+      expect(html).toContain("29/09/2026");
+      expect(html).toContain("Nhà cung cấp: Chưa có thông tin");
+      expect(html).toContain("QC đầu vào: Chưa có thông tin");
       expect(html).not.toContain("lucide-circle-check");
       expect(html).toContain("before:bg-border");
     }
