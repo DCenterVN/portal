@@ -8,7 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
-import { StatusBadge } from "@/components/patterns/status-badge";
+import { StatusBadge, statusTone } from "@/components/patterns/status-badge";
+import { productionOrderStatuses } from "./order-status";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
@@ -34,15 +35,12 @@ export function QCView({ completedOrders }: QCViewProps) {
   return (
     <PageShell>
       <PageHeading
-        title="Kiểm định Chất lượng Thành phẩm (VT-13 QC)"
-        description="Nghiệm thu cảm quan, nhiệt độ tâm cấp đông (-18°C) và kiểm tra bao bì với Phân tách trách nhiệm (SoD)"
+        title="Kiểm định chất lượng thành phẩm"
+        description="Nghiệm thu cảm quan, nhiệt độ tâm cấp đông (-18°C) và kiểm tra bao bì"
       />
 
-      <InlineAlert tone="warning" className="mb-6">
-        <p className="font-medium">Nguyên tắc Phân tách Trách nhiệm (SoD Enforcement):</p>
-        <p>
-          Chuyên viên QC (VT-13) bắt buộc phải là nhân sự <strong>độc lập</strong> với người trực tiếp điều phối, sơ chế, nấu chín hoặc đóng gói lô hàng. Hệ thống tự động từ chối (403 Forbidden) nếu phát hiện trùng lặp người thực hiện.
-        </p>
+      <InlineAlert tone="info" className="mb-6">
+        Người kiểm định phải khác người đã nấu hoặc đóng gói mẻ này. Nếu trùng người, hệ thống sẽ không cho ghi kết quả.
       </InlineAlert>
 
       {selectedOrder && (
@@ -118,9 +116,7 @@ export function QCView({ completedOrders }: QCViewProps) {
                     <TableCell className="font-mono font-medium">{o.order_code}</TableCell>
                     <TableCell>{o.actual_output_quantity > 0 ? o.actual_output_quantity : o.planned_quantity} {o.uom}</TableCell>
                     <TableCell>
-                      <StatusBadge tone={o.status === "QC_PASSED" ? "success" : o.status === "QC_FAILED" ? "danger" : "neutral"}>
-                        {o.status}
-                      </StatusBadge>
+                      <StatusBadge tone={statusTone(o.status)}>{productionOrderStatuses[o.status] ?? o.status}</StatusBadge>
                     </TableCell>
                     <TableCell className="text-right">
                       {o.status === "COMPLETED" && (

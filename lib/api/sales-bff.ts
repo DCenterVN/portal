@@ -4,8 +4,8 @@ import { forwardService, serviceUrl } from "@/lib/api/service-bff";
 export async function forwardSales(
   request: NextRequest,
   path: string,
-  method: "GET" | "POST",
-  bodyPolicy: "none" | "required" = method === "POST" ? "required" : "none",
+  method: "GET" | "POST" | "PATCH" | "DELETE",
+  bodyPolicy: "none" | "required" = method === "POST" || method === "PATCH" ? "required" : "none",
   requireAuth: boolean = true,
 ) {
   return forwardService(request, {

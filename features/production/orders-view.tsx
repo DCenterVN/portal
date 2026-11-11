@@ -5,7 +5,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Input } from "@/components/ui/input";
 import { Field, FieldLabel, FieldError } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
-import { StatusBadge } from "@/components/patterns/status-badge";
+import { StatusBadge, statusTone } from "@/components/patterns/status-badge";
+import { productionOrderStatuses } from "./order-status";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
@@ -32,8 +33,8 @@ export function OrdersView({ initialOrders }: OrdersViewProps) {
   return (
     <PageShell>
       <PageHeading
-        title="Điều hành Sản xuất & Chế biến (VT-09 .. VT-12)"
-        description="Quy trình Make-to-Stock: Tiếp nhận → Phân bổ FEFO → Sơ chế & Nấu → Đóng gói & Cấp đông"
+        title="Điều hành Sản xuất & Chế biến"
+        description="Nhận lệnh → cấp nguyên liệu (lô gần hết hạn dùng trước) → sơ chế, nấu → đóng gói"
       />
 
       {listError ? <ErrorState title={listError} onRetry={reload} className="mb-4" /> : <Card>
@@ -62,18 +63,7 @@ export function OrdersView({ initialOrders }: OrdersViewProps) {
                     <TableCell>{o.planned_quantity} {o.uom}</TableCell>
                     <TableCell>{o.actual_output_quantity > 0 ? `${o.actual_output_quantity} ${o.uom}` : "—"}</TableCell>
                     <TableCell>
-                      <StatusBadge tone={
-                          o.status === "QC_PASSED"
-                            ? "success"
-                            : o.status === "COMPLETED" || o.status === "IN_PROGRESS"
-                            ? "neutral"
-                            : o.status === "QC_FAILED" || o.status === "FAILED"
-                            ? "danger"
-                            : "neutral"
-                        }
-                      >
-                        {o.status}
-                      </StatusBadge>
+                      <StatusBadge tone={statusTone(o.status)}>{productionOrderStatuses[o.status] ?? o.status}</StatusBadge>
                     </TableCell>
                     <TableCell className="text-right">
                       {o.status === "HANDED_OFF" && canUpdate && (
@@ -93,7 +83,7 @@ export function OrdersView({ initialOrders }: OrdersViewProps) {
                           disabled={loadingId === o.id}
                           onClick={() => handleAllocate(o.id)}
                         >
-                          Phân bổ FEFO
+                          Cấp nguyên liệu
                         </Button>
                       )}
                       {o.status === "ALLOCATED" && canUpdate && (
@@ -117,7 +107,7 @@ export function OrdersView({ initialOrders }: OrdersViewProps) {
                         </Button>
                       )}
                       {o.status === "COMPLETED" && (
-                        <StatusBadge tone="warning">Chờ QC nghiệm thu (VT-13)</StatusBadge>
+                        <StatusBadge tone="warning">Chờ QC nghiệm thu</StatusBadge>
                       )}
                       {o.status === "QC_PASSED" && (
                         <StatusBadge tone="success">QC Đạt — Sẵn sàng lên kệ</StatusBadge>

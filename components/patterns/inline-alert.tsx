@@ -1,5 +1,5 @@
 import * as React from "react";
-import { AlertCircle, TriangleAlert } from "lucide-react";
+import { AlertCircle, CircleCheck, Info, TriangleAlert } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { cn } from "@/lib/utils";
 
@@ -7,8 +7,8 @@ type AlertTone = "error" | "warning" | "success" | "info";
 const tones: Record<AlertTone, { box: string; text: string; icon?: typeof AlertCircle }> = {
   error: { box: "border-destructive-border bg-destructive-soft", text: "", icon: AlertCircle },
   warning: { box: "border-warning-border bg-warning-soft text-warning", text: "text-current", icon: TriangleAlert },
-  success: { box: "", text: "text-foreground" },
-  info: { box: "", text: "text-foreground" },
+  success: { box: "border-success/25 bg-success-soft text-success", text: "text-current", icon: CircleCheck },
+  info: { box: "border-primary/20 bg-primary/5 text-primary", text: "text-foreground", icon: Info },
 };
 
 export function InlineAlert({ tone = "error", children, className, ...props }: { tone?: AlertTone } & Omit<React.ComponentProps<typeof Alert>, "variant">) {

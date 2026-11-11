@@ -7,7 +7,7 @@ import { ErrorState, LoadingState } from "@/components/patterns/empty-state";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
-import { Badge } from "@/components/ui/badge";
+import { StatusBadge, statusTone } from "@/components/patterns/status-badge";
 import { Button } from "@/components/ui/button";
 import { formatVND } from "@/lib/format";
 import { formatDate } from "@/lib/format-date";
@@ -19,7 +19,7 @@ import { OrderDialog } from "./order-dialog";
 
 const paymentLabels: Record<string, string> = { COD: "COD", BANK_TRANSFER: "Chuyển khoản", CASH: "Tiền mặt" };
 function Status({ status }: { status: string }) {
-  return <Badge variant="outline">{orderStatuses[status] ?? "Chưa rõ trạng thái"}</Badge>;
+  return <StatusBadge tone={statusTone(status)}>{orderStatuses[status] ?? "Chưa rõ trạng thái"}</StatusBadge>;
 }
 export function SalesOrderButtons({ order, can, busy, act, userId }: { userId?: string; order: StaffOrder; can: (permission: string) => boolean; busy: boolean; act: (order: StaffOrder, action: OrderAction) => void }) {
   return <div className="flex flex-wrap gap-2">{availableActions(order, can, userId).map(action => <Button key={action.path} variant={action.path === "cancel" ? "destructive" : "outline"} disabled={busy} onClick={() => act(order, action.path)}>{busy ? "Đang xử lý…" : action.label}</Button>)}</div>;

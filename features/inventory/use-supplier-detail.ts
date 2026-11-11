@@ -11,15 +11,15 @@ export async function loadSupplierPhoto(supplier: Supplier | undefined, read: bo
   return downloadSupplierPhoto(supplier.id).catch(() => "");
 }
 
-export type SupplierDetailOptions = { supplierId: string; initialSupplier?: Supplier; initialTab?: "overview" | "agreements" | "receipts" };
-export function useSupplierDetail({ supplierId, initialSupplier, initialTab = "overview" }: SupplierDetailOptions) {
+export type SupplierDetailOptions = { supplierId: string; initialSupplier?: Supplier; initialTab?: "overview" | "agreements" | "receipts"; initialEdit?: boolean };
+export function useSupplierDetail({ supplierId, initialSupplier, initialTab = "overview", initialEdit = false }: SupplierDetailOptions) {
   const { can } = useAccess();
   const read = can("inventory:supplier:read");
   const [supplier, setSupplier] = useState(initialSupplier);
   const [tab, setTab] = useState(initialTab);
   const [error, setError] = useState("");
   const [notFound, setNotFound] = useState(false);
-  const [edit, setEdit] = useState(false);
+  const [edit, setEdit] = useState(initialEdit);
   const [changeStatus, setChangeStatus] = useState(false);
   const [reason, setReason] = useState("");
   const [busy, setBusy] = useState(false);

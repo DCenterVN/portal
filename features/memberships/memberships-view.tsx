@@ -96,7 +96,7 @@ export function MembershipsView({ membershipId }: { membershipId?: string }) {
                           {person.allBranches && <Badge>Mọi chi nhánh</Badge>}
                           {person.assignments.map((item) => <Badge key={item.branchId} variant="secondary">{chipText(catalog.data, item.branchName, item.roles, item.locked)}</Badge>)}
                         </div></TableCell>
-                        <TableCell className="align-top"><StatusBadge tone={active ? "success" : "warning"}>{active ? "Đang hoạt động" : "Tạm khoá"}</StatusBadge></TableCell>
+                        <TableCell className="align-top"><StatusBadge tone={active ? "neutral" : "warning"}>{active ? "Đang hoạt động" : "Tạm khoá"}</StatusBadge></TableCell>
                       </TableRow>
                     );
                   })}

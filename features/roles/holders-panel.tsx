@@ -26,7 +26,7 @@ export function HoldersPanel({ role, members, error, loading, onRetry, nameOf = 
               <span className="min-w-0"><span className="block font-medium">{person.name || "Chưa có tên"}</span>{person.name !== person.email && person.email && <span className="block text-xs text-muted-foreground">{person.email}</span>}</span>
               <span className="flex flex-wrap items-center gap-1.5">
                 {codes.map((code) => <Badge key={code} variant={code === role ? "default" : "secondary"}>{nameOf(code)}</Badge>)}
-                <StatusBadge tone={active ? "success" : "warning"}>{active ? "Đang hoạt động" : "Tạm khoá"}</StatusBadge>
+                <StatusBadge tone={active ? "neutral" : "warning"}>{active ? "Đang hoạt động" : "Tạm khoá"}</StatusBadge>
               </span>
             </Link>
           </li>

@@ -6,7 +6,7 @@ import { SuppliersContainer as SuppliersView } from "./suppliers-container";
 import { supplier } from "@/mocks/supplier-contract";
 it("bảng NCC hiển thị tên/mã, mở bảng giá đúng NCC, không lộ UUID", () => {
   const html = renderToStaticMarkup(<AccessProvider value={{ plane: "company", root: "", actions: new Set(["inventory:supplier:read", "inventory:supplier:create"]) }}><SuppliersView initialPage={{ items: [supplier], next_cursor: "" }} /></AccessProvider>);
-  expect(html).toContain("Gạo An Bình"); expect(html).toContain("NCC-GAO"); expect(html).toContain("Bảng giá");
+  expect(html).toContain("Gạo An Bình"); expect(html).toContain("NCC-GAO"); expect(html).toContain("Thao tác cho Gạo An Bình");
   expect(html.replace(/<[^>]*>/g, " ")).not.toMatch(/[0-9a-f]{8}-[0-9a-f]{4}-/);
 });
 it("không có provider thì đóng quyền, không hiện nút tạo", () => {
@@ -36,6 +36,7 @@ vi.mock("react", async original => {
     return hooks.values[index];
   }, useEffect: (effect: () => (() => void) | undefined) => { hooks.effects.push(effect); } };
 });
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
 vi.mock("@/lib/api/suppliers", async original => ({ ...await original<typeof import("@/lib/api/suppliers")>(), getSuppliers: vi.fn() }));
 import { getSuppliers } from "@/lib/api/suppliers";
 

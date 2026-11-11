@@ -3,7 +3,7 @@ import { OrdersView } from "@/features/production/orders-view";
 
 export const metadata = {
   title: `Điều hành Lệnh Sản xuất — ${BRAND_NAME}`,
-  description: "Quy trình Make-to-Stock: Tiếp nhận → Phân bổ FEFO → Sơ chế & Nấu → Đóng gói & Cấp đông",
+  description: "Nhận lệnh, cấp nguyên liệu, nấu và đóng gói",
 };
 
 export default function OrdersPage() {

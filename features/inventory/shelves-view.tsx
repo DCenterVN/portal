@@ -110,7 +110,7 @@ export function ShelvesView({ initialPlacements }: ShelvesViewProps) {
                     </TableCell>
                     <TableCell>{p.available_quantity} / {p.placed_quantity} {p.uom === "EA" ? "hộp" : p.uom}</TableCell>
                     <TableCell>
-                      <StatusBadge tone={p.status === "PLACED" ? "success" : "neutral"}>
+                      <StatusBadge tone={p.status === "PLACED" ? "neutral" : "neutral"}>
                         {{ PLACED: "Đang trên kệ", SELLING: "Đang bán", EMPTY: "Đã hết hàng", DEPLETED: "Đã hết hàng", REMOVED: "Đã gỡ khỏi kệ" }[p.status] ?? "Đang cập nhật"}
                       </StatusBadge>
                     </TableCell>

@@ -30,7 +30,7 @@ export function BranchStaffPanel({ staff, error, loading, onRetry, branchName, o
                 <TableCell className="font-medium">{member.display_name || "—"}</TableCell>
                 <TableCell>{member.email || "—"}</TableCell>
                 <TableCell><div className="flex flex-wrap gap-1.5">{member.role_codes.map((code) => <Badge key={code} variant="secondary">{roleName(code)}</Badge>)}</div></TableCell>
-                <TableCell><StatusBadge tone={member.status === "ACTIVE" ? "success" : "warning"}>{member.status === "ACTIVE" ? "Đang hoạt động" : "Tạm khoá"}</StatusBadge></TableCell>
+                <TableCell><StatusBadge tone={member.status === "ACTIVE" ? "neutral" : "warning"}>{member.status === "ACTIVE" ? "Đang hoạt động" : "Tạm khoá"}</StatusBadge></TableCell>
               </TableRow>
             ))}
           </TableBody>

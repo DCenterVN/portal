@@ -37,7 +37,7 @@ function DetailBody({ userId }: { userId: string }) {
     <RecordHeader name={person.name} contacts={<a href={`mailto:${person.email}`} aria-label={t("sendEmail")} className="text-muted-foreground"><Mail className="size-4" /></a>}
       actions={can("org:membership:update") && person.userId !== scope?.userId && <Button variant="outline" size="sm" onClick={edit}><Pencil className="size-4" />{t("editAssignments")}</Button>}
       meta={<><span className="inline-flex items-center gap-2"><Mail className="size-4" />{person.email}</span><span className="inline-flex items-center gap-2"><Building2 className="size-4" />{t("branchCount", { count: person.assignments.length })}</span></>}
-      badges={<><span className="text-muted-foreground">{t("status")}</span><StatusBadge tone={active ? "success" : "warning"}>{t(active ? "active" : "locked")}</StatusBadge>{person.allBranches && <Badge variant="secondary">{t("allBranches")}</Badge>}</>} />
+      badges={<><span className="text-muted-foreground">{t("status")}</span><StatusBadge tone={active ? "neutral" : "warning"}>{t(active ? "active" : "locked")}</StatusBadge>{person.allBranches && <Badge variant="secondary">{t("allBranches")}</Badge>}</>} />
     <RecordTabs tabs={[{ value: "assignments", label: t("assignments"), content: assignments }, { value: "info", label: t("info"), content: info }]} />
   </>;
 }

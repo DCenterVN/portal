@@ -38,7 +38,7 @@ export function candidatePeople(members: readonly Membership[], branchId: string
 }
 
 export const BRANCH_STATUS: Record<Branch["status"], { label: string; tone: "success" | "warning" | "neutral" }> = {
-  ACTIVE: { label: "Đang hoạt động", tone: "success" },
+  ACTIVE: { label: "Đang hoạt động", tone: "neutral" },
   SUSPENDED: { label: "Tạm ngừng", tone: "warning" },
   CLOSED: { label: "Đã đóng", tone: "neutral" },
 };
