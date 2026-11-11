@@ -1,6 +1,7 @@
 import { catalogNutritionSchema, type CatalogNutrition } from "@/lib/nutrition";
 import { buildCatalogQuery, type NutritionFilters } from "@/lib/api/catalog-query";
 import { z } from "zod";
+import { orderDetailFields } from "@/lib/order-detail";
 import { decodePlatform } from "@/lib/api/platform-contract";
 import { FetchError, apiFetch } from "@/lib/fetcher";
 import { allPages } from "./all-pages";
@@ -238,6 +239,7 @@ export async function createOrder(cartRef: string, input: CheckoutInput, key: st
   return decodePlatform(await res.json(), orderDisplaySchema);
 }
 const orderDisplaySchema = z.object({
+  ...orderDetailFields,
   id: z.string(), order_code: z.string().optional(), cart_ref: z.string(), status: z.string(),
   subtotal_vnd: z.number(), total_vnd: z.number(), branch_ref: z.string().optional(), created_at: z.string(),
 });

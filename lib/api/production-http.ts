@@ -9,6 +9,6 @@ export async function responseData<T>(res: Response): Promise<T> {
   return (payload?.data ?? payload) as T;
 }
 
-export function mutationHeaders() {
-  return { "Content-Type": "application/json", "Idempotency-Key": crypto.randomUUID() };
+export function mutationHeaders(key = crypto.randomUUID()) {
+  return { "Content-Type": "application/json", "Idempotency-Key": key };
 }

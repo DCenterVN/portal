@@ -27,6 +27,7 @@ export const CONSOLE_NAV: { title: string; icon: LucideIcon; items: NavRule[] }[
     ],
   },
   { title: "Bán hàng", icon: Tag, items: [
+    { href: "/sales/orders", label: "Đơn hàng", match: "/sales/orders", icon: ClipboardCheck, action: "sales:order:read" },
     { href: "/sales/products", label: "Sản phẩm", match: "/sales/products", icon: Package, action: "sales:product:read" },
     { href: "/sales/pricing", label: "Bảng giá", match: "/sales/pricing", icon: Tag, action: "sales:price_book:create" },
   ] },
