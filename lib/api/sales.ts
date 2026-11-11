@@ -2,7 +2,7 @@ import { catalogNutritionSchema, type CatalogNutrition } from "@/lib/nutrition";
 import { buildCatalogQuery, type NutritionFilters } from "@/lib/api/catalog-query";
 import { z } from "zod";
 import { decodePlatform } from "@/lib/api/platform-contract";
-import { apiFetch } from "@/lib/fetcher";
+import { FetchError, apiFetch } from "@/lib/fetcher";
 import { allPages } from "./all-pages";
 import { RawAllergensSchema } from "./sales-materials";
 export { getMaterials, createMaterial, getRawLabels, updateRawLabels } from "./sales-materials";
@@ -38,7 +38,7 @@ export interface PriceFloorPolicy {
 type SalesProduct = Omit<Product, "uom"> & { uom_code: string };
 function normalizeProduct(product: SalesProduct): Product { return { ...product, uom: product.uom_code }; }
 async function errorMessage(res: Response, fallback: string) { const body = await res.json().catch(() => ({})); return body.message || body.error || fallback; }
-function mutationHeaders() { return { "Content-Type": "application/json", "Idempotency-Key": crypto.randomUUID() }; }
+function mutationHeaders(key = crypto.randomUUID()) { return { "Content-Type": "application/json", "Idempotency-Key": key }; }
 export async function getProducts(): Promise<DataResult<Product[]>> {
   try {
     // ponytail: Loads all pages; switch to server search + paging when products reach the thousands.
@@ -203,15 +203,38 @@ const salesCartSchema = z.object({
   items: z.array(z.object({ sku_ref: z.string(), quantity: z.number(), price_snapshot_vnd: z.number() })),
 });
 export async function getCart(cartId: string): Promise<SalesCartResponse> {
-  const branch = typeof window !== "undefined" ? window.localStorage.getItem("vietsach.cart_branch") : null;
+  const branch = getCartBranch();
   const query = branch ? `?${new URLSearchParams({ branch_id: branch })}` : "";
   const res = await apiFetch(`/api/sales/carts/${encodeURIComponent(cartId)}${query}`);
   if (!res.ok) throw new Error(await errorMessage(res, "Không thể tải giỏ hàng"));
   return decodePlatform(await res.json(), salesCartSchema);
 }
-export async function createOrder(cartRef: string): Promise<Order> {
-  const res = await apiFetch("/api/sales/orders", { method: "POST", headers: { "Content-Type": "application/json", "Idempotency-Key": crypto.randomUUID() }, body: JSON.stringify({ cart_ref: cartRef }) });
-  if (!res.ok) throw new Error(await errorMessage(res, "Không thể tạo đơn hàng"));
+export const checkoutSchema = z.object({
+  recipient_name: z.string().trim().min(1, "Nhập họ tên người nhận"),
+  recipient_phone: z.string().trim().regex(/^0[35789]\d{8}$/, "Nhập số điện thoại Việt Nam gồm 10 số"),
+  province_code: z.string().min(1, "Chọn tỉnh/thành trong danh sách"),
+  commune_code: z.string().min(1, "Chọn xã/phường trong danh sách"),
+  delivery_address: z.string().trim().min(1, "Nhập số nhà, tên đường hoặc thôn/xóm"),
+  delivery_note: z.string().trim(),
+  payment_method: z.enum(["COD", "BANK_TRANSFER"]),
+});
+export type CheckoutInput = z.infer<typeof checkoutSchema>;
+export function getCartBranch(): string {
+  return typeof window !== "undefined" ? window.localStorage.getItem("vietsach.cart_branch") ?? "" : "";
+}
+export async function createOrder(cartRef: string, input: CheckoutInput, key: string): Promise<Order> {
+  const delivery = checkoutSchema.parse(input);
+  const branch = getCartBranch();
+  if (!branch) throw new Error("Chọn lại chi nhánh và thêm món vào giỏ trước khi đặt hàng");
+  const res = await apiFetch("/api/sales/orders", {
+    method: "POST", headers: mutationHeaders(key),
+    body: JSON.stringify({ ...delivery, cart_ref: cartRef, branch_ref: branch, channel: "ONLINE", shipping_fee_vnd: 0 }),
+  });
+  if (res.status !== 201) {
+    const body: unknown = await res.json().catch(() => null);
+    const error = z.object({ message: z.string().optional(), error: z.string().optional() }).safeParse(body);
+    throw new FetchError(error.success ? error.data.message ?? "Không thể tạo đơn hàng. Vui lòng thử lại." : "Không thể tạo đơn hàng. Vui lòng thử lại.", res.status, body);
+  }
   return decodePlatform(await res.json(), orderDisplaySchema);
 }
 const orderDisplaySchema = z.object({
@@ -222,21 +245,27 @@ const orderDisplaySchema = z.object({
 export async function getOrderDisplay(): Promise<z.infer<typeof orderDisplaySchema>[]>;
 export async function getOrderDisplay(id: string): Promise<z.infer<typeof orderDisplaySchema>>;
 export async function getOrderDisplay(id?: string) {
-  const path = id ? `/api/sales/orders/${encodeURIComponent(id)}` : "/api/sales/orders?page_size=50";
-  const res = await apiFetch(path);
+  const path = id ? `/api/sales/orders/${encodeURIComponent(id)}` : "/api/sales/orders";
+  const query = new URLSearchParams(id ? {} : { page_size: "50" });
+  const branch = getCartBranch();
+  if (!branch) throw new Error("Chọn chi nhánh mua hàng để xem đơn của bạn");
+  query.set("branch_id", branch);
+  const res = await apiFetch(`${path}?${query}`);
   if (!res.ok) throw new Error("Không thể tải đơn hàng. Thử tải lại.");
   const body: unknown = await res.json();
   return id ? decodePlatform(body, orderDisplaySchema) : decodePlatform(body, z.object({ items: z.array(orderDisplaySchema).nullish() })).items ?? [];
 }
 
 export async function cancelOrder(id: string, reason: string): Promise<Order> {
-  const res = await apiFetch(`/api/sales/orders/${encodeURIComponent(id)}/cancel`, {
+  const branch = getCartBranch();
+  if (!branch) throw new Error("Chọn chi nhánh mua hàng để huỷ đơn của bạn");
+  const res = await apiFetch(`/api/sales/orders/${encodeURIComponent(id)}/cancel?${new URLSearchParams({ branch_id: branch })}`, {
     method: "POST",
     headers: { "Content-Type": "application/json", "Idempotency-Key": crypto.randomUUID() },
     body: JSON.stringify({ reason }),
   });
   if (!res.ok) throw new Error(await errorMessage(res, "Không thể huỷ đơn hàng"));
-  return res.json();
+  return decodePlatform(await res.json(), orderDisplaySchema);
 }
 export function getOrCreateCartId(): string {
   if (typeof window === "undefined") throw new Error("Cart ID is only available in the browser");
@@ -265,7 +294,6 @@ export function clearCart(): void {
   if (typeof window === "undefined") return;
   window.localStorage.removeItem(cartItemsKey);
   window.localStorage.removeItem("vietsach.cart_id");
-  window.localStorage.removeItem("vietsach.cart_branch");
 }
 export { formatVND } from "@/lib/format";
 

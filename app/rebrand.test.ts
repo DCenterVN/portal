@@ -607,7 +607,7 @@ const targetFixtures: ProductionTarget[] = (["DRAFT", "APPROVED", "IN_PLANNING",
   period_start: "2026-09-29", period_end: "2026-10-29", status, created_by: "user-1", created_at: "2026-09-29",
   lines: [{ product_ref: "product-1", target_quantity: 20, uom: "EA" }],
 }));
-const salesOrderFixtures: Order[] = (["CREATED", "CANCELLED"] as const).map((status) => ({
+const salesOrderFixtures: Order[] = (["AWAITING_PAYMENT", "CANCELLED"] as const).map((status) => ({
   id: `SALE-${status}`, cart_ref: "cart-1", status, subtotal_vnd: 660000, total_vnd: 660000, created_at: "2026-09-29",
 }));
 function s7Markup(element: React.ReactNode, states: unknown[]) {
@@ -665,7 +665,7 @@ describe("S7 rendered target, cart, orders and product creation roles", () => {
     expectS7Roles(html, 0);
     for (const order of salesOrderFixtures) {
       const link = (html.match(/<a\b[\s\S]*?<\/a>/g) ?? []).find((tag) => tag.includes(`/orders/${order.id}`))!;
-      expect(link).toContain(`>${order.status === "CANCELLED" ? "Đã hủy" : "Đã đặt"}</span>`);
+      expect(link).toContain(`>${order.status === "CANCELLED" ? "Đã hủy" : "Chờ thanh toán"}</span>`);
       expect(link).toContain("text-[var(--color-ink)]");
       expect(link).toContain(order.status === "CANCELLED" ? "bg-destructive" : "border-border");
       expect(link).toContain("660.000");

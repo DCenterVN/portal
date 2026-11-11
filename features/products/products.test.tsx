@@ -7,6 +7,7 @@ import { ProductDetailView } from "./product-detail-view";
 import { productComponents } from "./use-product-detail";
 import { ProductCreateDialog } from "./product-create-dialog";
 import { CartView } from "./cart-view";
+import { useCart } from "./use-cart";
 
 describe("Sales & Products UI Feature", () => {
   const products: Product[] = [{ id: "0198fd55-3f46-7a01-9e52-f4c0de000001", sku_code: "SKU-HN-001", name: "Cá hồi", uom: "kg", base_price_vnd: 300000, status: "ACTIVE", created_at: "2026-08-28T08:00:00Z" }];
@@ -134,6 +135,7 @@ it("orders_no_uuid", async () => {
   const createdAt = "2026-10-21T07:05:00Z";
   const fetchMock = vi.fn<typeof fetch>();
   vi.stubGlobal("fetch", fetchMock);
+  vi.stubGlobal("window", { localStorage: { getItem: () => "branch" } });
   try {
     for (const [status, label] of Object.entries(orderStatusLabels)) {
       const order = { id: uuid, order_code: "DH-261021-00001", cart_ref: uuid, branch_ref: uuid, status, total_vnd: 120000, subtotal_vnd: 120000, created_at: createdAt };
@@ -153,6 +155,7 @@ it("orders_no_uuid", async () => {
           if (component === OrdersView) expect(html).toContain(`href="/orders/${uuid}"`);
           expect(userFacingContent(html)).not.toMatch(/[0-9a-f]{8}-[0-9a-f]{4}-/);
           expect(html).not.toContain(status);
+          if (component !== OrdersView) expect(html.includes("Huỷ đơn hàng")).toBe(status === "AWAITING_PAYMENT");
         });
         expect(fetchMock).toHaveBeenCalledTimes(1);
       }
@@ -179,37 +182,26 @@ vi.mock("@/components/ui/dialog", () => {
     DialogHeader: part("header"), DialogTitle: part("h2"), DialogDescription: part("p"), DialogFooter: part("footer"),
   };
 });
-import { Button } from "@/components/ui/button";
-
-function checkoutAction(node: React.ReactNode): (() => Promise<void>) | undefined {
-  for (const child of React.Children.toArray(node)) {
-    if (!React.isValidElement<{ children?: React.ReactNode; onClick?: () => Promise<void> }>(child)) continue;
-    if (child.type === Button && React.Children.toArray(child.props.children).includes("Tạo Đơn Hàng")) return child.props.onClick;
-    const action = checkoutAction(child.props.children);
-    if (action) return action;
-  }
-}
-
 it.each(["DH-261021-00001", undefined])("cart_order_code_no_uuid (%s)", async (orderCode) => {
   const uuid = "0192f3a4-5b6c-7d8e-9f00-112233445566";
   const order = { id: uuid, cart_ref: uuid, order_code: orderCode, status: "AWAITING_PAYMENT", subtotal_vnd: 120000, total_vnd: 120000, created_at: "2026-10-21T07:05:00Z" };
-  const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(Response.json({ code: 201, status: "success", message: "Created", data: order }));
+  const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(Response.json({ code: 201, status: "success", message: "Created", data: order }, { status: 201 }));
   vi.stubGlobal("fetch", fetchMock);
+  vi.stubGlobal("window", { localStorage: { getItem: () => "branch", removeItem: vi.fn() } });
   orderHarness.active = true;
   orderHarness.slots = []; orderHarness.cursor = 0; orderHarness.effects = []; orderHarness.mounted = true;
   orderHarness.toast.success.mockClear(); orderHarness.toast.error.mockClear();
-  const view = () => {
-    orderHarness.cursor = 0;
-    return CartView({ initialCart: { id: uuid, total_amount_vnd: 120000, items: [{ product_id: uuid, sku_code: "BUN-7K", name: "Bún bò Huế QA7K", uom: "suất", quantity: 1, price_snapshot_vnd: 120000 }] } });
-  };
+  const initialCart = { id: uuid, total_amount_vnd: 120000, items: [{ product_id: uuid, sku_code: "BUN-7K", name: "Bún bò Huế QA7K", uom: "suất", quantity: 1, price_snapshot_vnd: 120000 }] };
+  let hook: ReturnType<typeof useCart>;
+  function Probe() { hook = useCart(initialCart); return null; }
+  const view = () => { orderHarness.cursor = 0; return renderToStaticMarkup(React.createElement(CartView, { initialCart })); };
   try {
-    const checkout = checkoutAction(view());
-    expect(checkout).toBeDefined();
-    await checkout?.();
+    renderToStaticMarkup(React.createElement(Probe));
+    await hook!.handleCheckout({ recipient_name: "Nguyễn An", recipient_phone: "0912345678", province_code: "01", commune_code: "00001", delivery_address: "12 Lê Lợi", delivery_note: "", payment_method: "COD" });
     expect(orderHarness.toast.error).not.toHaveBeenCalled();
     expect(orderHarness.toast.success).toHaveBeenCalledWith("Tạo đơn hàng thành công", { description: orderCode ? `Mã đơn: ${orderCode}` : undefined });
     expect(JSON.stringify(orderHarness.toast.success.mock.calls)).not.toContain(uuid);
-    const html = renderToStaticMarkup(view());
+    const html = view();
     expect(html).toContain('role="dialog"');
     expect(html).toContain("Đã Tạo Đơn Hàng Thành Công!");
     if (orderCode) expect(html).toContain(orderCode);

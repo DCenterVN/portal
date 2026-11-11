@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/dialog";
 import type { Cart } from "@/lib/api/sales";
 import { formatVND } from "@/lib/format";
+import { CheckoutForm } from "./checkout-form";
 import { useCart } from "./use-cart";
 import { EmptyState, ErrorState, LoadingState } from "@/components/patterns/empty-state";
 import { PageShell } from "@/components/ui/page";
@@ -36,7 +37,8 @@ interface CartViewProps {
 }
 
 export function CartView({ initialCart }: CartViewProps) {
-  const { items, cartId, submittingOrder, createdOrderCode, setCreatedOrderCode, loading, error, reload, totalAmount, totalQuantity, handleCheckout } = useCart(initialCart);
+  const cart = useCart(initialCart);
+  const { items, cartId, submittingOrder, createdOrderCode, setCreatedOrderCode, loading, error, reload, totalAmount, totalQuantity, changeCheckoutOpen } = cart;
   if (loading) return <PageShell><LoadingState title="Đang tải giỏ hàng…" /></PageShell>;
   if (error) return <PageShell><ErrorState title="Không thể tải giỏ hàng" description={error} onRetry={reload} /></PageShell>;
 
@@ -154,18 +156,18 @@ export function CartView({ initialCart }: CartViewProps) {
               <Button
                 type="button"
                 variant={createdOrderCode ? "outline" : "default"}
-                onClick={handleCheckout}
+                onClick={() => changeCheckoutOpen(true)}
                 disabled={submittingOrder || items.length === 0 || !cartId}
                 className="w-full"
               >
-                {submittingOrder ? "Đang tạo đơn hàng..." : "Tạo Đơn Hàng"}
+                {submittingOrder ? "Đang tạo đơn hàng..." : "Đặt hàng"}
               </Button>
             </CardContent>
           </Card>
         </div>
       </div>
 
-      {/* Order Created Success Dialog */}
+      <CheckoutForm {...cart} />
       <Dialog open={createdOrderCode !== null} onOpenChange={(open) => !open && setCreatedOrderCode(null)}>
         <DialogContent className="bg-card text-center sm:max-w-sm">
           <DialogHeader className="text-center items-center">

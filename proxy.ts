@@ -5,7 +5,7 @@ import type { NextRequest } from "next/server";
 
 const PUBLIC_PREFIXES = [
   "/email/confirm", "/login", "/register", "/activate", "/forgot-password", "/reset-password",
-  "/traceability", "/products", "/api/auth", "/api/public", "/healthz", "/readyz", "/_next", "/favicon.ico", "/icon.svg",
+  "/traceability", "/products", "/api/auth", "/api/public", "/api/locations", "/healthz", "/readyz", "/_next", "/favicon.ico", "/icon.svg",
 ];
 
 function matchesPathPrefix(pathname: string, prefix: string): boolean {

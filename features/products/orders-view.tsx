@@ -13,7 +13,7 @@ import { EmptyState, ErrorState, LoadingState } from "@/components/patterns/empt
 import { useOrders } from "./use-orders";
 
 export const orderStatusLabels: Record<string, string> = {
-  CREATED: "Đã đặt", CANCELLED: "Đã hủy", AWAITING_PAYMENT: "Chờ thanh toán",
+  CANCELLED: "Đã hủy", AWAITING_PAYMENT: "Chờ thanh toán",
   CONFIRMED: "Đã xác nhận", PACKED: "Đã đóng gói", DELIVERING: "Đang giao",
   DELIVERED: "Đã giao", DELIVERY_FAILED: "Giao không thành công", COMPLETED: "Hoàn tất",
 };
