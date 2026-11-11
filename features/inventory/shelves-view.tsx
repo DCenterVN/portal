@@ -32,7 +32,7 @@ export function ShelvesView({ initialPlacements }: ShelvesViewProps) {
   return (
     <PageShell>
       <PageHeading
-        title="Quản lý Kệ hàng & Tem Truy xuất QR (VT-08 / VT-16)"
+        title="Kệ hàng và tem truy xuất"
         description="Đưa các lô thành phẩm đã QC đạt lên kệ chi nhánh và quản lý mã QR truy vết"
         actions={
           <Button variant={showCreate ? "outline" : "default"} onClick={() => setShowCreate(true)} disabled={!canPlace || !branchRef}>
@@ -67,7 +67,7 @@ export function ShelvesView({ initialPlacements }: ShelvesViewProps) {
                   <Input id="shelf-code" type="text" required placeholder="VD: KE-MAT-01, KE-DONG-02" value={shelfCode} onChange={(e) => setShelfCode(e.target.value)} />
                 </div>
                 <div className="grid gap-1.5">
-                  <Label htmlFor="shelf-qty">Số lượng đưa lên kệ (EA)</Label>
+                  <Label htmlFor="shelf-qty">Số lượng đưa lên kệ (hộp)</Label>
                   <Input id="shelf-qty" type="number" min="1" required value={placedQty} onChange={(e) => setPlacedQty(Number(e.target.value))} />
                 </div>
               </div>
@@ -91,7 +91,7 @@ export function ShelvesView({ initialPlacements }: ShelvesViewProps) {
                 <TableHead>Mã truy vết QR</TableHead>
                 <TableHead>Số lượng trên kệ</TableHead>
                 <TableHead>Trạng thái</TableHead>
-                <TableHead className="text-right">Tra cứu công khai (VT-01)</TableHead>
+                <TableHead className="text-right">Tra cứu xuất xứ</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -108,10 +108,10 @@ export function ShelvesView({ initialPlacements }: ShelvesViewProps) {
                     <TableCell className="font-mono text-sm">
                       {p.trace_code}
                     </TableCell>
-                    <TableCell>{p.available_quantity} / {p.placed_quantity} {p.uom}</TableCell>
+                    <TableCell>{p.available_quantity} / {p.placed_quantity} {p.uom === "EA" ? "hộp" : p.uom}</TableCell>
                     <TableCell>
                       <StatusBadge tone={p.status === "PLACED" ? "success" : "neutral"}>
-                        {p.status}
+                        {{ PLACED: "Đang trên kệ", SELLING: "Đang bán", EMPTY: "Đã hết hàng", DEPLETED: "Đã hết hàng", REMOVED: "Đã gỡ khỏi kệ" }[p.status] ?? "Đang cập nhật"}
                       </StatusBadge>
                     </TableCell>
                     <TableCell className="text-right">

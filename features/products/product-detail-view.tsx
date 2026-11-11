@@ -39,6 +39,7 @@ export function ProductDetailView({ initialProduct, branchId }: { initialProduct
           </Select>
         </div>
         <div className="mt-6 space-y-2">
+          {product.available_quantity !== undefined && <p className="text-sm text-muted-foreground">Còn {product.available_quantity.toLocaleString("vi-VN")} gói</p>}
           <p className="text-sm font-medium">Số lượng</p>
           <div className="flex flex-wrap gap-3">
             <div aria-label="Số lượng" className="flex items-center rounded-[var(--r-6)] bg-muted/60">

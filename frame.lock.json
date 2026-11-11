@@ -94,7 +94,7 @@
     "e2e/visual/preview.spec.ts": "a8370d6fad7d152028d7cc380e303d67536cf47eea259643c6d8f87156af3e7e",
     "eslint.config.mjs": "7bba77499b3385e683159b0af90b2359160b628ee1e8d38fa6473a8cd4ba8663",
     "package.json": "c11ffd93c989053a87be1e7b5d8f7cd645f92f8f8b835a9f363d78243e89651a",
-    "playwright.config.ts": "a57bc7c6c50d7903a93221ebf6274b6070def2d75f05d4191c2631d314133207",
+    "playwright.config.ts": "ae3f23932ad2acd1e163c262985e400bb25dc302209b0cbed166e003668e37e0",
     "pnpm-lock.yaml": "28d8735216e97c604a24d49a0e1d8c86ec5d9b5670bf99b35df67579101f1d34",
     "scripts/frame-lock.mjs": "8fc91a057421cb1bdc9b10aed4e63b6983f1464aee3791b1e08a144a681aa41d"
   }

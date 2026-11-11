@@ -1,6 +1,6 @@
 import { beforeEach, afterEach, expect, it, vi } from "vitest";
 import { createFormControl, type UseFormProps } from "react-hook-form";
-import { useSalesOrders, loadDrivers } from "./use-sales-orders";
+import { useSalesOrders, loadDrivers, loadSelfDriver } from "./use-sales-orders";
 import type { StaffOrder } from "@/lib/api/staff-orders";
 
 const hooks = vi.hoisted(() => ({ cursor: 0, slots: [] as unknown[], form: undefined as ReturnType<typeof createFormControl> | undefined, denied: "", userId: "", members: [] as unknown[], setItems: vi.fn() }));
@@ -152,4 +152,21 @@ it("shows server 403 message when legacy response omits assignment", async () =>
   fetch.mockResolvedValueOnce(Response.json({ message: "Chỉ người giao được gán mới có thể cập nhật" }, { status: 403 }));
   state().act({ ...order, status: "DELIVERING" }, "deliver");
   await vi.waitFor(() => expect(state().error).toBe("Chỉ người giao được gán mới có thể cập nhật"));
+});
+
+it("SALES without membership read can assign self but cannot assign another user", async () => {
+  hooks.denied = "org:membership:read";
+  hooks.members = [{ user_id: driver, display_name: "Nhân viên An" }];
+  state().act(order, "ship");
+  await submit("0198fd55-3f46-7a01-9e52-f4c0de000021");
+  expect(fetch).not.toHaveBeenCalled();
+  await submit(driver);
+  expect(JSON.parse(String(fetch.mock.calls[0][1]?.body))).toEqual({ driver_ref: driver });
+});
+it("self assignment uses own profile without requesting memberships", async () => {
+  fetch.mockResolvedValueOnce(Response.json({ id: driver, display_name: "Nhân viên An", email: "an@test.vn" }));
+  expect(await loadSelfDriver(driver)).toEqual([{ user_id: driver, display_name: "Nhân viên An", email: "an@test.vn" }]);
+  expect(new URL(String(fetch.mock.calls[0][0])).pathname).toBe("/api/auth/me");
+  fetch.mockResolvedValueOnce(Response.json({ id: "another-user" }));
+  expect(await loadSelfDriver(driver)).toEqual([]);
 });

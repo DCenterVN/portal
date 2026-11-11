@@ -14,6 +14,7 @@ import { useCatalog } from "./use-catalog";
 import { applyCatalogFilters, CatalogFilters, CatalogQuickFilters, type CatalogFilterValues } from "./catalog-filters";
 
 import { CatalogProductCard } from "./catalog-product-card";
+import { StoreBranchPicker } from "./store-branch-picker";
 
 interface CatalogViewProps {
   branchId?: string;
@@ -30,7 +31,7 @@ interface CatalogViewProps {
 
 export function CatalogLoader() {
   const state = useCatalog();
-  return <NextIntlClientProvider locale="vi" messages={{ Catalog: viMessages.Catalog }} timeZone="Asia/Ho_Chi_Minh"><CatalogView {...state} onLoadMore={() => void state.loadMore()} onRetry={() => void state.reload()} /></NextIntlClientProvider>;
+  return <NextIntlClientProvider locale="vi" messages={{ Catalog: viMessages.Catalog }} timeZone="Asia/Ho_Chi_Minh"><StoreBranchPicker /><CatalogView {...state} onLoadMore={() => void state.loadMore()} onRetry={() => void state.reload()} /></NextIntlClientProvider>;
 }
 
 export function CatalogView({ products, loading, error, nextCursor, onLoadMore, loadingMore, onRetry, filters: externalFilters, onFiltersChange, branchId }: CatalogViewProps) {

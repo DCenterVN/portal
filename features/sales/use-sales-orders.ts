@@ -10,6 +10,7 @@ import { useAccess } from "@/lib/access-boundary";
 import { toast } from "@/components/ui/toast";
 import { getStaffOrder, getStaffOrders, mutateStaffOrder, type StaffOrder } from "@/lib/api/staff-orders";
 import { companyMemberships, type Membership } from "@/lib/api/platform-client";
+import { getProfile } from "@/lib/auth/client";
 import { getLocations } from "@/lib/api/locations";
 import { availableActions, orderActions, type OrderAction } from "./order-actions";
 
@@ -21,6 +22,10 @@ export async function loadDrivers(branchId: string): Promise<Membership[]> {
     if (result.items.length < result.limit) break;
   }
   return members.filter(member => member.branch_id === branchId && member.status === "ACTIVE" && member.role_codes.includes("SALES"));
+}
+export async function loadSelfDriver(userId: string) {
+  const profile = await getProfile();
+  return profile.id === userId ? [{ user_id: profile.id, display_name: profile.display_name, email: profile.email }] : [];
 }
 export function actionSchema(action: OrderAction, order: StaffOrder) {
   return z.object({
@@ -45,8 +50,9 @@ export function useSalesOrders(initialOrders?: StaffOrder[]) {
   const order = detail.data ?? selected;
   const provinces = useSWR(order?.province_code ? "/api/locations/provinces" : null, getLocations);
   const communes = useSWR(order?.province_code ? `/api/locations/provinces/${encodeURIComponent(order.province_code)}/communes` : null, getLocations);
-  const drivers = useSWR(pending?.action === "ship" && scope?.branchId && can("org:membership:read")
-    ? ["order-drivers", scope.orgId, scope.branchId] : null, () => loadDrivers(scope!.branchId));
+  const drivers = useSWR(pending?.action === "ship" && scope?.branchId
+    ? ["order-drivers", scope.orgId, scope.branchId, scope.userId] : null,
+    () => can("org:membership:read") ? loadDrivers(scope!.branchId) : loadSelfDriver(scope!.userId));
   const form = useForm<{ value: string }>({
     resolver: zodResolver(pending ? actionSchema(pending.action, pending.order) : z.object({ value: z.string() })), defaultValues: { value: "" },
   });
@@ -85,7 +91,7 @@ export function useSalesOrders(initialOrders?: StaffOrder[]) {
   const submit = form.handleSubmit(async ({ value }) => {
     if (!pending) return;
     const { order: target, action } = pending;
-    if (action === "ship" && (!can("org:membership:read") || !drivers.data?.some(driver => driver.user_id === value) || drivers.error)) {
+    if (action === "ship" && (!drivers.data?.some(driver => driver.user_id === value) || drivers.error)) {
       form.setError("value", { message: "Chọn người giao đang hoạt động trong chi nhánh" }); return;
     }
     const input: Record<string, string> = action === "ship" ? { driver_ref: value } : action === "payments/confirm" ? { bank_transaction_ref: value } : { reason: value };

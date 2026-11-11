@@ -25,6 +25,7 @@ const executablePath = process.env.PW_BROWSER_PATH || "/opt/brave.com/brave/brav
 // VISUAL_BASELINE=1: shoot file:// previews and rewrite the baseline; otherwise baseline is read-only.
 const baseline = process.env.VISUAL_BASELINE === "1";
 const record = process.env.E2E_RECORD === "1";
+const purchaseFlow = process.argv.some(argument => argument.includes("e2e/flow-purchase"));
 const narratedVideo = { mode: "on" as const, size: { width: 1440, height: 900 }, show: { actions: { duration: 1500, position: "top" as const, fontSize: 22, cursor: "pointer" as const }, test: { level: "step" as const, position: "bottom" as const, fontSize: 22 } } };
 const baseURL = process.env.E2E_BASE_URL || "http://localhost:3000";
 
@@ -46,7 +47,7 @@ export default defineConfig({
   projects: [
     { name: "setup", testMatch: "**/setup/login.setup.ts", use: { trace: "off", video: "off", screenshot: "off" } },
     { name: "data", testMatch: "**/setup/data.setup.ts", dependencies: ["setup"], use: { launchOptions: { executablePath, slowMo: 0 }, trace: "on", video: "off" } },
-    { name: "desktop", testIgnore: ["**/setup/**", "**/supplier-ux/**"], ...(record && { dependencies: ["data"] }), use: { viewport: { width: 1440, height: 900 } } },
+    { name: "desktop", testIgnore: ["**/setup/**", "**/supplier-ux/**"], ...(record && !purchaseFlow && { dependencies: ["data"] }), use: { viewport: { width: 1440, height: 900 } } },
     { name: "mobile", testIgnore: ["**/rbac/**", "**/setup/**", "**/supplier-ux/**"], use: { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 1 } },
   ],
   webServer: baseline || process.env.E2E_BASE_URL ? undefined : {

@@ -37,7 +37,7 @@ export function useCart(initialCart?: Cart) {
   }, [communes.data, form]);
   const [createdOrderCode, setCreatedOrderCode] = useState<string | null>(null);
   const reload = useCallback(async () => {
-    if (initialCart) return;
+    if (initialCart || completed.current) return;
     setLoading(true);
     setError("");
     try {
