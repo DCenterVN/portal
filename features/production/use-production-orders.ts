@@ -1,19 +1,31 @@
 "use client";
 
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { useLoadedList } from "@/hooks/use-loaded-list";
 import { useAccess } from "@/lib/access-boundary";
 import { toast } from "@/components/ui/toast";
 import { type ProductionOrder, getOrders, acceptOrder, allocateOrderLots, startOrder, completeOrder } from "@/lib/api/production";
+
+const completionSchema = z.object({
+  actualQuantity: z.string().trim().min(1, "Nhập sản lượng thực tế.").pipe(
+    z.coerce.number().int("Nhập số nguyên từ 1 trở lên.").min(1, "Nhập số nguyên từ 1 trở lên.")
+  ),
+});
 
 type Outcome = { title: string; description: string };
 
 export function useProductionOrders(initialOrders?: ProductionOrder[]) {
   const { items: orders, setItems: setOrders, loading: listLoading, error: listError, reload } = useLoadedList(initialOrders, getOrders);
   const [loadingId, setLoadingId] = useState<string | null>(null);
-  const { can, scope } = useAccess();
+  const [completionOrder, setCompletionOrder] = useState<ProductionOrder | null>(null);
+  const completionForm = useForm<z.input<typeof completionSchema>, unknown, z.output<typeof completionSchema>>({
+    resolver: zodResolver(completionSchema), defaultValues: { actualQuantity: "" },
+  });
+  const { can } = useAccess();
   const canUpdate = can("production:order:update");
-  const startRole = scope?.roles.includes("VT-10") ? "VT-10" : "VT-11";
 
   const run = async (orderId: string, action: () => Promise<ProductionOrder>, success: (order: ProductionOrder) => Outcome, failure: Outcome) => {
     setLoadingId(orderId);
@@ -22,8 +34,10 @@ export function useProductionOrders(initialOrders?: ProductionOrder[]) {
       setOrders((current) => current.map((o) => (o.id === orderId ? updated : o)));
       const { title, description } = success(updated);
       toast.success(title, { description });
+      return true;
     } catch (err: unknown) {
       toast.error(failure.title, { description: err instanceof Error ? err.message : failure.description });
+      return false;
     } finally {
       setLoadingId(null);
     }
@@ -35,14 +49,26 @@ export function useProductionOrders(initialOrders?: ProductionOrder[]) {
   const handleAllocate = (orderId: string) => run(orderId, () => allocateOrderLots(orderId),
     (o) => ({ title: "Đã phân bổ FEFO nguyên liệu kho", description: `Lệnh ${o.order_code} chuyển sang ALLOCATED` }),
     { title: "Lỗi phân bổ kho", description: "Không thể phân bổ kho" });
-  const handleStart = (orderId: string) => run(orderId, () => startOrder(orderId, startRole),
-    (o) => ({ title: "Bắt đầu sơ chế & chế biến (VT-10 / VT-11)", description: `Đã trừ tồn kho nguyên liệu, lệnh ${o.order_code} chuyển sang IN_PROGRESS` }),
+  const handleStart = (orderId: string) => run(orderId, () => startOrder(orderId, "cooking"),
+    (o) => ({ title: "Đã bắt đầu nấu", description: `Đã trừ tồn kho nguyên liệu, lệnh ${o.order_code} chuyển sang IN_PROGRESS` }),
     { title: "Lỗi bắt đầu chế biến", description: "Không thể bắt đầu chế biến" });
-  const handleComplete = (orderId: string, plannedQty: number) => run(orderId, () => completeOrder(orderId, plannedQty, [], "VT-12"),
-    () => ({ title: "Đóng gói & Cấp đông hoàn tất (VT-12)", description: "Đã tạo lô thành phẩm QUARANTINED, chuyển sang chờ QC (VT-13)" }),
+  const handleComplete = (orderId: string, actualQuantity: number) => run(orderId, () => completeOrder(orderId, actualQuantity, [], "VT-12"),
+    () => ({ title: "Đóng gói hoàn tất", description: "Đã tạo lô thành phẩm QUARANTINED, chuyển sang chờ QC (VT-13)" }),
     { title: "Lỗi hoàn tất lệnh", description: "Không thể hoàn tất lệnh" });
 
-  // Visual emphasis only: retain every existing permission-gated row action.
+  const openCompletion = (order: ProductionOrder) => {
+    if (!canUpdate) return;
+    completionForm.reset({ actualQuantity: "" });
+    setCompletionOrder(order);
+  };
+  const changeCompletionOpen = (open: boolean) => {
+    if (!open && !completionForm.formState.isSubmitting) setCompletionOrder(null);
+  };
+  const submitCompletion = completionForm.handleSubmit(async ({ actualQuantity }) => {
+    if (!completionOrder || !canUpdate) return;
+    if (await handleComplete(completionOrder.id, actualQuantity)) setCompletionOrder(null);
+  });
+
   const primaryOrderId = orders.find((order) =>
     (order.status === "HANDED_OFF" && canUpdate) ||
     (order.status === "ACCEPTED" && canUpdate) ||
@@ -50,5 +76,5 @@ export function useProductionOrders(initialOrders?: ProductionOrder[]) {
     (order.status === "IN_PROGRESS" && canUpdate)
   )?.id;
 
-  return { orders, listLoading, listError, reload, loadingId, canUpdate, primaryOrderId, handleAccept, handleAllocate, handleStart, handleComplete };
+  return { orders, listLoading, listError, reload, loadingId, canUpdate, primaryOrderId, completionOrder, completionForm, openCompletion, changeCompletionOpen, submitCompletion, handleAccept, handleAllocate, handleStart, handleComplete };
 }

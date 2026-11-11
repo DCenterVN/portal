@@ -1,6 +1,9 @@
 "use client";
 
 import { ErrorState } from "@/components/patterns/empty-state";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Field, FieldLabel, FieldError } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/patterns/status-badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -22,7 +25,9 @@ interface OrdersViewProps {
 }
 
 export function OrdersView({ initialOrders }: OrdersViewProps) {
-  const { orders, listLoading, listError, reload, loadingId, canUpdate, primaryOrderId, handleAccept, handleAllocate, handleStart, handleComplete } = useProductionOrders(initialOrders);
+  const { orders, listLoading, listError, reload, loadingId, canUpdate, primaryOrderId, handleAccept, handleAllocate, handleStart, completionOrder, completionForm, openCompletion, changeCompletionOpen, submitCompletion } = useProductionOrders(initialOrders);
+
+  const { register, formState: { errors, isSubmitting } } = completionForm;
 
   return (
     <PageShell>
@@ -78,7 +83,7 @@ export function OrdersView({ initialOrders }: OrdersViewProps) {
                           disabled={loadingId === o.id}
                           onClick={() => handleAccept(o.id)}
                         >
-                          Tiếp nhận (VT-09)
+                          Tiếp nhận
                         </Button>
                       )}
                       {o.status === "ACCEPTED" && canUpdate && (
@@ -98,7 +103,7 @@ export function OrdersView({ initialOrders }: OrdersViewProps) {
                           disabled={loadingId === o.id}
                           onClick={() => handleStart(o.id)}
                         >
-                          Bắt đầu nấu (VT-10/11)
+                          Bắt đầu nấu
                         </Button>
                       )}
                       {o.status === "IN_PROGRESS" && canUpdate && (
@@ -106,9 +111,9 @@ export function OrdersView({ initialOrders }: OrdersViewProps) {
                           size="sm"
                           variant={o.id === primaryOrderId ? "default" : "outline"}
                           disabled={loadingId === o.id}
-                          onClick={() => handleComplete(o.id, o.planned_quantity)}
+                          onClick={() => openCompletion(o)}
                         >
-                          Đóng gói & Cấp đông (VT-12)
+                          Đóng gói
                         </Button>
                       )}
                       {o.status === "COMPLETED" && (
@@ -125,6 +130,25 @@ export function OrdersView({ initialOrders }: OrdersViewProps) {
           </Table>
         </CardContent>
       </Card>}
+      <Dialog open={completionOrder !== null} onOpenChange={changeCompletionOpen}>
+        <DialogContent showCloseButton={!isSubmitting}>
+          <DialogHeader>
+            <DialogTitle>Đóng gói</DialogTitle>
+            <DialogDescription>Lệnh {completionOrder?.order_code}. Kế hoạch: {completionOrder?.planned_quantity} hộp.</DialogDescription>
+          </DialogHeader>
+          <form onSubmit={submitCompletion} noValidate className="space-y-4">
+            <Field data-invalid={!!errors.actualQuantity}>
+              <FieldLabel htmlFor="actual-output-quantity">Sản lượng thực tế (hộp)</FieldLabel>
+              <Input id="actual-output-quantity" type="number" inputMode="numeric" min={1} step={1} disabled={isSubmitting} aria-invalid={!!errors.actualQuantity} aria-describedby="actual-output-error" {...register("actualQuantity")} />
+              <FieldError id="actual-output-error">{errors.actualQuantity?.message}</FieldError>
+            </Field>
+            <DialogFooter>
+              <Button type="button" variant="outline" disabled={isSubmitting} onClick={() => changeCompletionOpen(false)}>Huỷ</Button>
+              <Button type="submit" disabled={isSubmitting}>{isSubmitting ? "Đang đóng gói…" : "Xác nhận đóng gói"}</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </PageShell>
   );
 }

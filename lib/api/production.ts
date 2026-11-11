@@ -220,11 +220,11 @@ export async function allocateOrderLots(orderId: string): Promise<ProductionOrde
   return responseData<ProductionOrder>(res);
 }
 
-export async function startOrder(orderId: string, roleCode: string = "VT-10"): Promise<ProductionOrder> {
+export async function startOrder(orderId: string, stage: "preparation" | "cooking" = "cooking"): Promise<ProductionOrder> {
   const res = await apiFetch(`/api/production/orders/${encodeURIComponent(orderId)}/start`, {
     method: "POST",
     headers: mutationHeaders(),
-    body: JSON.stringify({ role_code: roleCode }),
+    body: JSON.stringify({ stage }),
   });
   if (!res.ok) throw new Error(await errorMessage(res, "Không thể bắt đầu chế biến"));
   return responseData<ProductionOrder>(res);

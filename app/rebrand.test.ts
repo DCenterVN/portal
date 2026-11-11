@@ -553,10 +553,10 @@ describe("S6 rendered inventory, permission and production state roles", () => {
     for (const status of productionFixtures.map((order) => order.status)) expect(html).toContain(status);
     expect(html).toContain("QC Đạt — Sẵn sàng lên kệ");
     expect(html).toContain("Chờ QC nghiệm thu (VT-13)");
-    expect(html.includes("Tiếp nhận (VT-09)")).toBe(authorized);
+    expect(html.includes(">Tiếp nhận</button>")).toBe(authorized);
     expect((html.match(/<button\b[\s\S]*?<\/button>/g) ?? []).some((button) => button.includes("Phân bổ FEFO"))).toBe(authorized);
-    expect(html.includes("Bắt đầu nấu (VT-10/11)")).toBe(authorized);
-    expect(html.includes("Đóng gói &amp; Cấp đông (VT-12)")).toBe(authorized);
+    expect(html.includes(">Bắt đầu nấu</button>")).toBe(authorized);
+    expect(html.includes(">Đóng gói</button>")).toBe(authorized);
   });
 
   it("keeps production empty and busy branches", () => {
