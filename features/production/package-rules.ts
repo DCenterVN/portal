@@ -1,5 +1,6 @@
 import { fold } from "@/components/patterns/entity-picker";
-import type { CreatePackageRequest, RawLabelsView } from "@/lib/api/sales";
+import type { RawLabelsView } from "@/lib/api/sales";
+import type { CreatePackageRequest } from "@/lib/api/sales-pack";
 import type { RecipeComponent } from "@/lib/api/production";
 
 export const allergens = ["GLUTEN", "CRUSTACEANS", "EGGS", "FISH", "PEANUTS", "SOYBEANS", "MILK", "TREE_NUTS", "CELERY", "MUSTARD", "SESAME", "SULPHITES", "LUPIN", "MOLLUSCS"] satisfies RawLabelsView["allergen_summary"]["contains"];

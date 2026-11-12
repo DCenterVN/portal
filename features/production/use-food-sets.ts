@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useAccess } from "@/lib/access-boundary";
 import { toast } from "@/components/ui/toast";
-import { createFoodSet, getFoodSet, listFoodSets, updateFoodSet, retireFoodSet, getDraftProducts, type DraftProduct, type FoodSet, type FoodPackage, type SetSlot } from "@/lib/api/sales";
+import { getDraftProducts, type DraftProduct } from "@/lib/api/sales";
+import { createFoodSet, getFoodSet, listFoodSets, updateFoodSet, retireFoodSet, type FoodSet, type FoodPackage, type SetSlot } from "@/lib/api/sales-pack";
 import { evaluateFoodSet, type EvaluatedFoodSet, type SlotSelection } from "@/lib/api/production";
 import { isStale, loadPackOptions, packMessage } from "./pack-shared";
 import { initialSetMetadata, isLastKeptSpice, normalizeFilterTag, parseTags, slotCountMessage, tagError as tagRule, validSlotSet } from "./food-set-rules";

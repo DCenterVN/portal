@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { SetSlot } from "@/lib/api/sales";
+import type { SetSlot } from "@/lib/api/sales-pack";
 
 export const variantLabel = (value: string) => /^VAR-[0-9a-f]{8}-/i.test(value) ? "—" : value;
 export const positiveQuantity = (s: string) => /^\d+(\.\d{1,3})?$/.test(s) && /[1-9]/.test(s);

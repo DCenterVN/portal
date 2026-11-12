@@ -1,4 +1,4 @@
-import { listPackages, type FoodPackage, type FoodSlot } from "@/lib/api/sales";
+import { listPackages, type FoodPackage, type FoodSlot } from "@/lib/api/sales-pack";
 
 export const FOOD_SLOTS: { id: FoodSlot; name: string }[] = [
   { id: "TINH_BOT", name: "Tinh bột" }, { id: "DAM", name: "Đạm" }, { id: "RAU", name: "Rau" },

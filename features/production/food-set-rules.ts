@@ -1,4 +1,4 @@
-import type { CreateFoodSetRequest, FoodSlot, SetSlot } from "@/lib/api/sales";
+import type { CreateFoodSetRequest, FoodSlot, SetSlot } from "@/lib/api/sales-pack";
 
 export const initialSetMetadata: CreateFoodSetRequest = { product_ref: "", code: "", name: "", variant_label: "2 người", net_weight_g: 100, uom_code: "EA", temperature_regime: "CHILLED", tags: [] };
 export const normalizeFilterTag = (value: string) => value.trim().replace(/^#+/, "").trim().toLowerCase();

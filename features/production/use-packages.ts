@@ -3,7 +3,8 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useAccess } from "@/lib/access-boundary";
 import { toast } from "@/components/ui/toast";
-import { createPackage, getPackage, listPackages, updatePackage, retirePackage, getDraftProducts, getRawLabels, updateRawLabels, type FoodPackage, type DraftProduct, type RawLabelsView, type Material } from "@/lib/api/sales";
+import { getDraftProducts, getRawLabels, updateRawLabels, type DraftProduct, type RawLabelsView, type Material } from "@/lib/api/sales";
+import { createPackage, getPackage, listPackages, updatePackage, retirePackage, type FoodPackage } from "@/lib/api/sales-pack";
 import { listPackageRecipes, getPackageRecipe, createPackageRecipe, updatePackageRecipe, retirePackageRecipe, type PackageRecipe, type RecipeHistory, type RecipeComponent, type PrepStep } from "@/lib/api/production";
 import { isStale, packMessage } from "./pack-shared";
 import { initialPackageMetadata, packageCode, positive, unitsFor, yieldValid, type ComponentDraft } from "./package-rules";

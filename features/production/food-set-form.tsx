@@ -5,7 +5,7 @@ import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
 import { Card, CardContent } from "@/components/ui/card";
 import { EntityPicker } from "@/components/patterns/entity-picker";
 import { InlineAlert } from "@/components/patterns/inline-alert";
-import type { CreateFoodSetRequest } from "@/lib/api/sales";
+import type { CreateFoodSetRequest } from "@/lib/api/sales-pack";
 import { FOOD_SLOTS, slotName } from "./pack-shared";
 import { hasKeptSpice } from "./food-set-rules";
 import type { FoodSetsState } from "./use-food-sets";
