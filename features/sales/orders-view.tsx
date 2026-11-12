@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { StatusBadge, statusTone } from "@/components/patterns/status-badge";
+import { TablePager } from "@/components/patterns/table-pager";
 import { Button } from "@/components/ui/button";
 import { formatVND } from "@/lib/format";
 import { formatDate } from "@/lib/format-date";
@@ -57,6 +58,7 @@ function OrdersContent({ initialOrders }: { initialOrders?: StaffOrder[] }) {
           <TableCell><Status status={item.status} /></TableCell><TableCell>{formatDate(item.created_at)}</TableCell>
         </TableRow>)}</TableBody>
       </Table>}
+    <TablePager label="Phân trang đơn hàng" busy={list.loading} hasPrevious={list.hasPrevious} onPrevious={list.previous} hasNext={list.hasNext} onNext={list.next} />
     <Sheet open={!!order && !pending} onOpenChange={open => { if (!open && !busy) setSelected(null); }}>
       <SheetContent className="overflow-y-auto">
         <SheetHeader><SheetTitle>Đơn {order?.order_code || "đã chọn"}</SheetTitle><SheetDescription>Người nhận, món đã đặt và tiến độ giao hàng.</SheetDescription></SheetHeader>

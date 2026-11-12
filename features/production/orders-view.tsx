@@ -16,6 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { TablePager } from "@/components/patterns/table-pager";
 import { PageShell } from "@/components/ui/page";
 import { PageHeading } from "@/components/patterns/page-heading";
 import type { ProductionOrder } from "@/lib/api/production";
@@ -26,7 +27,7 @@ interface OrdersViewProps {
 }
 
 export function OrdersView({ initialOrders }: OrdersViewProps) {
-  const { orders, listLoading, listError, reload, loadingId, canUpdate, primaryOrderId, handleAccept, handleAllocate, handleStart, completionOrder, completionForm, openCompletion, changeCompletionOpen, submitCompletion } = useProductionOrders(initialOrders);
+  const { list, orders, listLoading, listError, reload, loadingId, canUpdate, primaryOrderId, handleAccept, handleAllocate, handleStart, completionOrder, completionForm, openCompletion, changeCompletionOpen, submitCompletion } = useProductionOrders(initialOrders);
 
   const { register, formState: { errors, isSubmitting } } = completionForm;
 
@@ -120,6 +121,7 @@ export function OrdersView({ initialOrders }: OrdersViewProps) {
           </Table>
         </CardContent>
       </Card>}
+      <TablePager label="Phân trang lệnh sản xuất" busy={listLoading} hasPrevious={list.hasPrevious} onPrevious={list.previous} hasNext={list.hasNext} onNext={list.next} />
       <Dialog open={completionOrder !== null} onOpenChange={changeCompletionOpen}>
         <DialogContent showCloseButton={!isSubmitting}>
           <DialogHeader>

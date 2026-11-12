@@ -2,10 +2,10 @@
 
 import { toISODate } from "@/lib/format-date";
 import { FormEvent, useEffect, useState } from "react";
-import { useLoadedList } from "@/hooks/use-loaded-list";
+import { usePagedList } from "@/hooks/use-paged-list";
 import { useAccess } from "@/lib/access-boundary";
 import { toast } from "@/components/ui/toast";
-import { approveTarget, createTarget, getTargets, type ProductionTarget } from "@/lib/api/production";
+import { approveTarget, createTarget, deleteTarget, getTargetsPage, updateTarget, type ProductionTarget } from "@/lib/api/production";
 import { fold } from "@/components/patterns/entity-picker";
 import { getDraftProducts, createDraftProduct, type DraftProduct, type DataResult } from "@/lib/api/sales";
 
@@ -15,8 +15,9 @@ const dateInput = (date: Date) => toISODate(date);
 const messageOf = (error: unknown) => error instanceof Error ? error.message : "Lỗi không xác định";
 
 export function useTargets(initialTargets?: ProductionTarget[], initialShowCreate = false) {
-  const { items: targets, setItems: setTargets, loading: listLoading, error: listError } = useLoadedList(initialTargets, getTargets);
   const { can, scope } = useAccess();
+  const list = usePagedList(cursor => getTargetsPage({ cursor }), `${scope?.orgId}:${scope?.branchId}`, initialTargets);
+  const { items: targets, setItems: setTargets, loading: listLoading, error: listError } = list;
   const branchRef = scope?.branchId ?? "";
   const branchName = scope?.branchName ?? "Chi nhánh hiện tại";
   const [showCreate, setShowCreate] = useState(initialShowCreate);
@@ -40,6 +41,8 @@ export function useTargets(initialTargets?: ProductionTarget[], initialShowCreat
   const [productName, setProductName] = useState("");
   const productSlug = fold(productName).trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
   const [productError, setProductError] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState<ProductionTarget | null>(null);
   const availableProducts = products?.data;
   const addProduct = async () => {
     setLoading(true); setProductError("");
@@ -58,23 +61,49 @@ export function useTargets(initialTargets?: ProductionTarget[], initialShowCreat
   const validLines = lines.every((line) => line.product_ref.trim() && /^\d+$/.test(line.target_quantity) && BigInt(line.target_quantity) > 0n && line.uom.trim());
   const updateLine = (index: number, patch: Partial<TargetLine>) => setLines((current) => current.map((line, lineIndex) => lineIndex === index ? { ...line, ...patch } : line));
 
+  const resetForm = () => {
+    setEditingId(null); setShowCreate(false); setTitle("");
+    setLines([{ product_ref: "", target_quantity: "4", uom: "EA" }]);
+  };
+  const startEdit = (target: ProductionTarget) => {
+    setEditingId(target.id); setTitle(target.title);
+    setPeriodStart(toISODate(new Date(target.period_start))); setPeriodEnd(toISODate(new Date(target.period_end)));
+    setLines(target.lines.map(line => ({ ...line, target_quantity: String(line.target_quantity) })));
+    setShowCreate(true);
+  };
+  const periodRange = () => ({ period_start: new Date(`${periodStart}T00:00:00`).toISOString(), period_end: new Date(`${periodEnd}T23:59:59`).toISOString() });
+
   const handleCreate = async (event: FormEvent) => {
     event.preventDefault();
     if (!canCreate || !branchRef || !validLines) return;
     setLoading(true);
     try {
-      const created = await createTarget({
-        title: title.trim(), branch_ref: branchRef,
-        period_start: new Date(`${periodStart}T00:00:00`).toISOString(),
-        period_end: new Date(`${periodEnd}T23:59:59`).toISOString(), lines,
-      });
-      setTargets((current) => [created, ...current]);
-      setShowCreate(false);
-      setTitle("");
-      setLines([{ product_ref: "", target_quantity: "4", uom: "EA" }]);
-      toast.success("Đã tạo chỉ tiêu APPROVED", { description: `Mã ${created.target_code}` });
+      if (editingId) {
+        const updated = await updateTarget(editingId, { title: title.trim(), ...periodRange(), lines });
+        setTargets(current => current.map(target => target.id === editingId ? updated : target));
+        toast.success("Đã sửa chỉ tiêu", { description: `Mã ${updated.target_code}` });
+      } else {
+        const created = await createTarget({ title: title.trim(), branch_ref: branchRef, ...periodRange(), lines });
+        if (list.hasPrevious) list.reload(); else setTargets(current => [created, ...current]);
+        toast.success("Đã tạo chỉ tiêu APPROVED", { description: `Mã ${created.target_code}` });
+      }
+      resetForm();
     } catch (error) {
-      toast.error("Lỗi tạo chỉ tiêu", { description: messageOf(error) });
+      toast.error(editingId ? "Lỗi sửa chỉ tiêu" : "Lỗi tạo chỉ tiêu", { description: messageOf(error) });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deleting) return;
+    setLoading(true);
+    try {
+      await deleteTarget(deleting.id);
+      toast.success("Đã xoá chỉ tiêu", { description: `Mã ${deleting.target_code}` });
+      setDeleting(null); list.reload();
+    } catch (error) {
+      toast.error("Lỗi xoá chỉ tiêu", { description: messageOf(error) });
     } finally {
       setLoading(false);
     }
@@ -90,5 +119,5 @@ export function useTargets(initialTargets?: ProductionTarget[], initialShowCreat
     }
   };
 
-  return { targets, listLoading, listError, can, branchName, branchRef, showCreate, setShowCreate, title, setTitle, periodStart, setPeriodStart, periodEnd, setPeriodEnd, lines, setLines, loading, products, productName, setProductName, productSlug, productError, availableProducts, addProduct, reloadProducts, canCreate, canApprove, primaryTargetId, validLines, updateLine, handleCreate, handleApprove };
+  return { list, targets, editingId, startEdit, resetForm, deleting, setDeleting, handleDelete, listLoading, listError, can, branchName, branchRef, showCreate, setShowCreate, title, setTitle, periodStart, setPeriodStart, periodEnd, setPeriodEnd, lines, setLines, loading, products, productName, setProductName, productSlug, productError, availableProducts, addProduct, reloadProducts, canCreate, canApprove, primaryTargetId, validLines, updateLine, handleCreate, handleApprove };
 }

@@ -26,7 +26,7 @@ vi.mock("react-hook-form", async original => {
     return { ...hooks.form, formState: { errors: {}, isSubmitting: false } };
   } };
 });
-vi.mock("@/hooks/use-loaded-list", () => ({ useLoadedList: (orders: ProductionOrder[]) => ({ items: orders, setItems: vi.fn(), loading: false, error: "", reload: vi.fn() }) }));
+vi.mock("@/hooks/use-paged-list", () => ({ usePagedList: (_load: unknown, _key: string, orders: ProductionOrder[]) => ({ items: orders, setItems: vi.fn(), loading: false, error: "", reload: vi.fn(), hasNext: false, hasPrevious: false, next: vi.fn(), previous: vi.fn() }) }));
 vi.mock("@/lib/access-boundary", () => ({ useAccess: () => ({ can: () => hooks.allowed, scope: { roles: ["VT-10"] } }) }));
 vi.mock("@/components/ui/toast", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 

@@ -1,14 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { useLoadedList } from "@/hooks/use-loaded-list";
+import { usePagedList } from "@/hooks/use-paged-list";
+import { useAccess } from "@/lib/access-boundary";
 import { toast } from "@/components/ui/toast";
-import { type ProductionOrder, decideQC, getOrders } from "@/lib/api/production";
+import { type ProductionOrder, decideQC, getOrdersPage } from "@/lib/api/production";
 
-const loadQcOrders = () => getOrders().then((all) => all.filter((o) => o.status === "COMPLETED" || o.status === "QC_PASSED" || o.status === "QC_FAILED"));
+export const qcStatuses = ["COMPLETED", "QC_PASSED", "QC_FAILED"];
 
 export function useQcDecision(completedOrders?: ProductionOrder[]) {
-  const { items: orders, setItems: setOrders, loading: listLoading, error: listError, reload } = useLoadedList(completedOrders, loadQcOrders);
+  const { scope } = useAccess();
+  const list = usePagedList((cursor, status) => getOrdersPage({ cursor, status }), `${scope?.orgId}:${scope?.branchId}`, completedOrders, qcStatuses[0]);
+  const { filter: status, setFilter: setStatus, items: orders, setItems: setOrders, loading: listLoading, error: listError, reload } = list;
   const [selectedOrder, setSelectedOrder] = useState<ProductionOrder | null>(null);
   const [temperature, setTemperature] = useState(-18.5);
   const [packagePassed, setPackagePassed] = useState(true);
@@ -35,5 +38,5 @@ export function useQcDecision(completedOrders?: ProductionOrder[]) {
       setLoading(false);
     }
   };
-  return { orders, listLoading, listError, reload, selectedOrder, setSelectedOrder, temperature, setTemperature, packagePassed, setPackagePassed, sensoryNotes, setSensoryNotes, loading, handleDecision };
+  return { list, status, setStatus, orders, listLoading, listError, reload, selectedOrder, setSelectedOrder, temperature, setTemperature, packagePassed, setPackagePassed, sensoryNotes, setSensoryNotes, loading, handleDecision };
 }

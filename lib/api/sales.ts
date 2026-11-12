@@ -4,7 +4,7 @@ import { z } from "zod";
 import { orderDetailFields } from "@/lib/order-detail";
 import { decodePlatform } from "@/lib/api/platform-contract";
 import { FetchError, apiFetch } from "@/lib/fetcher";
-import { allPages } from "./all-pages";
+import { allPages, type CursorPage } from "./all-pages";
 import { RawAllergensSchema } from "./sales-materials";
 export { getMaterials, createMaterial, getRawLabels, updateRawLabels } from "./sales-materials";
 export type { Material, MaterialPage, CreateMaterialInput, ExistingMaterial, RawAllergens, RawLabelsView, UpdateRawLabelsRequest } from "./sales-materials";
@@ -244,18 +244,22 @@ const orderDisplaySchema = z.object({
   subtotal_vnd: z.number(), total_vnd: z.number(), branch_ref: z.string().optional(), created_at: z.string(),
 });
 
-export async function getOrderDisplay(): Promise<z.infer<typeof orderDisplaySchema>[]>;
-export async function getOrderDisplay(id: string): Promise<z.infer<typeof orderDisplaySchema>>;
-export async function getOrderDisplay(id?: string) {
-  const path = id ? `/api/sales/orders/${encodeURIComponent(id)}` : "/api/sales/orders";
-  const query = new URLSearchParams(id ? {} : { page_size: "50" });
+export async function getOrderDisplay(id: string) {
   const branch = getCartBranch();
   if (!branch) throw new Error("Chọn chi nhánh mua hàng để xem đơn của bạn");
-  query.set("branch_id", branch);
-  const res = await apiFetch(`${path}?${query}`);
+  const res = await apiFetch(`/api/sales/orders/${encodeURIComponent(id)}?${new URLSearchParams({ branch_id: branch })}`);
   if (!res.ok) throw new Error("Không thể tải đơn hàng. Thử tải lại.");
-  const body: unknown = await res.json();
-  return id ? decodePlatform(body, orderDisplaySchema) : decodePlatform(body, z.object({ items: z.array(orderDisplaySchema).nullish() })).items ?? [];
+  return decodePlatform(await res.json(), orderDisplaySchema);
+}
+export async function getOrdersPage(cursor = ""): Promise<CursorPage<z.infer<typeof orderDisplaySchema>>> {
+  const branch = getCartBranch();
+  if (!branch) throw new Error("Chọn chi nhánh mua hàng để xem đơn của bạn");
+  const query = new URLSearchParams({ branch_id: branch });
+  if (cursor) query.set("cursor", cursor);
+  const res = await apiFetch(`/api/sales/orders?${query}`);
+  if (!res.ok) throw new Error("Không thể tải đơn hàng. Thử tải lại.");
+  const page = decodePlatform(await res.json(), z.object({ items: z.array(orderDisplaySchema).nullish(), next_cursor: z.string().nullish() }));
+  return { items: page.items ?? [], next_cursor: page.next_cursor };
 }
 
 export async function cancelOrder(id: string, reason: string): Promise<Order> {

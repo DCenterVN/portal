@@ -1,8 +1,8 @@
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, expect, it, vi } from "vitest";
-import { getStaffOrder, getStaffOrders, mutateStaffOrder } from "@/lib/api/staff-orders";
-import { getOrderDisplay } from "@/lib/api/sales";
+import { getStaffOrder, getStaffOrdersPage, mutateStaffOrder } from "@/lib/api/staff-orders";
+import { getOrderDisplay, getOrdersPage } from "@/lib/api/sales";
 import { formatVND } from "@/lib/format";
 import { SalesOrdersView } from "./orders-view";
 import { OrderDetailView } from "@/features/products/order-detail-view";
@@ -40,12 +40,12 @@ it.each(["COD", "BANK_TRANSFER", "CASH"])("both clients retain %s payment, lines
   const { cart_ref, subtotal_vnd, ...staffFields } = fixture.order;
   const order = { ...staffFields, cart_ref, subtotal_vnd, payment_method };
   const staffOrder = { ...staffFields, payment_method };
-  const fetch = vi.fn().mockImplementation(async (url: string) => envelope(String(url).includes("page_size") ? { items: [order] } : order));
+  const fetch = vi.fn().mockImplementation(async (url: string) => envelope(String(url).includes("/orders?") ? { items: [order] } : order));
   vi.stubGlobal("fetch", fetch);
   expect(await getStaffOrder("order")).toEqual(staffOrder);
   expect(await getOrderDisplay("order")).toEqual(expect.objectContaining({ payment_method, payment_status: "PENDING_COD", items: order.items, state_history: order.state_history }));
-  expect((await getStaffOrders())[0]).toEqual(staffOrder);
-  expect((await getOrderDisplay())[0]).toEqual(expect.objectContaining({ payment_method, payment_status: "PENDING_COD" }));
+  expect((await getStaffOrdersPage()).items[0]).toEqual(staffOrder);
+  expect((await getOrdersPage()).items[0]).toEqual(expect.objectContaining({ payment_method, payment_status: "PENDING_COD" }));
   expect(await mutateStaffOrder("order", "ship", { driver_ref: "viewer" }, "key")).toEqual(staffOrder);
   const legacy = { id: "old", cart_ref: "cart", status: "AWAITING_PAYMENT", subtotal_vnd: 100, total_vnd: 100, created_at: "2026-11-11" };
   fetch.mockImplementation(async () => envelope(legacy));

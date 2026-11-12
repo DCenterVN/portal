@@ -19,10 +19,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { TablePager } from "@/components/patterns/table-pager";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { PageShell } from "@/components/ui/page";
 import { PageHeading } from "@/components/patterns/page-heading";
 import type { ProductionOrder } from "@/lib/api/production";
-import { useQcDecision } from "./use-qc-decision";
+import { qcStatuses, useQcDecision } from "./use-qc-decision";
 
 interface QCViewProps {
   completedOrders?: ProductionOrder[];
@@ -30,7 +32,7 @@ interface QCViewProps {
 
 export function QCView({ completedOrders }: QCViewProps) {
   const formId = useId();
-  const { orders, listLoading, listError, reload, selectedOrder, setSelectedOrder, temperature, setTemperature, packagePassed, setPackagePassed, sensoryNotes, setSensoryNotes, loading, handleDecision } = useQcDecision(completedOrders);
+  const { list, status, setStatus, orders, listLoading, listError, reload, selectedOrder, setSelectedOrder, temperature, setTemperature, packagePassed, setPackagePassed, sensoryNotes, setSensoryNotes, loading, handleDecision } = useQcDecision(completedOrders);
 
   return (
     <PageShell>
@@ -92,6 +94,10 @@ export function QCView({ completedOrders }: QCViewProps) {
         </Card>
       )}
 
+      <NativeSelect aria-label="Lọc trạng thái kiểm định" className="mb-4 w-full sm:w-56" value={status} onChange={(event) => { setSelectedOrder(null); setStatus(event.target.value); }}>
+        {qcStatuses.map((value) => <NativeSelectOption key={value} value={value}>{productionOrderStatuses[value]}</NativeSelectOption>)}
+      </NativeSelect>
+
       {listError ? <ErrorState title={listError} onRetry={reload} className="mb-4" /> : <Card>
         <CardContent className="p-0">
           <Table>
@@ -135,6 +141,7 @@ export function QCView({ completedOrders }: QCViewProps) {
           </Table>
         </CardContent>
       </Card>}
+      <TablePager label="Phân trang lô thành phẩm" busy={listLoading} hasPrevious={list.hasPrevious} onPrevious={list.previous} hasNext={list.hasNext} onNext={list.next} />
     </PageShell>
   );
 }

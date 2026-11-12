@@ -2,7 +2,7 @@
 
 import { formatDate } from "@/lib/format-date";
 import Link from "next/link";
-import { Trash2 } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import { EmptyState, LoadingState } from "@/components/patterns/empty-state";
 import { StatusBadge } from "@/components/patterns/status-badge";
 import { InlineAlert } from "@/components/patterns/inline-alert";
@@ -10,6 +10,9 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { PageShell } from "@/components/ui/page";
 import { PageHeading } from "@/components/patterns/page-heading";
+import { RowActions } from "@/components/patterns/row-actions";
+import { ConfirmDialog } from "@/components/patterns/confirm-dialog";
+import { TablePager } from "@/components/patterns/table-pager";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { ProductionTarget } from "@/lib/api/production";
 import { Input } from "@/components/ui/input";
@@ -19,13 +22,13 @@ import { useTargets } from "./use-targets";
 import { Tip } from "@/components/patterns/tip";
 
 export function TargetsView({ initialTargets, initialShowCreate = false }: { initialTargets?: ProductionTarget[]; initialShowCreate?: boolean }) {
-  const { targets, listLoading, listError, can, branchName, branchRef, showCreate, setShowCreate, title, setTitle, periodStart, setPeriodStart, periodEnd, setPeriodEnd, lines, setLines, loading, products, productName, setProductName, productSlug, productError, availableProducts, addProduct, reloadProducts, canCreate, canApprove, primaryTargetId, validLines, updateLine, handleCreate, handleApprove } = useTargets(initialTargets, initialShowCreate);
+  const { list, targets, editingId, startEdit, resetForm, deleting, setDeleting, handleDelete, listLoading, listError, can, branchName, branchRef, showCreate, setShowCreate, title, setTitle, periodStart, setPeriodStart, periodEnd, setPeriodEnd, lines, setLines, loading, products, productName, setProductName, productSlug, productError, availableProducts, addProduct, reloadProducts, canCreate, canApprove, primaryTargetId, validLines, updateLine, handleCreate, handleApprove } = useTargets(initialTargets, initialShowCreate);
   return <PageShell>
     <PageHeading title="Chỉ tiêu sản xuất" description="Tạo chỉ tiêu đã duyệt cho set chuẩn bị nguyên liệu theo chi nhánh."
-      actions={canCreate ? <Button variant={showCreate ? "outline" : "default"} onClick={() => setShowCreate((value) => !value)}>Tạo chỉ tiêu</Button> : undefined} />
+      actions={canCreate ? <Button variant={showCreate ? "outline" : "default"} onClick={() => showCreate ? resetForm() : setShowCreate(true)}>Tạo chỉ tiêu</Button> : undefined} />
 
     {canCreate && showCreate && <Card className="mb-6"><CardContent className="pt-6"><form onSubmit={handleCreate} className="space-y-4">
-      {can("sales:product:create") && <fieldset className="space-y-2 rounded-lg border border-border p-4"><legend>Tạo sản phẩm nháp</legend>
+      {!editingId && can("sales:product:create") && <fieldset className="space-y-2 rounded-lg border border-border p-4"><legend>Tạo sản phẩm nháp</legend>
         <Field label="Tên sản phẩm" value={productName} onChange={setProductName} />
         <label>Slug sản phẩm<output aria-label="Slug sản phẩm" className="block">{productSlug || "Tự tạo từ tên sản phẩm"}</output></label>
         {productError && <InlineAlert>{productError}</InlineAlert>}
@@ -65,7 +68,7 @@ export function TargetsView({ initialTargets, initialShowCreate = false }: { ini
           <Tip label="Xóa dòng"><Button aria-label="Xóa dòng" className="mt-6" type="button" size="icon" variant="ghost" disabled={lines.length === 1} onClick={() => setLines((current) => current.filter((_, lineIndex) => lineIndex !== index))}><Trash2 className="h-4 w-4" /></Button></Tip>
         </div>)}
       </div>
-      <div className="flex gap-2"><Button type="submit" disabled={loading || !branchRef || !validLines || !title.trim() || periodEnd < periodStart}>Lưu chỉ tiêu</Button><Button type="button" variant="outline" onClick={() => setShowCreate(false)}>Hủy</Button></div>
+      <div className="flex gap-2"><Button type="submit" disabled={loading || !branchRef || !validLines || !title.trim() || periodEnd < periodStart}>Lưu chỉ tiêu</Button><Button type="button" variant="outline" onClick={resetForm}>Hủy</Button></div>
     </form></CardContent></Card>}
 
     {listError && <InlineAlert className="mb-4">{listError}</InlineAlert>}
@@ -76,10 +79,16 @@ export function TargetsView({ initialTargets, initialShowCreate = false }: { ini
         <TableCell><StatusBadge tone={target.status === "APPROVED" ? "success" : target.status === "REJECTED" ? "danger" : "neutral"}>{target.status}</StatusBadge></TableCell>
         <TableCell className="text-right"><div className="flex justify-end gap-2">
           {target.status === "DRAFT" && canApprove && <><Button size="sm" variant={target.id === primaryTargetId ? "default" : "outline"} onClick={() => handleApprove(target.id, "APPROVE")}>Duyệt</Button><Button size="sm" variant="outline" onClick={() => handleApprove(target.id, "REJECT")}>Từ chối</Button></>}
+          {target.status === "DRAFT" && canCreate && <RowActions label={target.target_code} actions={[
+            { label: "Sửa", icon: Pencil, onSelect: () => startEdit(target) },
+            { label: "Xoá", icon: Trash2, danger: true, onSelect: () => setDeleting(target) },
+          ]} />}
           {(target.status === "APPROVED" || target.status === "IN_PLANNING") && canCreate && <Link className={buttonVariants({ size: "sm", variant: target.id === primaryTargetId ? "default" : "outline" })} href={`/production/food-plans?target_id=${encodeURIComponent(target.id)}`}>Tạo set</Link>}
         </div></TableCell>
       </TableRow>)}
     </TableBody></Table></CardContent></Card>
+    <TablePager label="Phân trang chỉ tiêu" busy={listLoading} hasPrevious={list.hasPrevious} onPrevious={list.previous} hasNext={list.hasNext} onNext={list.next} />
+    <ConfirmDialog open={deleting !== null} onOpenChange={open => { if (!open) setDeleting(null); }} title={`Xoá chỉ tiêu ${deleting?.target_code ?? ""}?`} description="Chỉ tiêu nháp bị xoá hẳn và không khôi phục được." confirmLabel="Xoá chỉ tiêu" danger busy={loading} onConfirm={() => void handleDelete()} />
   </PageShell>;
 }
 

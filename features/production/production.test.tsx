@@ -154,6 +154,11 @@ vi.mock("react", async original => {
       if (!(index in fooddevHarness.slots)) fooddevHarness.slots[index] = typeof initial === "function" ? initial() : initial;
       return [fooddevHarness.slots[index], (next: unknown) => { fooddevHarness.stateWrites++; fooddevHarness.slots[index] = typeof next === "function" ? next(fooddevHarness.slots[index]) : next; }];
     },
+    useReducer: (reducer: (state: unknown, action: unknown) => unknown, initial: unknown) => {
+      const index = fooddevHarness.cursor++;
+      if (!(index in fooddevHarness.slots)) fooddevHarness.slots[index] = initial;
+      return [fooddevHarness.slots[index], (action: unknown) => { fooddevHarness.stateWrites++; fooddevHarness.slots[index] = reducer(fooddevHarness.slots[index], action); }];
+    },
     useRef: (initial: unknown) => {
       const index = fooddevHarness.cursor++;
       if (!(index in fooddevHarness.slots)) fooddevHarness.slots[index] = { current: initial };
@@ -391,6 +396,7 @@ describe("FOODDEV forms and warehouse", () => {
     api([]);
     render(TargetsView, { initialTargets: [target], initialShowCreate: true }); await effects();
     expect(renderToStaticMarkup(render(TargetsView, { initialTargets: [target], initialShowCreate: true }))).not.toMatch(/Tạo product|Lưu chỉ tiêu|>Tạo chỉ tiêu<\/button>/);
+    await effects();
     fooddevHarness.slots = [];
     render(FoodPlansView, { initialPlans: [plan], targetId: target.id }); await effects();
     expect(renderToStaticMarkup(render(FoodPlansView, { initialPlans: [plan], targetId: target.id }))).not.toMatch(/Tạo set|Sửa set|Lưu set|Publish BOM/);

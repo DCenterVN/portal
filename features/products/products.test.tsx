@@ -118,6 +118,18 @@ vi.mock("react", async (original) => {
       if (!(index in orderHarness.slots)) orderHarness.slots[index] = initial;
       return [orderHarness.slots[index], (next: unknown) => { orderHarness.slots[index] = typeof next === "function" ? next(orderHarness.slots[index]) : next; }];
     },
+    useRef(initial: unknown) {
+      if (!orderHarness.active) return actual.useRef(initial);
+      const index = orderHarness.cursor++;
+      if (!(index in orderHarness.slots)) orderHarness.slots[index] = { current: initial };
+      return orderHarness.slots[index];
+    },
+    useReducer(reducer: (state: unknown, action: unknown) => unknown, initial: unknown) {
+      if (!orderHarness.active) return actual.useReducer(reducer as never, initial as never);
+      const index = orderHarness.cursor++;
+      if (!(index in orderHarness.slots)) orderHarness.slots[index] = initial;
+      return [orderHarness.slots[index], (action: unknown) => { orderHarness.slots[index] = reducer(orderHarness.slots[index], action); }];
+    },
     useCallback: (callback: never, deps: never) => orderHarness.active ? callback : actual.useCallback(callback, deps),
     useMemo: (compute: () => unknown, deps: never) => orderHarness.active ? compute() : actual.useMemo(compute, deps),
     useEffect: (effect: () => unknown, deps: never) => { if (!orderHarness.active) return actual.useEffect(effect as never, deps); if (!orderHarness.mounted) orderHarness.effects.push(effect); },
@@ -141,7 +153,7 @@ it("orders_no_uuid", async () => {
       const order = { id: uuid, order_code: "DH-261021-00001", cart_ref: uuid, branch_ref: uuid, status, total_vnd: 120000, subtotal_vnd: 120000, created_at: createdAt };
       for (const component of [OrdersView, () => OrderDetailView({ id: uuid })]) {
         orderHarness.slots = []; orderHarness.cursor = 0; orderHarness.effects = []; orderHarness.mounted = false;
-        fetchMock.mockReset().mockImplementation(async (input) => Response.json({ code: 200, status: "success", message: "Success", data: String(input).includes("page_size") ? { items: [order] } : order }));
+        fetchMock.mockReset().mockImplementation(async (input) => Response.json({ code: 200, status: "success", message: "Success", data: /orders\?/.test(String(input)) ? { items: [order] } : order }));
         const view = () => { orderHarness.cursor = 0; return component(); };
         view(); orderHarness.mounted = true;
         orderHarness.effects.forEach((effect) => effect());
