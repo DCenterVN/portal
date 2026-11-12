@@ -1,5 +1,9 @@
 "use client";
 
+import { useState } from "react";
+import { EntityPicker } from "@/components/patterns/entity-picker";
+import { getCartBranch, setCartBranch } from "@/lib/api/sales";
+import { useStoreBranches } from "./store-branch-picker";
 import { formatDateTime } from "@/lib/format-date";
 import Link from "next/link";
 import { RefreshCw } from "lucide-react";
@@ -19,8 +23,19 @@ export const orderStatusLabels: Record<string, string> = {
   DELIVERED: "Đã giao", DELIVERY_FAILED: "Giao không thành công", COMPLETED: "Hoàn tất",
 };
 
+function BranchStep({ onPick }: { onPick: (id: string) => void }) {
+  const { data, error, mutate } = useStoreBranches();
+  return <PageShell className="space-y-6 py-8">
+    <PageHeading title="Đơn hàng của tôi" description="Chọn chi nhánh bạn đã mua hàng để xem đơn." />
+    <div className="max-w-sm"><EntityPicker label="Chi nhánh mua hàng" name="orders-branch" serializeValue={false} items={data} status={error ? "error" : data ? "ready" : "loading"} value={null} getId={branch => branch.id} getLabel={branch => branch.name} onRetry={() => void mutate()} onChange={id => { if (id) onPick(id); }} /></div>
+  </PageShell>;
+}
+
 export function OrdersView() {
-  const { list, orders, loading, error, load } = useOrders();
+  const branch = getCartBranch();
+  const { list, orders, loading, error, load } = useOrders(branch);
+  const [, refresh] = useState(0);
+  if (!branch) return <BranchStep onPick={id => { setCartBranch(id); refresh(count => count + 1); }} />;
 
   return <PageShell className="space-y-6 py-8 border-[var(--color-line)] bg-[var(--color-surface)] text-[var(--color-ink)]">
     <PageHeading title="Đơn hàng của tôi" description="Theo dõi các món bạn đã đặt và tiến độ giao hàng." actions={<Button variant="outline" onClick={() => void load()} disabled={loading}><RefreshCw className={loading ? "animate-spin" : ""} /> Làm mới</Button>} />

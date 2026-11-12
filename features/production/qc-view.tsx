@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { StatusBadge, statusTone } from "@/components/patterns/status-badge";
+import { uomLabel } from "./package-rules";
 import { productionOrderStatuses } from "./order-status";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -49,7 +50,7 @@ export function QCView({ completedOrders }: QCViewProps) {
         <Card className="mb-6">
           <CardContent className="pt-6">
             <h3 className="mb-4 text-lg font-semibold">
-              Nghiệm thu Lệnh: {selectedOrder.order_code} ({selectedOrder.planned_quantity} {selectedOrder.uom})
+              Nghiệm thu Lệnh: {selectedOrder.order_code} ({selectedOrder.planned_quantity} {uomLabel(selectedOrder.uom)})
             </h3>
             <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="grid gap-1.5">
@@ -120,7 +121,7 @@ export function QCView({ completedOrders }: QCViewProps) {
                 orders.map((o) => (
                   <TableRow key={o.id}>
                     <TableCell className="font-mono font-medium">{o.order_code}</TableCell>
-                    <TableCell>{o.actual_output_quantity > 0 ? o.actual_output_quantity : o.planned_quantity} {o.uom}</TableCell>
+                    <TableCell>{o.actual_output_quantity > 0 ? o.actual_output_quantity : o.planned_quantity} {uomLabel(o.uom)}</TableCell>
                     <TableCell>
                       <StatusBadge tone={statusTone(o.status)}>{productionOrderStatuses[o.status] ?? o.status}</StatusBadge>
                     </TableCell>
@@ -129,9 +130,6 @@ export function QCView({ completedOrders }: QCViewProps) {
                         <Button size="sm" variant={!selectedOrder && orders.find((order) => order.status === "COMPLETED")?.id === o.id ? "default" : "outline"} onClick={() => setSelectedOrder(o)}>
                           Tiến hành nghiệm thu
                         </Button>
-                      )}
-                      {o.status === "QC_PASSED" && (
-                        <span className="text-sm text-muted-foreground">Đã phê duyệt đạt chuẩn</span>
                       )}
                     </TableCell>
                   </TableRow>

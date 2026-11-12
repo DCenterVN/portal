@@ -3,7 +3,7 @@
 import { OrderDetails } from "@/components/order-details";
 import { PageShell } from "@/components/ui/page";
 import { PageHeading } from "@/components/patterns/page-heading";
-import { ErrorState, LoadingState } from "@/components/patterns/empty-state";
+import { EmptyState, ErrorState, LoadingState } from "@/components/patterns/empty-state";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
@@ -37,21 +37,19 @@ function OrdersContent({ initialOrders }: { initialOrders?: StaffOrder[] }) {
   const commune = communes.data?.find(item => item.code === order?.commune_code)?.name;
   return <PageShell>
     <PageHeading title="Đơn hàng" description="Xác nhận, đóng gói và theo dõi giao hàng của chi nhánh đang làm việc." />
-    <Select value={filter} onValueChange={setFilter}>
+    <div className="mb-4"><Select value={filter} onValueChange={setFilter}>
       <SelectTrigger aria-label="Lọc trạng thái"><SelectValue /></SelectTrigger>
       <SelectContent><SelectItem value="ALL">Tất cả trạng thái</SelectItem>
         {Object.entries(orderStatuses).map(([value, label]) => <SelectItem key={value} value={value}>{label}</SelectItem>)}
       </SelectContent>
-    </Select>
-    {list.error ? <ErrorState title={list.error} onRetry={list.reload} /> : list.loading ? <LoadingState title="Đang tải đơn hàng…" /> :
+    </Select></div>
+    {list.error ? <ErrorState title={list.error} onRetry={list.reload} /> : list.loading ? <LoadingState title="Đang tải đơn hàng…" /> : orders.length === 0 ? <EmptyState title="Chưa có đơn hàng phù hợp với trạng thái đã chọn." onRetry={list.reload} /> :
       <Table>
         <TableHeader><TableRow>
           <TableHead>Mã đơn</TableHead><TableHead>Khách / Người nhận</TableHead><TableHead>SĐT</TableHead>
           <TableHead>Tổng tiền</TableHead><TableHead>Thanh toán</TableHead><TableHead>Trạng thái</TableHead><TableHead>Ngày tạo</TableHead>
         </TableRow></TableHeader>
-        <TableBody>{orders.length === 0 ? <TableRow><TableCell colSpan={7}>
-          <div className="space-y-2 py-6 text-center"><p>Chưa có đơn hàng phù hợp với trạng thái đã chọn.</p><Button variant="outline" onClick={list.reload}>Tải lại</Button></div>
-        </TableCell></TableRow> : orders.map(item => <TableRow key={item.id} className="cursor-pointer" onClick={() => setSelected(item)}>
+        <TableBody>{orders.map(item => <TableRow key={item.id} className="cursor-pointer" onClick={() => setSelected(item)}>
           <TableCell><Button variant="link" onClick={event => { event.stopPropagation(); setSelected(item); }}>{item.order_code || "Xem đơn hàng"}</Button></TableCell>
           <TableCell>{item.recipient_name || "Khách vãng lai"}</TableCell><TableCell>{item.recipient_phone || "Chưa có SĐT"}</TableCell>
           <TableCell className="tabular-nums">{formatVND(item.total_vnd)}</TableCell><TableCell>{paymentLabels[item.payment_method ?? ""] || "API chưa cung cấp"}</TableCell>

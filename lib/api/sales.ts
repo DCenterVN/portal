@@ -223,6 +223,9 @@ export type CheckoutInput = z.infer<typeof checkoutSchema>;
 export function getCartBranch(): string {
   return typeof window !== "undefined" ? window.localStorage.getItem("vietsach.cart_branch") ?? "" : "";
 }
+export function setCartBranch(id: string) {
+  window.localStorage.setItem("vietsach.cart_branch", id);
+}
 export async function createOrder(cartRef: string, input: CheckoutInput, key: string): Promise<Order> {
   const delivery = checkoutSchema.parse(input);
   const branch = getCartBranch();

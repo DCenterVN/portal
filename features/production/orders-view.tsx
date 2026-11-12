@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Field, FieldLabel, FieldError } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { StatusBadge, statusTone } from "@/components/patterns/status-badge";
+import { uomLabel } from "./package-rules";
 import { productionOrderStatuses } from "./order-status";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -27,7 +28,7 @@ interface OrdersViewProps {
 }
 
 export function OrdersView({ initialOrders }: OrdersViewProps) {
-  const { list, orders, listLoading, listError, reload, loadingId, canUpdate, primaryOrderId, handleAccept, handleAllocate, handleStart, completionOrder, completionForm, openCompletion, changeCompletionOpen, submitCompletion } = useProductionOrders(initialOrders);
+  const { list, orders, listLoading, listError, reload, loadingId, canUpdate, handleAccept, handleAllocate, handleStart, completionOrder, completionForm, openCompletion, changeCompletionOpen, submitCompletion } = useProductionOrders(initialOrders);
 
   const { register, formState: { errors, isSubmitting } } = completionForm;
 
@@ -61,8 +62,8 @@ export function OrdersView({ initialOrders }: OrdersViewProps) {
                 orders.map((o) => (
                   <TableRow key={o.id}>
                     <TableCell className="font-mono font-medium">{o.order_code}</TableCell>
-                    <TableCell>{o.planned_quantity} {o.uom}</TableCell>
-                    <TableCell>{o.actual_output_quantity > 0 ? `${o.actual_output_quantity} ${o.uom}` : "—"}</TableCell>
+                    <TableCell>{o.planned_quantity} {uomLabel(o.uom)}</TableCell>
+                    <TableCell>{o.actual_output_quantity > 0 ? `${o.actual_output_quantity} ${uomLabel(o.uom)}` : "—"}</TableCell>
                     <TableCell>
                       <StatusBadge tone={statusTone(o.status)}>{productionOrderStatuses[o.status] ?? o.status}</StatusBadge>
                     </TableCell>
@@ -70,7 +71,7 @@ export function OrdersView({ initialOrders }: OrdersViewProps) {
                       {o.status === "HANDED_OFF" && canUpdate && (
                         <Button
                           size="sm"
-                          variant={o.id === primaryOrderId ? "default" : "outline"}
+                          variant="outline"
                           disabled={loadingId === o.id}
                           onClick={() => handleAccept(o.id)}
                         >
@@ -80,7 +81,7 @@ export function OrdersView({ initialOrders }: OrdersViewProps) {
                       {o.status === "ACCEPTED" && canUpdate && (
                         <Button
                           size="sm"
-                          variant={o.id === primaryOrderId ? "default" : "outline"}
+                          variant="outline"
                           disabled={loadingId === o.id}
                           onClick={() => handleAllocate(o.id)}
                         >
@@ -90,7 +91,7 @@ export function OrdersView({ initialOrders }: OrdersViewProps) {
                       {o.status === "ALLOCATED" && canUpdate && (
                         <Button
                           size="sm"
-                          variant={o.id === primaryOrderId ? "default" : "outline"}
+                          variant="outline"
                           disabled={loadingId === o.id}
                           onClick={() => handleStart(o.id)}
                         >
@@ -100,7 +101,7 @@ export function OrdersView({ initialOrders }: OrdersViewProps) {
                       {o.status === "IN_PROGRESS" && canUpdate && (
                         <Button
                           size="sm"
-                          variant={o.id === primaryOrderId ? "default" : "outline"}
+                          variant="outline"
                           disabled={loadingId === o.id}
                           onClick={() => openCompletion(o)}
                         >
@@ -109,9 +110,6 @@ export function OrdersView({ initialOrders }: OrdersViewProps) {
                       )}
                       {o.status === "COMPLETED" && (
                         <StatusBadge tone="warning">Chờ QC nghiệm thu</StatusBadge>
-                      )}
-                      {o.status === "QC_PASSED" && (
-                        <StatusBadge tone="success">QC Đạt — Sẵn sàng lên kệ</StatusBadge>
                       )}
                     </TableCell>
                   </TableRow>

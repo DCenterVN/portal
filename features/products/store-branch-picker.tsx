@@ -8,10 +8,12 @@ import { EntityPicker } from "@/components/patterns/entity-picker";
 import { fetcher } from "@/lib/fetcher";
 
 const branches = z.array(z.object({ id: z.string().uuid(), name: z.string() }));
+export const useStoreBranches = () => useSWR("/api/public/branches", async path => branches.parse(await fetcher<unknown>(path)));
+
 export function StoreBranchPicker() {
   const router = useRouter();
   const search = useSearchParams();
-  const { data, error, mutate } = useSWR("/api/public/branches", async path => branches.parse(await fetcher<unknown>(path)));
+  const { data, error, mutate } = useStoreBranches();
   return <div className="mx-auto mt-6 w-full max-w-7xl px-6"><div className="max-w-sm"><EntityPicker label="Chi nhánh mua hàng" name="store-branch" serializeValue={false}
     items={data} status={error ? "error" : data ? "ready" : "loading"} value={search.get("branch_id")}
     getId={branch => branch.id} getLabel={branch => branch.name} onRetry={() => void mutate()}

@@ -45,9 +45,9 @@ export function SuppliersView({ can, read, page, rows, categoryState, setCategor
               : categoryState === "error" ? <Button variant="ghost" onClick={() => setCategoryRevision(value => value + 1)}>Thử lại nhóm</Button>
               : supplier.parentNames.length ? <div className="flex flex-wrap gap-1.5">{supplier.parentNames.slice(0, 2).map(name => <Badge key={name} variant="secondary">{name}</Badge>)}
                 {supplier.parentNames.length > 2 && <Badge variant="outline" tabIndex={0} title={supplier.parentNames.join(", ")} aria-label={supplier.parentNames.join(", ")}>+{supplier.parentNames.length - 2}</Badge>}</div>
-              : <span>Cần cập nhật nhóm</span> : <span>{supplier.material_categories?.length ? "Cần cập nhật nhóm" : "Chưa khai nhóm"}</span>}
+              : <span>Cần cập nhật nhóm</span> : supplier.material_categories?.length ? <span>Cần cập nhật nhóm</span> : <span className="text-muted-foreground">—</span>}
           </TableCell>
-          <TableCell>{supplier.contact_name || supplier.contact_phone ? <>{supplier.contact_name}{supplier.contact_name && supplier.contact_phone && <span className="text-muted-foreground"> · </span>}{supplier.contact_phone && <a className="underline-offset-4 hover:underline" href={`tel:${supplier.contact_phone}`}>{supplier.contact_phone}</a>}</> : <span className="text-muted-foreground">Chưa cung cấp</span>}</TableCell>
+          <TableCell>{supplier.contact_name || supplier.contact_phone ? <>{supplier.contact_name}{supplier.contact_name && supplier.contact_phone && <span className="text-muted-foreground"> · </span>}{supplier.contact_phone && <a className="underline-offset-4 hover:underline" href={`tel:${supplier.contact_phone}`}>{supplier.contact_phone}</a>}</> : <span className="text-muted-foreground">—</span>}</TableCell>
           <TableCell><StatusBadge tone={supplier.status === "ACTIVE" ? "neutral" : "warning"}>{supplier.status === "ACTIVE" ? "Đang hợp tác" : "Đã ngừng"}</StatusBadge></TableCell>
           <TableCell className="text-right"><RowActions label={supplier.name} actions={[
             { label: "Bảng giá", icon: FileText, onSelect: () => router.push(`/inventory/suppliers/${encodeURIComponent(supplier.id)}?tab=agreements`) },
