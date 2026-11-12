@@ -10,7 +10,7 @@ export function PackageRecipeForm({ s }: { s: PackagesState }) {
   const { recipe, components, steps } = s;
   if (!s.recipeEditing || !s.selected || !(recipe ? s.can("production:recipe:update") : s.can("production:recipe:create"))) return null;
   return <Card><CardContent className="space-y-4 pt-6"><form aria-label="Biên tập công thức" onSubmit={s.saveRecipe} className="space-y-4">
-    <p>Định lượng hữu ích cho 1 EA. Yield lớn hơn 0 và không quá 100%, tối đa 3 số lẻ. Mã BOM do máy chủ tạo.</p>
+    <p>Định lượng hữu ích cho 1 gói. Yield lớn hơn 0 và không quá 100%, tối đa 3 số lẻ. Mã BOM do máy chủ tạo.</p>
     {components.map(({ line, name, units }, index) => <fieldset className="grid gap-3 rounded-xl border p-4 md:grid-cols-4" key={line.sku_ref}><legend>{name}</legend>
       <label>Định lượng {index + 1}<Input required inputMode="decimal" value={line.quantity} onChange={e => s.changeComponent(index, { quantity: e.target.value })} /></label><label>Đơn vị {index + 1}<NativeSelect value={line.uom} onChange={e => { const unit = units.find(unit => unit === e.target.value); if (unit) s.changeComponent(index, { uom: unit }); }}>{units.map(unit => <NativeSelectOption key={unit}>{unit}</NativeSelectOption>)}</NativeSelect></label><label>Yield % {index + 1}<Input required inputMode="decimal" value={line.yield_pct} onChange={e => s.changeComponent(index, { yield_pct: e.target.value })} /></label><Button type="button" variant="outline" onClick={() => s.setComponents(current => current.filter((_, i) => i !== index))}>Bỏ nguyên liệu {index + 1}</Button>
     </fieldset>)}

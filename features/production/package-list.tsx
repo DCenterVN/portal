@@ -11,7 +11,7 @@ import type { PackagesState } from "./use-packages";
 function RecipeCell({ s, id }: { s: PackagesState; id: string }) {
   if (!s.can("production:recipe:read")) return "Chưa có quyền đọc công thức";
   const history = s.histories[id];
-  if (!history) return "Chưa tải công thức";
+  if (!history) return <span className="text-muted-foreground">—</span>;
   return history.current?.status === "BOM_ACTIVE" ? <StatusBadge tone="success">Công thức v{history.current?.version}</StatusBadge> : <StatusBadge tone="warning">Chưa có công thức</StatusBadge>;
 }
 

@@ -9,4 +9,5 @@ export const packageCode = (name: string) => `${fold(name).replace(/[^a-z0-9]+/g
 export const positive = (value: string) => /^(?!0(?:\.0{1,3})?$)(0|[1-9][0-9]*)(\.[0-9]{1,3})?$/.test(value);
 export const yieldValid = (value: string) => /^(100(\.0{1,3})?|[1-9][0-9]?(\.[0-9]{1,3})?|0\.(?!0{1,3}$)[0-9]{1,3})$/.test(value);
 export const unitsFor = (uom: string): RecipeComponent["uom"][] => uom === "KG" || uom === "G" ? ["KG", "G"] : uom === "L" || uom === "ML" ? ["L", "ML"] : ["EA"];
+export const uomLabel = (uom: string) => uom === "EA" ? "gói" : uom;
 export type ComponentDraft = { line: RecipeComponent; name: string; units: RecipeComponent["uom"][] };

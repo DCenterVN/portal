@@ -186,7 +186,7 @@ vi.mock("@/components/ui/toast", () => ({ toast: fooddevHarness.toast }));
 
 import { NextRequest } from "next/server";
 import { MaterialRequirementsView } from "./material-requirements-view";
-import { Checkbox } from "@/components/patterns/form-field";
+import { Checkbox, Field } from "@/components/patterns/form-field";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { TablePager } from "@/components/patterns/table-pager";
 import { MaterialPicker, MaterialFilters } from "./material-picker";
@@ -544,7 +544,7 @@ const rawLabels: salesApi.RawLabelsView = { sku_ref: material.id, allergen_summa
 const packPermissions = [...fooddevPermissions, "sales:variant:read", "sales:variant:create", "sales:variant:update", "sales:variant:delete", "sales:product:update", "production:recipe:read", "production:recipe:create", "production:recipe:update", "production:recipe:delete"];
 function paint<P>(view: (props: P) => React.ReactNode, props: P) { fooddevHarness.effects = []; return render(view, props); }
 function labelControl(tree: React.ReactNode, label: string) {
-  return node(node(tree, n => n.type === "label" && React.Children.toArray(n.props.children).includes(label)), n => n.type === Input || n.type === NativeSelect);
+  return node(node(tree, n => (n.type === "label" && React.Children.toArray(n.props.children).includes(label)) || (n.type === Field && n.props.label === label)), n => n.type === Input || n.type === NativeSelect);
 }
 async function openSetEditor() {
   paint(FoodSetsView, {}); await effects();
@@ -898,7 +898,7 @@ describe("FOODDEV PACK UI", () => {
   it("package_no_recipe", async () => {
     paint(PackagesView, {}); await effects();
     const tree = paint(PackagesView, {});
-    expect(renderToStaticMarkup(tree)).toContain("Chưa tải công thức");
+    expect(renderToStaticMarkup(tree)).not.toContain("Chưa tải công thức");
     await invoke(node(tree, named("Cốt bò")), "onClick");
     expect(renderToStaticMarkup(paint(PackagesView, {}))).toContain("chưa có công thức");
   });

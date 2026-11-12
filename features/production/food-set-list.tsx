@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Field } from "@/components/patterns/form-field";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { EmptyState, ErrorState, LoadingState } from "@/components/patterns/empty-state";
@@ -12,7 +13,7 @@ import type { FoodSetsState } from "./use-food-sets";
 
 export function FoodSetFilters({ s }: { s: FoodSetsState }) {
   return <>
-    <form className="flex gap-3" onSubmit={e => { e.preventDefault(); s.submitSearch(); }}><label className="flex-1">Tìm set theo tên<Input value={s.query} onChange={e => s.setQuery(e.target.value)} /></label><Button type="submit" variant="outline" disabled={s.busy}>Tìm set</Button></form>
+    <form className="flex items-end gap-3" onSubmit={e => { e.preventDefault(); s.submitSearch(); }}><Field label="Tìm set theo tên" htmlFor="food-set-search" className="flex-1"><Input id="food-set-search" value={s.query} onChange={e => s.setQuery(e.target.value)} /></Field><Button type="submit" variant="outline" disabled={s.busy}>Tìm set</Button></form>
     <div className="space-y-3"><label className="block">Lọc theo hashtag<Input value={s.filterTagDraft} list="food-set-filter-tags" aria-describedby="food-set-filter-help" placeholder="Nhập hashtag rồi nhấn Enter" onChange={e => {
       const parts = e.target.value.split(",");
       s.setFilterTagDraft(parts.pop() ?? "");

@@ -13,7 +13,7 @@ import { usePackages } from "./use-packages";
 export function PackagesView() {
   const s = usePackages();
   return <section aria-label="Gói và công thức" className="space-y-4">
-    <div className="flex flex-wrap items-end justify-between gap-3"><div><h2 className="text-xl font-bold">Gói + công thức</h2><p className="text-sm text-muted-foreground">Mỗi công thức tạo một gói EA. Lịch sử phiên bản giữ lại cho thực đơn đã chốt.</p></div>{s.can("sales:variant:create") && <Button disabled={s.detailBusy} onClick={() => void s.begin(true)}>Tạo gói</Button>}</div>
+    <div className="flex flex-wrap items-end justify-between gap-3"><div><h2 className="text-xl font-bold">Gói + công thức</h2><p className="text-sm text-muted-foreground">Mỗi công thức tạo một gói. Lịch sử phiên bản giữ lại cho thực đơn đã chốt.</p></div>{s.can("sales:variant:create") && <Button disabled={s.detailBusy} onClick={() => void s.begin(true)}>Tạo gói</Button>}</div>
     <PackageList s={s} />
     {s.detailBusy && <LoadingState title="Đang tải hoặc lưu gói…" />}
     {s.detailError && <ErrorState title="Không tải được công thức gói" description={s.detailError} onRetry={() => { if (s.selected) void s.open(s.selected); }} />}
