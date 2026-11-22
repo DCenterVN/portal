@@ -97,9 +97,10 @@ describe("openGroups", () => {
     expect(openGroups(admin, "/production/food-plans", ["Kho"])).toEqual(["Kho", "Sản xuất"]);
     expect(breadcrumbFor(admin, "/production/food-plans")).toEqual([{ label: "Sản xuất" }, { label: "Món & thực đơn" }]);
   });
-  it("SALES: tối đa 2 nhóm thì mở hết", () => {
+  it("SALES: có thêm nhóm Sản xuất (mục Nguyên liệu) nên chỉ mở nhóm đang đứng", () => {
     const sales = all(["sales:product:read", "sales:price_book:create"]);
-    expect(openGroups(sales, "/console", [])).toEqual(["Tổng quan", "Bán hàng"]);
+    expect(sales.map((group) => group.title)).toEqual(["Tổng quan", "Sản xuất", "Bán hàng"]);
+    expect(openGroups(sales, "/console", [])).toEqual(["Tổng quan"]);
   });
   it("nhóm chỉ còn 1 mục con vẫn là nhóm 1 mục", () => {
     const one = all(["inventory:supplier:read", "production:order:read", "sales:product:read"]);

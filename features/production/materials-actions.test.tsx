@@ -1,0 +1,207 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { renderToStaticMarkup } from "react-dom/server";
+import { AccessProvider } from "@/lib/access-boundary";
+import { createMon, suspendMon, uploadMonImage, createLoai, viMessage } from "@/lib/api/material-catalog-write";
+import { FetchError } from "@/lib/fetcher";
+import { getMonList } from "@/lib/api/material-catalog";
+import { MaterialsView } from "./materials-view";
+import { MonGrid } from "./materials-view-parts";
+import { readFileSync } from "node:fs";
+import { MonActions, NameField, UnitField, monPatch, actionsFor } from "./materials-mon-sheet";
+import { suggestCode } from "./materials-catalog";
+import { TREE } from "./materials-fixtures";
+
+vi.mock("next/navigation", () => ({ useRouter: () => ({ replace: () => {} }), usePathname: () => "/production/materials", useSearchParams: () => new URLSearchParams("") }));
+
+const ROLES = {
+  admin: ["sales:product:read", "sales:material:create", "sales:material:update", "sales:material:lifecycle", "inventory:material_category:read", "inventory:material_category:create", "inventory:material_category:update", "inventory:material_category:lifecycle"],
+  food_dev: ["sales:product:read", "sales:material:create", "sales:material:update", "sales:material:lifecycle", "inventory:material_category:read", "inventory:material_category:create", "inventory:material_category:update", "inventory:material_category:lifecycle"],
+  warehouse: ["sales:product:read", "sales:material:create", "inventory:material_category:read"],
+  sales: ["sales:product:read", "inventory:material_category:read"],
+};
+const as = (role: keyof typeof ROLES) => renderToStaticMarkup(<AccessProvider value={{ plane: "company", root: "/employee", actions: new Set(ROLES[role]) }}><MaterialsView /></AccessProvider>);
+
+describe("nút theo vai", () => {
+  it("Bán hàng không thấy Thêm nguyên liệu, Đề xuất nguyên liệu, Quản lý loại", () => {
+    const html = as("sales");
+    for (const text of ["Thêm nguyên liệu", "Đề xuất nguyên liệu", "Quản lý loại"]) expect(html).not.toContain(text);
+  });
+  it("Kho thấy Đề xuất nguyên liệu, không thấy Thêm nguyên liệu hay Quản lý loại", () => {
+    const html = as("warehouse");
+    expect(html).toContain("Đề xuất nguyên liệu");
+    expect(html).not.toContain("Thêm nguyên liệu");
+    expect(html).not.toContain("Quản lý loại");
+  });
+  it("Bếp và Quản trị thấy Thêm nguyên liệu và Quản lý loại", () => {
+    for (const role of ["food_dev", "admin"] as const) {
+      const html = as(role);
+      expect(html).toContain("Thêm nguyên liệu");
+      expect(html).toContain("Quản lý loại");
+      expect(html).not.toContain("Đề xuất nguyên liệu");
+    }
+  });
+});
+
+describe("nút trong khung sửa", () => {
+  const can = (role: keyof typeof ROLES) => (action: string) => ROLES[role].includes(action);
+  const mon = (status: "ACTIVE" | "DRAFT" | "SUSPENDED") => ({ id: "1", ten: "A", loai: "rau", nhom: "rau_la", anh: null, status, donVi: "KG" as const });
+  it("Bếp: đang dùng có Lưu và Ngừng dùng…, nháp thêm Duyệt, đã ngừng chỉ Dùng lại", () => {
+    expect(actionsFor(mon("ACTIVE"), can("food_dev"))).toEqual(["Lưu", "Ngừng dùng…"]);
+    expect(actionsFor(mon("DRAFT"), can("food_dev"))).toEqual(["Lưu", "Duyệt", "Ngừng dùng…"]);
+    expect(actionsFor(mon("SUSPENDED"), can("food_dev"))).toEqual(["Dùng lại"]);
+  });
+  it("Kho và Bán hàng không có nút nào", () => {
+    expect(actionsFor(mon("DRAFT"), can("warehouse"))).toEqual([]);
+    expect(actionsFor(mon("ACTIVE"), can("sales"))).toEqual([]);
+  });
+  it("khung hiện đúng chữ trên nút", () => {
+    const html = renderToStaticMarkup(<MonActions labels={["Lưu", "Duyệt", "Ngừng dùng…"]} busy={false} onAction={() => {}} />);
+    for (const text of ["Lưu", "Duyệt", "Ngừng dùng…"]) expect(html).toContain(text);
+  });
+});
+
+type Call = { url: string; method: string; headers: Record<string, string>; body: unknown };
+const calls: Call[] = [];
+const reply = vi.fn<(call: Call) => { status: number; body?: unknown }>();
+beforeEach(() => {
+  calls.length = 0;
+  reply.mockReset();
+  reply.mockReturnValue({ status: 200, body: { data: { id: "new1" } } });
+  vi.stubGlobal("fetch", vi.fn(async (url: string | URL, init: RequestInit = {}) => {
+    const body = typeof init.body === "string" ? JSON.parse(init.body) : init.body;
+    const call = { url: String(url), method: init.method ?? "GET", headers: (init.headers ?? {}) as Record<string, string>, body };
+    calls.push(call);
+    const out = reply(call);
+    return new Response(out.status === 204 ? null : JSON.stringify(out.body ?? {}), { status: out.status });
+  }));
+});
+afterEach(() => vi.unstubAllGlobals());
+const path = (call: Call) => new URL(call.url, "http://x").pathname;
+
+describe("thêm món", () => {
+  it("gửi đúng thân, đúng đường và có Idempotency-Key", async () => {
+    await createMon({ name: "Cà chua", uom_code: "KG", material_group_code: "RAU_LA" });
+    expect(path(calls[0])).toBe("/api/sales/skus");
+    expect(calls[0].method).toBe("POST");
+    expect(calls[0].body).toEqual({ name: "Cà chua", uom_code: "KG", material_group_code: "RAU_LA" });
+    expect(calls[0].headers["Idempotency-Key"]).toBeTruthy();
+  });
+  it("trùng tên thì hiện Đã có nguyên liệu tên này, không lộ mã lỗi", async () => {
+    reply.mockReturnValue({ status: 409, body: { message: "duplicate", errors: { error_code: "duplicate_resource" } } });
+    const error = await createMon({ name: "A", uom_code: "KG", material_group_code: "X" }).catch(e => e);
+    expect(error).toBeInstanceOf(FetchError);
+    expect(viMessage(error, "mon")).toBe("Đã có nguyên liệu tên này");
+  });
+  it("lỗi 403 và 409 khi ngừng loại có câu tiếng Việt", () => {
+    expect(viMessage(new FetchError("x", 403), "mon")).toBe("Bạn không có quyền làm việc này");
+    expect(viMessage(new FetchError("x", 409, { errors: { error_code: "state_conflict" } }), "loai")).toBe("Loại còn nhóm đang dùng hoặc đang gắn nhà cung cấp");
+    expect(viMessage(new FetchError("uuid 0192", 500), "mon")).not.toMatch(/uuid|500/);
+  });
+});
+
+describe("ngừng dùng", () => {
+  it("không có lý do thì không gọi API", async () => {
+    await expect(suspendMon("m1", "   ")).rejects.toThrow();
+    expect(calls).toHaveLength(0);
+  });
+  it("có lý do thì gọi /suspend với reason", async () => {
+    await suspendMon("m1", "Nhập nhầm");
+    expect(path(calls[0])).toBe("/api/sales/skus/m1/suspend");
+    expect(calls[0].body).toEqual({ reason: "Nhập nhầm" });
+  });
+});
+
+describe("ảnh", () => {
+  it("đủ 3 bước đúng thứ tự: xin link, tải lên MinIO với file cuối, finalize", async () => {
+    reply.mockImplementation(call => {
+      if (path(call).endsWith("/image-uploads")) return { status: 200, body: { data: { upload_id: "u1", upload_url: "http://minio.local/bucket", form_fields: { key: "k", policy: "p" } } } };
+      if (call.url.startsWith("http://minio.local")) return { status: 204 };
+      return { status: 200, body: { data: {} } };
+    });
+    await uploadMonImage("m1", new File([new Uint8Array([1, 2, 3])], "a.png", { type: "image/png" }));
+    expect(calls.map(call => `${call.method} ${call.url.startsWith("http://minio") ? "minio" : path(call)}`)).toEqual([
+      "POST /api/sales/skus/m1/image-uploads", "POST minio", "POST /api/sales/skus/m1/image-uploads/u1/finalize",
+    ]);
+    expect(calls[0].body).toMatchObject({ content_type: "image/png", file_size: 3 });
+    expect((calls[0].body as { sha256: string }).sha256).toMatch(/^[0-9a-f]{64}$/);
+    const keys = [...(calls[1].body as FormData).keys()];
+    expect(keys[keys.length - 1]).toBe("file");
+  });
+});
+
+describe("đọc món theo trạng thái", () => {
+  it("status gửi lên API theo trạng thái, đi hết các trang, gắn loại theo cây", async () => {
+    reply.mockImplementation(call => new URL(call.url, "http://x").searchParams.get("cursor")
+      ? { status: 200, body: { data: { items: [{ id: "2", name: "Bò 2", material_group_code: "BO", status: "DRAFT", uom_code: "KG", image_url: null }], next_cursor: "" } } }
+      : { status: 200, body: { data: { items: [{ id: "1", name: "Lợn 1", material_group_code: "LON", status: "DRAFT", uom_code: "KG", image_url: "http://i/1" }], next_cursor: "c1" } } });
+    const items = await getMonList("DRAFT", TREE);
+    const first = new URL(calls[0].url, "http://x").searchParams;
+    expect(first.get("status")).toBe("DRAFT");
+    expect(first.get("kind")).toBe("RAW_MATERIAL");
+    expect(calls).toHaveLength(2);
+    expect(items).toEqual([
+      { id: "1", ten: "Lợn 1", loai: "thit", nhom: "lon", anh: "http://i/1", status: "DRAFT", donVi: "KG" },
+      { id: "2", ten: "Bò 2", loai: "thit", nhom: "bo", anh: null, status: "DRAFT", donVi: "KG" },
+    ]);
+  });
+});
+
+describe("quản lý loại", () => {
+  it("mã gợi ý từ tên: bỏ dấu, viết hoa, dấu cách thành _", () => {
+    expect(suggestCode("Thịt lợn")).toBe("THIT_LON");
+    expect(suggestCode("  Đồ khô, hạt ")).toBe("DO_KHO_HAT");
+  });
+  it("thêm nhóm gửi parent_code, thêm loại thì không có", async () => {
+    await createLoai({ code: "THIT_LON", name: "Thịt lợn", parent_code: "THIT" });
+    expect(path(calls[0])).toBe("/api/inventory/material-categories");
+    expect(calls[0].body).toEqual({ code: "THIT_LON", name: "Thịt lợn", parent_code: "THIT" });
+    await createLoai({ code: "NAM", name: "Nấm" });
+    expect(calls[1].body).toEqual({ code: "NAM", name: "Nấm" });
+  });
+});
+
+describe("chữ nguyên liệu", () => {
+  const quantity = new FetchError("name_has_quantity: tên nguyên liệu không được chứa khối lượng hay quy cách (như 1kg, 500ml, 300gr/khay)", 422, { errors: { error_code: "validation_failed" } });
+  it("422 name_has_quantity hiện câu nhắc về khối lượng", () => {
+    expect(viMessage(quantity, "mon")).toBe('Tên nguyên liệu không ghi khối lượng hay quy cách, ví dụ bỏ "1kg", "500ml"');
+    expect(viMessage(new FetchError("other", 422), "mon")).toBe("Thông tin chưa hợp lệ, hãy kiểm tra lại");
+  });
+  it("ô tên có gợi ý và hiện lỗi dưới ô", () => {
+    const html = renderToStaticMarkup(<NameField value="" onChange={() => {}} disabled={false} error="" />);
+    expect(html.replaceAll("&quot;", '"')).toContain('Chỉ ghi tên chung, ví dụ "Ba chỉ lợn". Không ghi khối lượng.');
+    expect(html).toContain("Tên nguyên liệu");
+    const bad = renderToStaticMarkup(<NameField value="x" onChange={() => {}} disabled={false} error="Lỗi tên" />);
+    expect(bad).toContain('aria-invalid="true"');
+    expect(bad).toContain("Lỗi tên");
+  });
+  it("không còn chữ món trong màn Nguyên liệu và lớp dữ liệu", () => {
+    const files = ["materials-view.tsx", "materials-view-parts.tsx", "materials-mon-sheet.tsx", "materials-loai-sheet.tsx", "materials-nhom-filter.tsx", "../../lib/api/material-catalog-write.ts"];
+    for (const file of files) expect(readFileSync(new URL(file, import.meta.url), "utf8")).not.toMatch(/(^|[^\p{L}])món([^\p{L}]|$)/iu);
+    for (const role of ["admin", "warehouse"] as const) expect(as(role)).not.toMatch(/(^|[^\p{L}])món([^\p{L}]|$)/iu);
+    expect(renderToStaticMarkup(<MonGrid items={[]} />)).not.toMatch(/món/i);
+    expect(viMessage(new FetchError("x", 409, { errors: { error_code: "state_conflict" } }), "mon")).not.toMatch(/món/i);
+  });
+});
+
+describe("đơn vị chỉ sửa khi nháp", () => {
+  const body = { name: "A", uom_code: "KG" as const, material_group_code: "X" };
+  const mon = (status: "ACTIVE" | "DRAFT" | "SUSPENDED") => ({ id: "1", ten: "A", loai: "thit", nhom: "x", anh: null, status, donVi: "KG" as const });
+  it("Đang dùng và Đã ngừng thì ô Đơn vị khoá kèm gợi ý, thân PATCH không có uom_code", () => {
+    for (const status of ["ACTIVE", "SUSPENDED"] as const) {
+      expect(monPatch(mon(status), body)).toEqual({ name: "A", material_group_code: "X" });
+      const html = renderToStaticMarkup(<UnitField locked value="KG" onChange={() => {}} error="" />);
+      expect(html).toContain('disabled=""');
+      expect(html).toContain("Chỉ đổi đơn vị khi nguyên liệu còn là nháp");
+    }
+  });
+  it("Nháp thì ô Đơn vị sửa được và thân PATCH có uom_code", () => {
+    expect(monPatch(mon("DRAFT"), body)).toEqual(body);
+    const html = renderToStaticMarkup(<UnitField locked={false} value="KG" onChange={() => {}} error="" />);
+    expect(html).not.toContain('disabled=""');
+  });
+  it("409 đơn vị gốc hiện câu về đơn vị, không hiện câu đổi trạng thái", () => {
+    const error = new FetchError("đơn vị gốc chỉ sửa được khi nguyên liệu còn là nháp", 409, { errors: { error_code: "state_conflict" } });
+    expect(viMessage(error, "mon")).toBe("Chỉ đổi đơn vị khi nguyên liệu còn là nháp");
+    expect(viMessage(new FetchError("x", 409, { errors: { error_code: "state_conflict" } }), "mon")).toBe("Nguyên liệu đã đổi trạng thái, hãy tải lại danh sách");
+  });
+});
