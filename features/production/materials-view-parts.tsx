@@ -1,38 +1,35 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { Apple, Beef, Carrot, Egg, Fish, Flame, Leaf, Soup, Wheat, Shell, Sprout, ChevronLeft, ChevronRight, type LucideIcon } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink } from "@/components/ui/pagination";
 import { cn } from "@/lib/utils";
-import type { Loai, Mon } from "@/lib/api/material-catalog";
-import { CHUA_XEP, pageNumbers } from "./materials-catalog";
+import type { MaterialCategory, Material } from "@/lib/api/material-catalog";
+import { UNCATEGORIZED, pageNumbers } from "./materials-catalog";
 
-const ICON: Record<string, LucideIcon> = { thit: Beef, ca: Fish, "hai-san": Shell, rau: Leaf, "cu-qua": Carrot, nam: Sprout, "trung-dau-hu": Egg, "tinh-bot": Wheat, cot: Soup, "gia-vi": Flame, "do-kho": Sprout, "trai-cay": Apple };
-
-export function MonCard({ mon, onOpen }: { mon: Mon; onOpen?: (mon: Mon) => void }) {
+export function MaterialCard({ material, onOpen }: { material: Material; onOpen?: (material: Material) => void }) {
   const [failed, setFailed] = useState(false);
-  const Icon = ICON[mon.loai] ?? Leaf;
   const body = <>
     <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-muted">
-      {mon.anh && !failed
-        ? <img src={mon.anh} alt={mon.ten} loading="lazy" onError={() => setFailed(true)} className="size-full object-cover" />
-        : <div data-testid="mon-fallback" aria-hidden="true" className="flex size-full items-center justify-center text-muted-foreground"><Icon className="size-8" /></div>}
-      {mon.status === "DRAFT" && <Badge variant="secondary" className="absolute top-2 left-2">Nháp</Badge>}
+      {material.imageUrl && !failed
+        ? <img src={material.imageUrl} alt={material.name} loading="lazy" onError={() => setFailed(true)} className="size-full object-cover" />
+        : <div data-testid="material-fallback" aria-hidden="true" className="flex size-full items-center justify-center bg-muted text-2xl font-medium text-muted-foreground">{material.name.trim().charAt(0).toUpperCase()}</div>}
+      {material.status === "DRAFT" && <Badge variant="secondary" className="absolute top-2 left-2">Nháp</Badge>}
     </div>
-    <p className="line-clamp-2 text-left text-sm font-medium">{mon.ten}</p>
+    <p className="line-clamp-2 text-left text-sm font-medium">{material.name}</p>
   </>;
   return <li>{onOpen
-    ? <Button type="button" variant="ghost" onClick={() => onOpen(mon)} className="h-auto w-full flex-col items-stretch gap-2 p-0 font-normal whitespace-normal">{body}</Button>
+    ? <Button type="button" variant="ghost" onClick={() => onOpen(material)} className="h-auto w-full flex-col items-stretch gap-2 p-0 font-normal whitespace-normal">{body}</Button>
     : <div className="flex flex-col gap-2">{body}</div>}</li>;
 }
 
-export function MonGrid({ items, onOpen }: { items: Mon[]; onOpen?: (mon: Mon) => void }) {
+export function MaterialGrid({ items, onOpen }: { items: Material[]; onOpen?: (material: Material) => void }) {
   if (items.length === 0) return <Empty><EmptyHeader><EmptyTitle>Chưa có nguyên liệu nào trong loại này</EmptyTitle><EmptyDescription>Thử đổi loại, đổi trạng thái hoặc xoá từ khoá tìm kiếm.</EmptyDescription></EmptyHeader></Empty>;
-  return <ul className="grid animate-in fade-in grid-cols-2 gap-4 duration-200 motion-reduce:animate-none sm:grid-cols-4 lg:grid-cols-6">{items.map(mon => <MonCard key={mon.id} mon={mon} onOpen={onOpen} />)}</ul>;
+  return <ul className="grid animate-in fade-in grid-cols-2 gap-4 duration-200 motion-reduce:animate-none sm:grid-cols-4 lg:grid-cols-6">{items.map(material => <MaterialCard key={material.id} material={material} onOpen={onOpen} />)}</ul>;
 }
 
 const STEP_PX = 240;
@@ -86,9 +83,9 @@ function EdgeButton({ side, label, onClick }: { side: "left" | "right"; label: s
   </div>;
 }
 
-type BarProps = { current: string; loai: Loai[]; counts: Record<string, number>; onSelect: (code: string) => void; onManage?: () => void };
+type BarProps = { current: string; category: MaterialCategory[]; counts: Record<string, number>; onSelect: (code: string) => void; onManage?: () => void };
 
-export function CategoryBar({ current, loai, counts, onSelect, onManage }: BarProps) {
+export function CategoryBar({ current, category, counts, onSelect, onManage }: BarProps) {
   const strip = useRef<HTMLDivElement>(null);
   const list = useRef<HTMLDivElement>(null);
   const box = useSlidingBox(list, current);
@@ -103,11 +100,11 @@ export function CategoryBar({ current, loai, counts, onSelect, onManage }: BarPr
       <Tabs value={current} onValueChange={onSelect}>
         <TabsList ref={list} className="relative w-max justify-start gap-1 rounded-full group-data-[orientation=horizontal]/tabs:h-10">
           <span aria-hidden="true" className="absolute top-[3px] bottom-[3px] left-0 rounded-full bg-background shadow-sm transition-[transform,width] duration-300 ease-out motion-reduce:transition-none dark:bg-input/30" style={box ? { transform: `translateX(${box.x}px)`, width: box.w } : { opacity: 0 }} />
-          {loai.filter(item => item.active).map(item => <TabsTrigger key={item.code} value={item.code} className="z-10 h-full flex-none rounded-full px-3.5 data-[state=active]:border-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none dark:data-[state=active]:border-transparent dark:data-[state=active]:bg-transparent">
+          {category.filter(item => item.active).map(item => <TabsTrigger key={item.code} value={item.code} className="z-10 h-full flex-none rounded-full px-3.5 data-[state=active]:border-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none dark:data-[state=active]:border-transparent dark:data-[state=active]:bg-transparent">
             {item.label} <span className="opacity-70">{counts[item.code] ?? 0}</span>
           </TabsTrigger>)}
-          {(counts[CHUA_XEP] ?? 0) > 0 && <TabsTrigger value={CHUA_XEP} className="z-10 h-full flex-none rounded-full px-3.5 data-[state=active]:border-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none dark:data-[state=active]:border-transparent dark:data-[state=active]:bg-transparent">
-            Chưa xếp loại <span className="opacity-70">{counts[CHUA_XEP]}</span>
+          {(counts[UNCATEGORIZED] ?? 0) > 0 && <TabsTrigger value={UNCATEGORIZED} className="z-10 h-full flex-none rounded-full px-3.5 data-[state=active]:border-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none dark:data-[state=active]:border-transparent dark:data-[state=active]:bg-transparent">
+            Chưa xếp loại <span className="opacity-70">{counts[UNCATEGORIZED]}</span>
           </TabsTrigger>}
         </TabsList>
       </Tabs>

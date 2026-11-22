@@ -7,3 +7,8 @@ export async function PATCH(request: NextRequest, context: Context) {
   const { code } = await context.params;
   return forwardInventory(request, `/inventory/material-categories/${encodeURIComponent(code)}`, "PATCH");
 }
+
+export async function DELETE(request: NextRequest, context: Context) {
+  const { code } = await context.params;
+  return forwardInventory(request, `/inventory/material-categories/${encodeURIComponent(code)}`, "DELETE", "none");
+}
