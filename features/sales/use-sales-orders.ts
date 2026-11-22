@@ -5,10 +5,10 @@ import useSWR from "swr";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useLoadedList } from "@/hooks/use-loaded-list";
+import { usePagedList } from "@/hooks/use-paged-list";
 import { useAccess } from "@/lib/access-boundary";
 import { toast } from "@/components/ui/toast";
-import { getStaffOrder, getStaffOrders, mutateStaffOrder, type StaffOrder } from "@/lib/api/staff-orders";
+import { getStaffOrder, getStaffOrdersPage, mutateStaffOrder, type StaffOrder } from "@/lib/api/staff-orders";
 import { companyMemberships, type Membership } from "@/lib/api/platform-client";
 import { getProfile } from "@/lib/auth/client";
 import { getLocations } from "@/lib/api/locations";
@@ -38,8 +38,8 @@ export function actionSchema(action: OrderAction, order: StaffOrder) {
 }
 export function useSalesOrders(initialOrders?: StaffOrder[]) {
   const { can, scope } = useAccess();
-  const list = useLoadedList(initialOrders, getStaffOrders);
   const [filter, setFilter] = useState("ALL");
+  const list = usePagedList(cursor => getStaffOrdersPage({ cursor, status: filter === "ALL" ? undefined : filter }), `${scope?.orgId}:${scope?.branchId}:${filter}`, initialOrders);
   const [selected, setSelected] = useState<StaffOrder | null>(null);
   const [pending, setPending] = useState<{ order: StaffOrder; action: OrderAction } | null>(null);
   const [busy, setBusy] = useState(false);
@@ -97,6 +97,6 @@ export function useSalesOrders(initialOrders?: StaffOrder[]) {
     const input: Record<string, string> = action === "ship" ? { driver_ref: value } : action === "payments/confirm" ? { bank_transaction_ref: value } : { reason: value };
     if (await run(target, action, input)) setPending(null);
   });
-  return { list, orders: list.items.filter(item => filter === "ALL" || item.status === filter), filter, setFilter,
+  return { list, orders: list.items, filter, setFilter,
     order, setSelected, detail, provinces, communes, pending, busy, error, drivers, form, submit, changeDialogOpen, act, can, userId: scope?.userId };
 }

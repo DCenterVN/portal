@@ -25,7 +25,7 @@ vi.mock("react-hook-form", async original => {
   } };
 });
 vi.mock("swr", () => ({ default: (key: unknown) => ({ data: Array.isArray(key) && key[0] === "order-drivers" ? hooks.members : undefined, mutate: vi.fn() }) }));
-vi.mock("@/hooks/use-loaded-list", () => ({ useLoadedList: (items: StaffOrder[]) => ({ items, setItems: hooks.setItems, loading: false, error: "", reload: vi.fn() }) }));
+vi.mock("@/hooks/use-paged-list", () => ({ usePagedList: (_load: unknown, _key: string, items: StaffOrder[]) => ({ items, setItems: hooks.setItems, loading: false, error: "", reload: vi.fn(), hasNext: false, hasPrevious: false, next: vi.fn(), previous: vi.fn() }) }));
 vi.mock("@/lib/access-boundary", () => ({ useAccess: () => ({ can: (key: string) => hooks.denied !== key, scope: { userId: hooks.userId, branchId: "branch", orgId: "org" } }) }));
 vi.mock("@/components/ui/toast", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 const driver = "0198fd55-3f46-7a01-9e52-f4c0de000020";

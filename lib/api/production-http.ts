@@ -1,6 +1,10 @@
 export async function errorMessage(res: Response, fallback: string) {
   if (res.status === 401) return "Phiên đăng nhập đã hết hạn. Hãy đăng nhập lại.";
   if (res.status === 403) return "Bạn không có quyền thực hiện thao tác này.";
+  if (res.status === 409) {
+    const body = await res.json().catch(() => null);
+    if (typeof body?.message === "string") return body.message;
+  }
   return fallback || "Không tải được dữ liệu. Thử lại sau.";
 }
 

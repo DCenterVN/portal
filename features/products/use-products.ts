@@ -23,7 +23,7 @@ export function useProducts() {
   return {
     products: data?.data ?? [], dataSource: data?.source, loading: isLoading,
     error: !canRead ? "Không có quyền truy cập" : error ? "Không tải được sản phẩm. Vui lòng tải lại." : "",
-    canCreate: can("sales:product:create"), canActivate: can("sales:product:lifecycle") && can("sales:product:activate") && can("sales:variant:lifecycle"),
+    canCreate: can("sales:product:create"), canUpdate: can("sales:product:update"), canDelete: can("sales:product:delete"), canActivate: can("sales:product:lifecycle") && can("sales:product:activate") && can("sales:variant:lifecycle"),
     reload, created,
   };
 }

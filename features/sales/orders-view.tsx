@@ -3,11 +3,12 @@
 import { OrderDetails } from "@/components/order-details";
 import { PageShell } from "@/components/ui/page";
 import { PageHeading } from "@/components/patterns/page-heading";
-import { ErrorState, LoadingState } from "@/components/patterns/empty-state";
+import { EmptyState, ErrorState, LoadingState } from "@/components/patterns/empty-state";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
-import { Badge } from "@/components/ui/badge";
+import { StatusBadge, statusTone } from "@/components/patterns/status-badge";
+import { TablePager } from "@/components/patterns/table-pager";
 import { Button } from "@/components/ui/button";
 import { formatVND } from "@/lib/format";
 import { formatDate } from "@/lib/format-date";
@@ -19,7 +20,7 @@ import { OrderDialog } from "./order-dialog";
 
 const paymentLabels: Record<string, string> = { COD: "COD", BANK_TRANSFER: "Chuyển khoản", CASH: "Tiền mặt" };
 function Status({ status }: { status: string }) {
-  return <Badge variant="outline">{orderStatuses[status] ?? "Chưa rõ trạng thái"}</Badge>;
+  return <StatusBadge tone={statusTone(status)}>{orderStatuses[status] ?? "Chưa rõ trạng thái"}</StatusBadge>;
 }
 export function SalesOrderButtons({ order, can, busy, act, userId }: { userId?: string; order: StaffOrder; can: (permission: string) => boolean; busy: boolean; act: (order: StaffOrder, action: OrderAction) => void }) {
   return <div className="flex flex-wrap gap-2">{availableActions(order, can, userId).map(action => <Button key={action.path} variant={action.path === "cancel" ? "destructive" : "outline"} disabled={busy} onClick={() => act(order, action.path)}>{busy ? "Đang xử lý…" : action.label}</Button>)}</div>;
@@ -36,27 +37,26 @@ function OrdersContent({ initialOrders }: { initialOrders?: StaffOrder[] }) {
   const commune = communes.data?.find(item => item.code === order?.commune_code)?.name;
   return <PageShell>
     <PageHeading title="Đơn hàng" description="Xác nhận, đóng gói và theo dõi giao hàng của chi nhánh đang làm việc." />
-    <Select value={filter} onValueChange={setFilter}>
+    <div className="mb-4"><Select value={filter} onValueChange={setFilter}>
       <SelectTrigger aria-label="Lọc trạng thái"><SelectValue /></SelectTrigger>
       <SelectContent><SelectItem value="ALL">Tất cả trạng thái</SelectItem>
         {Object.entries(orderStatuses).map(([value, label]) => <SelectItem key={value} value={value}>{label}</SelectItem>)}
       </SelectContent>
-    </Select>
-    {list.error ? <ErrorState title={list.error} onRetry={list.reload} /> : list.loading ? <LoadingState title="Đang tải đơn hàng…" /> :
+    </Select></div>
+    {list.error ? <ErrorState title={list.error} onRetry={list.reload} /> : list.loading ? <LoadingState title="Đang tải đơn hàng…" /> : orders.length === 0 ? <EmptyState title="Chưa có đơn hàng phù hợp với trạng thái đã chọn." onRetry={list.reload} /> :
       <Table>
         <TableHeader><TableRow>
           <TableHead>Mã đơn</TableHead><TableHead>Khách / Người nhận</TableHead><TableHead>SĐT</TableHead>
           <TableHead>Tổng tiền</TableHead><TableHead>Thanh toán</TableHead><TableHead>Trạng thái</TableHead><TableHead>Ngày tạo</TableHead>
         </TableRow></TableHeader>
-        <TableBody>{orders.length === 0 ? <TableRow><TableCell colSpan={7}>
-          <div className="space-y-2 py-6 text-center"><p>Chưa có đơn hàng phù hợp với trạng thái đã chọn.</p><Button variant="outline" onClick={list.reload}>Tải lại</Button></div>
-        </TableCell></TableRow> : orders.map(item => <TableRow key={item.id} className="cursor-pointer" onClick={() => setSelected(item)}>
+        <TableBody>{orders.map(item => <TableRow key={item.id} className="cursor-pointer" onClick={() => setSelected(item)}>
           <TableCell><Button variant="link" onClick={event => { event.stopPropagation(); setSelected(item); }}>{item.order_code || "Xem đơn hàng"}</Button></TableCell>
           <TableCell>{item.recipient_name || "Khách vãng lai"}</TableCell><TableCell>{item.recipient_phone || "Chưa có SĐT"}</TableCell>
           <TableCell className="tabular-nums">{formatVND(item.total_vnd)}</TableCell><TableCell>{paymentLabels[item.payment_method ?? ""] || "API chưa cung cấp"}</TableCell>
           <TableCell><Status status={item.status} /></TableCell><TableCell>{formatDate(item.created_at)}</TableCell>
         </TableRow>)}</TableBody>
       </Table>}
+    <TablePager label="Phân trang đơn hàng" busy={list.loading} hasPrevious={list.hasPrevious} onPrevious={list.previous} hasNext={list.hasNext} onNext={list.next} />
     <Sheet open={!!order && !pending} onOpenChange={open => { if (!open && !busy) setSelected(null); }}>
       <SheetContent className="overflow-y-auto">
         <SheetHeader><SheetTitle>Đơn {order?.order_code || "đã chọn"}</SheetTitle><SheetDescription>Người nhận, món đã đặt và tiến độ giao hàng.</SheetDescription></SheetHeader>

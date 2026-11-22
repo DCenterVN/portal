@@ -9,6 +9,7 @@ import { DatePicker } from "@/components/ui/date-picker";
 import { Table, TableHeader, TableHead, TableBody, TableRow, TableCell } from "@/components/ui/table";
 import { EmptyState, ErrorState, LoadingState } from "@/components/patterns/empty-state";
 import { TablePager } from "@/components/patterns/table-pager";
+import { StatusBadge, statusTone } from "@/components/patterns/status-badge";
 import type { SupplierHistory, SupplierReceipt } from "@/lib/api/supplier-history";
 import type { ReactNode } from "react";
 
@@ -28,7 +29,7 @@ function ReceiptGroup({ receipt, names }: ReceiptGroupProps) {
   const draft = receipt.status === "DRAFT";
   const { can } = useAccess();
   return <article className="grid gap-3 rounded-lg border border-border p-4">
-    <h3 className="font-semibold">{date(receipt.created_at)} · {statuses[receipt.status] ?? "Đang xử lý"}</h3>
+    <h3 className="flex flex-wrap items-center gap-2 font-semibold">{date(receipt.created_at)}<StatusBadge tone={statusTone(receipt.status)}>{statuses[receipt.status] ?? "Đang xử lý"}</StatusBadge></h3>
     {["DRAFT", "IN_PROGRESS"].includes(receipt.status) && can("inventory:goods_receipt:update") && <Link className={buttonVariants({ variant: "outline", size: "sm" })} href={{ pathname: `/inventory/goods-receipts/${encodeURIComponent(receipt.id)}/receive`, query: { supplier: receipt.supplier_ref } }}>Nhận hàng</Link>}
     <p>{draft ? "Tổng dự kiến" : "Tổng thực nhận"}: {money(draft ? receipt.total_amount_vnd : receipt.lines.reduce((sum, line) => sum + (line.actual_amount_vnd ?? 0), 0))} VND</p>
     <Table><TableHeader><TableRow><TableHead>Nguyên liệu</TableHead><TableHead>Số lượng dự kiến</TableHead>{!draft && <TableHead>Số lượng thực nhận</TableHead>}<TableHead>Đơn vị</TableHead><TableHead>Đơn giá VND</TableHead><TableHead>Thành tiền dự kiến</TableHead>{!draft && <TableHead>Thành tiền thực nhận</TableHead>}</TableRow></TableHeader>

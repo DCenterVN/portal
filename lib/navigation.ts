@@ -19,6 +19,7 @@ export const CONSOLE_NAV: { title: string; icon: LucideIcon; items: NavRule[] }[
     title: "Sản xuất",
     icon: Factory,
     items: [
+      { href: "/production/materials", label: "Nguyên liệu", match: "/production/materials", icon: Boxes, action: "sales:product:read" },
       { href: "/production/targets", label: "Chỉ tiêu", match: "/production/targets", icon: ListChecks, action: "production:target:read" },
       { href: "/production/food-plans", label: "Món & thực đơn", match: "/production/food-plans", icon: FileSpreadsheet, action: "production:food_plan:read" },
       { href: "/production/material-requirements", label: "Nhu cầu nguyên liệu", match: "/production/material-requirements", icon: Boxes, action: "production:material_requirement:read" },

@@ -4,10 +4,10 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useLoadedList } from "@/hooks/use-loaded-list";
+import { usePagedList } from "@/hooks/use-paged-list";
 import { useAccess } from "@/lib/access-boundary";
 import { toast } from "@/components/ui/toast";
-import { type ProductionOrder, getOrders, acceptOrder, allocateOrderLots, startOrder, completeOrder } from "@/lib/api/production";
+import { type ProductionOrder, getOrdersPage, acceptOrder, allocateOrderLots, startOrder, completeOrder } from "@/lib/api/production";
 
 const completionSchema = z.object({
   actualQuantity: z.string().trim().min(1, "Nhập sản lượng thực tế.").pipe(
@@ -18,13 +18,14 @@ const completionSchema = z.object({
 type Outcome = { title: string; description: string };
 
 export function useProductionOrders(initialOrders?: ProductionOrder[]) {
-  const { items: orders, setItems: setOrders, loading: listLoading, error: listError, reload } = useLoadedList(initialOrders, getOrders);
+  const { scope, can } = useAccess();
+  const list = usePagedList(cursor => getOrdersPage({ cursor }), `${scope?.orgId}:${scope?.branchId}`, initialOrders);
+  const { items: orders, setItems: setOrders, loading: listLoading, error: listError, reload } = list;
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [completionOrder, setCompletionOrder] = useState<ProductionOrder | null>(null);
   const completionForm = useForm<z.input<typeof completionSchema>, unknown, z.output<typeof completionSchema>>({
     resolver: zodResolver(completionSchema), defaultValues: { actualQuantity: "" },
   });
-  const { can } = useAccess();
   const canUpdate = can("production:order:update");
 
   const run = async (orderId: string, action: () => Promise<ProductionOrder>, success: (order: ProductionOrder) => Outcome, failure: Outcome) => {
@@ -76,5 +77,5 @@ export function useProductionOrders(initialOrders?: ProductionOrder[]) {
     (order.status === "IN_PROGRESS" && canUpdate)
   )?.id;
 
-  return { orders, listLoading, listError, reload, loadingId, canUpdate, primaryOrderId, completionOrder, completionForm, openCompletion, changeCompletionOpen, submitCompletion, handleAccept, handleAllocate, handleStart, handleComplete };
+  return { list, orders, listLoading, listError, reload, loadingId, canUpdate, primaryOrderId, completionOrder, completionForm, openCompletion, changeCompletionOpen, submitCompletion, handleAccept, handleAllocate, handleStart, handleComplete };
 }

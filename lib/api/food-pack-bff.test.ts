@@ -3,6 +3,7 @@ import { NextRequest } from "next/server";
 import { GET, POST, PUT, PATCH, DELETE } from "@/app/api/food-packs/[...path]/route";
 import { OPERATIONS } from "@/lib/contracts/operations.generated";
 import * as sales from "./sales";
+import * as salesPack from "./sales-pack";
 import * as production from "./production";
 
 const id = "01960000-0000-7000-8000-000000000001";
@@ -98,7 +99,7 @@ describe("food PACK boundary", () => {
   });
   it("zod_strict_extra_field", async () => {
     global.fetch = vi.fn(async () => reply({ ...set, surprise: true }));
-    await expect(sales.getFoodSet(id)).rejects.toThrow();
+    await expect(salesPack.getFoodSet(id)).rejects.toThrow();
   });
   it("zod_diet_null_vs_empty", async () => {
     global.fetch = vi.fn().mockResolvedValueOnce(reply(labels)).mockResolvedValueOnce(reply({ ...labels, diet_flags: [] }));
@@ -117,10 +118,10 @@ describe("food PACK boundary", () => {
     ];
     for (const data of badResponses) {
       global.fetch = vi.fn(async () => reply(data));
-      await expect(sales.getFoodSet(id)).rejects.toThrow();
+      await expect(salesPack.getFoodSet(id)).rejects.toThrow();
     }
     global.fetch = vi.fn(async () => reply({ items: [set, { ...set, kind: "INVALID" }], next_cursor: null }));
-    await expect(sales.listFoodSets()).rejects.toThrow();
+    await expect(salesPack.listFoodSets()).rejects.toThrow();
     global.fetch = vi.fn(async () => reply({ ...recipe, components: [{ ...recipeInput.components[0], yield_pct: "101" }] }));
     await expect(production.getPackageRecipe(id, 1)).rejects.toThrow();
     global.fetch = vi.fn(async () => reply({ ...evaluated, recipe_versions: [{ sku_ref: id, bom_ref: id, version: 1, extra: 1 }] }));
@@ -136,19 +137,19 @@ describe("food PACK boundary", () => {
   });
   it("typed clients cover all 18 operations with envelope responses", async () => {
     const { product_ref, code, name, variant_label, net_weight_g, temperature_regime } = pack;
-    const input = { product_ref, code, name, variant_label, net_weight_g, uom_code: "EA", temperature_regime } satisfies sales.CreatePackageRequest;
+    const input = { product_ref, code, name, variant_label, net_weight_g, uom_code: "EA", temperature_regime } satisfies salesPack.CreatePackageRequest;
     const fetchMock = vi.fn();
     global.fetch = fetchMock;
     const results = [pack, { items: [pack], next_cursor: id }, pack, pack, null, set, { items: [set], next_cursor: null }, set, set, null, labels, labels, recipe, { current: null, history: [recipe] }, recipe, recipe, null, evaluated];
     for (const data of results) fetchMock.mockResolvedValueOnce(data === null ? new Response(null, { status: 204 }) : reply(data));
-    expect(await sales.createPackage(input)).toEqual(pack);
-    expect((await sales.listPackages({ product_ref: id, limit: 20 })).next_cursor).toBe(id);
-    await sales.getPackage(id); await sales.updatePackage(id, { ...input, expected_updated_at: time }); await sales.retirePackage(id);
-    await sales.createFoodSet({ ...input, tags: set.tags });
-    expect((await sales.listFoodSets({ q: "bún", tags: ["bun", "mua-he"], month: 10, limit: 20 })).items).toEqual([set]);
-    await sales.getFoodSet(id);
-    const slots = [{ slot: "TINH_BOT", swappable: false, removable: false, options: [{ sku_ref: id, quantity: 1, is_default: true }] }, { slot: "DAM", swappable: false, removable: false, options: [{ sku_ref: id, quantity: 1, is_default: true }] }] satisfies sales.SetSlot[];
-    await sales.updateFoodSet(id, { tags: set.tags, slots, expected_updated_at: time }); await sales.retireFoodSet(id);
+    expect(await salesPack.createPackage(input)).toEqual(pack);
+    expect((await salesPack.listPackages({ product_ref: id, limit: 20 })).next_cursor).toBe(id);
+    await salesPack.getPackage(id); await salesPack.updatePackage(id, { ...input, expected_updated_at: time }); await salesPack.retirePackage(id);
+    await salesPack.createFoodSet({ ...input, tags: set.tags });
+    expect((await salesPack.listFoodSets({ q: "bún", tags: ["bun", "mua-he"], month: 10, limit: 20 })).items).toEqual([set]);
+    await salesPack.getFoodSet(id);
+    const slots = [{ slot: "TINH_BOT", swappable: false, removable: false, options: [{ sku_ref: id, quantity: 1, is_default: true }] }, { slot: "DAM", swappable: false, removable: false, options: [{ sku_ref: id, quantity: 1, is_default: true }] }] satisfies salesPack.SetSlot[];
+    await salesPack.updateFoodSet(id, { tags: set.tags, slots, expected_updated_at: time }); await salesPack.retireFoodSet(id);
     await sales.getRawLabels(id);
     await sales.updateRawLabels(id, { allergen_summary: { known: false, contains: [] }, avoidance_flags: [], diet_flags: null, expected_updated_at: time });
     await production.createPackageRecipe(id, recipeInput);

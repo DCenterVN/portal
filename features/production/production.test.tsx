@@ -154,6 +154,11 @@ vi.mock("react", async original => {
       if (!(index in fooddevHarness.slots)) fooddevHarness.slots[index] = typeof initial === "function" ? initial() : initial;
       return [fooddevHarness.slots[index], (next: unknown) => { fooddevHarness.stateWrites++; fooddevHarness.slots[index] = typeof next === "function" ? next(fooddevHarness.slots[index]) : next; }];
     },
+    useReducer: (reducer: (state: unknown, action: unknown) => unknown, initial: unknown) => {
+      const index = fooddevHarness.cursor++;
+      if (!(index in fooddevHarness.slots)) fooddevHarness.slots[index] = initial;
+      return [fooddevHarness.slots[index], (action: unknown) => { fooddevHarness.stateWrites++; fooddevHarness.slots[index] = reducer(fooddevHarness.slots[index], action); }];
+    },
     useRef: (initial: unknown) => {
       const index = fooddevHarness.cursor++;
       if (!(index in fooddevHarness.slots)) fooddevHarness.slots[index] = { current: initial };
@@ -181,7 +186,7 @@ vi.mock("@/components/ui/toast", () => ({ toast: fooddevHarness.toast }));
 
 import { NextRequest } from "next/server";
 import { MaterialRequirementsView } from "./material-requirements-view";
-import { Checkbox } from "@/components/patterns/form-field";
+import { Checkbox, Field } from "@/components/patterns/form-field";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { TablePager } from "@/components/patterns/table-pager";
 import { MaterialPicker, MaterialFilters } from "./material-picker";
@@ -365,9 +370,9 @@ describe("FOODDEV forms and warehouse", () => {
   });
   it("FOOD_DEV creates and edits PREPARATION with exact decimal and the revision fetched from server", async () => {
     const { requests } = api(); const props = { initialPlans: [plan], targetId: target.id };
-    const setList = vi.spyOn(salesApi, "listFoodSets").mockResolvedValue({ items: [packSet], next_cursor: null });
-    const setDetail = vi.spyOn(salesApi, "getFoodSet").mockResolvedValue(packSet);
-    const packages = vi.spyOn(salesApi, "listPackages").mockResolvedValue({ items: [packRow], next_cursor: null });
+    const setList = vi.spyOn(salesPackApi, "listFoodSets").mockResolvedValue({ items: [packSet], next_cursor: null });
+    const setDetail = vi.spyOn(salesPackApi, "getFoodSet").mockResolvedValue(packSet);
+    const packages = vi.spyOn(salesPackApi, "listPackages").mockResolvedValue({ items: [packRow], next_cursor: null });
     let tree = render(FoodPlansView, props); await effects(); tree = render(FoodPlansView, props);
     expect(renderToStaticMarkup(tree)).not.toMatch(/Thẩm định|Publish BOM|Kiểm tra &amp; handoff/);
     await invoke(node(tree, named("Tạo set")), "onClick"); tree = render(FoodPlansView, props);
@@ -391,6 +396,7 @@ describe("FOODDEV forms and warehouse", () => {
     api([]);
     render(TargetsView, { initialTargets: [target], initialShowCreate: true }); await effects();
     expect(renderToStaticMarkup(render(TargetsView, { initialTargets: [target], initialShowCreate: true }))).not.toMatch(/Tạo product|Lưu chỉ tiêu|>Tạo chỉ tiêu<\/button>/);
+    await effects();
     fooddevHarness.slots = [];
     render(FoodPlansView, { initialPlans: [plan], targetId: target.id }); await effects();
     expect(renderToStaticMarkup(render(FoodPlansView, { initialPlans: [plan], targetId: target.id }))).not.toMatch(/Tạo set|Sửa set|Lưu set|Publish BOM/);
@@ -514,6 +520,7 @@ describe("FOODDEV BFF wire contract", () => {
 });
 
 import * as salesApi from "@/lib/api/sales";
+import * as salesPackApi from "@/lib/api/sales-pack";
 import * as productionApi from "@/lib/api/production";
 import { FoodSetsView } from "./food-sets-view";
 import { PackagesView } from "./packages-view";
@@ -523,11 +530,11 @@ import { ErrorState } from "@/components/patterns/empty-state";
 import { Table } from "@/components/ui/table";
 
 const packTime = "2026-10-21T00:00:00Z";
-const packRow: salesApi.FoodPackage = { id: "pack-beef", org_ref: "org", branch_ref: "branch", product_ref: product.id, code: "COT-BO", name: "Cốt bò", variant_label: "100g", net_weight_g: 100, uom_code: "EA", temperature_regime: "CHILLED", kind: "PRODUCED_VARIANT", sellable: false, status: "ACTIVE", updated_at: packTime };
-const mushroom: salesApi.FoodPackage = { ...packRow, id: "pack-mushroom", code: "COT-NAM", name: "Cốt nấm" };
+const packRow: salesPackApi.FoodPackage = { id: "pack-beef", org_ref: "org", branch_ref: "branch", product_ref: product.id, code: "COT-BO", name: "Cốt bò", variant_label: "100g", net_weight_g: 100, uom_code: "EA", temperature_regime: "CHILLED", kind: "PRODUCED_VARIANT", sellable: false, status: "ACTIVE", updated_at: packTime };
+const mushroom: salesPackApi.FoodPackage = { ...packRow, id: "pack-mushroom", code: "COT-NAM", name: "Cốt nấm" };
 const starchPack = { ...packRow, id: "pack-starch", name: "Bún tươi" };
 const tofuPack = { ...packRow, id: "pack-tofu", name: "Đậu" };
-const packSet: salesApi.FoodSet = { ...packRow, id: "set-bun", name: "Bún", code: "BUN", variant_label: "4 người", kind: "COMMERCIAL_SET", sku_type: "SET", tags: ["bun", "mua-he", "bua-trua"], system_hashtags: ["ho-bun"], slots: [
+const packSet: salesPackApi.FoodSet = { ...packRow, id: "set-bun", name: "Bún", code: "BUN", variant_label: "4 người", kind: "COMMERCIAL_SET", sku_type: "SET", tags: ["bun", "mua-he", "bua-trua"], system_hashtags: ["ho-bun"], slots: [
   { slot: "TINH_BOT", swappable: false, removable: false, options: [{ sku_ref: starchPack.id, quantity: 1, is_default: true }] },
   { slot: "DAM", swappable: false, removable: false, options: [{ sku_ref: tofuPack.id, quantity: 1, is_default: true }] },
   { slot: "COT", swappable: true, removable: false, options: [{ sku_ref: packRow.id, quantity: 1, is_default: true }, { sku_ref: mushroom.id, quantity: 1, is_default: false }] },
@@ -538,11 +545,11 @@ const rawLabels: salesApi.RawLabelsView = { sku_ref: material.id, allergen_summa
 const packPermissions = [...fooddevPermissions, "sales:variant:read", "sales:variant:create", "sales:variant:update", "sales:variant:delete", "sales:product:update", "production:recipe:read", "production:recipe:create", "production:recipe:update", "production:recipe:delete"];
 function paint<P>(view: (props: P) => React.ReactNode, props: P) { fooddevHarness.effects = []; return render(view, props); }
 function labelControl(tree: React.ReactNode, label: string) {
-  return node(node(tree, n => n.type === "label" && React.Children.toArray(n.props.children).includes(label)), n => n.type === Input || n.type === NativeSelect);
+  return node(node(tree, n => (n.type === "label" && React.Children.toArray(n.props.children).includes(label)) || (n.type === Field && n.props.label === label)), n => n.type === Input || n.type === NativeSelect);
 }
 async function openSetEditor() {
   paint(FoodSetsView, {}); await effects();
-  await invoke(node(paint(FoodSetsView, {}), named("Xem Bún")), "onClick");
+  await invoke(node(paint(FoodSetsView, {}), named("Bún")), "onClick");
   await invoke(node(paint(FoodSetsView, {}), named("Sửa set món")), "onClick");
   return paint(FoodSetsView, {});
 }
@@ -562,12 +569,12 @@ async function openPackPlan() {
 describe("FOODDEV PACK UI", () => {
   beforeEach(() => {
     fooddevHarness.permissions = packPermissions;
-    vi.spyOn(salesApi, "listFoodSets").mockResolvedValue({ items: [packSet], next_cursor: null });
-    vi.spyOn(salesApi, "getFoodSet").mockResolvedValue(packSet);
+    vi.spyOn(salesPackApi, "listFoodSets").mockResolvedValue({ items: [packSet], next_cursor: null });
+    vi.spyOn(salesPackApi, "getFoodSet").mockResolvedValue(packSet);
     vi.spyOn(salesApi, "getDraftProducts").mockResolvedValue([product]);
-    vi.spyOn(salesApi, "listPackages").mockResolvedValue({ items: [packRow, mushroom, starchPack, tofuPack], next_cursor: null });
-    vi.spyOn(salesApi, "getPackage").mockResolvedValue(packRow);
-    vi.spyOn(salesApi, "updateFoodSet").mockResolvedValue(packSet);
+    vi.spyOn(salesPackApi, "listPackages").mockResolvedValue({ items: [packRow, mushroom, starchPack, tofuPack], next_cursor: null });
+    vi.spyOn(salesPackApi, "getPackage").mockResolvedValue(packRow);
+    vi.spyOn(salesPackApi, "updateFoodSet").mockResolvedValue(packSet);
     vi.spyOn(salesApi, "getRawLabels").mockResolvedValue(rawLabels);
     vi.spyOn(salesApi, "updateRawLabels").mockResolvedValue(rawLabels);
     vi.spyOn(productionApi, "evaluateFoodSet").mockResolvedValue(packEvaluation);
@@ -610,7 +617,7 @@ describe("FOODDEV PACK UI", () => {
     }
   });
   it("set_evaluate_swap", async () => {
-    paint(FoodSetsView, {}); await effects(); await invoke(node(paint(FoodSetsView, {}), named("Xem Bún")), "onClick");
+    paint(FoodSetsView, {}); await effects(); await invoke(node(paint(FoodSetsView, {}), named("Bún")), "onClick");
     paint(FoodSetsView, {}); await effects();
     expect(productionApi.evaluateFoodSet).toHaveBeenLastCalledWith(packSet.id, { expected_updated_at: packTime, selections: [] });
     vi.mocked(productionApi.evaluateFoodSet).mockResolvedValue({ ...packEvaluation, avoidance_flags: [], diet_flags: ["VEGETARIAN"], derived_hashtags: ["vegetarian"] });
@@ -621,7 +628,7 @@ describe("FOODDEV PACK UI", () => {
   });
   it("evaluate_unknown", async () => {
     vi.mocked(productionApi.evaluateFoodSet).mockResolvedValue({ ...packEvaluation, diet_flags: ["VEGETARIAN"], unknown: [{ sku_ref: material.id, fields: ["diet_flags"] }] });
-    paint(FoodSetsView, {}); await effects(); await invoke(node(paint(FoodSetsView, {}), named("Xem Bún")), "onClick");
+    paint(FoodSetsView, {}); await effects(); await invoke(node(paint(FoodSetsView, {}), named("Bún")), "onClick");
     paint(FoodSetsView, {}); await effects();
     const html = renderToStaticMarkup(paint(FoodSetsView, {}));
     expect(html).toContain("chưa khai báo"); expect(html).not.toContain(">Chay<");
@@ -643,12 +650,12 @@ describe("FOODDEV PACK UI", () => {
   });
   it("package_list_no_recipe_fanout", async () => {
     const page = Array.from({ length: 20 }, (_, index) => ({ ...packRow, id: index === 0 ? packRow.id : `pack-${index}`, name: `Gói QA${String(index).padStart(2, "0")}` }));
-    vi.mocked(salesApi.listPackages).mockResolvedValue({ items: page, next_cursor: null });
+    vi.mocked(salesPackApi.listPackages).mockResolvedValue({ items: page, next_cursor: null });
     paint(PackagesView, {}); await effects();
     const tree = paint(PackagesView, {});
     expect(renderToStaticMarkup(tree)).toContain("Gói QA19");
     expect(productionApi.listPackageRecipes).not.toHaveBeenCalled();
-    await invoke(node(tree, named("Xem Gói QA00")), "onClick");
+    await invoke(node(tree, named("Gói QA00")), "onClick");
     expect(productionApi.listPackageRecipes).toHaveBeenCalledTimes(1);
     expect(productionApi.listPackageRecipes).toHaveBeenCalledWith(packRow.id);
   });
@@ -657,7 +664,7 @@ describe("FOODDEV PACK UI", () => {
     paint(PackagesView, {}); await effects();
     let tree = paint(PackagesView, {});
     expect(nodes(tree, item => item.type === Table)).toHaveLength(1);
-    await invoke(node(tree, named("Xem Cốt bò")), "onClick");
+    await invoke(node(tree, named("Cốt bò")), "onClick");
     tree = paint(PackagesView, {});
     expect(nodes(tree, item => item.type === Table)).toHaveLength(1);
     expect(renderToStaticMarkup(tree)).toContain("Cốt nấm");
@@ -671,11 +678,11 @@ describe("FOODDEV PACK UI", () => {
     ["retry", "success", "B-first"], ["retry", "error", "B-first"],
     ["filter", "success", "A-first"], ["filter", "error", "A-first"],
   ])("stale_filter_response_ignored: %s, stale %s, %s", async (origin, lateResult, order) => {
-    const list = vi.mocked(salesApi.listFoodSets);
+    const list = vi.mocked(salesPackApi.listFoodSets);
     if (origin === "retry") list.mockRejectedValueOnce(new Error("Lỗi ban đầu"));
     paint(FoodSetsView, {}); await effects();
     let tree = paint(FoodSetsView, {});
-    type Page = Awaited<ReturnType<typeof salesApi.listFoodSets>>;
+    type Page = Awaited<ReturnType<typeof salesPackApi.listFoodSets>>;
     let resolveA!: (page: Page) => void;
     let rejectA!: (error: Error) => void;
     let resolveB!: (page: Page) => void;
@@ -726,20 +733,20 @@ describe("FOODDEV PACK UI", () => {
     paint(FoodSetsView, {}); await effects();
     tree = paint(FoodSetsView, {});
     let finish!: () => void;
-    vi.mocked(salesApi.updateFoodSet).mockImplementationOnce(() => new Promise((resolve, reject) => {
+    vi.mocked(salesPackApi.updateFoodSet).mockImplementationOnce(() => new Promise((resolve, reject) => {
       finish = () => result === "success" ? resolve(packSet) : reject(Object.assign(new Error("stale"), { status: 409 }));
     }));
     const saving = invoke(node(tree, n => n.type === "form" && n.props["aria-label"] === "Biên tập set món"), "onSubmit", { preventDefault() {} });
     const latest = { ...packSet, name: "Set giao hai tag" };
-    vi.mocked(salesApi.listFoodSets).mockImplementation(async filter => filter?.tags?.includes("mua-he")
+    vi.mocked(salesPackApi.listFoodSets).mockImplementation(async filter => filter?.tags?.includes("mua-he")
       ? { items: [latest], next_cursor: "cursor-ab" }
       : { items: [{ ...packSet, name: "Set chỉ tag A" }], next_cursor: "cursor-a" });
     await invoke(labelControl(paint(FoodSetsView, {}), "Lọc theo hashtag"), "onChange", { target: { value: "mua-he," } });
     paint(FoodSetsView, {}); await effects();
-    const beforeReload = vi.mocked(salesApi.listFoodSets).mock.calls.length;
+    const beforeReload = vi.mocked(salesPackApi.listFoodSets).mock.calls.length;
     finish(); await saving;
     paint(FoodSetsView, {}); await effects();
-    const reloads = vi.mocked(salesApi.listFoodSets).mock.calls.slice(beforeReload);
+    const reloads = vi.mocked(salesPackApi.listFoodSets).mock.calls.slice(beforeReload);
     expect(reloads.length).toBeGreaterThan(0);
     for (const [filter] of reloads) expect(filter?.tags).toEqual(["bua-trua", "mua-he"]);
     tree = paint(FoodSetsView, {});
@@ -747,13 +754,13 @@ describe("FOODDEV PACK UI", () => {
     expect(renderToStaticMarkup(tree)).not.toContain("Set chỉ tag A");
     await invoke(node(tree, n => n.type === TablePager), "onNext");
     paint(FoodSetsView, {}); await effects();
-    expect(salesApi.listFoodSets).toHaveBeenLastCalledWith(expect.objectContaining({ tags: ["bua-trua", "mua-he"], cursor: "cursor-ab" }));
+    expect(salesPackApi.listFoodSets).toHaveBeenLastCalledWith(expect.objectContaining({ tags: ["bua-trua", "mua-he"], cursor: "cursor-ab" }));
   });
   it.each(["success", "error", "conflict"])("no_load_after_unmount: %s", async result => {
     fooddevHarness.trackEffects = true;
     const tree = await openSetEditor();
     let finish!: () => void;
-    vi.mocked(salesApi.updateFoodSet).mockImplementationOnce(() => new Promise((resolve, reject) => {
+    vi.mocked(salesPackApi.updateFoodSet).mockImplementationOnce(() => new Promise((resolve, reject) => {
       finish = () => result === "success" ? resolve(packSet) : reject(Object.assign(new Error("write failed"), { status: result === "conflict" ? 409 : 503 }));
     }));
     const saving = invoke(node(tree, n => n.type === "form" && n.props["aria-label"] === "Biên tập set món"), "onSubmit", { preventDefault() {} });
@@ -761,12 +768,12 @@ describe("FOODDEV PACK UI", () => {
     fooddevHarness.effects = [];
     const state = [...fooddevHarness.slots];
     const stateWrites = fooddevHarness.stateWrites;
-    const lists = vi.mocked(salesApi.listFoodSets).mock.calls.length;
-    const details = vi.mocked(salesApi.getFoodSet).mock.calls.length;
+    const lists = vi.mocked(salesPackApi.listFoodSets).mock.calls.length;
+    const details = vi.mocked(salesPackApi.getFoodSet).mock.calls.length;
     fooddevHarness.toast.success.mockClear(); fooddevHarness.toast.error.mockClear();
     finish(); await saving;
-    expect(salesApi.listFoodSets).toHaveBeenCalledTimes(lists);
-    expect(salesApi.getFoodSet).toHaveBeenCalledTimes(details);
+    expect(salesPackApi.listFoodSets).toHaveBeenCalledTimes(lists);
+    expect(salesPackApi.getFoodSet).toHaveBeenCalledTimes(details);
     expect(fooddevHarness.slots).toEqual(state);
     expect(fooddevHarness.stateWrites).toBe(stateWrites);
     expect(fooddevHarness.toast.success).not.toHaveBeenCalled();
@@ -774,21 +781,21 @@ describe("FOODDEV PACK UI", () => {
   });
   it("tag_filter_free_text", async () => {
     const firstPageSet = { ...packSet, tags: ["mua-he"] };
-    vi.mocked(salesApi.listFoodSets).mockResolvedValue({ items: [firstPageSet], next_cursor: "page-2" });
+    vi.mocked(salesPackApi.listFoodSets).mockResolvedValue({ items: [firstPageSet], next_cursor: "page-2" });
     paint(FoodSetsView, {}); await effects();
     let tree = paint(FoodSetsView, {});
     expect(renderToStaticMarkup(tree)).not.toContain("bua-trua");
     await invoke(node(tree, n => n.type === TablePager), "onNext");
     paint(FoodSetsView, {}); await effects();
-    expect(salesApi.listFoodSets).toHaveBeenLastCalledWith(expect.objectContaining({ cursor: "page-2" }));
+    expect(salesPackApi.listFoodSets).toHaveBeenLastCalledWith(expect.objectContaining({ cursor: "page-2" }));
     tree = paint(FoodSetsView, {});
     const input = labelControl(tree, "Lọc theo hashtag");
     expect(input.type).toBe(Input);
     await invoke(input, "onChange", { target: { value: "  #Bua-Trua  " } });
-    vi.mocked(salesApi.listFoodSets).mockResolvedValue({ items: [], next_cursor: null });
+    vi.mocked(salesPackApi.listFoodSets).mockResolvedValue({ items: [], next_cursor: null });
     await invoke(labelControl(paint(FoodSetsView, {}), "Lọc theo hashtag"), "onKeyDown", { key: "Enter", nativeEvent: { isComposing: false }, preventDefault() {} });
     paint(FoodSetsView, {}); await effects();
-    expect(salesApi.listFoodSets).toHaveBeenLastCalledWith(expect.objectContaining({ tags: ["bua-trua"], cursor: undefined }));
+    expect(salesPackApi.listFoodSets).toHaveBeenLastCalledWith(expect.objectContaining({ tags: ["bua-trua"], cursor: undefined }));
     tree = paint(FoodSetsView, {});
     const html = renderToStaticMarkup(tree);
     expect(html).toContain("#bua-trua");
@@ -797,31 +804,31 @@ describe("FOODDEV PACK UI", () => {
     const empty = node(tree, n => n.type === EmptyState);
     await invoke(node(empty.props.action as React.ReactNode, named("Xoá lọc")), "onClick");
     paint(FoodSetsView, {}); await effects();
-    expect(salesApi.listFoodSets).toHaveBeenLastCalledWith(expect.objectContaining({ tags: [], cursor: undefined }));
+    expect(salesPackApi.listFoodSets).toHaveBeenLastCalledWith(expect.objectContaining({ tags: [], cursor: undefined }));
   });
   it("tag_filter_comma_and_chips", async () => {
     paint(FoodSetsView, {}); await effects();
     await invoke(labelControl(paint(FoodSetsView, {}), "Lọc theo hashtag"), "onChange", { target: { value: " #Bua-Trua, #Mua-He," } });
     paint(FoodSetsView, {}); await effects();
-    expect(salesApi.listFoodSets).toHaveBeenLastCalledWith(expect.objectContaining({ tags: ["bua-trua", "mua-he"], cursor: undefined }));
+    expect(salesPackApi.listFoodSets).toHaveBeenLastCalledWith(expect.objectContaining({ tags: ["bua-trua", "mua-he"], cursor: undefined }));
     let tree = paint(FoodSetsView, {});
     expect(renderToStaticMarkup(tree)).toContain("#mua-he");
     expect(node(tree, named("Xoá lọc"))).toBeDefined();
     await invoke(node(tree, n => n.type === Button && n.props["aria-label"] === "Bỏ lọc hashtag bua-trua"), "onClick");
     paint(FoodSetsView, {}); await effects();
-    expect(salesApi.listFoodSets).toHaveBeenLastCalledWith(expect.objectContaining({ tags: ["mua-he"] }));
+    expect(salesPackApi.listFoodSets).toHaveBeenLastCalledWith(expect.objectContaining({ tags: ["mua-he"] }));
     await invoke(labelControl(paint(FoodSetsView, {}), "Lọc theo hashtag"), "onChange", { target: { value: "#MUA-HE," } });
     paint(FoodSetsView, {}); await effects();
-    expect(salesApi.listFoodSets).toHaveBeenLastCalledWith(expect.objectContaining({ tags: ["mua-he"] }));
+    expect(salesPackApi.listFoodSets).toHaveBeenLastCalledWith(expect.objectContaining({ tags: ["mua-he"] }));
     tree = paint(FoodSetsView, {});
     expect(nodes(tree, n => n.type === Button && n.props["aria-label"] === "Bỏ lọc hashtag mua-he")).toHaveLength(1);
     await invoke(labelControl(tree, "Lọc theo hashtag"), "onChange", { target: { value: "#Rau" } });
     await invoke(labelControl(paint(FoodSetsView, {}), "Lọc theo hashtag"), "onKeyDown", { key: ",", nativeEvent: { isComposing: false }, preventDefault() {} });
     paint(FoodSetsView, {}); await effects();
-    expect(salesApi.listFoodSets).toHaveBeenLastCalledWith(expect.objectContaining({ tags: ["mua-he", "rau"] }));
+    expect(salesPackApi.listFoodSets).toHaveBeenLastCalledWith(expect.objectContaining({ tags: ["mua-he", "rau"] }));
     await invoke(node(paint(FoodSetsView, {}), named("Xoá lọc")), "onClick");
     paint(FoodSetsView, {}); await effects();
-    expect(salesApi.listFoodSets).toHaveBeenLastCalledWith(expect.objectContaining({ tags: [], cursor: undefined }));
+    expect(salesPackApi.listFoodSets).toHaveBeenLastCalledWith(expect.objectContaining({ tags: [], cursor: undefined }));
   });
   it("set_search_by_tag", async () => {
     paint(FoodSetsView, {}); await effects();
@@ -834,20 +841,20 @@ describe("FOODDEV PACK UI", () => {
     await invoke(labelControl(tree, "Lọc theo hashtag"), "onChange", { target: { value: "bua-trua" } });
     await invoke(labelControl(paint(FoodSetsView, {}), "Lọc theo hashtag"), "onKeyDown", { key: "Enter", nativeEvent: { isComposing: false }, preventDefault() {} });
     paint(FoodSetsView, {}); await effects();
-    expect(salesApi.listFoodSets).toHaveBeenLastCalledWith(expect.objectContaining({ q: "Bún", tags: ["bua-trua"], cursor: undefined }));
+    expect(salesPackApi.listFoodSets).toHaveBeenLastCalledWith(expect.objectContaining({ q: "Bún", tags: ["bua-trua"], cursor: undefined }));
     tree = paint(FoodSetsView, {});
     await invoke(labelControl(tree, "Lọc theo hashtag"), "onChange", { target: { value: "mua-he" } });
     await invoke(labelControl(paint(FoodSetsView, {}), "Lọc theo hashtag"), "onKeyDown", { key: "Enter", nativeEvent: { isComposing: false }, preventDefault() {} });
     paint(FoodSetsView, {}); await effects();
-    expect(salesApi.listFoodSets).toHaveBeenLastCalledWith(expect.objectContaining({ q: "Bún", tags: ["bua-trua", "mua-he"] }));
+    expect(salesPackApi.listFoodSets).toHaveBeenLastCalledWith(expect.objectContaining({ q: "Bún", tags: ["bua-trua", "mua-he"] }));
     tree = paint(FoodSetsView, {});
     await invoke(node(tree, n => n.type === Button && n.props["aria-label"] === "Bỏ lọc hashtag bua-trua"), "onClick");
     paint(FoodSetsView, {}); await effects();
-    expect(salesApi.listFoodSets).toHaveBeenLastCalledWith(expect.objectContaining({ q: "Bún", tags: ["mua-he"] }));
-    await invoke(node(paint(FoodSetsView, {}), named("Xem Bún")), "onClick");
+    expect(salesPackApi.listFoodSets).toHaveBeenLastCalledWith(expect.objectContaining({ q: "Bún", tags: ["mua-he"] }));
+    await invoke(node(paint(FoodSetsView, {}), named("Bún")), "onClick");
     paint(FoodSetsView, {}); await effects();
     tree = paint(FoodSetsView, {});
-    vi.mocked(salesApi.listFoodSets).mockRestore();
+    vi.mocked(salesPackApi.listFoodSets).mockRestore();
     const fetchMock = vi.fn(async () => Response.json({ code: 200, status: "success", message: "OK", data: { items: [], next_cursor: null } }));
     vi.stubGlobal("fetch", fetchMock);
     await invoke(node(tree, item => item.type === Button && item.props["aria-label"] === "Lọc hashtag bua-trua"), "onClick");
@@ -860,7 +867,7 @@ describe("FOODDEV PACK UI", () => {
   it.each(["create", "update"])("package_code_max_56: %s", async operation => {
     paint(PackagesView, {}); await effects();
     if (operation === "update") {
-      await invoke(node(paint(PackagesView, {}), named("Xem Cốt bò")), "onClick");
+      await invoke(node(paint(PackagesView, {}), named("Cốt bò")), "onClick");
       await invoke(node(paint(PackagesView, {}), named("Sửa gói")), "onClick");
     } else {
       await invoke(node(paint(PackagesView, {}), named("Tạo gói")), "onClick");
@@ -877,13 +884,13 @@ describe("FOODDEV PACK UI", () => {
     expect(node(tree, named("Lưu gói")).props.disabled).toBe(false);
 
     const id = "01955700-0000-7000-8000-000000000075";
-    const input = { product_ref: id, code: "ế".repeat(56), name: "Gói bún", variant_label: "100g", net_weight_g: 100, uom_code: "EA", temperature_regime: "CHILLED" } satisfies salesApi.CreatePackageRequest;
+    const input = { product_ref: id, code: "ế".repeat(56), name: "Gói bún", variant_label: "100g", net_weight_g: 100, uom_code: "EA", temperature_regime: "CHILLED" } satisfies salesPackApi.CreatePackageRequest;
     const saved = { ...packRow, ...input, id, org_ref: id, branch_ref: id };
     const fetcher = vi.fn(async () => Response.json({ code: 200, status: "success", message: "OK", data: saved }));
     vi.stubGlobal("fetch", fetcher);
     const write = (code: string) => operation === "create"
-      ? salesApi.createPackage({ ...input, code })
-      : salesApi.updatePackage(id, { ...input, code, expected_updated_at: packTime });
+      ? salesPackApi.createPackage({ ...input, code })
+      : salesPackApi.updatePackage(id, { ...input, code, expected_updated_at: packTime });
     expect(() => write("ế".repeat(57))).toThrow("Mã gói tối đa 56 ký tự");
     expect(fetcher).not.toHaveBeenCalled();
     expect((await write(input.code)).code).toBe(input.code);
@@ -892,8 +899,8 @@ describe("FOODDEV PACK UI", () => {
   it("package_no_recipe", async () => {
     paint(PackagesView, {}); await effects();
     const tree = paint(PackagesView, {});
-    expect(renderToStaticMarkup(tree)).toContain("Chưa tải công thức");
-    await invoke(node(tree, named("Xem Cốt bò")), "onClick");
+    expect(renderToStaticMarkup(tree)).not.toContain("Chưa tải công thức");
+    await invoke(node(tree, named("Cốt bò")), "onClick");
     expect(renderToStaticMarkup(paint(PackagesView, {}))).toContain("chưa có công thức");
   });
   it("recipe_reload_shows_names", async () => {
@@ -909,14 +916,14 @@ describe("FOODDEV PACK UI", () => {
     vi.spyOn(productionApi, "getPackageRecipe").mockResolvedValue(old);
     vi.spyOn(productionApi, "updatePackageRecipe").mockResolvedValue(current);
     paint(PackagesView, {}); await effects();
-    await invoke(node(paint(PackagesView, {}), named("Xem Cốt bò")), "onClick");
+    await invoke(node(paint(PackagesView, {}), named("Cốt bò")), "onClick");
     let tree = paint(PackagesView, {});
     let html = renderToStaticMarkup(tree);
     expect(html).toContain("Thịt bò"); expect(html).toContain("Nấm hương");
     await invoke(labelControl(tree, "Lịch sử phiên bản"), "onChange", { target: { value: "1" } });
     html = renderToStaticMarkup(paint(PackagesView, {}));
     expect(html).toContain("Thịt bò"); expect(html).toContain("Nấm hương");
-    await invoke(node(paint(PackagesView, {}), named("Xem Cốt bò")), "onClick");
+    await invoke(node(paint(PackagesView, {}), named("Cốt bò")), "onClick");
     await invoke(node(paint(PackagesView, {}), named("Sửa công thức")), "onClick");
     tree = paint(PackagesView, {}); html = renderToStaticMarkup(tree);
     expect(html).toContain("<legend>Thịt bò</legend>"); expect(html).toContain("<legend>Nấm hương</legend>");
@@ -933,8 +940,8 @@ describe("FOODDEV PACK UI", () => {
       components: [{ sku_ref: "01955700-0000-7000-8000-000000000020", name: "Thịt bò đã ngừng", inactive: true, quantity: "0.125", uom: "KG", yield_pct: "80" }], prep_steps: [],
     };
     const pack = { ...packRow, id: current.output_sku_ref };
-    vi.mocked(salesApi.listPackages).mockResolvedValue({ items: [pack], next_cursor: null });
-    vi.mocked(salesApi.getPackage).mockResolvedValue(pack);
+    vi.mocked(salesPackApi.listPackages).mockResolvedValue({ items: [pack], next_cursor: null });
+    vi.mocked(salesPackApi.getPackage).mockResolvedValue(pack);
     vi.mocked(productionApi.listPackageRecipes).mockRestore();
     const writes: unknown[] = [];
     vi.stubGlobal("fetch", vi.fn(async (_url: unknown, init?: RequestInit) => {
@@ -942,7 +949,7 @@ describe("FOODDEV PACK UI", () => {
       return Response.json({ code: 200, status: "success", message: "OK", data: init?.method === "PUT" ? current : { current, history: [current] } });
     }));
     paint(PackagesView, {}); await effects();
-    await invoke(node(paint(PackagesView, {}), named("Xem Cốt bò")), "onClick");
+    await invoke(node(paint(PackagesView, {}), named("Cốt bò")), "onClick");
     let tree = paint(PackagesView, {});
     expect(renderToStaticMarkup(tree)).toContain("Thịt bò đã ngừng");
     expect(nodes(tree, item => item.type === ErrorState)).toHaveLength(0);
@@ -963,7 +970,7 @@ describe("FOODDEV PACK UI", () => {
       components: [{ sku_ref: material.id, name: null, quantity: "0.125", uom: "KG", yield_pct: "80" }], prep_steps: [],
     }, history: [] });
     paint(PackagesView, {}); await effects();
-    await invoke(node(paint(PackagesView, {}), named("Xem Cốt bò")), "onClick");
+    await invoke(node(paint(PackagesView, {}), named("Cốt bò")), "onClick");
     expect(renderToStaticMarkup(paint(PackagesView, {}))).toContain("Nguyên liệu không còn bán");
     await invoke(node(paint(PackagesView, {}), named("Sửa công thức")), "onClick");
     expect(renderToStaticMarkup(paint(PackagesView, {}))).toContain("<legend>Nguyên liệu không còn bán</legend>");
@@ -993,13 +1000,13 @@ describe("FOODDEV PACK UI", () => {
     expect(node(paint(FoodPlansView, props), named("Lưu set")).props.disabled).toBe(false);
   });
   it("stale_409", async () => {
-    vi.mocked(salesApi.updateFoodSet).mockRejectedValue(Object.assign(new Error("stale"), { status: 409 }));
+    vi.mocked(salesPackApi.updateFoodSet).mockRejectedValue(Object.assign(new Error("stale"), { status: 409 }));
     const tree = await openSetEditor();
     await invoke(node(tree, n => n.type === "form" && n.props["aria-label"] === "Biên tập set món"), "onSubmit", { preventDefault() {} });
     expect(fooddevHarness.toast.error).toHaveBeenCalledWith("Dữ liệu đã đổi, tải lại");
-    expect(salesApi.getFoodSet).toHaveBeenCalledTimes(2); expect(salesApi.updateFoodSet).toHaveBeenCalledTimes(1);
+    expect(salesPackApi.getFoodSet).toHaveBeenCalledTimes(2); expect(salesPackApi.updateFoodSet).toHaveBeenCalledTimes(1);
     paint(FoodSetsView, {}); await effects();
-    expect(salesApi.listFoodSets).toHaveBeenCalledTimes(2);
+    expect(salesPackApi.listFoodSets).toHaveBeenCalledTimes(2);
   });
   it("warehouse_read_only", async () => {
     fooddevHarness.permissions = ["sales:variant:read", "sales:product:read", "production:recipe:read", "production:food_plan:read", "production:material_requirement:read"];
@@ -1007,7 +1014,7 @@ describe("FOODDEV PACK UI", () => {
       fooddevHarness.slots = []; paint(View, {}); await effects();
       const tree = paint(View, {});
       expect(nodes(tree, n => n.type === Button && /Tạo|Sửa|Xóa|Ngừng|Lưu/.test(String(n.props.children)))).toHaveLength(0);
-      await invoke(node(tree, named(View === FoodSetsView ? "Xem Bún" : "Xem Cốt bò")), "onClick");
+      await invoke(node(tree, named(View === FoodSetsView ? "Bún" : "Cốt bò")), "onClick");
       expect(nodes(paint(View, {}), n => n.type === Button && /Tạo|Sửa|Xóa|Ngừng|Lưu/.test(String(n.props.children)))).toHaveLength(0);
     }
     fooddevHarness.slots = []; const props = { initialPlans: [plan], targetId: target.id };
@@ -1024,7 +1031,7 @@ describe("FOODDEV PACK UI", () => {
   it("four_states", async () => {
     for (const View of [FoodSetsView, PackagesView]) {
       fooddevHarness.slots = [];
-      const list = View === FoodSetsView ? vi.mocked(salesApi.listFoodSets) : vi.mocked(salesApi.listPackages);
+      const list = View === FoodSetsView ? vi.mocked(salesPackApi.listFoodSets) : vi.mocked(salesPackApi.listPackages);
       list.mockResolvedValueOnce({ items: [], next_cursor: null });
       expect(nodes(paint(View, {}), n => n.type === LoadingState)).toHaveLength(1); await effects();
       expect(nodes(paint(View, {}), n => n.type === EmptyState)).toHaveLength(1);
@@ -1041,7 +1048,7 @@ describe("FOODDEV PACK UI", () => {
     const pinned = { ...plan, id: planRef, pack_plan: { recipe_versions: [{ sku_ref: skuRef, bom_ref: bomRef, version: 1 }] } };
     vi.mocked(productionApi.getFoodPlan).mockResolvedValue(pinned);
     vi.mocked(productionApi.getMaterialRequirements).mockResolvedValue({ ...requirements, plan_revisions: { [planRef]: 7 } });
-    vi.mocked(salesApi.listPackages).mockResolvedValue({ items: [{ ...packRow, id: skuRef, name: "Gói cốt bò QA7K" }], next_cursor: null });
+    vi.mocked(salesPackApi.listPackages).mockResolvedValue({ items: [{ ...packRow, id: skuRef, name: "Gói cốt bò QA7K" }], next_cursor: null });
     const props = { foodPlanId: planRef };
     paint(MaterialRequirementsView, props); await effects();
     paint(MaterialRequirementsView, props); await effects();
@@ -1053,13 +1060,13 @@ describe("FOODDEV PACK UI", () => {
   it("pin_name_lookup_failure_keeps_requirements", async () => {
     const pinned = { ...plan, pack_plan: { recipe_versions: [{ sku_ref: packRow.id, bom_ref: "01955700-0000-7000-8000-000000000051", version: 1 }] } };
     vi.mocked(productionApi.getFoodPlan).mockResolvedValue(pinned);
-    vi.mocked(salesApi.listPackages).mockRejectedValue(new Error("Package service unavailable"));
+    vi.mocked(salesPackApi.listPackages).mockRejectedValue(new Error("Package service unavailable"));
     const props = { foodPlanId: plan.id };
     paint(MaterialRequirementsView, props); await effects();
     paint(MaterialRequirementsView, props); await effects();
     const tree = paint(MaterialRequirementsView, props);
     const html = renderToStaticMarkup(tree);
-    expect(salesApi.listPackages).toHaveBeenCalled();
+    expect(salesPackApi.listPackages).toHaveBeenCalled();
     expect(html).toContain("Gói đã pin · công thức v1"); expect(html).toContain("0.999 KG");
     expect(html).not.toMatch(/[0-9a-f]{8}-[0-9a-f]{4}-/);
     expect(nodes(tree, item => item.type === ErrorState)).toHaveLength(0);
@@ -1127,7 +1134,7 @@ describe("FOODDEV PACK UI", () => {
     expect(node(tree, n => n.type === Input && n.props["aria-label"] === `Tỉ lệ Cốt (gia vị) ${packRow.name}`).props.value).toBe("14.6333");
     expect(node(tree, n => n.type === Input && n.props["aria-label"] === `Tỉ lệ Cốt (gia vị) ${mushroom.name}`).props.value).toBe("85.3667");
     expect(node(tree, named("Lưu set")).props.disabled).toBe(false);
-    vi.mocked(salesApi.getFoodSet).mockResolvedValue({ ...packSet, updated_at: "2026-10-22T00:00:00Z" });
+    vi.mocked(salesPackApi.getFoodSet).mockResolvedValue({ ...packSet, updated_at: "2026-10-22T00:00:00Z" });
     await invoke(node(paint(FoodPlansView, props), named("Sửa set")), "onClick");
     const changed = paint(FoodPlansView, props);
     expect(renderToStaticMarkup(changed)).toContain("Chọn lại set trước khi lưu");

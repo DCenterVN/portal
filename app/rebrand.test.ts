@@ -300,17 +300,19 @@ function mountedMarkup(element: React.ReactNode) {
 
 describe("S4 rendered semantic status and modal content", () => {
   it.each([
-    ["success", "border-border", "text-foreground"],
+    ["success", "bg-success-soft", "text-success"],
     ["neutral", "border-border", "text-foreground"],
+    ["info", "bg-primary/10", "text-primary"],
     ["warning", "bg-warning-soft", "text-warning"],
     ["danger", "bg-destructive-soft", "text-destructive"],
-  ] as const)("renders %s status badge as a squared outline with readable text and no dot", (tone, surface, ink) => {
+  ] as const)("renders %s status badge as a squared tinted label with a 6px dot and readable text", (tone, surface, ink) => {
     const html = renderToStaticMarkup(React.createElement(StatusBadge, { tone, children: "Trạng thái" }));
     const classes = classesFor(html, "span");
     expect(classes).toContain(surface);
     expect(classes).toContain(ink);
     expect(classes).toContain("rounded-md");
-    expect(classes).not.toContain("rounded-full");
+    expect(classes).not.toMatch(/(?:^|\s)rounded-full(?:\s|$)/);
+    expect(classes).toContain("before:size-1.5");
     expect(html).not.toContain("aria-hidden");
     expect(html).toContain("Trạng thái");
     expect(html).not.toMatch(rawDecoration);
@@ -319,6 +321,15 @@ describe("S4 rendered semantic status and modal content", () => {
 });
 
 // SSR state injection exposes client branches without changing production hooks.
+function ordersMarkup(element: React.ReactNode, states: unknown[]) {
+  vi.stubGlobal("window", { localStorage: { getItem: () => "branch" } });
+  try {
+    return surfaceMarkup(element, states);
+  } finally {
+    Reflect.deleteProperty(globalThis, "window");
+  }
+}
+
 function surfaceMarkup(element: React.ReactNode, states: unknown[] = []) {
   portalRender.states = [...states];
   try {
@@ -549,12 +560,12 @@ describe("S6 rendered inventory, permission and production state roles", () => {
 
   it.each([false, true])("preserves production permission visibility and labelled workflow (authorized=%s)", (authorized) => {
     const html = surfaceMarkup(withAccess(authorized ? productionPermissions : [], React.createElement(OrdersView, { initialOrders: productionFixtures }), { roles: ["VT-10"] }), [productionFixtures, false, "", null]);
-    expectS6Roles(html, authorized ? 1 : 0);
+    expectS6Roles(html, 0);
     for (const status of productionFixtures.map((order) => order.status)) expect(html).toContain(status);
-    expect(html).toContain("QC Đạt — Sẵn sàng lên kệ");
-    expect(html).toContain("Chờ QC nghiệm thu (VT-13)");
+    expect(html).toContain("Chờ QC nghiệm thu");
+    expect(html).not.toMatch(/VT-\d/);
     expect(html.includes(">Tiếp nhận</button>")).toBe(authorized);
-    expect((html.match(/<button\b[\s\S]*?<\/button>/g) ?? []).some((button) => button.includes("Phân bổ FEFO"))).toBe(authorized);
+    expect((html.match(/<button\b[\s\S]*?<\/button>/g) ?? []).some((button) => button.includes("Cấp nguyên liệu"))).toBe(authorized);
     expect(html.includes(">Bắt đầu nấu</button>")).toBe(authorized);
     expect(html.includes(">Đóng gói</button>")).toBe(authorized);
   });
@@ -564,8 +575,7 @@ describe("S6 rendered inventory, permission and production state roles", () => {
     expectS6Roles(empty, 0);
     expect(empty).toContain("Chưa có lệnh sản xuất nào");
     const busy = surfaceMarkup(withAccess(productionPermissions, React.createElement(OrdersView, { initialOrders: productionFixtures })), [productionFixtures, false, "", "HANDED_OFF"]);
-    expectS6Roles(busy, 1);
-    expect(classesFor(busy, "button")).toMatch(PRIMARY_FILL);
+    expectS6Roles(busy, 0);
     expect(busy).toContain('disabled=""');
   });
 
@@ -575,11 +585,10 @@ describe("S6 rendered inventory, permission and production state roles", () => {
     for (const status of ["QC_PASSED", "QC_FAILED"]) {
       const row = (html.match(/<tr\b[\s\S]*?<\/tr>/g) ?? []).find((item) => item.includes(`ORDER-${status}`))!;
       const cells = row.match(/<td\b[\s\S]*?<\/td>/g)!;
-      expect(cells[2]).toContain(`>${status}</span>`);
-      expect(cells[2]).toContain(status === "QC_PASSED" ? "border-border" : "bg-destructive-soft");
+      expect(cells[2]).toContain(status === "QC_PASSED" ? ">Đạt QC</span>" : ">Không đạt QC</span>");
+      expect(cells[2]).toContain(status === "QC_PASSED" ? "bg-success-soft" : "bg-destructive-soft");
     }
-    expect(html).toContain("Đã phê duyệt đạt chuẩn");
-    expect(html).toContain("SoD Enforcement");
+    expect(html).toContain("Người kiểm định phải khác người đã nấu"); expect(html).not.toMatch(/SoD|403 Forbidden/);
   });
 
   it.each([false, true])("keeps QC form decisions, package states and busy disabling (busy=%s)", (busy) => {
@@ -597,7 +606,7 @@ describe("S6 rendered inventory, permission and production state roles", () => {
     const html = surfaceMarkup(React.createElement(QCView, { completedOrders: [] }));
     expectS6Roles(html, 0);
     expect(html).toContain("Không có lô thành phẩm nào đang chờ kiểm định QC");
-    expect(html).toContain("text-warning");
+    expect(html).toContain("Người kiểm định phải khác người đã nấu");
   });
 });
 
@@ -661,13 +670,12 @@ describe("S7 rendered target, cart, orders and product creation roles", () => {
     expect(html).not.toContain("Tạo chỉ tiêu</button>");
   });
   it("keeps order status labels alongside semantic cues and original amounts/links", () => {
-    const html = surfaceMarkup(React.createElement(SalesOrdersView), [salesOrderFixtures, false, ""]);
+    const html = ordersMarkup(React.createElement(SalesOrdersView), [salesOrderFixtures, false, ""]);
     expectS7Roles(html, 0);
     for (const order of salesOrderFixtures) {
       const link = (html.match(/<a\b[\s\S]*?<\/a>/g) ?? []).find((tag) => tag.includes(`/orders/${order.id}`))!;
       expect(link).toContain(`>${order.status === "CANCELLED" ? "Đã hủy" : "Chờ thanh toán"}</span>`);
-      expect(link).toContain("text-[var(--color-ink)]");
-      expect(link).toContain(order.status === "CANCELLED" ? "bg-destructive" : "border-border");
+      expect(link).toContain(order.status === "CANCELLED" ? "bg-destructive" : "bg-warning-soft");
       expect(link).toContain("660.000");
       expect(link).toContain(formatDateTime(order.created_at));
       expect(link).not.toContain(order.cart_ref);
@@ -675,7 +683,7 @@ describe("S7 rendered target, cart, orders and product creation roles", () => {
     }
   });
   it.each(["loading", "empty", "error"])("preserves orders %s feedback", (state) => {
-    const html = surfaceMarkup(React.createElement(SalesOrdersView), [[], state === "loading", state === "error" ? "Lỗi kết nối" : ""]);
+    const html = ordersMarkup(React.createElement(SalesOrdersView), [[], state === "loading", state === "error" ? "Lỗi kết nối" : ""]);
     expectRoleSurface(html);
     expect(html).toContain(state === "loading" ? "Đang tải đơn hàng…" : state === "empty" ? "Chưa có đơn hàng" : "Lỗi kết nối");
     if (state === "error") {
@@ -819,7 +827,7 @@ describe("S8 rendered product and traceability roles", () => {
     expect(html).toContain("Đang mở bán (1)");
     expect(html).toContain("Bản nháp (1)");
     if (filter === "ALL") {
-      for (const label of ["Đang mở bán", "Bản nháp", "Tạm ngưng", "Chi tiết"]) expect(html).toContain(label);
+      for (const label of ["Đang mở bán", "Bản nháp", "Tạm ngưng"]) expect(html).toContain(label);
       expect(html).not.toContain("+ Giỏ");
       expect(html).toContain("300.000");
       expect(html).toContain('href="/products/ACTIVE"');
@@ -855,7 +863,7 @@ describe("S8 rendered product and traceability roles", () => {
       expect(html).toContain("Nhà cung cấp: Chưa có thông tin");
       expect(html).toContain("QC đầu vào: Chưa có thông tin");
       expect(html).not.toContain("lucide-circle-check");
-      expect(html).toContain("before:bg-border");
+      expect(html).toContain('aria-current="step"');
     }
   });
 });

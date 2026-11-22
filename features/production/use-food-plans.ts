@@ -3,7 +3,8 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useAccess } from "@/lib/access-boundary";
 import { toast } from "@/components/ui/toast";
-import { getDraftProducts, listFoodSets, getFoodSet, type FoodSet, type FoodPackage, type DraftProduct, type Material } from "@/lib/api/sales";
+import { getDraftProducts, type DraftProduct, type Material } from "@/lib/api/sales";
+import { listFoodSets, getFoodSet, type FoodSet, type FoodPackage } from "@/lib/api/sales-pack";
 import { createFoodPlan, getFoodPlan, getFoodPlans, getTargets, getMaterialRequirements, updateFoodPlan, publishFoodPlan, resumeFoodPlanHandoff, reviewFoodPlan, type FoodProductPlan, type ProductionTarget, type PreparationPlanInput, type PackPlanInput } from "@/lib/api/production";
 import { isStale, loadPackOptions, packMessage } from "./pack-shared";
 import { percentRatio, pinnedPlanSchema, positiveQuantity, ratioPercent, ratioTotal, servingCount, slotRatioValues } from "./food-plan-ratios";

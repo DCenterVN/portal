@@ -1,7 +1,7 @@
 import { afterEach, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 import { availableActions } from "./order-actions";
-import { getStaffOrders, getStaffOrder, mutateStaffOrder } from "@/lib/api/staff-orders";
+import { getStaffOrdersPage, getStaffOrder, mutateStaffOrder } from "@/lib/api/staff-orders";
 
 afterEach(() => vi.unstubAllGlobals());
 it.each(["confirm", "pack", "ship", "deliver", "delivery-failure", "payments/confirm"])("BFF forwards %s including body and stable key", async action => {
@@ -38,7 +38,7 @@ it("staff list, detail and cancel never send branch_id; ship sends selected driv
   const order = { id: "o", status: "PACKED", total_vnd: 100, created_at: "2026-11-11" };
   const fetch = vi.fn().mockResolvedValueOnce(Response.json({ code: 200, status: "success", message: "OK", data: { items: [order] } })).mockImplementation(async () => Response.json({ code: 200, status: "success", message: "OK", data: order }));
   vi.stubGlobal("fetch", fetch);
-  await getStaffOrders(); await getStaffOrder("o"); await mutateStaffOrder("o", "cancel", { reason: "Đổi ý" }, "cancel-key");
+  await getStaffOrdersPage(); await getStaffOrder("o"); await mutateStaffOrder("o", "cancel", { reason: "Đổi ý" }, "cancel-key");
   await mutateStaffOrder("o", "ship", { driver_ref: "selected-driver" }, "ship-key");
   for (const [url] of fetch.mock.calls) expect(String(url)).not.toContain("branch_id");
   expect(JSON.parse(String(fetch.mock.calls[3][1]?.body))).toEqual({ driver_ref: "selected-driver" });

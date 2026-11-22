@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { z } from "zod";
-import { listPackages } from "@/lib/api/sales";
+import { listPackages } from "@/lib/api/sales-pack";
 import { getTargets, getMaterialRequirements, getFoodPlan, type ProductionTarget, type MaterialRequirements } from "@/lib/api/production";
 import { quoteSchema, pinsSchema } from "./requirement-schemas";
 

@@ -2,6 +2,8 @@ import { formatDateTime } from "@/lib/format-date";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import { Copy, Eye, Plus } from "lucide-react";
+import { RowActions } from "@/components/patterns/row-actions";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -29,7 +31,7 @@ export function DishListView(props: {
       {props.busy ? <LoadingState title="Đang tải danh sách món…" /> : props.error ? <InlineAlert>{props.error} <Button variant="outline" onClick={props.onRetry}>Thử lại</Button></InlineAlert> : !props.rows.length ? <EmptyState title="Chưa có món phù hợp" description="Tạo món mới hoặc đổi bộ lọc để xem món." /> : <Table><TableHeader><TableRow>{["Món", "Danh mục", "Biến thể", "Trạng thái", "Thao tác"].map(label => <TableHead key={label}>{label}</TableHead>)}</TableRow></TableHeader><TableBody>{props.rows.map(row => <TableRow key={row.product.id}>
         <TableCell>{row.product.name}</TableCell><TableCell>{row.product.category_name || "Chưa chọn"}</TableCell><TableCell>{row.variants.map(v => v.variant_label).join(", ")}</TableCell>
         <TableCell><div className="flex flex-wrap gap-2">{Object.entries(journeyLabels).map(([status, label]) => { const count = row.counts[status as Journey]; return count > 0 ? <Badge key={status}>{label}: {count}</Badge> : null; })}</div></TableCell>
-        <TableCell><div className="flex flex-wrap gap-2"><Button variant="outline" onClick={() => props.onOpen(row.product.id)}>Mở</Button>{props.canCreate && <><Button variant="ghost" onClick={() => props.onCopy(row.product.id)}>Nhân bản</Button><Button variant="ghost" onClick={() => props.onVariant(row.product.id)}>Tạo biến thể</Button></>}</div></TableCell>
+        <TableCell><div className="text-right"><RowActions label={row.product.name} actions={[{ label: "Mở", icon: Eye, onSelect: () => props.onOpen(row.product.id) }, { label: "Nhân bản", icon: Copy, hidden: !props.canCreate, onSelect: () => props.onCopy(row.product.id) }, { label: "Tạo biến thể", icon: Plus, hidden: !props.canCreate, onSelect: () => props.onVariant(row.product.id) }]} /></div></TableCell>
       </TableRow>)}</TableBody></Table>}
       {props.next && <TablePager busy={props.busy} hasNext onNext={props.onNext} />}
     </CardContent></Card>

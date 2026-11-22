@@ -11,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { Badge } from "@/components/ui/badge";
-import { StatusBadge } from "@/components/patterns/status-badge";
+import { StatusBadge, statusTone } from "@/components/patterns/status-badge";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
@@ -30,6 +30,9 @@ import { PageShell } from "@/components/ui/page";
 import { PageHeading } from "@/components/patterns/page-heading";
 import { ProductCreateDialog } from "./product-create-dialog";
 import { ProductActivateDialog } from "./product-activate-dialog";
+import { ProductRowActions } from "./product-row-actions";
+
+const productStatusLabels: Record<string, string> = { ACTIVE: "Đang mở bán", DRAFT: "Bản nháp", SUSPENDED: "Tạm ngưng" };
 import motion from "./filter-motion.module.css";
 
 interface ProductsViewProps {
@@ -37,11 +40,13 @@ interface ProductsViewProps {
   dataSource?: DataSource;
   canCreate?: boolean;
   canActivate?: boolean;
+  canUpdate?: boolean;
+  canDelete?: boolean;
   onActivated?: () => Promise<void>;
   onProductCreated?: (product: Product) => void;
 }
 
-export function ProductsView({ initialProducts: products, dataSource = "api", canCreate = false, canActivate = false, onActivated, onProductCreated }: ProductsViewProps) {
+export function ProductsView({ initialProducts: products, dataSource = "api", canCreate = false, canActivate = false, canUpdate = false, canDelete = false, onActivated, onProductCreated }: ProductsViewProps) {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"ALL" | "ACTIVE" | "DRAFT">("ALL");
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -216,27 +221,13 @@ export function ProductsView({ initialProducts: products, dataSource = "api", ca
                     {formatVND(p.base_price_vnd)}
                   </TableCell>
                   <TableCell>
-                    {p.status === "ACTIVE" ? (
-                      <StatusBadge tone="success" className="text-xs font-semibold">
-                        Đang mở bán
-                      </StatusBadge>
-                    ) : p.status === "DRAFT" ? (
-                      <Badge variant="outline">
-                        Bản nháp
-                      </Badge>
-                    ) : (
-                      <StatusBadge tone="danger" className="text-xs font-semibold">
-                        Tạm ngưng
-                      </StatusBadge>
-                    )}
+                    <StatusBadge tone={statusTone(p.status)}>{productStatusLabels[p.status] ?? "Đang cập nhật"}</StatusBadge>
                   </TableCell>
                   <TableCell className="text-right">
-                    {onActivated && <ProductActivateDialog product={p} allowed={canActivate} onActivated={onActivated} />}
-                    {p.status === "ACTIVE" ? (
-                      <Link href={`/products/${p.id}` as Route} className="text-xs font-semibold">Xem catalog</Link>
-                    ) : <details className="text-left text-xs"><summary className="min-h-11 cursor-pointer py-3">Chi tiết</summary>
-                      <p className="py-2">{p.sku_code ? safeMessage(`${p.sku_code} · ${p.uom}`) : "Chưa có biến thể"}</p>
-                    </details>}
+                    <div className="flex items-center justify-end gap-1">
+                      {onActivated && <ProductActivateDialog product={p} allowed={canActivate} onActivated={onActivated} />}
+                      {onActivated && <ProductRowActions product={p} canUpdate={canUpdate} canDelete={canDelete} onChanged={onActivated} />}
+                    </div>
                   </TableCell>
                 </TableRow>
               ))

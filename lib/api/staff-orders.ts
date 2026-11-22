@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { orderDetailFields } from "@/lib/order-detail";
+import type { CursorPage } from "@/lib/api/all-pages";
 import { apiFetch } from "@/lib/fetcher";
 import { decodePlatform } from "./platform-contract";
 import { mutationHeaders } from "./production-http";
@@ -20,9 +21,12 @@ async function read(response: Response) {
   }
   return body;
 }
-export async function getStaffOrders(): Promise<StaffOrder[]> {
-  const body = await read(await apiFetch("/api/sales/orders?page_size=100"));
-  return decodePlatform(body, z.object({ items: z.array(staffOrderSchema).nullish() })).items ?? [];
+export async function getStaffOrdersPage({ cursor, status }: { cursor?: string; status?: string } = {}): Promise<CursorPage<StaffOrder>> {
+  const query = new URLSearchParams();
+  if (cursor) query.set("cursor", cursor);
+  if (status) query.set("status", status);
+  const page = decodePlatform(await read(await apiFetch(`/api/sales/orders?${query}`)), z.object({ items: z.array(staffOrderSchema).nullish(), next_cursor: z.string().nullish() }));
+  return { items: page.items ?? [], next_cursor: page.next_cursor };
 }
 export async function getStaffOrder(id: string): Promise<StaffOrder> {
   return decodePlatform(await read(await apiFetch(`/api/sales/orders/${encodeURIComponent(id)}`)), staffOrderSchema);

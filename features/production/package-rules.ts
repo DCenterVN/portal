@@ -1,5 +1,6 @@
 import { fold } from "@/components/patterns/entity-picker";
-import type { CreatePackageRequest, RawLabelsView } from "@/lib/api/sales";
+import type { RawLabelsView } from "@/lib/api/sales";
+import type { CreatePackageRequest } from "@/lib/api/sales-pack";
 import type { RecipeComponent } from "@/lib/api/production";
 
 export const allergens = ["GLUTEN", "CRUSTACEANS", "EGGS", "FISH", "PEANUTS", "SOYBEANS", "MILK", "TREE_NUTS", "CELERY", "MUSTARD", "SESAME", "SULPHITES", "LUPIN", "MOLLUSCS"] satisfies RawLabelsView["allergen_summary"]["contains"];
@@ -9,4 +10,6 @@ export const packageCode = (name: string) => `${fold(name).replace(/[^a-z0-9]+/g
 export const positive = (value: string) => /^(?!0(?:\.0{1,3})?$)(0|[1-9][0-9]*)(\.[0-9]{1,3})?$/.test(value);
 export const yieldValid = (value: string) => /^(100(\.0{1,3})?|[1-9][0-9]?(\.[0-9]{1,3})?|0\.(?!0{1,3}$)[0-9]{1,3})$/.test(value);
 export const unitsFor = (uom: string): RecipeComponent["uom"][] => uom === "KG" || uom === "G" ? ["KG", "G"] : uom === "L" || uom === "ML" ? ["L", "ML"] : ["EA"];
+export const uomLabel = (uom: string) => uom === "EA" ? "cái" : uom;
 export type ComponentDraft = { line: RecipeComponent; name: string; units: RecipeComponent["uom"][] };
+export const recipeStatus: Record<string, string> = { BOM_ACTIVE: "Đang dùng", BOM_RETIRED: "Đã ngừng" };

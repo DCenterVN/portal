@@ -8,7 +8,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
-import { StatusBadge } from "@/components/patterns/status-badge";
+import { StatusBadge, statusTone } from "@/components/patterns/status-badge";
+import { uomLabel } from "./package-rules";
+import { productionOrderStatuses } from "./order-status";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
@@ -18,10 +20,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { TablePager } from "@/components/patterns/table-pager";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { PageShell } from "@/components/ui/page";
 import { PageHeading } from "@/components/patterns/page-heading";
 import type { ProductionOrder } from "@/lib/api/production";
-import { useQcDecision } from "./use-qc-decision";
+import { qcStatuses, useQcDecision } from "./use-qc-decision";
 
 interface QCViewProps {
   completedOrders?: ProductionOrder[];
@@ -29,27 +33,24 @@ interface QCViewProps {
 
 export function QCView({ completedOrders }: QCViewProps) {
   const formId = useId();
-  const { orders, listLoading, listError, reload, selectedOrder, setSelectedOrder, temperature, setTemperature, packagePassed, setPackagePassed, sensoryNotes, setSensoryNotes, loading, handleDecision } = useQcDecision(completedOrders);
+  const { list, status, setStatus, orders, listLoading, listError, reload, selectedOrder, setSelectedOrder, temperature, setTemperature, packagePassed, setPackagePassed, sensoryNotes, setSensoryNotes, loading, handleDecision } = useQcDecision(completedOrders);
 
   return (
     <PageShell>
       <PageHeading
-        title="Kiểm định Chất lượng Thành phẩm (VT-13 QC)"
-        description="Nghiệm thu cảm quan, nhiệt độ tâm cấp đông (-18°C) và kiểm tra bao bì với Phân tách trách nhiệm (SoD)"
+        title="Kiểm định chất lượng thành phẩm"
+        description="Nghiệm thu cảm quan, nhiệt độ tâm cấp đông (-18°C) và kiểm tra bao bì"
       />
 
-      <InlineAlert tone="warning" className="mb-6">
-        <p className="font-medium">Nguyên tắc Phân tách Trách nhiệm (SoD Enforcement):</p>
-        <p>
-          Chuyên viên QC (VT-13) bắt buộc phải là nhân sự <strong>độc lập</strong> với người trực tiếp điều phối, sơ chế, nấu chín hoặc đóng gói lô hàng. Hệ thống tự động từ chối (403 Forbidden) nếu phát hiện trùng lặp người thực hiện.
-        </p>
+      <InlineAlert tone="info" className="mb-6">
+        Người kiểm định phải khác người đã nấu hoặc đóng gói mẻ này. Nếu trùng người, hệ thống sẽ không cho ghi kết quả.
       </InlineAlert>
 
       {selectedOrder && (
         <Card className="mb-6">
           <CardContent className="pt-6">
             <h3 className="mb-4 text-lg font-semibold">
-              Nghiệm thu Lệnh: {selectedOrder.order_code} ({selectedOrder.planned_quantity} {selectedOrder.uom})
+              Nghiệm thu Lệnh: {selectedOrder.order_code} ({selectedOrder.planned_quantity} {uomLabel(selectedOrder.uom)})
             </h3>
             <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="grid gap-1.5">
@@ -94,6 +95,10 @@ export function QCView({ completedOrders }: QCViewProps) {
         </Card>
       )}
 
+      <NativeSelect aria-label="Lọc trạng thái kiểm định" className="mb-4 w-full sm:w-56" value={status} onChange={(event) => { setSelectedOrder(null); setStatus(event.target.value); }}>
+        {qcStatuses.map((value) => <NativeSelectOption key={value} value={value}>{productionOrderStatuses[value]}</NativeSelectOption>)}
+      </NativeSelect>
+
       {listError ? <ErrorState title={listError} onRetry={reload} className="mb-4" /> : <Card>
         <CardContent className="p-0">
           <Table>
@@ -116,20 +121,15 @@ export function QCView({ completedOrders }: QCViewProps) {
                 orders.map((o) => (
                   <TableRow key={o.id}>
                     <TableCell className="font-mono font-medium">{o.order_code}</TableCell>
-                    <TableCell>{o.actual_output_quantity > 0 ? o.actual_output_quantity : o.planned_quantity} {o.uom}</TableCell>
+                    <TableCell>{o.actual_output_quantity > 0 ? o.actual_output_quantity : o.planned_quantity} {uomLabel(o.uom)}</TableCell>
                     <TableCell>
-                      <StatusBadge tone={o.status === "QC_PASSED" ? "success" : o.status === "QC_FAILED" ? "danger" : "neutral"}>
-                        {o.status}
-                      </StatusBadge>
+                      <StatusBadge tone={statusTone(o.status)}>{productionOrderStatuses[o.status] ?? o.status}</StatusBadge>
                     </TableCell>
                     <TableCell className="text-right">
                       {o.status === "COMPLETED" && (
                         <Button size="sm" variant={!selectedOrder && orders.find((order) => order.status === "COMPLETED")?.id === o.id ? "default" : "outline"} onClick={() => setSelectedOrder(o)}>
                           Tiến hành nghiệm thu
                         </Button>
-                      )}
-                      {o.status === "QC_PASSED" && (
-                        <span className="text-sm text-muted-foreground">Đã phê duyệt đạt chuẩn</span>
                       )}
                     </TableCell>
                   </TableRow>
@@ -139,6 +139,7 @@ export function QCView({ completedOrders }: QCViewProps) {
           </Table>
         </CardContent>
       </Card>}
+      <TablePager label="Phân trang lô thành phẩm" busy={listLoading} hasPrevious={list.hasPrevious} onPrevious={list.previous} hasNext={list.hasNext} onNext={list.next} />
     </PageShell>
   );
 }

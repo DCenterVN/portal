@@ -2,7 +2,7 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { useCart } from "./use-cart";
-import { cancelOrder, getOrderDisplay } from "@/lib/api/sales";
+import { cancelOrder, getOrderDisplay, getOrdersPage } from "@/lib/api/sales";
 
 vi.mock("@/components/ui/toast", () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
 const fetchMock = vi.fn<typeof fetch>();
@@ -52,7 +52,7 @@ it.each([409, 200])("lỗi hoặc response %s giữ giỏ, retry dùng cùng key
 });
 it("list/detail/cancel gửi branch_id sau khi đặt hàng", async () => {
   fetchMock.mockResolvedValueOnce(success({ items: [order] }, 200)).mockResolvedValueOnce(success(order, 200)).mockResolvedValueOnce(success(order, 200));
-  await getOrderDisplay(); await getOrderDisplay("order"); await cancelOrder("order", "Đổi ý");
+  await getOrdersPage(); await getOrderDisplay("order"); await cancelOrder("order", "Đổi ý");
   for (const [url] of fetchMock.mock.calls) expect(new URL(String(url), "http://portal").searchParams.get("branch_id")).toBe("branch");
 });
 

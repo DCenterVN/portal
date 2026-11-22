@@ -43,3 +43,18 @@ export async function hasApprovedPrice(variantId: string): Promise<boolean> {
   } while (cursor);
   return false;
 }
+
+const productPath = (id: string) => `/api/sales/products/${encodeURIComponent(id)}`;
+const mutation = (method: string, body?: unknown): RequestInit => ({
+  method, headers: { "Content-Type": "application/json", "Idempotency-Key": crypto.randomUUID() },
+  body: body === undefined ? undefined : JSON.stringify(body),
+});
+export async function updateProduct(id: string, input: { name: string; description: string }) {
+  await fetcher(productPath(id), mutation("PATCH", input));
+}
+export async function suspendProduct(id: string, reason: string) {
+  await fetcher(`${productPath(id)}/suspend`, mutation("POST", { reason }));
+}
+export async function deleteProduct(id: string) {
+  await fetcher(productPath(id), mutation("DELETE"));
+}

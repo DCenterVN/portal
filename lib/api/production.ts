@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { apiFetch } from "@/lib/fetcher";
 import { errorMessage, mutationHeaders, responseData } from "@/lib/api/production-http";
+import { allPages, type CursorPage } from "@/lib/api/all-pages";
 import type { FoodSlot } from "@/lib/api/production-pack";
 
 export * from "@/lib/api/production-pack";
@@ -115,11 +116,34 @@ export interface QCInspectionResult {
 
 // ---------------- Targets (VT-14 / VT-15) ----------------
 
-export async function getTargets(): Promise<ProductionTarget[]> {
-  const res = await apiFetch("/api/production/targets");
-  if (!res.ok) throw new Error(await errorMessage(res, `Không tải được chỉ tiêu (${res.status})`));
-  const payload = await responseData<{ items?: ProductionTarget[] }>(res);
-  return payload.items || [];
+type PageQuery = { cursor?: string; status?: string; pageSize?: number };
+async function getPage<T>(resource: "targets" | "orders", { cursor, status, pageSize }: PageQuery, fallback: string): Promise<CursorPage<T>> {
+  const query = new URLSearchParams();
+  if (cursor) query.set("cursor", cursor);
+  if (status) query.set("status", status);
+  if (pageSize) query.set("page_size", String(pageSize));
+  const res = await apiFetch(`/api/production/${resource}?${query}`);
+  if (!res.ok) throw new Error(await errorMessage(res, `${fallback} (${res.status})`));
+  const payload = await responseData<{ items?: T[]; next_cursor?: string | null }>(res);
+  return { items: payload.items ?? [], next_cursor: payload.next_cursor };
+}
+
+export const getTargetsPage = (query: PageQuery = {}) => getPage<ProductionTarget>("targets", query, "Không tải được chỉ tiêu");
+export const getTargets = () => allPages(cursor => getTargetsPage({ cursor, pageSize: 100 }));
+
+export async function updateTarget(targetId: string, input: Partial<Pick<ProductionTarget, "title" | "period_start" | "period_end" | "lines">>): Promise<ProductionTarget> {
+  const res = await apiFetch(`/api/production/targets/${encodeURIComponent(targetId)}`, {
+    method: "PATCH",
+    headers: mutationHeaders(),
+    body: JSON.stringify(input),
+  });
+  if (!res.ok) throw new Error(await errorMessage(res, "Không thể sửa chỉ tiêu sản xuất"));
+  return responseData<ProductionTarget>(res);
+}
+
+export async function deleteTarget(targetId: string): Promise<void> {
+  const res = await apiFetch(`/api/production/targets/${encodeURIComponent(targetId)}`, { method: "DELETE", headers: mutationHeaders() });
+  if (!res.ok) throw new Error(await errorMessage(res, "Không thể xoá chỉ tiêu sản xuất"));
 }
 
 export async function createTarget(input: { branch_ref: string; period_start: string; period_end: string; title: string; lines: Array<{ product_ref: string; target_quantity: string | number; uom: string }> }): Promise<ProductionTarget> {
@@ -193,12 +217,9 @@ export async function resumeFoodPlanHandoff(planId: string): Promise<{ food_plan
 
 // ---------------- Production Orders (VT-09..VT-12) ----------------
 
-export async function getOrders({ forPicker = false } = {}): Promise<ProductionOrder[]> {
-  const res = await apiFetch(forPicker ? "/api/production/orders?status=QC_PASSED" : "/api/production/orders");
-  if (!res.ok) throw new Error(forPicker ? "Không thể tải danh sách lô thành phẩm. Thử lại sau." : await errorMessage(res, `Không tải được lệnh sản xuất (${res.status})`));
-  const payload = await responseData<{ items?: ProductionOrder[] }>(res);
-  return payload.items || [];
-}
+export const getOrdersPage = (query: PageQuery = {}) => getPage<ProductionOrder>("orders", query, "Không tải được lệnh sản xuất");
+export const getOrders = ({ forPicker = false } = {}) => allPages(cursor => getOrdersPage({ cursor, pageSize: 100, status: forPicker ? "QC_PASSED" : undefined }))
+  .catch(error => { throw forPicker ? new Error("Không thể tải danh sách lô thành phẩm. Thử lại sau.") : error; });
 
 export async function acceptOrder(orderId: string): Promise<ProductionOrder> {
   const res = await apiFetch(`/api/production/orders/${encodeURIComponent(orderId)}/acceptance`, {

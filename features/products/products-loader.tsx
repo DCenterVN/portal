@@ -14,6 +14,6 @@ export function ProductsLoader() {
     <Button variant="outline" onClick={() => { void state.reload(); }}>Tải lại</Button>
   </PageShell>;
   return <ProductsView initialProducts={state.products} dataSource={state.dataSource}
-    canCreate={state.canCreate} canActivate={state.canActivate}
+    canCreate={state.canCreate} canActivate={state.canActivate} canUpdate={state.canUpdate} canDelete={state.canDelete}
     onActivated={state.reload} onProductCreated={state.created} />;
 }
