@@ -1,14 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { AccessProvider } from "@/lib/access-boundary";
-import { createMon, suspendMon, uploadMonImage, createLoai, viMessage } from "@/lib/api/material-catalog-write";
+import { createMaterial, suspendMaterial, uploadMaterialImage, createCategory, viMessage } from "@/lib/api/material-catalog-write";
 import { FetchError } from "@/lib/fetcher";
-import { getMonList } from "@/lib/api/material-catalog";
+import { listMaterials } from "@/lib/api/material-catalog";
 import { MaterialsView } from "./materials-view";
-import { MonGrid } from "./materials-view-parts";
+import { MaterialGrid } from "./materials-view-parts";
 import { readFileSync } from "node:fs";
-import { MonActions, NameField, UnitField, monPatch, actionsFor, unitOf, groupChoice, locksFor } from "./materials-mon-sheet";
-import { suggestCode, CHUA_XEP, filterMon, countByLoai } from "./materials-catalog";
+import { MaterialActions, NameField, UnitField, materialPatch, actionsFor, unitOf, groupChoice, locksFor } from "./material-item-sheet";
+import { suggestCode, UNCATEGORIZED, filterMaterials, countByCategory } from "./materials-catalog";
 import { CategoryBar } from "./materials-view-parts";
 import { TREE } from "./materials-fixtures";
 
@@ -45,18 +45,18 @@ describe("nút theo vai", () => {
 
 describe("nút trong khung sửa", () => {
   const can = (role: keyof typeof ROLES) => (action: string) => ROLES[role].includes(action);
-  const mon = (status: "ACTIVE" | "DRAFT" | "SUSPENDED") => ({ id: "1", ten: "A", loai: "rau", nhom: "rau_la", anh: null, status, donVi: "KG" as const });
+  const material = (status: "ACTIVE" | "DRAFT" | "SUSPENDED") => ({ id: "1", name: "A", category: "rau", group: "rau_la", imageUrl: null, status, unit: "KG" as const });
   it("Bếp: đang dùng có Lưu và Ngừng dùng…, nháp thêm Duyệt, đã ngừng chỉ Dùng lại", () => {
-    expect(actionsFor(mon("ACTIVE"), can("food_dev"))).toEqual(["Lưu", "Ngừng dùng…"]);
-    expect(actionsFor(mon("DRAFT"), can("food_dev"))).toEqual(["Lưu", "Duyệt", "Ngừng dùng…"]);
-    expect(actionsFor(mon("SUSPENDED"), can("food_dev"))).toEqual(["Dùng lại"]);
+    expect(actionsFor(material("ACTIVE"), can("food_dev"))).toEqual(["Lưu", "Ngừng dùng…"]);
+    expect(actionsFor(material("DRAFT"), can("food_dev"))).toEqual(["Lưu", "Duyệt", "Ngừng dùng…"]);
+    expect(actionsFor(material("SUSPENDED"), can("food_dev"))).toEqual(["Dùng lại"]);
   });
   it("Kho và Bán hàng không có nút nào", () => {
-    expect(actionsFor(mon("DRAFT"), can("warehouse"))).toEqual([]);
-    expect(actionsFor(mon("ACTIVE"), can("sales"))).toEqual([]);
+    expect(actionsFor(material("DRAFT"), can("warehouse"))).toEqual([]);
+    expect(actionsFor(material("ACTIVE"), can("sales"))).toEqual([]);
   });
   it("khung hiện đúng chữ trên nút", () => {
-    const html = renderToStaticMarkup(<MonActions labels={["Lưu", "Duyệt", "Ngừng dùng…"]} busy={false} onAction={() => {}} />);
+    const html = renderToStaticMarkup(<MaterialActions labels={["Lưu", "Duyệt", "Ngừng dùng…"]} busy={false} onAction={() => {}} />);
     for (const text of ["Lưu", "Duyệt", "Ngừng dùng…"]) expect(html).toContain(text);
   });
 });
@@ -81,7 +81,7 @@ const path = (call: Call) => new URL(call.url, "http://x").pathname;
 
 describe("thêm món", () => {
   it("gửi đúng thân, đúng đường và có Idempotency-Key", async () => {
-    await createMon({ name: "Cà chua", uom_code: "KG", material_group_code: "RAU_LA" });
+    await createMaterial({ name: "Cà chua", uom_code: "KG", material_group_code: "RAU_LA" });
     expect(path(calls[0])).toBe("/api/sales/skus");
     expect(calls[0].method).toBe("POST");
     expect(calls[0].body).toEqual({ name: "Cà chua", uom_code: "KG", material_group_code: "RAU_LA" });
@@ -89,24 +89,24 @@ describe("thêm món", () => {
   });
   it("trùng tên thì hiện Đã có nguyên liệu tên này, không lộ mã lỗi", async () => {
     reply.mockReturnValue({ status: 409, body: { message: "duplicate", errors: { error_code: "duplicate_resource" } } });
-    const error = await createMon({ name: "A", uom_code: "KG", material_group_code: "X" }).catch(e => e);
+    const error = await createMaterial({ name: "A", uom_code: "KG", material_group_code: "X" }).catch(e => e);
     expect(error).toBeInstanceOf(FetchError);
-    expect(viMessage(error, "mon")).toBe("Đã có nguyên liệu tên này");
+    expect(viMessage(error, "material")).toBe("Đã có nguyên liệu tên này");
   });
   it("lỗi 403 và 409 khi ngừng loại có câu tiếng Việt", () => {
-    expect(viMessage(new FetchError("x", 403), "mon")).toBe("Bạn không có quyền làm việc này");
-    expect(viMessage(new FetchError("x", 409, { errors: { error_code: "state_conflict" } }), "loai")).toBe("Loại còn nhóm đang dùng hoặc đang gắn nhà cung cấp");
-    expect(viMessage(new FetchError("uuid 0192", 500), "mon")).not.toMatch(/uuid|500/);
+    expect(viMessage(new FetchError("x", 403), "material")).toBe("Bạn không có quyền làm việc này");
+    expect(viMessage(new FetchError("x", 409, { errors: { error_code: "state_conflict" } }), "category")).toBe("Loại còn nhóm đang dùng hoặc đang gắn nhà cung cấp");
+    expect(viMessage(new FetchError("uuid 0192", 500), "material")).not.toMatch(/uuid|500/);
   });
 });
 
 describe("ngừng dùng", () => {
   it("không có lý do thì không gọi API", async () => {
-    await expect(suspendMon("m1", "   ")).rejects.toThrow();
+    await expect(suspendMaterial("m1", "   ")).rejects.toThrow();
     expect(calls).toHaveLength(0);
   });
   it("có lý do thì gọi /suspend với reason", async () => {
-    await suspendMon("m1", "Nhập nhầm");
+    await suspendMaterial("m1", "Nhập nhầm");
     expect(path(calls[0])).toBe("/api/sales/skus/m1/suspend");
     expect(calls[0].body).toEqual({ reason: "Nhập nhầm" });
   });
@@ -119,7 +119,7 @@ describe("ảnh", () => {
       if (call.url.startsWith("http://minio.local")) return { status: 204 };
       return { status: 200, body: { data: {} } };
     });
-    await uploadMonImage("m1", new File([new Uint8Array([1, 2, 3])], "a.png", { type: "image/png" }));
+    await uploadMaterialImage("m1", new File([new Uint8Array([1, 2, 3])], "a.png", { type: "image/png" }));
     expect(calls.map(call => `${call.method} ${call.url.startsWith("http://minio") ? "minio" : path(call)}`)).toEqual([
       "POST /api/sales/skus/m1/image-uploads", "POST minio", "POST /api/sales/skus/m1/image-uploads/u1/finalize",
     ]);
@@ -135,14 +135,14 @@ describe("đọc món theo trạng thái", () => {
     reply.mockImplementation(call => new URL(call.url, "http://x").searchParams.get("cursor")
       ? { status: 200, body: { data: { items: [{ id: "2", name: "Bò 2", material_group_code: "BO", status: "DRAFT", uom_code: "KG", image_url: null }], next_cursor: "" } } }
       : { status: 200, body: { data: { items: [{ id: "1", name: "Lợn 1", material_group_code: "LON", status: "DRAFT", uom_code: "KG", image_url: "http://i/1" }], next_cursor: "c1" } } });
-    const items = await getMonList("DRAFT", TREE);
+    const items = await listMaterials("DRAFT", TREE);
     const first = new URL(calls[0].url, "http://x").searchParams;
     expect(first.get("status")).toBe("DRAFT");
     expect(first.get("kind")).toBe("RAW_MATERIAL");
     expect(calls).toHaveLength(2);
     expect(items).toEqual([
-      { id: "1", ten: "Lợn 1", loai: "thit", nhom: "lon", anh: "http://i/1", status: "DRAFT", donVi: "KG" },
-      { id: "2", ten: "Bò 2", loai: "thit", nhom: "bo", anh: null, status: "DRAFT", donVi: "KG" },
+      { id: "1", name: "Lợn 1", category: "thit", group: "lon", imageUrl: "http://i/1", status: "DRAFT", unit: "KG" },
+      { id: "2", name: "Bò 2", category: "thit", group: "bo", imageUrl: null, status: "DRAFT", unit: "KG" },
     ]);
   });
 });
@@ -153,10 +153,10 @@ describe("quản lý loại", () => {
     expect(suggestCode("  Đồ khô, hạt ")).toBe("DO_KHO_HAT");
   });
   it("thêm nhóm gửi parent_code, thêm loại thì không có", async () => {
-    await createLoai({ code: "THIT_LON", name: "Thịt lợn", parent_code: "THIT" });
+    await createCategory({ code: "THIT_LON", name: "Thịt lợn", parent_code: "THIT" });
     expect(path(calls[0])).toBe("/api/inventory/material-categories");
     expect(calls[0].body).toEqual({ code: "THIT_LON", name: "Thịt lợn", parent_code: "THIT" });
-    await createLoai({ code: "NAM", name: "Nấm" });
+    await createCategory({ code: "NAM", name: "Nấm" });
     expect(calls[1].body).toEqual({ code: "NAM", name: "Nấm" });
   });
 });
@@ -164,8 +164,8 @@ describe("quản lý loại", () => {
 describe("chữ nguyên liệu", () => {
   const quantity = new FetchError("name_has_quantity: tên nguyên liệu không được chứa khối lượng hay quy cách (như 1kg, 500ml, 300gr/khay)", 422, { errors: { error_code: "validation_failed" } });
   it("422 name_has_quantity hiện câu nhắc về khối lượng", () => {
-    expect(viMessage(quantity, "mon")).toBe('Tên nguyên liệu không ghi khối lượng hay quy cách, ví dụ bỏ "1kg", "500ml"');
-    expect(viMessage(new FetchError("other", 422), "mon")).toBe("Thông tin chưa hợp lệ, hãy kiểm tra lại");
+    expect(viMessage(quantity, "material")).toBe('Tên nguyên liệu không ghi khối lượng hay quy cách, ví dụ bỏ "1kg", "500ml"');
+    expect(viMessage(new FetchError("other", 422), "material")).toBe("Thông tin chưa hợp lệ, hãy kiểm tra lại");
   });
   it("ô tên có gợi ý và hiện lỗi dưới ô", () => {
     const html = renderToStaticMarkup(<NameField value="" onChange={() => {}} disabled={false} error="" />);
@@ -176,43 +176,43 @@ describe("chữ nguyên liệu", () => {
     expect(bad).toContain("Lỗi tên");
   });
   it("không còn chữ món trong màn Nguyên liệu và lớp dữ liệu", () => {
-    const files = ["materials-view.tsx", "materials-view-parts.tsx", "materials-mon-sheet.tsx", "materials-loai-sheet.tsx", "materials-nhom-filter.tsx", "../../lib/api/material-catalog-write.ts"];
+    const files = ["materials-view.tsx", "materials-view-parts.tsx", "material-item-sheet.tsx", "material-category-sheet.tsx", "material-group-filter.tsx", "../../lib/api/material-catalog-write.ts"];
     for (const file of files) expect(readFileSync(new URL(file, import.meta.url), "utf8")).not.toMatch(/(^|[^\p{L}])món([^\p{L}]|$)/iu);
     for (const role of ["admin", "warehouse"] as const) expect(as(role)).not.toMatch(/(^|[^\p{L}])món([^\p{L}]|$)/iu);
-    expect(renderToStaticMarkup(<MonGrid items={[]} />)).not.toMatch(/món/i);
-    expect(viMessage(new FetchError("x", 409, { errors: { error_code: "state_conflict" } }), "mon")).not.toMatch(/món/i);
+    expect(renderToStaticMarkup(<MaterialGrid items={[]} />)).not.toMatch(/món/i);
+    expect(viMessage(new FetchError("x", 409, { errors: { error_code: "state_conflict" } }), "material")).not.toMatch(/món/i);
   });
 });
 
 describe("đơn vị chỉ sửa khi nháp", () => {
   const body = { name: "A", uom_code: "KG" as const, material_group_code: "X" };
-  const mon = (status: "ACTIVE" | "DRAFT" | "SUSPENDED") => ({ id: "1", ten: "A", loai: "thit", nhom: "y", anh: null, status, donVi: "KG" as const });
+  const material = (status: "ACTIVE" | "DRAFT" | "SUSPENDED") => ({ id: "1", name: "A", category: "thit", group: "y", imageUrl: null, status, unit: "KG" as const });
   it("Đang dùng và Đã ngừng thì ô Đơn vị khoá kèm gợi ý, thân PATCH không có uom_code", () => {
     for (const status of ["ACTIVE", "SUSPENDED"] as const) {
-      expect(monPatch(mon(status), body)).toEqual({ name: "A", material_group_code: "X" });
+      expect(materialPatch(material(status), body)).toEqual({ name: "A", material_group_code: "X" });
       const html = renderToStaticMarkup(<UnitField locked value="KG" onChange={() => {}} error="" />);
       expect(html).toContain('disabled=""');
       expect(html).toContain("Chỉ đổi đơn vị khi nguyên liệu còn là nháp");
     }
   });
   it("Nháp thì ô Đơn vị sửa được và thân PATCH có uom_code", () => {
-    expect(monPatch(mon("DRAFT"), body)).toEqual(body);
+    expect(materialPatch(material("DRAFT"), body)).toEqual(body);
     const html = renderToStaticMarkup(<UnitField locked={false} value="KG" onChange={() => {}} error="" />);
     expect(html).not.toContain('disabled=""');
   });
   it("409 đơn vị gốc hiện câu về đơn vị, không hiện câu đổi trạng thái", () => {
     const error = new FetchError("đơn vị gốc chỉ sửa được khi nguyên liệu còn là nháp", 409, { errors: { error_code: "state_conflict" } });
-    expect(viMessage(error, "mon")).toBe("Chỉ đổi đơn vị khi nguyên liệu còn là nháp");
-    expect(viMessage(new FetchError("x", 409, { errors: { error_code: "state_conflict" } }), "mon")).toBe("Nguyên liệu đã đổi trạng thái, hãy tải lại danh sách");
+    expect(viMessage(error, "material")).toBe("Chỉ đổi đơn vị khi nguyên liệu còn là nháp");
+    expect(viMessage(new FetchError("x", 409, { errors: { error_code: "state_conflict" } }), "material")).toBe("Nguyên liệu đã đổi trạng thái, hãy tải lại danh sách");
   });
 });
 
 describe("lô 7: đơn vị lạ", () => {
   it("trang có dòng uom_code G vẫn đọc được và hiện", async () => {
     reply.mockReturnValue({ status: 200, body: { data: { items: [{ id: "1", name: "Muối", material_group_code: "LON", status: "DRAFT", uom_code: "G", image_url: null }], next_cursor: "" } } });
-    const items = await getMonList("DRAFT", TREE);
+    const items = await listMaterials("DRAFT", TREE);
     expect(items).toHaveLength(1);
-    expect(items[0].donVi).toBe("G");
+    expect(items[0].unit).toBe("G");
   });
   it("đơn vị ngoài KG/L/EA thì ô Đơn vị để trống, bắt chọn lại", () => {
     expect(unitOf("G")).toBe("");
@@ -221,7 +221,7 @@ describe("lô 7: đơn vị lạ", () => {
     expect(html).toContain("Chọn đơn vị");
   });
   it("đơn vị trống thì chặn Lưu và Duyệt", () => {
-    const html = renderToStaticMarkup(<MonActions labels={["Lưu", "Duyệt", "Ngừng dùng…"]} busy={false} blocked onAction={() => {}} />);
+    const html = renderToStaticMarkup(<MaterialActions labels={["Lưu", "Duyệt", "Ngừng dùng…"]} busy={false} blocked onAction={() => {}} />);
     expect(html.match(/disabled=""/g)).toHaveLength(2);
   });
 });
@@ -229,28 +229,28 @@ describe("lô 7: đơn vị lạ", () => {
 describe("lô 7: trùng mã loại, nhóm", () => {
   const conflict = new FetchError("Mã đã tồn tại", 409, { errors: { error_code: "STATE_CONFLICT" } });
   it("thêm loại hoặc nhóm gặp 409 thì báo đã có mã này", () => {
-    expect(viMessage(conflict, "loai-moi")).toBe("Đã có loại hoặc nhóm mã này");
+    expect(viMessage(conflict, "new-category")).toBe("Đã có loại hoặc nhóm mã này");
   });
   it("ngừng dùng gặp 409 giữ câu cũ", () => {
-    expect(viMessage(conflict, "loai")).toBe("Loại còn nhóm đang dùng hoặc đang gắn nhà cung cấp");
+    expect(viMessage(conflict, "category")).toBe("Loại còn nhóm đang dùng hoặc đang gắn nhà cung cấp");
   });
   it("sales báo duplicate_resource thì thêm nguyên liệu hiện Đã có nguyên liệu tên này", () => {
     const error = new FetchError("material name already exists", 409, { errors: { error_code: "duplicate_resource" } });
     error.code = "duplicate_resource";
-    expect(viMessage(error, "mon")).toBe("Đã có nguyên liệu tên này");
+    expect(viMessage(error, "material")).toBe("Đã có nguyên liệu tên này");
   });
 });
 
 describe("lô 7: các trường hợp riêng", () => {
   const can = (action: string) => ROLES.food_dev.includes(action);
-  const mon = (status: "ACTIVE" | "DRAFT" | "SUSPENDED") => ({ id: "1", ten: "A", loai: "thit", nhom: "lon", anh: null, status, donVi: "KG" });
+  const material = (status: "ACTIVE" | "DRAFT" | "SUSPENDED") => ({ id: "1", name: "A", category: "thit", group: "lon", imageUrl: null, status, unit: "KG" });
   it("Đã ngừng: tên, loại, nhóm chỉ đọc, không đổi hay xoá ảnh", () => {
-    expect(locksFor(mon("SUSPENDED"), can)).toEqual({ fields: false, image: false });
-    expect(locksFor(mon("ACTIVE"), can)).toEqual({ fields: true, image: true });
+    expect(locksFor(material("SUSPENDED"), can)).toEqual({ fields: false, image: false });
+    expect(locksFor(material("ACTIVE"), can)).toEqual({ fields: true, image: true });
     expect(locksFor("new", can)).toEqual({ fields: true, image: true });
   });
   it("nhóm đã ngừng: giữ nhóm cũ kèm (đã ngừng), không nhảy sang nhóm đầu", () => {
-    const tree = [{ code: "thit", label: "Thịt", active: true, nhom: [{ code: "lon", label: "Lợn", active: true }, { code: "bo", label: "Bò", active: false }] }];
+    const tree = [{ code: "thit", label: "Thịt", active: true, groups: [{ code: "lon", label: "Lợn", active: true }, { code: "bo", label: "Bò", active: false }] }];
     const choice = groupChoice(tree, "thit", "bo");
     expect(choice.value).toBe("bo");
     expect(choice.options).toEqual([{ code: "lon", label: "Lợn" }, { code: "bo", label: "Bò (đã ngừng)" }]);
@@ -260,18 +260,18 @@ describe("lô 7: các trường hợp riêng", () => {
   });
   it("chỉ gửi material_group_code khi người dùng đổi nhóm", () => {
     const body = { name: "A", uom_code: "KG" as const, material_group_code: "BO" };
-    expect(monPatch(mon("DRAFT"), body)).toEqual({ name: "A", uom_code: "KG", material_group_code: "BO" });
-    expect(monPatch(mon("DRAFT"), { ...body, material_group_code: "LON" })).toEqual({ name: "A", uom_code: "KG" });
+    expect(materialPatch(material("DRAFT"), body)).toEqual({ name: "A", uom_code: "KG", material_group_code: "BO" });
+    expect(materialPatch(material("DRAFT"), { ...body, material_group_code: "LON" })).toEqual({ name: "A", uom_code: "KG" });
   });
-  const none = { id: "9", ten: "Lạ", loai: "", nhom: "", anh: null, status: "ACTIVE" as const, donVi: "KG" };
+  const none = { id: "9", name: "Lạ", category: "", group: "", imageUrl: null, status: "ACTIVE" as const, unit: "KG" };
   it("nguyên liệu chưa có nhóm vẫn lọc được và đếm được", () => {
-    expect(countByLoai([none])[CHUA_XEP]).toBe(1);
-    expect(filterMon([none], CHUA_XEP, "")).toHaveLength(1);
-    expect(filterMon([none], "thit", "")).toHaveLength(0);
+    expect(countByCategory([none])[UNCATEGORIZED]).toBe(1);
+    expect(filterMaterials([none], UNCATEGORIZED, "")).toHaveLength(1);
+    expect(filterMaterials([none], "thit", "")).toHaveLength(0);
   });
   it("thanh loại có nút Chưa xếp loại chỉ khi có dòng như vậy", () => {
-    const bar = (counts: Record<string, number>) => renderToStaticMarkup(<CategoryBar current="thit" loai={TREE} counts={counts} onSelect={() => {}} />);
-    expect(bar({ [CHUA_XEP]: 2 })).toContain("Chưa xếp loại");
+    const bar = (counts: Record<string, number>) => renderToStaticMarkup(<CategoryBar current="thit" category={TREE} counts={counts} onSelect={() => {}} />);
+    expect(bar({ [UNCATEGORIZED]: 2 })).toContain("Chưa xếp loại");
     expect(bar({})).not.toContain("Chưa xếp loại");
   });
 });

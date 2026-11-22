@@ -4,7 +4,7 @@ import { forwardService, serviceUrl } from "@/lib/api/service-bff";
 export async function forwardInventory(
   request: NextRequest,
   path: string,
-  method: "GET" | "POST" | "PUT" | "PATCH",
+  method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE",
   bodyPolicy: "none" | "required" = method === "GET" ? "none" : "required",
   requireAuth: boolean = true,
 ) {
