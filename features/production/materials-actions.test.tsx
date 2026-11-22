@@ -7,8 +7,9 @@ import { getMonList } from "@/lib/api/material-catalog";
 import { MaterialsView } from "./materials-view";
 import { MonGrid } from "./materials-view-parts";
 import { readFileSync } from "node:fs";
-import { MonActions, NameField, UnitField, monPatch, actionsFor } from "./materials-mon-sheet";
-import { suggestCode } from "./materials-catalog";
+import { MonActions, NameField, UnitField, monPatch, actionsFor, unitOf, groupChoice, locksFor } from "./materials-mon-sheet";
+import { suggestCode, CHUA_XEP, filterMon, countByLoai } from "./materials-catalog";
+import { CategoryBar } from "./materials-view-parts";
 import { TREE } from "./materials-fixtures";
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ replace: () => {} }), usePathname: () => "/production/materials", useSearchParams: () => new URLSearchParams("") }));
@@ -185,7 +186,7 @@ describe("chữ nguyên liệu", () => {
 
 describe("đơn vị chỉ sửa khi nháp", () => {
   const body = { name: "A", uom_code: "KG" as const, material_group_code: "X" };
-  const mon = (status: "ACTIVE" | "DRAFT" | "SUSPENDED") => ({ id: "1", ten: "A", loai: "thit", nhom: "x", anh: null, status, donVi: "KG" as const });
+  const mon = (status: "ACTIVE" | "DRAFT" | "SUSPENDED") => ({ id: "1", ten: "A", loai: "thit", nhom: "y", anh: null, status, donVi: "KG" as const });
   it("Đang dùng và Đã ngừng thì ô Đơn vị khoá kèm gợi ý, thân PATCH không có uom_code", () => {
     for (const status of ["ACTIVE", "SUSPENDED"] as const) {
       expect(monPatch(mon(status), body)).toEqual({ name: "A", material_group_code: "X" });
@@ -203,5 +204,74 @@ describe("đơn vị chỉ sửa khi nháp", () => {
     const error = new FetchError("đơn vị gốc chỉ sửa được khi nguyên liệu còn là nháp", 409, { errors: { error_code: "state_conflict" } });
     expect(viMessage(error, "mon")).toBe("Chỉ đổi đơn vị khi nguyên liệu còn là nháp");
     expect(viMessage(new FetchError("x", 409, { errors: { error_code: "state_conflict" } }), "mon")).toBe("Nguyên liệu đã đổi trạng thái, hãy tải lại danh sách");
+  });
+});
+
+describe("lô 7: đơn vị lạ", () => {
+  it("trang có dòng uom_code G vẫn đọc được và hiện", async () => {
+    reply.mockReturnValue({ status: 200, body: { data: { items: [{ id: "1", name: "Muối", material_group_code: "LON", status: "DRAFT", uom_code: "G", image_url: null }], next_cursor: "" } } });
+    const items = await getMonList("DRAFT", TREE);
+    expect(items).toHaveLength(1);
+    expect(items[0].donVi).toBe("G");
+  });
+  it("đơn vị ngoài KG/L/EA thì ô Đơn vị để trống, bắt chọn lại", () => {
+    expect(unitOf("G")).toBe("");
+    expect(unitOf("KG")).toBe("KG");
+    const html = renderToStaticMarkup(<UnitField locked={false} value="" onChange={() => {}} error="" />);
+    expect(html).toContain("Chọn đơn vị");
+  });
+  it("đơn vị trống thì chặn Lưu và Duyệt", () => {
+    const html = renderToStaticMarkup(<MonActions labels={["Lưu", "Duyệt", "Ngừng dùng…"]} busy={false} blocked onAction={() => {}} />);
+    expect(html.match(/disabled=""/g)).toHaveLength(2);
+  });
+});
+
+describe("lô 7: trùng mã loại, nhóm", () => {
+  const conflict = new FetchError("Mã đã tồn tại", 409, { errors: { error_code: "STATE_CONFLICT" } });
+  it("thêm loại hoặc nhóm gặp 409 thì báo đã có mã này", () => {
+    expect(viMessage(conflict, "loai-moi")).toBe("Đã có loại hoặc nhóm mã này");
+  });
+  it("ngừng dùng gặp 409 giữ câu cũ", () => {
+    expect(viMessage(conflict, "loai")).toBe("Loại còn nhóm đang dùng hoặc đang gắn nhà cung cấp");
+  });
+  it("sales báo duplicate_resource thì thêm nguyên liệu hiện Đã có nguyên liệu tên này", () => {
+    const error = new FetchError("material name already exists", 409, { errors: { error_code: "duplicate_resource" } });
+    error.code = "duplicate_resource";
+    expect(viMessage(error, "mon")).toBe("Đã có nguyên liệu tên này");
+  });
+});
+
+describe("lô 7: các trường hợp riêng", () => {
+  const can = (action: string) => ROLES.food_dev.includes(action);
+  const mon = (status: "ACTIVE" | "DRAFT" | "SUSPENDED") => ({ id: "1", ten: "A", loai: "thit", nhom: "lon", anh: null, status, donVi: "KG" });
+  it("Đã ngừng: tên, loại, nhóm chỉ đọc, không đổi hay xoá ảnh", () => {
+    expect(locksFor(mon("SUSPENDED"), can)).toEqual({ fields: false, image: false });
+    expect(locksFor(mon("ACTIVE"), can)).toEqual({ fields: true, image: true });
+    expect(locksFor("new", can)).toEqual({ fields: true, image: true });
+  });
+  it("nhóm đã ngừng: giữ nhóm cũ kèm (đã ngừng), không nhảy sang nhóm đầu", () => {
+    const tree = [{ code: "thit", label: "Thịt", active: true, nhom: [{ code: "lon", label: "Lợn", active: true }, { code: "bo", label: "Bò", active: false }] }];
+    const choice = groupChoice(tree, "thit", "bo");
+    expect(choice.value).toBe("bo");
+    expect(choice.options).toEqual([{ code: "lon", label: "Lợn" }, { code: "bo", label: "Bò (đã ngừng)" }]);
+  });
+  it("nhóm chưa có: ô nhóm trống, không tự chọn nhóm đầu", () => {
+    expect(groupChoice(TREE, "thit", "").value).toBe("");
+  });
+  it("chỉ gửi material_group_code khi người dùng đổi nhóm", () => {
+    const body = { name: "A", uom_code: "KG" as const, material_group_code: "BO" };
+    expect(monPatch(mon("DRAFT"), body)).toEqual({ name: "A", uom_code: "KG", material_group_code: "BO" });
+    expect(monPatch(mon("DRAFT"), { ...body, material_group_code: "LON" })).toEqual({ name: "A", uom_code: "KG" });
+  });
+  const none = { id: "9", ten: "Lạ", loai: "", nhom: "", anh: null, status: "ACTIVE" as const, donVi: "KG" };
+  it("nguyên liệu chưa có nhóm vẫn lọc được và đếm được", () => {
+    expect(countByLoai([none])[CHUA_XEP]).toBe(1);
+    expect(filterMon([none], CHUA_XEP, "")).toHaveLength(1);
+    expect(filterMon([none], "thit", "")).toHaveLength(0);
+  });
+  it("thanh loại có nút Chưa xếp loại chỉ khi có dòng như vậy", () => {
+    const bar = (counts: Record<string, number>) => renderToStaticMarkup(<CategoryBar current="thit" loai={TREE} counts={counts} onSelect={() => {}} />);
+    expect(bar({ [CHUA_XEP]: 2 })).toContain("Chưa xếp loại");
+    expect(bar({})).not.toContain("Chưa xếp loại");
   });
 });

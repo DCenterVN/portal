@@ -35,22 +35,34 @@ export function NameField({ value, onChange, disabled, error }: { value: string;
   </Field>;
 }
 
-export const monPatch = (mon: Mon, body: NewMon): Partial<NewMon> => {
-  if (mon.status === "DRAFT") return body;
-  const { uom_code: _unit, ...rest } = body;
-  return rest;
+export const unitOf = (code: string): Unit | "" => UNITS.find(item => item.code === code)?.code ?? "";
+
+export const locksFor = (mon: Mon | "new", can: Can) => {
+  const open = mon === "new" || mon.status !== "SUSPENDED";
+  return { fields: open && (mon === "new" || can("sales:material:update")), image: open && can("sales:material:update") };
 };
 
-export function UnitField({ locked, value, onChange, error }: { locked: boolean; value: Unit; onChange: (value: Unit) => void; error: string }) {
+export function groupChoice(tree: Loai[], loai: string, nhom: string) {
+  const options = (tree.find(item => item.code === loai)?.nhom ?? []).filter(item => item.active || item.code === nhom)
+    .map(item => ({ code: item.code, label: item.active ? item.label : `${item.label} (đã ngừng)` }));
+  return { options, value: options.some(item => item.code === nhom) ? nhom : "" };
+}
+
+export const monPatch = (mon: Mon, body: NewMon): Partial<NewMon> => {
+  const { uom_code: unit, material_group_code: group, ...rest } = body;
+  return { ...rest, ...(mon.status === "DRAFT" ? { uom_code: unit } : {}), ...(group.toLowerCase() === mon.nhom ? {} : { material_group_code: group }) };
+};
+
+export function UnitField({ locked, value, onChange, error }: { locked: boolean; value: Unit | ""; onChange: (value: Unit) => void; error: string }) {
   return <Field data-invalid={error ? true : undefined}>
     <FieldLabel htmlFor="mon-don-vi">Đơn vị</FieldLabel>
-    <NativeSelect id="mon-don-vi" value={value} disabled={locked} aria-invalid={error ? true : undefined} onChange={event => onChange(event.target.value as Unit)}>{UNITS.map(item => <NativeSelectOption key={item.code} value={item.code}>{item.label}</NativeSelectOption>)}</NativeSelect>
+    <NativeSelect id="mon-don-vi" value={value} disabled={locked} aria-invalid={error ? true : undefined} onChange={event => onChange(event.target.value as Unit)}>{value === "" && <NativeSelectOption value="" disabled>Chọn đơn vị</NativeSelectOption>}{UNITS.map(item => <NativeSelectOption key={item.code} value={item.code}>{item.label}</NativeSelectOption>)}</NativeSelect>
     {(locked || error) && <p className={error ? "text-sm text-destructive" : "text-sm text-muted-foreground"} role={error ? "alert" : undefined}>{UNIT_LOCKED}</p>}
   </Field>;
 }
 
-export function MonActions({ labels, busy, onAction }: { labels: Label[]; busy: boolean; onAction: (label: Label) => void }) {
-  return <>{labels.map(label => <ActionButton key={label} variant={label === "Lưu" || label === "Duyệt" ? "default" : "outline"} pending={busy && label === "Lưu"} disabled={busy} onClick={() => onAction(label)}>{label}</ActionButton>)}</>;
+export function MonActions({ labels, busy, blocked = false, onAction }: { labels: Label[]; busy: boolean; blocked?: boolean; onAction: (label: Label) => void }) {
+  return <>{labels.map(label => <ActionButton key={label} variant={label === "Lưu" || label === "Duyệt" ? "default" : "outline"} pending={busy && label === "Lưu"} disabled={busy || (blocked && (label === "Lưu" || label === "Duyệt"))} onClick={() => onAction(label)}>{label}</ActionButton>)}</>;
 }
 
 function ImageBox({ current, file, canEdit, busy, onPick, onRemove }: { current: string | null; file: File | null; canEdit: boolean; busy: boolean; onPick: (file: File) => void; onRemove: () => void }) {
@@ -80,19 +92,17 @@ export function MonSheet({ target, tree, defaultLoai, onClose, onSaved }: Props)
   const mon = target && target !== "new" ? target : null;
   const [ten, setTen] = useState(mon?.ten ?? "");
   const [loai, setLoai] = useState(mon?.loai ?? defaultLoai);
-  const [nhom, setNhom] = useState(mon?.nhom ?? "");
-  const [donVi, setDonVi] = useState<Unit>(mon?.donVi ?? "KG");
+  const [nhom, setNhom] = useState(mon ? mon.nhom : tree.find(item => item.code === defaultLoai)?.nhom.find(item => item.active)?.code ?? "");
+  const [donVi, setDonVi] = useState<Unit | "">(mon ? unitOf(mon.donVi) : "KG");
   const [file, setFile] = useState<File | null>(null);
   const [anh, setAnh] = useState(mon?.anh ?? null);
   const [reason, setReason] = useState("");
   const [asking, setAsking] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const groups = tree.find(item => item.code === loai)?.nhom.filter(item => item.active) ?? [];
-  const group = groups.some(item => item.code === nhom) ? nhom : groups[0]?.code ?? "";
-  const canEdit = mon ? can("sales:material:update") : true;
-  const canImage = can("sales:material:update");
-  const ready = ten.trim() !== "" && group !== "" && !busy;
+  const { options, value: group } = groupChoice(tree, loai, nhom);
+  const { fields: canEdit, image: canImage } = locksFor(target === "new" ? "new" : mon ?? "new", can);
+  const ready = ten.trim() !== "" && group !== "" && donVi !== "" && !busy;
 
   async function run(job: () => Promise<unknown>, close = true) {
     setBusy(true); setError("");
@@ -100,7 +110,7 @@ export function MonSheet({ target, tree, defaultLoai, onClose, onSaved }: Props)
     catch (cause) { setError(viMessage(cause, "mon")); }
     finally { setBusy(false); }
   }
-  const body = { name: ten.trim(), uom_code: donVi, material_group_code: group.toUpperCase() };
+  const body = { name: ten.trim(), uom_code: donVi as Unit, material_group_code: group.toUpperCase() };
   const create = () => run(async () => {
     const made = await createMon(body);
     if (file && canImage) await uploadMonImage(made.id, file);
@@ -123,13 +133,13 @@ export function MonSheet({ target, tree, defaultLoai, onClose, onSaved }: Props)
       <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-4 pb-4">
         <ImageBox current={anh} file={file} canEdit={canImage} busy={busy} onPick={pickImage} onRemove={() => run(async () => { await deleteMonImage(mon!.id); setAnh(null); }, false)} />
         <NameField value={ten} onChange={setTen} disabled={!canEdit} error={error === NAME_HAS_QUANTITY ? error : ""} />
-        <Select id="mon-loai" label="Loại" value={loai} disabled={!canEdit} onChange={value => { setLoai(value); setNhom(""); }}>{tree.filter(item => item.active).map(item => <NativeSelectOption key={item.code} value={item.code}>{item.label}</NativeSelectOption>)}</Select>
-        <Select id="mon-nhom" label="Nhóm" value={group} disabled={!canEdit} onChange={setNhom}>{groups.map(item => <NativeSelectOption key={item.code} value={item.code}>{item.label}</NativeSelectOption>)}</Select>
+        <Select id="mon-loai" label="Loại" value={loai} disabled={!canEdit} onChange={value => { setLoai(value); setNhom(tree.find(item => item.code === value)?.nhom.find(item => item.active)?.code ?? ""); }}>{loai === "" && <NativeSelectOption value="" disabled>Chưa xếp loại</NativeSelectOption>}{tree.filter(item => item.active).map(item => <NativeSelectOption key={item.code} value={item.code}>{item.label}</NativeSelectOption>)}</Select>
+        <Select id="mon-nhom" label="Nhóm" value={group} disabled={!canEdit} onChange={setNhom}>{group === "" && <NativeSelectOption value="" disabled>Chọn nhóm</NativeSelectOption>}{options.map(item => <NativeSelectOption key={item.code} value={item.code}>{item.label}</NativeSelectOption>)}</Select>
         <UnitField locked={!!mon && mon.status !== "DRAFT"} value={donVi} onChange={setDonVi} error={error === UNIT_LOCKED ? error : ""} />
         {error && error !== NAME_HAS_QUANTITY && error !== UNIT_LOCKED && <p role="alert" className="text-sm text-destructive">{error}</p>}
       </div>
       <SheetFooter className="flex-row justify-end">
-        {mon ? <MonActions labels={actionsFor(mon, can)} busy={busy} onAction={onAction} /> : <ActionButton pending={busy} disabled={!ready} onClick={create}>{title}</ActionButton>}
+        {mon ? <MonActions labels={actionsFor(mon, can)} busy={busy} blocked={donVi === ""} onAction={onAction} /> : <ActionButton pending={busy} disabled={!ready} onClick={create}>{title}</ActionButton>}
       </SheetFooter>
       <ConfirmDialog open={asking} onOpenChange={setAsking} title="Ngừng dùng nguyên liệu này?" description="Nguyên liệu sẽ không chọn được nữa. Hãy ghi lý do." confirmLabel="Ngừng dùng" danger busy={busy} confirmDisabled={reason.trim() === ""}
         onConfirm={() => run(() => suspendMon(mon!.id, reason))}>

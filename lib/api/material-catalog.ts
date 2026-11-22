@@ -5,12 +5,12 @@ export type Status = "ACTIVE" | "DRAFT" | "SUSPENDED";
 export type Unit = "KG" | "L" | "EA";
 export type Nhom = { code: string; label: string; active: boolean };
 export type Loai = { code: string; label: string; active: boolean; nhom: Nhom[] };
-export type Mon = { id: string; ten: string; loai: string; nhom: string; anh: string | null; status: Status; donVi: Unit };
+export type Mon = { id: string; ten: string; loai: string; nhom: string; anh: string | null; status: Status; donVi: string };
 
 const leaf = z.object({ code: z.string(), name: z.string(), is_active: z.boolean() });
 const treeSchema = z.object({ items: z.array(leaf.extend({ children: z.array(leaf).nullable().transform(list => list ?? []) })) });
 const monSchema = z.object({
-  id: z.string(), name: z.string(), material_group_code: z.string().nullable().optional(), uom_code: z.enum(["KG", "L", "EA"]),
+  id: z.string(), name: z.string(), material_group_code: z.string().nullable().optional(), uom_code: z.string(),
   status: z.enum(["ACTIVE", "DRAFT", "SUSPENDED"]), image_url: z.string().nullable().optional(),
 });
 const pageSchema = z.object({ items: z.array(monSchema).nullable().transform(list => list ?? []), next_cursor: z.string().nullish() });

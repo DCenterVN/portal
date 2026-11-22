@@ -9,7 +9,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink } from "@/components/ui/pagination";
 import { cn } from "@/lib/utils";
 import type { Loai, Mon } from "@/lib/api/material-catalog";
-import { pageNumbers } from "./materials-catalog";
+import { CHUA_XEP, pageNumbers } from "./materials-catalog";
 
 const ICON: Record<string, LucideIcon> = { thit: Beef, ca: Fish, "hai-san": Shell, rau: Leaf, "cu-qua": Carrot, nam: Sprout, "trung-dau-hu": Egg, "tinh-bot": Wheat, cot: Soup, "gia-vi": Flame, "do-kho": Sprout, "trai-cay": Apple };
 
@@ -106,6 +106,9 @@ export function CategoryBar({ current, loai, counts, onSelect, onManage }: BarPr
           {loai.filter(item => item.active).map(item => <TabsTrigger key={item.code} value={item.code} className="z-10 h-full flex-none rounded-full px-3.5 data-[state=active]:border-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none dark:data-[state=active]:border-transparent dark:data-[state=active]:bg-transparent">
             {item.label} <span className="opacity-70">{counts[item.code] ?? 0}</span>
           </TabsTrigger>)}
+          {(counts[CHUA_XEP] ?? 0) > 0 && <TabsTrigger value={CHUA_XEP} className="z-10 h-full flex-none rounded-full px-3.5 data-[state=active]:border-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none dark:data-[state=active]:border-transparent dark:data-[state=active]:bg-transparent">
+            Chưa xếp loại <span className="opacity-70">{counts[CHUA_XEP]}</span>
+          </TabsTrigger>}
         </TabsList>
       </Tabs>
     </div>

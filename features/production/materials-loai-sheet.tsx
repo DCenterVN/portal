@@ -28,7 +28,7 @@ function EditForm({ mode, onDone, onCancel }: { mode: NonNullable<Mode>; onDone:
       if (adding) await createLoai({ code: shown, name: name.trim(), ...(mode.parent ? { parent_code: mode.parent.code.toUpperCase() } : {}) });
       else await renameLoai(mode.item.code.toUpperCase(), { name: name.trim() });
       onDone();
-    } catch (cause) { setError(viMessage(cause, "loai")); }
+    } catch (cause) { setError(viMessage(cause, adding ? "loai-moi" : "loai")); }
     finally { setBusy(false); }
   };
   const heading = adding ? (mode.parent ? `Thêm nhóm vào ${mode.parent.label}` : "Thêm loại") : "Đổi tên";

@@ -2,6 +2,7 @@ import type { Loai, Mon, Nhom, Status } from "@/lib/api/material-catalog";
 
 export const PAGE_SIZE = 24;
 export const SEARCH_DELAY_MS = 300;
+export const CHUA_XEP = "chua-xep-loai";
 
 export const TRANG_THAI = [
   { slug: "dang-dung", label: "Đang dùng", status: "ACTIVE" },
@@ -22,7 +23,7 @@ export const nhomOf = (tree: Loai[], loai: string): Nhom[] => tree.find(item => 
 export type CatalogState = { loai: string; nhom: string[]; trang: number; q: string; trangThai: TrangThai };
 
 export function readState(params: URLSearchParams, tree: Loai[]): CatalogState {
-  const loai = tree.find(item => item.code === params.get("loai"))?.code ?? tree[0]?.code ?? "";
+  const loai = params.get("loai") === CHUA_XEP ? CHUA_XEP : tree.find(item => item.code === params.get("loai"))?.code ?? tree[0]?.code ?? "";
   const trang = Math.max(1, Math.floor(Number(params.get("trang"))) || 1);
   const valid = nhomOf(tree, loai).map(item => item.code);
   const nhom = (params.get("nhom") ?? "").split(",").filter(code => valid.includes(code));
@@ -43,7 +44,7 @@ export function changeState(state: CatalogState, change: Partial<CatalogState>):
 
 export function countByLoai(items: Mon[]): Record<string, number> {
   const counts: Record<string, number> = {};
-  for (const mon of items) counts[mon.loai] = (counts[mon.loai] ?? 0) + 1;
+  for (const mon of items) counts[mon.loai || CHUA_XEP] = (counts[mon.loai || CHUA_XEP] ?? 0) + 1;
   return counts;
 }
 
@@ -55,7 +56,7 @@ export function countByNhom(items: Mon[], loai: string, q = ""): Record<string, 
 
 export function filterMon(items: Mon[], loai: string, q: string, nhom: string[] = []): Mon[] {
   const needle = fold(q.trim());
-  return items.filter(mon => mon.loai === loai && (!nhom.length || nhom.includes(mon.nhom)) && fold(mon.ten).includes(needle));
+  return items.filter(mon => (mon.loai || CHUA_XEP) === loai && (!nhom.length || nhom.includes(mon.nhom)) && fold(mon.ten).includes(needle));
 }
 
 export function pageCount(total: number): number {

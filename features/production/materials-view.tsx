@@ -11,7 +11,7 @@ import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
 import { PageShell } from "@/components/ui/page";
 import { RequireAction, useAccess } from "@/lib/access-boundary";
 import { getMaterialTree, getMonList, type Loai, type Mon } from "@/lib/api/material-catalog";
-import { SEARCH_DELAY_MS, TRANG_THAI, changeState, countByLoai, countByNhom, filterMon, nhomOf, pageCount, pageOf, readState, statusOf, stateQuery, type CatalogState, type TrangThai } from "./materials-catalog";
+import { CHUA_XEP, SEARCH_DELAY_MS, TRANG_THAI, changeState, countByLoai, countByNhom, filterMon, nhomOf, pageCount, pageOf, readState, statusOf, stateQuery, type CatalogState, type TrangThai } from "./materials-catalog";
 import { LoaiSheet } from "./materials-loai-sheet";
 import { MonSheet } from "./materials-mon-sheet";
 import { NhomFilter } from "./materials-nhom-filter";
@@ -83,7 +83,7 @@ function MaterialsCatalog() {
     {failed ? <p role="alert" className="text-sm text-destructive">Chưa tải được danh mục, hãy tải lại trang.</p>
       : items === null ? <LoadingState title="Đang tải danh mục…" /> : <MonGrid items={pageOf(matches, state.trang)} onOpen={setTarget} />}
     <NumberedPager current={Math.min(state.trang, total)} total={total} onGo={trang => go({ trang })} />
-    {target && <MonSheet key={target === "new" ? "new" : target.id} target={target} tree={tree} defaultLoai={state.loai} onClose={() => setTarget(null)} onSaved={reload} />}
+    {target && <MonSheet key={target === "new" ? "new" : target.id} target={target} tree={tree} defaultLoai={state.loai === CHUA_XEP ? tree[0]?.code ?? "" : state.loai} onClose={() => setTarget(null)} onSaved={reload} />}
     <LoaiSheet open={managing} tree={tree} onClose={() => setManaging(false)} onChanged={reload} />
   </PageShell>;
 }

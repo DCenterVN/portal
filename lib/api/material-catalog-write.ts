@@ -38,11 +38,12 @@ export const NAME_HAS_QUANTITY = 'Tên nguyên liệu không ghi khối lượng
 
 export const UNIT_LOCKED = "Chỉ đổi đơn vị khi nguyên liệu còn là nháp";
 
-export function viMessage(error: unknown, kind: "mon" | "loai"): string {
+export function viMessage(error: unknown, kind: "mon" | "loai" | "loai-moi"): string {
   const status = error instanceof FetchError ? error.status : 0;
   if (status === 403) return "Bạn không có quyền làm việc này";
   if (status === 409) {
-    if (error instanceof FetchError && error.code === "duplicate_resource") return kind === "mon" ? "Đã có nguyên liệu tên này" : "Đã có loại hoặc nhóm này";
+    if (kind === "loai-moi") return "Đã có loại hoặc nhóm mã này";
+    if (kind === "mon" && error instanceof FetchError && error.code === "duplicate_resource") return "Đã có nguyên liệu tên này";
     if (kind === "mon" && error instanceof FetchError && /đơn vị gốc/i.test(error.message)) return UNIT_LOCKED;
     return kind === "mon" ? "Nguyên liệu đã đổi trạng thái, hãy tải lại danh sách" : "Loại còn nhóm đang dùng hoặc đang gắn nhà cung cấp";
   }
