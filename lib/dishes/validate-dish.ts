@@ -22,14 +22,14 @@ export function validateDish(content: DishContent, ctx: ValidateCtx): DishError[
     if (!/^\d+(\.\d{1,3})?$/.test(line.quantity) || Number(line.quantity) <= 0) add("quantity", "Lượng phải lớn hơn 0, tối đa 3 số lẻ", line.row);
     if (!line.yield_pct.trim() || !Number.isFinite(Number(line.yield_pct)) || Number(line.yield_pct) < 1 || Number(line.yield_pct) > 100) add("yield_pct", "Hao hụt cần từ 0 đến 99%", line.row);
   }
-  if (!content.seasonings.some(line => line.package_ref && !line.removable)) add("removable", "Món cần ít nhất một gói gia vị không được bỏ", content.seasonings[0]?.row);
+  if (!slots.has("GIA_VI_THEM") && !slots.has("COT") && !content.seasonings.some(line => line.package_ref && !line.removable)) add("removable", "Món cần ít nhất một gia vị hoặc một cốt nước dùng", content.seasonings[0]?.row);
   for (const line of content.seasonings) {
-    if (slots.has(line.slot)) add("package_ref", "Mỗi loại ô gia vị chỉ có một dòng", line.row);
+    if (slots.has(line.slot)) add("package_ref", "Nhóm này đã có nguyên liệu, bỏ gói gia vị cũ hoặc bỏ nguyên liệu cùng nhóm", line.row);
     slots.add(line.slot);
     if (line.slot === "COT" && line.removable) add("removable", "Cốt không được bỏ", line.row);
     if (!line.package_ref || !ctx.packagesWithRecipe.includes(line.package_ref)) add("package_ref", "Chọn gói có công thức hiệu lực cho 1 suất", line.row);
   }
-  if (slots.size < 2 || slots.size > 6) add("slots", "Món cần 2–6 ngăn đóng gói");
+  if (slots.size < 2) add("slots", "Món cần nguyên liệu ở ít nhất hai nhóm, ví dụ đạm và gia vị");
   if (ctx.kind === "REVISION") {
     if (!content.reason?.trim() || content.reason.trim().length > 300) add("reason", "Lý do sửa cần 1–300 ký tự");
     if (ctx.source_journey === "SELLING") add("base", "Biến thể đang bán — tạo biến thể mới hoặc chờ đợt mở/ngừng bán");

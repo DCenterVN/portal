@@ -14,8 +14,8 @@ export const contentSchema = z.object({
   reason: z.string().nullable().default(null), base: z.object({ product_ref: z.string(), set_ref: z.string(), set_updated_at: z.string(), slots: z.object({ DAM: z.object({ package_ref: z.string(), lines: z.array(baseLine) }).optional(), RAU: z.object({ package_ref: z.string(), lines: z.array(baseLine) }).optional(), TINH_BOT: z.object({ package_ref: z.string(), lines: z.array(baseLine) }).optional() }) }).nullable().default(null),
 });
 export const draftSchema = z.object({ id: z.string(), kind: z.enum(["CREATE", "COPY", "VARIANT", "REVISION"]), revision: z.number(), status: z.string(), source_product_ref: z.string().nullable().default(null), source_set_ref: z.string().nullable().default(null), source_set_updated_at: z.string().nullable().default(null), content: contentSchema, progress: z.record(z.string()).default({}) });
-export type { DishListRow, PackOption, CostPreview } from "@/lib/dishes/types";
-import type { DishListRow, PackOption, CostPreview } from "@/lib/dishes/types";
+export type { DishListRow, CostPreview } from "@/lib/dishes/types";
+import type { DishListRow, CostPreview } from "@/lib/dishes/types";
 export type Page<T> = { items: T[]; next_cursor: string | null };
 export const safeMessage = (value: string) => value.replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, "mục đã chọn");
 export async function dishRequest<T>(path: string, method = "GET", input?: unknown, key?: string): Promise<T> {
@@ -60,7 +60,3 @@ export async function finishDish(id: string) {
   return result as CompleteResult;
 }
 export const previewCost = (content: DishContent) => dishRequest<CostPreview>("/api/food-packs/production/recipes/cost-preview", "POST", { servings: content.servings, lines: content.ingredients.filter(line => line.sku_ref).map(({ sku_ref, quantity, uom, yield_pct }) => ({ sku_ref, quantity, uom, yield_pct })), packages: content.seasonings.filter(line => line.package_ref).map(line => ({ sku_ref: line.package_ref, quantity: 1 })) });
-export const searchPacks = (q: string, cursor = "") => dishRequest<Page<PackOption>>(`${sales}/packages?${new URLSearchParams({ q, cursor, limit: "50" })}`);
-export const getDishPack = (id: string) => dishRequest<PackOption>(`${sales}/packages/${id}`);
-export const getPackRecipe = (id: string) => dishRequest<{ current: { components: z.infer<typeof baseLine>[] } | null }>(`/api/food-packs/production/packages/${id}/recipes`);
-export const getSaleCategories = () => dishRequest<{ categories: { id: string; name: string }[] }>("/api/sales/skus?kind=RAW_MATERIAL&limit=1");

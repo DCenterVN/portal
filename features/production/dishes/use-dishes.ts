@@ -17,7 +17,6 @@ export function useDishes(location: DishLocation, deps: Deps, navigate: (next: D
   const [detail, setDetail] = useState<DishDetail | null>(null);
   const [selected, setSelected] = useState("");
   const [q, setQ] = useState("");
-  const [category, setCategory] = useState("");
   const [status, setStatus] = useState("");
   const [cursor, setCursor] = useState("");
   const [next, setNext] = useState<string | null>(null);
@@ -35,13 +34,13 @@ export function useDishes(location: DishLocation, deps: Deps, navigate: (next: D
         if (version !== request.current) return;
         setDetail(loaded); setSelected(current => loaded.variants.some(v => v.set_ref === current) ? current : loaded.variants[0]?.set_ref ?? "");
       } else {
-        const [page, open] = await Promise.all([deps.listDishes(new URLSearchParams({ q, category_ref: category, status, cursor, limit: "20" }).toString()), deps.listDishDrafts("status=OPEN&kind=CREATE,COPY&limit=20")]);
+        const [page, open] = await Promise.all([deps.listDishes(new URLSearchParams({ q, status, cursor, limit: "20" }).toString()), deps.listDishDrafts("status=OPEN&kind=CREATE,COPY&limit=20")]);
         if (version !== request.current) return;
         setRows(page.items); setNext(page.next_cursor); setDrafts(open.items); setDraftNext(open.next_cursor);
       }
     } catch (e) { if (version === request.current) setError(e instanceof Error ? deps.safeMessage(e.message) : "Không tải được món"); }
     finally { if (version === request.current) setBusy(false); }
-  }, [location.mon, q, category, status, cursor, deps]);
+  }, [location.mon, q, status, cursor, deps]);
   useEffect(() => { const timer = setTimeout(() => void load(), 250); return () => { clearTimeout(timer); request.current++; }; }, [load]);
   const loadMoreDrafts = async () => {
     if (!draftNext || draftBusy) return;
@@ -85,5 +84,5 @@ export function useDishes(location: DishLocation, deps: Deps, navigate: (next: D
     handledMode.current = key;
     void begin(kind, detail ?? undefined, detail?.variants[0]);
   }, [location, detail, begin]);
-  return { rows, drafts, draftNext, draftBusy, loadMoreDrafts, detail, selected, setSelected, q, setQ: (value: string) => { setCursor(""); setQ(value); }, category, setCategory: (value: string) => { setCursor(""); setCategory(value); }, status, setStatus: (value: string) => { setCursor(""); setStatus(value); }, next, setCursor, busy, error, existing, load, begin };
+  return { rows, drafts, draftNext, draftBusy, loadMoreDrafts, detail, selected, setSelected, q, setQ: (value: string) => { setCursor(""); setQ(value); }, status, setStatus: (value: string) => { setCursor(""); setStatus(value); }, next, setCursor, busy, error, existing, load, begin };
 }

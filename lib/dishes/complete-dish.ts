@@ -1,4 +1,4 @@
-import { slotOf, slotLabels, type DishDraft as StoredDishDraft, type DishContent, type GroupNode, type Line } from "./types";
+import { slotOf, slotLabels, type DishDraft as StoredDishDraft, type DishContent, type DishBase, type GroupNode, type Line } from "./types";
 export { slotOf } from "./types";
 import { z } from "zod";
 import { contentSchema } from "@/lib/api/dishes";
@@ -82,10 +82,10 @@ export async function completeDish(draft: DishDraft, deps: CompleteDeps): Promis
     if (!target) {
       const slots: Slot[] = [];
       const weight = (lines: Line[]) => lines.filter(line => ["G", "ML"].includes(line.uom)).reduce((sum, line) => sum + Number(line.quantity), 0);
-      for (const slot of ["DAM", "RAU", "TINH_BOT"] as const) {
+      for (const slot of ["DAM", "RAU", "TINH_BOT", "COT", "GIA_VI_THEM"] as const) {
         const lines: Line[] = content.ingredients.filter(line => line.sku_ref && slotOf(deps.skuGroups[line.sku_ref] ?? null, deps.tree) === slot).map(line => ({ sku_ref: line.sku_ref ?? "", quantity: line.quantity, uom: line.uom, yield_pct: line.yield_pct }));
         if (!lines.length) continue;
-        const base = content.base?.slots[slot];
+        const base = content.base?.slots[slot as keyof DishBase["slots"]];
         let ref = base?.package_ref;
         if (progress[`package:${slot}`] || !base || !sameLines(lines, base.lines)) {
           ref = await run(`package:${slot}`, async () => (await deps.createPackage({ product_ref, code: `D-${draft.id}-${slot}`, name: `${name} · ${slotLabels[slot]}`, variant_label: "1 suất", net_weight_g: Math.max(1, Math.round(weight(lines))), uom_code: "EA", temperature_regime: "CHILLED" }, key(`package:${slot}`))).id);

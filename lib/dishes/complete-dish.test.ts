@@ -5,8 +5,8 @@ import { completeDish, slotOf, } from "./complete-dish";
 describe("slotOf (bảng §4)", () => {
   it.each([
     ["THIT", "DAM"], ["THUY_HAI_SAN", "DAM"], ["TRUNG_SUA", "DAM"], ["DO_CHE_BIEN", "DAM"],
-    ["GAO_NGU_COC", "TINH_BOT"], ["RAU_CU", "RAU"], ["TRAI_CAY", "RAU"], ["GIA_VI", "RAU"],
-    ["THIT_TRAU", "DAM"], ["RAU_AN_LA", "RAU"], ["HANH_TOI", "RAU"],
+    ["GAO_NGU_COC", "TINH_BOT"], ["RAU_CU", "RAU"], ["TRAI_CAY", "RAU"], ["GIA_VI", "GIA_VI_THEM"],
+    ["THIT_TRAU", "DAM"], ["RAU_AN_LA", "RAU"], ["HANH_TOI", "GIA_VI_THEM"],
     [null, "RAU"], ["MA_LA_KHONG_CO", "RAU"],
   ])("%s -> %s", (code, slot) => expect(slotOf(code as string | null, tree)).toBe(slot));
 });

@@ -9,7 +9,7 @@ const tree = [
 ];
 const ctx = (over: Partial<ValidateCtx> = {}): ValidateCtx => ({
   kind: "CREATE", tree,
-  skuGroups: { "sku-trau": "THIT_TRAU", "sku-rau": "RAU_AN_LA", "sku-toi": "HANH_TOI", "sku-gao": "GAO_NGU_COC", "sku-thit2": "THIT" },
+  skuGroups: { "sku-trau": "THIT_TRAU", "sku-rau": "RAU_AN_LA", "sku-toi": "RAU_AN_LA", "sku-gao": "GAO_NGU_COC", "sku-thit2": "THIT" },
   packagesWithRecipe: ["pkg-gvxao", "pkg-cot", "pkg-cham"],
   existingVariants: [], ...over,
 });
@@ -101,7 +101,7 @@ describe("validateDish", () => {
   });
 
   it("không có gia vị không-bỏ -> đúng câu BR-18", () => {
-    const msg = "Món cần ít nhất một gói gia vị không được bỏ";
+    const msg = "Món cần ít nhất một gia vị hoặc một cốt nước dùng";
     for (const seasonings of [[], [{ row: "g1", slot: "GIA_VI_THEM" as const, package_ref: "pkg-gvxao", removable: true }]]) {
       const errs = validateDish(m1({ seasonings }), ctx());
       expect(errs.some((e) => e.message === msg)).toBe(true);

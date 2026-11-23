@@ -60,9 +60,13 @@ export function countByGroup(items: Material[], category: string, q = ""): Recor
   return counts;
 }
 
+export const matchesName = (name: string, text: string) => {
+  const folded = fold(name);
+  return fold(text).split(/\s+/).filter(Boolean).every(word => folded.includes(word));
+};
+
 export function filterMaterials(items: Material[], category: string, q: string, groups: string[] = []): Material[] {
-  const needle = fold(q.trim());
-  return items.filter(material => (material.category || UNCATEGORIZED) === category && (!groups.length || groups.includes(material.group)) && fold(material.name).includes(needle));
+  return items.filter(material => (material.category || UNCATEGORIZED) === category && (!groups.length || groups.includes(material.group)) && matchesName(material.name, q));
 }
 
 export function pageCount(total: number): number {

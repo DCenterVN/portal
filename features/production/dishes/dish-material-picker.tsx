@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { LoadingState } from "@/components/patterns/empty-state";
 import type { Material } from "@/lib/api/material-catalog";
-import { countByCategory, countByGroup, filterMaterials, fold, groupsOf, pageCount, pageOf } from "../materials-catalog";
+import { countByCategory, countByGroup, filterMaterials, groupsOf, matchesName, pageCount, pageOf } from "../materials-catalog";
 import { GroupChips } from "../material-group-filter";
 import { MaterialToolbar } from "../material-toolbar";
 import { CategoryBar, MaterialGrid, NumberedPager } from "../materials-view-parts";
@@ -18,7 +18,7 @@ export function DishMaterialPicker({ catalog, selectedIds, onPick }: { catalog: 
   const [page, setPage] = useState(1);
   const items = useMemo(() => catalog?.items ?? [], [catalog]);
   const tree = useMemo(() => catalog?.tree ?? [], [catalog]);
-  const counts = useMemo(() => countByCategory(items.filter(item => fold(item.name).includes(fold(text.trim())))), [items, text]);
+  const counts = useMemo(() => countByCategory(items.filter(item => matchesName(item.name, text))), [items, text]);
   const category = (asked && counts[asked] ? asked : tree.find(item => item.active && counts[item.code])?.code) ?? asked;
   const matches = useMemo(() => filterMaterials(items, category, text, groups), [items, category, text, groups]);
   const groupOptions = groupsOf(tree, category);

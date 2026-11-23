@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { addIngredient, isSeasoningCategory } from "./ingredients";
+import { addIngredient, groupNodes, sortCategories } from "./ingredients";
 import { content } from "./complete-dish.fixtures";
 import type { DishContent } from "./types";
 
@@ -16,9 +16,11 @@ describe("thêm nguyên liệu vào món", () => {
     const once = addIngredient(empty, { id: "a", unit: "KG" });
     expect(addIngredient(once, { id: "a", unit: "KG" })).toBe(once);
   });
-  it("gia vị và cốt đi vào gói gia vị", () => {
-    expect(isSeasoningCategory("gia_vi")).toBe(true);
-    expect(isSeasoningCategory("COT_NUOC_DUNG")).toBe(true);
-    expect(isSeasoningCategory("do_kho")).toBe(false);
+  it("tab loại xếp Thịt trước, Gia vị và Cốt nước dùng cuối", () => {
+    const tree = ["COT_NUOC_DUNG", "GIA_VI", "CA_LOAI", "THIT"].map(code => ({ code: code.toLowerCase(), label: code, active: true, groups: [] }));
+    expect(sortCategories(tree).map(item => item.label)).toEqual(["THIT", "CA_LOAI", "GIA_VI", "COT_NUOC_DUNG"]);
+  });
+  it("cây nhóm viết hoa để tính ngăn", () => {
+    expect(groupNodes([{ code: "gia_vi", label: "Gia vị", active: true, groups: [{ code: "hanh_toi", label: "Hành tỏi", active: true }] }])).toEqual([{ code: "GIA_VI", parent_code: null }, { code: "HANH_TOI", parent_code: "GIA_VI" }]);
   });
 });

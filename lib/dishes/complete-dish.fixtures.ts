@@ -6,12 +6,13 @@ export const tree = [
   { code: "DO_CHE_BIEN", parent_code: null }, { code: "GAO_NGU_COC", parent_code: null },
   { code: "RAU_CU", parent_code: null }, { code: "RAU_AN_LA", parent_code: "RAU_CU" },
   { code: "TRAI_CAY", parent_code: null }, { code: "GIA_VI", parent_code: null }, { code: "HANH_TOI", parent_code: "GIA_VI" },
+  { code: "COT_NUOC_DUNG", parent_code: null }, { code: "XUONG", parent_code: "COT_NUOC_DUNG" },
 ];
 
 export const ID = "01960000-0000-7000-8000-00000000abcd";
 export const T = "2026-10-21T00:00:00Z";
 export const skuGroups: Record<string, string | null> = {
-  "sku-trau": "THIT_TRAU", "sku-bo": "THIT_BO", "sku-rau": "RAU_AN_LA", "sku-toi": "HANH_TOI", "sku-hanh": "HANH_TOI",
+  "sku-trau": "THIT_TRAU", "sku-bo": "THIT_BO", "sku-rau": "RAU_AN_LA", "sku-toi": "RAU_AN_LA", "sku-hanh": "RAU_AN_LA", "sku-tieu": "HANH_TOI", "sku-xuong": "XUONG",
 };
 export const L = (sku_ref: string, quantity: string, yield_pct = "100") => ({ sku_ref, quantity, uom: "G", yield_pct });
 export const ing = (row: string, l: ReturnType<typeof L>) => ({ row, ...l });
@@ -45,7 +46,7 @@ export function fake(fail: Fail = {}, read: { recipes?: Record<string, { compone
     const f = fail[tag];
     if (f) throw Object.assign(new Error(f.message ?? "boom"), { status: f.status ?? 500, code: f.code });
   };
-  const slotFromName = (name: string) => (name.endsWith("Đạm") ? "DAM" : name.endsWith("Rau") ? "RAU" : "TINH_BOT");
+  const slotFromName = (name: string) => (name.endsWith("Đạm") ? "DAM" : name.endsWith("Rau") ? "RAU" : name.endsWith("Cốt nước dùng") ? "COT" : name.endsWith("Gia vị") ? "GIA_VI_THEM" : "TINH_BOT");
   const deps: CompleteDeps = {
     tree, skuGroups,
     createProduct: async (...a) => { rec("createProduct", "product", a); return { id: "prod-new" }; },
