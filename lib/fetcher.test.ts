@@ -63,7 +63,7 @@ describe("fetcher and apiFetch", () => {
     expect(result).toEqual(retryData);
     expect(mockFetch).toHaveBeenCalledTimes(3);
     expect(mockFetch).toHaveBeenNthCalledWith(1, serverUrl("/api/branches/456"), undefined);
-    expect(mockFetch).toHaveBeenNthCalledWith(2, serverUrl("/api/auth/refresh"), { method: "POST" });
+    expect(mockFetch).toHaveBeenNthCalledWith(2, serverUrl("/api/auth/refresh"), expect.objectContaining({ method: "POST" }));
     expect(mockFetch).toHaveBeenNthCalledWith(3, serverUrl("/api/branches/456"), undefined);
   });
 
@@ -89,7 +89,7 @@ describe("fetcher and apiFetch", () => {
     await expect(fetcher("/api/branches/secret")).rejects.toThrow(FetchError);
     // Should call initial request (1) + refresh (2), and stop cleanly (<= 3 calls)
     expect(mockFetch.mock.calls.length).toBeLessThanOrEqual(3);
-    expect(mockFetch).toHaveBeenCalledWith(serverUrl("/api/auth/refresh"), { method: "POST" });
+    expect(mockFetch).toHaveBeenCalledWith(serverUrl("/api/auth/refresh"), expect.objectContaining({ method: "POST" }));
   });
 
   it("Ca 4: Hai request 401 song song -> chi 1 lan refresh (single-flight)", async () => {
@@ -320,5 +320,40 @@ describe("S2 activation FetchError retry delay", () => {
     expect(error).toMatchObject({status: 503, code: "service_busy"});
     expect(error.retryAfterMs).toBe(retryAfterMs);
     expect(fetch).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("apiFetch across tabs", () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+    vi.unstubAllGlobals();
+    vi.resetModules();
+  });
+
+  it("two tabs hit 401 together -> only one refresh reaches auth", async () => {
+    const store = new Map<string, string>();
+    let queue: Promise<unknown> = Promise.resolve();
+    vi.stubGlobal("localStorage", { getItem: (k: string) => store.get(k) ?? null, setItem: (k: string, v: string) => void store.set(k, v) });
+    vi.stubGlobal("navigator", { locks: { request: (_name: string, run: () => Promise<boolean>) => (queue = queue.then(run, run)) } });
+    let refreshCalls = 0;
+    global.fetch = vi.fn(async (url: string | URL | Request) => {
+      if (String(url).endsWith("/api/auth/refresh")) {
+        refreshCalls++;
+        await new Promise((resolve) => setTimeout(resolve, 20));
+        return new Response(null, { status: refreshCalls === 1 ? 200 : 401 });
+      }
+      return new Response("{}", { status: refreshCalls > 0 ? 200 : 401 });
+    }) as typeof fetch;
+
+    vi.resetModules();
+    const tabA = await import("./fetcher");
+    vi.resetModules();
+    const tabB = await import("./fetcher");
+    const [a, b] = await Promise.all([tabA.apiFetch("/api/x"), tabB.apiFetch("/api/y")]);
+
+    expect(refreshCalls).toBe(1);
+    expect([a.status, b.status]).toEqual([200, 200]);
   });
 });

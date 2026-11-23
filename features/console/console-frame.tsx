@@ -11,6 +11,7 @@ import { ConsoleShell } from "@/components/layout/console-shell";
 import { branchChoices } from "@/lib/branch-choices";
 import { branchLabel, type BranchChoice } from "@/lib/branch-label";
 import { logoutTo } from "@/lib/auth/client";
+import { apiFetch } from "@/lib/fetcher";
 import { toast } from "@/components/ui/toast";
 import { consoleNavFor, consoleRouteAllowed } from "@/lib/navigation";
 import { SESSION_CHANGED, useBranchSwitch } from "./use-branch-switch";
@@ -64,7 +65,7 @@ export function resolveConsoleSession(profilePayload: unknown, contextPayload: u
   return session;
 }
 
-export async function fetchConsoleSession(fetcher: typeof fetch = fetch): Promise<ConsoleSession> {
+export async function fetchConsoleSession(fetcher: typeof fetch = apiFetch): Promise<ConsoleSession> {
   let response: Response;
   let payload: unknown;
   try {

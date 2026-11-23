@@ -16,6 +16,7 @@ export async function rotateSession(req: NextRequest, path: string, body?: unkno
 
     const res = await fetch(`${serviceUrl("auth")}${path}`, {
       method: "POST",
+      signal: AbortSignal.any([req.signal, AbortSignal.timeout(Number(process.env.AUTH_ROTATE_TIMEOUT_MS) || 10_000)]),
       headers: authHeaders(clientIP, {
         "Cookie": cookies,
         "X-CSRF-Token": csrfToken,
@@ -50,6 +51,9 @@ export async function rotateSession(req: NextRequest, path: string, body?: unkno
 
     return nextRes;
   } catch (err: unknown) {
+    if (err instanceof DOMException && (err.name === "TimeoutError" || err.name === "AbortError")) {
+      return NextResponse.json({ error: "TIMEOUT", message: "Dịch vụ xác thực phản hồi quá chậm" }, { status: 504, headers: {"Cache-Control": "no-store"} });
+    }
     return NextResponse.json({ error: "internal_error", message: err instanceof Error ? err.message : String(err) }, { status: 500 });
   }
 }

@@ -32,6 +32,7 @@ export class FetchError extends Error {
 
 const EXEMPT_AUTH_ENDPOINTS = [
   "/api/auth/refresh",
+  "/api/auth/web/switch-branch",
   "/api/auth/login",
   "/api/auth/logout",
   "/api/auth/register",
@@ -51,7 +52,7 @@ function isExemptUrl(url: string | URL | Request): boolean {
   catch {return false;}
 }
 
-let refreshPromise: Promise<boolean> | null = null;
+let refreshPromise: Promise<RefreshResult> | null = null;
 
 function resolveFetchInput(url: string | URL | Request): string | URL | Request {
   if (typeof window === "undefined" && typeof url === "string" && url.startsWith("/")) {
@@ -61,16 +62,81 @@ function resolveFetchInput(url: string | URL | Request): string | URL | Request 
   return url;
 }
 
-async function doRefresh(): Promise<boolean> {
+const REFRESHED_AT_KEY = "auth:refreshed-at";
+const REFRESH_TIMEOUT_MS = Number(process.env.NEXT_PUBLIC_AUTH_REFRESH_TIMEOUT_MS) || 15_000;
+const REFRESH_ATTEMPTS = 3;
+const REFRESH_BACKOFF_MS = 500;
+const CSRF_COOKIE = /(?:^|;\s*)CSRF-Token=[^;]/;
+
+export type RefreshResult = boolean | "unavailable";
+
+function refreshedAt(): number {
+  try {
+    const at = Number(globalThis.localStorage?.getItem(REFRESHED_AT_KEY)) || 0;
+    return at > Date.now() ? 0 : at;
+  }
+  catch {return 0;}
+}
+
+export function markRefreshed() {
+  try {globalThis.localStorage?.setItem(REFRESHED_AT_KEY, String(Date.now()));}
+  catch {return;}
+}
+
+export async function withRefreshLock<T>(run: () => Promise<T>): Promise<T> {
+  const locks = globalThis.navigator?.locks;
+  if (!locks) return run();
+  let started = false;
+  return locks.request("auth-refresh", async () => {
+    started = true;
+    return run();
+  }).catch((error) => {
+    if (started) throw error;
+    return run();
+  });
+}
+
+async function refreshAttempt(): Promise<true | number> {
+  try {
+    const res = await fetch(resolveFetchInput("/api/auth/refresh"), { method: "POST", signal: AbortSignal.timeout(REFRESH_TIMEOUT_MS) });
+    return res.ok || res.status;
+  } catch {
+    return 0;
+  }
+}
+
+async function refreshOnce(since: number): Promise<RefreshResult> {
+  if (typeof document !== "undefined" && !CSRF_COOKIE.test(document.cookie)) return false;
+  if (refreshedAt() >= since) return true;
+  for (let attempt = 1; ; attempt++) {
+    const outcome = await refreshAttempt();
+    if (outcome === true) {
+      markRefreshed();
+      return true;
+    }
+    if (outcome === 0 || outcome === 429 || (outcome >= 500 && outcome !== 503)) return "unavailable";
+    if (outcome !== 503) return false;
+    if (attempt >= REFRESH_ATTEMPTS) return "unavailable";
+    await new Promise((resolve) => setTimeout(resolve, REFRESH_BACKOFF_MS * 2 ** (attempt - 1)));
+  }
+}
+
+export async function doRefresh(since = Date.now()): Promise<RefreshResult> {
   if (!refreshPromise) {
-    refreshPromise = fetch(resolveFetchInput("/api/auth/refresh"), { method: "POST" })
-      .then((res) => res.ok)
-      .catch(() => false)
-      .finally(() => {
-        refreshPromise = null;
-      });
+    refreshPromise = withRefreshLock(() => refreshOnce(since)).finally(() => {
+      refreshPromise = null;
+    });
   }
   return refreshPromise;
+}
+
+export function redirectToLogin() {
+  if (typeof window === "undefined") return;
+  const currentPath = window.location.pathname;
+  const login = isEmployeeRoute(currentPath) ? "/staff/login" : "/login";
+  if (currentPath !== "/login" && currentPath !== "/staff/login") {
+    window.location.href = `${login}?redirect=${encodeURIComponent(currentPath)}`;
+  }
 }
 
 export async function apiFetch(
@@ -78,21 +144,18 @@ export async function apiFetch(
   init?: RequestInit,
   isRetry = false
 ): Promise<Response> {
+  const startedAt = Date.now();
   const res = await fetch(resolveFetchInput(url), init);
 
   if (res.status === 401 && !isRetry && !isExemptUrl(url)) {
-    const refreshed = await doRefresh();
-    if (refreshed) {
+    const refreshed = await doRefresh(startedAt);
+    if (refreshed === true) {
       return apiFetch(url, init, true);
     }
-    if (typeof window !== "undefined") {
-      const currentPath = window.location.pathname;
-      const staff = isEmployeeRoute(currentPath);
-      const login = staff ? "/staff/login" : "/login";
-      if (currentPath !== "/login" && currentPath !== "/staff/login") {
-        window.location.href = `${login}?redirect=${encodeURIComponent(currentPath)}`;
-      }
+    if (refreshed === "unavailable") {
+      return new Response(JSON.stringify({ error: "refresh_unavailable", message: "Hệ thống tạm lỗi, thử lại sau" }), { status: 503 });
     }
+    redirectToLogin();
   }
 
   return res;
