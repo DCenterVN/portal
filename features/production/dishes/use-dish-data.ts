@@ -1,52 +1,53 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type * as dishes from "@/lib/api/dishes";
 import type { getMaterialCategories } from "@/lib/api/material-categories";
-import type { getMaterials, getRawLabels, Material } from "@/lib/api/sales";
+import type { getMaterialTree, listMaterials, Material as CatalogMaterial, MaterialCategory } from "@/lib/api/material-catalog";
+import type { getRawLabels } from "@/lib/api/sales";
 import { useAccess } from "@/lib/access-boundary";
+import { uomOf } from "@/lib/dishes/ingredients";
 import type { DishContent, GroupNode } from "@/lib/dishes/types";
-export type { Material } from "@/lib/api/sales";
-export type MaterialInfo = { name: string; group: string | null; uom: string; allergens: string | null };
-type Deps = Pick<typeof dishes, "getSaleCategories" | "getDishPack" | "searchPacks" | "getPackRecipe" | "previewCost" | "safeMessage"> & { getMaterials: typeof getMaterials; getRawLabels: typeof getRawLabels; getMaterialCategories: typeof getMaterialCategories };
+export type MaterialInfo = { name: string; group: string | null; category: string; uom: string; imageUrl: string | null; allergens: string[] | null };
+type Deps = Pick<typeof dishes, "getSaleCategories" | "getDishPack" | "searchPacks" | "getPackRecipe" | "previewCost" | "safeMessage"> & { getRawLabels: typeof getRawLabels; getMaterialCategories: typeof getMaterialCategories; getMaterialTree: typeof getMaterialTree; listMaterials: typeof listMaterials };
+export type Catalog = { tree: MaterialCategory[]; items: CatalogMaterial[] };
 export function useDishData(content: DishContent | null, deps: Deps) {
   const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
   const [tree, setTree] = useState<GroupNode[]>([]);
-  const [materials, setMaterials] = useState<Record<string, MaterialInfo>>({});
+  const [catalog, setCatalog] = useState<Catalog | null>(null);
+  const [retired, setRetired] = useState<CatalogMaterial[]>([]);
+  const [allergens, setAllergens] = useState<Record<string, string[] | null>>({});
   const canCreate = useAccess().can("sales:product:create");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const load = useCallback(async () => {
     setLoading(true); setError("");
     try {
-      const [cats, groups] = await Promise.all([deps.getSaleCategories(), deps.getMaterialCategories()]);
+      const [cats, groups, materialTree] = await Promise.all([deps.getSaleCategories(), deps.getMaterialCategories(), deps.getMaterialTree()]);
       setCategories(cats.categories);
       setTree(groups.flatMap(group => [{ code: group.code, parent_code: null }, ...group.children.map(child => ({ code: child.code, parent_code: group.code }))]));
+      setCatalog({ tree: materialTree, items: await deps.listMaterials("ACTIVE", materialTree) });
     } catch (e) { setError(e instanceof Error ? deps.safeMessage(e.message) : "Không tải được danh mục"); }
     finally { setLoading(false); }
   }, [deps]);
   useEffect(() => { void load(); }, [load]);
-  const remember = useCallback(async (material: Material) => {
-    setMaterials(current => ({ ...current, [material.id]: { name: material.name, group: material.material_group_code ?? null, uom: material.uom_code === "KG" ? "G" : material.uom_code === "L" ? "ML" : material.uom_code, allergens: null } }));
-    try {
-      const labels = await deps.getRawLabels(material.id);
-      setMaterials(current => ({ ...current, [material.id]: { ...current[material.id], allergens: labels.allergen_summary.known ? labels.allergen_summary.contains.join(", ") || "Không có" : null } }));
-    } catch { /* Missing declarations remain unknown. */ }
-  }, [deps]);
   const ingredientIds = content?.ingredients.flatMap(line => line.sku_ref ? [line.sku_ref] : []).join(",") ?? "";
+  const known = useMemo(() => new Map([...retired, ...(catalog?.items ?? [])].map(item => [item.id, item])), [catalog, retired]);
+  const lookedUp = useRef(false);
   useEffect(() => {
-    let alive = true;
-    const missing = new Set(ingredientIds.split(",").filter(id => id && !materials[id]));
-    if (!missing.size) return;
-    void (async () => {
-      let cursor = "";
-      do {
-        const page = await deps.getMaterials(new URLSearchParams({ limit: "100", cursor }).toString());
-        if (!alive) return;
-        for (const item of page.items) if (missing.delete(item.id)) void remember(item);
-        cursor = page.next_cursor ?? "";
-      } while (cursor && missing.size);
-    })().catch(() => { if (alive) setError("Không tải được thông tin nguyên liệu. Thử lại."); });
-    return () => { alive = false; };
-  }, [ingredientIds, deps, remember]);
+    if (!catalog || lookedUp.current || !ingredientIds.split(",").some(id => id && !known.has(id))) return;
+    lookedUp.current = true;
+    void Promise.all([deps.listMaterials("DRAFT", catalog.tree), deps.listMaterials("SUSPENDED", catalog.tree)]).then(lists => setRetired(lists.flat())).catch(() => setError("Không tải được thông tin nguyên liệu. Thử lại."));
+  }, [catalog, ingredientIds, known, deps]);
+  const asked = useRef(new Set<string>());
+  useEffect(() => {
+    for (const id of ingredientIds.split(",").filter(id => id && !asked.current.has(id))) {
+      asked.current.add(id);
+      void deps.getRawLabels(id).then(labels => setAllergens(current => ({ ...current, [id]: labels.allergen_summary.known ? labels.allergen_summary.contains : null }))).catch(() => undefined);
+    }
+  }, [ingredientIds, deps]);
+  const materials = useMemo(() => Object.fromEntries(ingredientIds.split(",").flatMap(id => {
+    const item = known.get(id);
+    return item ? [[id, { name: item.name, group: item.group.toUpperCase() || null, category: item.category.toUpperCase(), uom: uomOf(item.unit), imageUrl: item.imageUrl, allergens: allergens[id] ?? null } satisfies MaterialInfo]] : [];
+  })), [ingredientIds, known, allergens]);
   const [packQuery, setPackQuery] = useState("");
   const [packs, setPacks] = useState<dishes.PackOption[]>([]);
   const [packNext, setPackNext] = useState<string | null>(null);
@@ -86,5 +87,5 @@ export function useDishData(content: DishContent | null, deps: Deps) {
     const timer = setTimeout(() => void deps.previewCost(content).then(value => { if (alive) setCost(value); }).catch(() => { if (alive) setCostError("Không tải được giá vốn. Thử lại."); }).finally(() => { if (alive) setCostLoading(false); }), 600);
     return () => { alive = false; clearTimeout(timer); };
   }, [content, deps, costRetry]);
-  return { categories, tree, materials, remember, canCreate, loading, error, load, packs, packNext, loadPacks, packQuery, setPackQuery, packLoading, packError, retryPacks: () => setPackRetry(n => n + 1), recipes, cost, costError, costLoading, retryCost: () => setCostRetry(n => n + 1) };
+  return { categories, tree, materials, catalog, canCreate, loading, error, load, packs, packNext, loadPacks, packQuery, setPackQuery, packLoading, packError, retryPacks: () => setPackRetry(n => n + 1), recipes, cost, costError, costLoading, retryCost: () => setCostRetry(n => n + 1) };
 }

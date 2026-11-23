@@ -6,7 +6,6 @@ export function validateDish(content: DishContent, ctx: ValidateCtx): DishError[
   const errors: DishError[] = [];
   const add = (field: string, message: string, row?: string) => errors.push({ field, message, ...(row ? { row } : {}) });
   if (!content.name?.trim() || content.name.trim().length > 150) add("name", "Tên món cần 1–150 ký tự");
-  if (!content.category_ref) add("category_ref", "Chọn danh mục món");
   if (content.tags.length < 3 || content.tags.length > 8) add("tags", "Nhập 3–8 hashtag");
   if (!content.servings || ![1, 2, 3, 4, 6].includes(content.servings)) add("servings", "Chọn khẩu phần 1, 2, 3, 4 hoặc 6 người");
   if (!content.ingredients.length) add("ingredients", "Thêm ít nhất một nguyên liệu");

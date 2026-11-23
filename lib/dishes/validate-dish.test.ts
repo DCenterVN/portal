@@ -60,7 +60,7 @@ describe("validateDish", () => {
     expect(validateDish(m1({ name: "a".repeat(150) }), ctx())).toEqual([]);
   });
 
-  it("thiếu danh mục", () => expect(find(validateDish(m1({ category_ref: null }), ctx()), "category_ref")).toHaveLength(1));
+  it("danh mục không bắt buộc", () => expect(find(validateDish(m1({ category_ref: null }), ctx()), "category_ref")).toHaveLength(0));
 
   it.each([[2, true], [3, false], [8, false], [9, true]])("hashtag %i nhãn -> lỗi=%s", (n, bad) => {
     const tags = Array.from({ length: n }, (_, i) => `t${i}`);

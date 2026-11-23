@@ -14,9 +14,9 @@ export function DishSeasoningsView(props: {
 }) {
   const update = (row: string, patch: Partial<DishContent["seasonings"][number]>) => props.onChange({ ...props.content, seasonings: props.content.seasonings.map(line => line.row === row ? { ...line, ...patch } : line) });
   const available = slots.filter(slot => !props.content.seasonings.some(line => line.slot === slot));
-  return <section className="space-y-3" aria-label="Gia vị"><h2>Gia vị</h2><p>Công thức tính cho 1 suất. Mỗi loại ô chỉ một gói; luôn giữ ít nhất một gói không được bỏ.</p>
+  return <section id="dish-seasonings" className="scroll-mt-4 space-y-3" aria-label="Gia vị"><h2>Gói gia vị</h2><p className="text-sm text-muted-foreground">Gia vị và cốt đi vào gói gia vị, tính cho 1 suất. Mỗi loại một gói; giữ ít nhất một gói không được bỏ.</p>
     {props.error && <InlineAlert>{props.error} <Button type="button" variant="outline" onClick={props.onRetry}>Thử lại</Button></InlineAlert>}
-    {props.content.seasonings.map((line, index) => <div key={line.row} className="grid gap-3 rounded-xl border border-border p-4 md:grid-cols-3">
+    {props.content.seasonings.map((line, index) => <div key={line.row} className="grid gap-3 rounded-xl border border-border p-4">
       <label>Loại ô<NativeSelect disabled={props.readOnly} value={line.slot} onChange={e => { const slot = slots.find(slot => slot === e.target.value); if (slot) update(line.row, { slot, ...(slot === "COT" ? { removable: false } : {}) }); }}>{slots.filter(slot => slot === line.slot || available.includes(slot)).map(slot => <NativeSelectOption key={slot} value={slot}>{slotLabels[slot]}</NativeSelectOption>)}</NativeSelect></label>
       <div onChangeCapture={event => { const target = event.target; if (target instanceof HTMLInputElement && target.getAttribute("role") === "combobox") props.onQuery(target.value); }}>
         <EntityPicker name={`seasoning-${index}`} label={`Gói gia vị ${index + 1}`} value={line.package_ref} items={props.packs} status={props.loading ? "loading" : props.error ? "error" : "ready"} getId={pack => pack.id} getLabel={pack => pack.name} onChange={id => update(line.row, { package_ref: id })} onRetry={props.onRetry} serializeValue={false} />

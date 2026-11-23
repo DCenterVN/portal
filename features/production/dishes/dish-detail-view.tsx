@@ -1,6 +1,8 @@
 import { formatDateTime } from "@/lib/format-date";
 import type { ReactNode } from "react";
+import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Tip } from "@/components/patterns/tip";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -9,7 +11,7 @@ import type { DishDetail, Variant } from "@/lib/dishes/dish-detail";
 import { journeyLabels } from "./dish-list-view";
 const person = (name: string) => name.replace(/[0-9a-f]{8}-[0-9a-f-]{27,}/gi, "Thành viên chi nhánh");
 export function DishDetailView(props: { detail: DishDetail; selected: string; variant: Variant | undefined; busy: boolean; canCreate: boolean; onSelect: (id: string) => void; onBack: () => void; onCopy: () => void; onVariant: () => void; onRevision: () => void; onDraft: (id: string) => void; children: ReactNode }) {
-  return <div className="space-y-6"><Button variant="ghost" onClick={props.onBack}>Về danh sách món</Button><Card><CardContent className="space-y-4 pt-6"><h2>{props.detail.product.name}</h2><p>{props.detail.product.category_name || "Danh mục món"}</p>
+  return <div className="space-y-6"><Tip label="Về danh sách món"><Button type="button" variant="ghost" size="icon" aria-label="Về danh sách món" onClick={props.onBack}><ArrowLeft aria-hidden="true" /></Button></Tip><Card><CardContent className="space-y-4 pt-6"><h2>{props.detail.product.name}</h2>{props.detail.product.category_name && <p>{props.detail.product.category_name}</p>}
     <Tabs value={props.selected} onValueChange={props.onSelect}>
       <TabsList aria-label="Biến thể món" className="h-auto flex-wrap">{props.detail.variants.map(v => <TabsTrigger key={v.set_ref} value={v.set_ref}>{v.variant_label} · {journeyLabels[v.journey]}</TabsTrigger>)}</TabsList>
       <TabsContent value={props.selected}>{props.variant && <div className="space-y-4"><Badge>{journeyLabels[props.variant.journey]}</Badge>{props.children}

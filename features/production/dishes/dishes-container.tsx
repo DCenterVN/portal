@@ -3,24 +3,24 @@ import { useCallback, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import * as api from "@/lib/api/dishes";
 import { getMaterialCategories } from "@/lib/api/material-categories";
-import { getMaterials, getRawLabels } from "@/lib/api/sales";
+import { getMaterialTree, listMaterials } from "@/lib/api/material-catalog";
+import { getRawLabels } from "@/lib/api/sales";
 import { validateDish } from "@/lib/dishes/validate-dish";
 import type { DishContent } from "@/lib/dishes/types";
 import { Button } from "@/components/ui/button";
 import { PageShell } from "@/components/ui/page";
-import { PageHeading } from "@/components/patterns/page-heading";
-import { EmptyState, LoadingState } from "@/components/patterns/empty-state";
+import { LoadingState } from "@/components/patterns/empty-state";
 import { DishListView } from "./dish-list-view";
 import { DishEditorView } from "./dish-editor-view";
 import { DishIngredientsView } from "./dish-ingredients-view";
-import { DishSeasoningsView } from "./dish-seasonings-view";
+import { DishDraftBody } from "./dish-draft-body";
 import { DishCostView } from "./dish-cost-view";
 import { DishDetailView } from "./dish-detail-view";
 import { useDishes, emptyContent, type DishLocation } from "./use-dishes";
 import { useDishDraft } from "./use-dish-draft";
 import { useDishData } from "./use-dish-data";
 import { InlineAlert } from "@/components/patterns/inline-alert";
-const dataApi = { ...api, getMaterialCategories, getMaterials, getRawLabels };
+const dataApi = { ...api, getMaterialCategories, getMaterialTree, listMaterials, getRawLabels };
 export function DishesContainer({ mon, mode, draft: draftId }: DishLocation) {
   const router = useRouter();
   const [touched, setTouched] = useState(false);
@@ -48,17 +48,17 @@ export function DishesContainer({ mon, mode, draft: draftId }: DishLocation) {
     if (editor.content && !editor.frozen && !editor.conflict && !await editor.save()) return;
     navigate({}); void workspace.load();
   };
-  return <PageShell><PageHeading title="Món" description="Soạn công thức mỗi suất, tự tính lượng theo khẩu phần. Hoàn tất để bàn giao, chưa mở bán." />
+  const ingredientNames = editor.content?.ingredients.flatMap(line => line.sku_ref && data.materials[line.sku_ref] ? [data.materials[line.sku_ref].name] : []) ?? [];
+  return <PageShell>
     {data.error && <InlineAlert>{data.error} <Button variant="outline" onClick={() => void data.load()}>Thử lại</Button></InlineAlert>}
     {editor.error && <InlineAlert>{editor.error}<Button variant="outline" onClick={() => void editor.reload()}>Tải lại nháp</Button></InlineAlert>}
     {workspace.error && (mon || draftId) && <InlineAlert>{workspace.error}<Button variant="outline" onClick={() => void workspace.load()}>Thử lại</Button></InlineAlert>}
     {workspace.existing && <Button variant="outline" onClick={() => navigate({ mon, draft: workspace.existing })}>Mở bản đang có</Button>}
     {(editor.loading || (mon && workspace.busy && !workspace.detail)) && <LoadingState title="Đang tải món…" />}
-    {draftId && editor.draft && editor.content ? <div onBlurCapture={event => { if (!(event.relatedTarget instanceof HTMLButtonElement)) setTouched(true); }} onClickCapture={event => { if (event.target instanceof Element && event.target.closest("button")) setTouched(true); }}><DishEditorView key={editor.draft.id} draft={editor.draft} content={editor.content} categories={data.categories} categoryLoading={data.loading} saveState={editor.saveState} busy={editor.busy || !data.canCreate} frozen={editor.frozen} conflict={editor.conflict} errors={errors} validationErrors={validationErrors} existingServings={ctx.existingVariants.map(v => v.servings)} onExistingVariant={id => { workspace.setSelected(id); navigate({ mon: editor.content?.base?.product_ref }); }} onChange={editor.change} onSave={() => void editor.save()} onComplete={() => void editor.complete()} onDiscard={() => void editor.discard()} onReload={() => void editor.reload()} onBack={() => void back()}>
-      <div className="grid gap-6 xl:grid-cols-3"><div className="space-y-6 xl:col-span-2"><DishIngredientsView content={editor.content} materials={data.materials} tree={data.tree} errors={errors} readOnly={editor.frozen} onChange={editor.change} onMaterial={material => void data.remember(material)} />
-      <DishSeasoningsView content={editor.content} packs={data.packs} recipes={data.recipes} loading={data.packLoading} error={data.packError} next={data.packNext} errors={errors} readOnly={editor.frozen} onChange={editor.change} onQuery={data.setPackQuery} onRetry={data.retryPacks} onNext={() => void data.loadPacks(data.packNext ?? "")} /></div><aside>{cost}</aside></div>
+    {draftId && editor.draft && editor.content ? <div onBlurCapture={event => { if (!(event.relatedTarget instanceof HTMLButtonElement)) setTouched(true); }} onClickCapture={event => { if (event.target instanceof Element && event.target.closest("button")) setTouched(true); }}><DishEditorView key={editor.draft.id} draft={editor.draft} content={editor.content} ingredientNames={ingredientNames} saveState={editor.saveState} busy={editor.busy || !data.canCreate} frozen={editor.frozen} conflict={editor.conflict} errors={errors} validationErrors={validationErrors} existingServings={ctx.existingVariants.map(v => v.servings)} onExistingVariant={id => { workspace.setSelected(id); navigate({ mon: editor.content?.base?.product_ref }); }} onChange={editor.change} onSave={() => void editor.save()} onComplete={() => void editor.complete()} onDiscard={() => void editor.discard()} onReload={() => void editor.reload()} onBack={() => void back()}>
+      <DishDraftBody content={editor.content} data={data} errors={errors} readOnly={editor.frozen} cost={cost} onChange={editor.change} />
     </DishEditorView></div> : mon && workspace.detail ? <DishDetailView detail={workspace.detail} selected={workspace.selected} variant={variant} busy={workspace.busy} canCreate={data.canCreate} onSelect={workspace.setSelected} onBack={() => navigate({})} onCopy={() => begin("COPY")} onVariant={() => begin("VARIANT")} onRevision={() => begin("REVISION")} onDraft={id => navigate({ mon, draft: id })}>
-      {detailContent && <DishIngredientsView content={detailContent} materials={data.materials} tree={data.tree} readOnly onChange={() => {}} onMaterial={() => {}} />}{cost}
-    </DishDetailView> : !mon && !draftId ? <DishListView rows={workspace.rows} drafts={workspace.drafts} draftNext={workspace.draftNext} draftBusy={workspace.draftBusy} onMoreDrafts={() => void workspace.loadMoreDrafts()} categories={data.categories} q={workspace.q} category={workspace.category} status={workspace.status} busy={workspace.busy} error={workspace.error} next={workspace.next} canCreate={data.canCreate} onQ={workspace.setQ} onCategory={workspace.setCategory} onStatus={workspace.setStatus} onCreate={() => void workspace.begin("CREATE")} onOpen={id => navigate({ mon: id })} onCopy={id => navigate({ mon: id, mode: "copy" })} onVariant={id => navigate({ mon: id, mode: "variant" })} onDraft={id => navigate({ draft: id })} onNext={() => workspace.setCursor(workspace.next ?? "")} onRetry={() => void workspace.load()} /> : !editor.loading && !workspace.busy && !editor.error && !workspace.error ? <EmptyState title="Chưa có nội dung món" description="Mở món hoặc nháp từ danh sách." /> : null}
+      {detailContent && <DishIngredientsView content={detailContent} materials={data.materials} tree={data.tree} readOnly onChange={() => {}} />}{cost}
+    </DishDetailView> : !mon && !draftId ? <DishListView rows={workspace.rows} drafts={workspace.drafts} draftNext={workspace.draftNext} draftBusy={workspace.draftBusy} onMoreDrafts={() => void workspace.loadMoreDrafts()} categories={data.categories} q={workspace.q} category={workspace.category} status={workspace.status} busy={workspace.busy} error={workspace.error} next={workspace.next} canCreate={data.canCreate} onQ={workspace.setQ} onCategory={workspace.setCategory} onStatus={workspace.setStatus} onCreate={() => void workspace.begin("CREATE")} onOpen={id => navigate({ mon: id })} onCopy={id => navigate({ mon: id, mode: "copy" })} onVariant={id => navigate({ mon: id, mode: "variant" })} onDraft={id => navigate({ draft: id })} onNext={() => workspace.setCursor(workspace.next ?? "")} onRetry={() => void workspace.load()} /> : !editor.loading && !workspace.busy && !editor.error && !workspace.error ? <LoadingState title="Đang tải món…" /> : null}
   </PageShell>;
 }

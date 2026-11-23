@@ -16,7 +16,7 @@ type Target = z.infer<typeof targetSchema>;
 type ReadSlot = { slot: string; removable: boolean; options: { sku_ref: string; is_default: boolean }[] };
 export type CompleteDeps = {
   tree: GroupNode[]; skuGroups: Record<string, string | null>;
-  createProduct(input: { name: string; slug: string; category_ref: string }, key: string): Promise<{ id: string }>;
+  createProduct(input: { name: string; slug: string; category_ref?: string }, key: string): Promise<{ id: string }>;
   createPackage(input: PackageInput, key: string): Promise<{ id: string }>;
   createRecipe(packageRef: string, input: { components: Line[]; prep_steps: [] }, key: string): Promise<void>;
   createSet(input: Omit<PackageInput, "uom_code"> & { tags: string[] }, key: string): Promise<{ id: string; updated_at: string }>;
@@ -77,7 +77,7 @@ export async function completeDish(draft: DishDraft, deps: CompleteDeps): Promis
     failed_step = "target:slots";
     let target = progress["target:slots"] === undefined ? null : readTarget(progress["target:slots"], draft, content);
     const product_ref = draft.kind === "CREATE" || draft.kind === "COPY"
-      ? await run("product", async () => (await deps.createProduct({ name, slug: `${slug}-${suffix}`, category_ref: content.category_ref ?? "" }, key("product"))).id)
+      ? await run("product", async () => (await deps.createProduct({ name, slug: `${slug}-${suffix}`, ...(content.category_ref ? { category_ref: content.category_ref } : {}) }, key("product"))).id)
       : content.base?.product_ref ?? "";
     if (!target) {
       const slots: Slot[] = [];

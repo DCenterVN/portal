@@ -14,6 +14,8 @@ export type DishContent = {
 export type DraftRow = { id: string; kind: string; status: string; title?: string | null; revision?: number; updated_by: string; updated_at: string; completed_at?: string | null; reason?: string | null };
 export type DishDraft = { id: string; kind: DraftKind; revision: number; content: DishContent; progress: Record<string, string>; status?: string };
 export const slotLabels: Record<Slot3 | SeaSlot, string> = { DAM: "Đạm", RAU: "Rau", TINH_BOT: "Tinh bột", COT: "Cốt", NUOC_CHAM: "Nước chấm", GIA_VI_THEM: "Gia vị thêm" };
+const damRoots = ["THIT", "CA_LOAI", "THUY_HAI_SAN", "TRUNG_SUA", "DO_CHE_BIEN"];
+export const slotOfRoot = (code: string): Slot3 => damRoots.includes(code) ? "DAM" : code === "GAO_NGU_COC" ? "TINH_BOT" : "RAU";
 export function slotOf(groupCode: string | null, tree: GroupNode[]): Slot3 {
   let code = groupCode;
   const visited = new Set<string>();
@@ -22,8 +24,7 @@ export function slotOf(groupCode: string | null, tree: GroupNode[]): Slot3 {
     const node = tree.find(item => item.code === code);
     if (!node) return "RAU";
     if (node.parent_code) { code = node.parent_code; continue; }
-    if (["THIT", "THUY_HAI_SAN", "TRUNG_SUA", "DO_CHE_BIEN"].includes(code)) return "DAM";
-    return code === "GAO_NGU_COC" ? "TINH_BOT" : "RAU";
+    return slotOfRoot(code);
   }
   return "RAU";
 }
