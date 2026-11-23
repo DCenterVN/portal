@@ -20,6 +20,9 @@
 ## Environment variables trên Vercel
 - Cấu hình cho cả Preview và Production, rồi redeploy nếu đổi.
 - `NEXT_PUBLIC_SITE_URL=https://<domain-public>` là URL công khai hợp lệ, tuyệt đối không chứa secret.
+- `NEXT_PUBLIC_AUTH_REFRESH_TIMEOUT_MS` (tuỳ chọn, mili giây, mặc định 15000) là thời hạn chờ của lời gọi làm mới phiên ở trình duyệt; giá trị được đóng vào lúc build.
+- `AUTH_ROTATE_TIMEOUT_MS` (tuỳ chọn, phía server, mili giây, mặc định 10000, nên ngắn hơn `NEXT_PUBLIC_AUTH_REFRESH_TIMEOUT_MS`) là thời hạn chờ của portal khi gọi auth để làm mới phiên hoặc chuyển chi nhánh.
+- `AUTH_COOKIE_DOMAIN` (tuỳ chọn, phía server, ví dụ `.dcenter.vn`) phải trùng `cookie_domain` của auth (nếu auth để trống ở môi trường thật thì auth dùng `.dcenter.vn`). Khi có, portal xoá thêm bản `CSRF-Token` có `Domain` lúc phiên hết hạn.
 - Preview dùng URL/domain preview riêng nếu cần kiểm canonical/CSRF; không dùng hostname nội bộ.
 - `PORTAL_AUTH_MODE=prod`, tuyệt đối không sao chép `dev` từ `.env.example` lên Vercel.
 - Chưa có BE: bỏ trống toàn bộ `*_INTERNAL_URL`, `*_SERVICE_URL`, `PORTAL_INTERNAL_URL`.

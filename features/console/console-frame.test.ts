@@ -240,3 +240,34 @@ describe("context BFF concurrency", () => {
     } finally { vi.unstubAllGlobals(); }
   });
 });
+
+describe("console session refresh", () => {
+  const originalFetch = global.fetch;
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
+  function mockBackend(contextStatuses: number[], refreshStatus: number) {
+    const mock = vi.fn(async (url: string | URL | Request) => {
+      const path = new URL(String(url), "http://portal.invalid").pathname;
+      if (path === "/api/auth/refresh") return new Response(null, { status: refreshStatus });
+      return contextStatuses.shift() === 200 ? new Response(JSON.stringify(contextPayload)) : new Response(null, { status: 401 });
+    });
+    global.fetch = mock as typeof fetch;
+    return mock;
+  }
+
+  it("refreshes on the first 401 and retries instead of reporting an expired session", async () => {
+    const mock = mockBackend([401, 200], 200);
+    const session = await fetchConsoleSession();
+    expect(session.error).toBeUndefined();
+    expect(session.user.name).toBe("Dawn");
+    expect(mock).toHaveBeenCalledTimes(3);
+  });
+
+  it("reports an expired session only when the refresh itself fails", async () => {
+    mockBackend([401], 401);
+    const session = await fetchConsoleSession();
+    expect(session.error).toBe("Phiên làm việc hết hạn. Vui lòng đăng nhập lại.");
+  });
+});

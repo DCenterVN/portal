@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
-import { ErrorState } from "@/components/patterns/empty-state";
 import { StoreShell } from "@/components/layout/store-shell";
+import { doRefresh } from "@/lib/fetcher";
 import { logoutTo } from "@/lib/auth/client";
 import { toast } from "@/components/ui/toast";
 import { STORE_FOOTER, STORE_NAV } from "@/mocks/store";
@@ -22,7 +22,13 @@ export function resolveStoreUser(status: number, payload: unknown): StoreUser | 
 }
 
 export async function fetchStoreUser(fetcher: typeof fetch = fetch): Promise<StoreUser | null> {
-  const response = await fetcher("/api/auth/me");
+  const startedAt = Date.now();
+  let response = await fetcher("/api/auth/me");
+  if (response.status === 401) {
+    const refreshed = await doRefresh(startedAt);
+    if (refreshed === "unavailable") throw new Error("Không tải được thông tin tài khoản.");
+    if (refreshed) response = await fetcher("/api/auth/me");
+  }
   if (response.status === 401) return null;
   if (!response.ok) throw new Error("Không tải được thông tin tài khoản.");
   const user = resolveStoreUser(response.status, await response.json());
@@ -30,17 +36,18 @@ export async function fetchStoreUser(fetcher: typeof fetch = fetch): Promise<Sto
   return user;
 }
 
+export function loadStoreUser(onUser: (user: StoreUser | null) => void, fetcher: typeof fetch = fetch): Promise<void> {
+  return fetchStoreUser(fetcher).then(onUser).catch(() => void toast.error("Không tải được thông tin tài khoản.", { id: "store-user-error" }));
+}
+
 export function StoreFrame({ children, authPopup }: { children: ReactNode; authPopup?: ReactNode }) {
-  const [error, setError] = useState(false);
   const [user, setUser] = useState<StoreUser | null>(null);
   const onLoginClick = useAuthPopup();
 
   useEffect(() => {
     let mounted = true;
-    void fetchStoreUser().then((resolvedUser) => {
+    void loadStoreUser((resolvedUser) => {
       if (mounted) setUser(resolvedUser);
-    }).catch(() => {
-      if (mounted) setError(true);
     });
     return () => {
       mounted = false;
@@ -57,7 +64,7 @@ export function StoreFrame({ children, authPopup }: { children: ReactNode; authP
       footer={STORE_FOOTER}
       onLogout={() => void logoutTo("/login", toast.error)}
     >
-      {error ? <ErrorState title="Không tải được thông tin tài khoản." /> : children}
+      {children}
       {user ? null : authPopup}
     </StoreShell>
   );

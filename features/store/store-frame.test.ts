@@ -1,15 +1,28 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { UserProfile } from "@/lib/auth/client";
-import { apiFetch } from "@/lib/fetcher";
-import { fetchStoreUser, resolveStoreUser } from "./store-frame";
+import { apiFetch, doRefresh } from "@/lib/fetcher";
+import { toast } from "@/components/ui/toast";
+import { fetchStoreUser, loadStoreUser, resolveStoreUser } from "./store-frame";
 
-vi.mock("@/lib/fetcher", () => ({ apiFetch: vi.fn() }));
+vi.mock("@/components/ui/toast", () => ({ toast: { error: vi.fn() } }));
+vi.mock("@/lib/fetcher", () => ({ apiFetch: vi.fn(), doRefresh: vi.fn() }));
 
 const profile: UserProfile & { avatar_key: string | null; avatar_url: string | null } = { id: "user-1", email: "user@example.com", phone: "", display_name: "Người dùng API", status: "ACTIVE", created_at: "2026-01-01T00:00:00Z", memberships: [], avatar_key: null, avatar_url: null };
 
 describe("store session", () => {
   beforeEach(() => {
     vi.mocked(apiFetch).mockReset();
+    vi.mocked(doRefresh).mockReset();
+  });
+
+  it("refreshes on a 401 and retries before treating the visitor as a guest", async () => {
+    vi.mocked(doRefresh).mockResolvedValue(true);
+    const fetcher = vi.fn()
+      .mockResolvedValueOnce(new Response(null, { status: 401 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify(profile), { status: 200 }));
+
+    await expect(fetchStoreUser(fetcher)).resolves.toEqual({ name: "Người dùng API" });
+    expect(fetcher).toHaveBeenCalledTimes(2);
   });
 
   it("treats a 401 response as a guest without using apiFetch", async () => {
@@ -19,6 +32,13 @@ describe("store session", () => {
     expect(fetcher).toHaveBeenCalledWith("/api/auth/me");
     expect(apiFetch).not.toHaveBeenCalled();
     expect(resolveStoreUser(401, profile)).toBeNull();
+  });
+
+  it("a failed account lookup is a toast, the public page stays", async () => {
+    const onUser = vi.fn();
+    await loadStoreUser(onUser, vi.fn().mockRejectedValue(new Error("offline")));
+    expect(toast.error).toHaveBeenCalledWith("Không tải được thông tin tài khoản.", { id: "store-user-error" });
+    expect(onUser).not.toHaveBeenCalled();
   });
 
   it("uses the name returned by the session endpoint", async () => {
