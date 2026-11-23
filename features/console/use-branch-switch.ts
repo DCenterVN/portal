@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { mutate } from "swr";
 import { toast } from "@/components/ui/toast";
-import { FetchError, markRefreshed, mutationFetcher, redirectToLogin, withRefreshLock } from "@/lib/fetcher";
+import { FetchError, markRefreshed, markRefreshFailed, mutationFetcher, redirectToLogin, withRefreshLock } from "@/lib/fetcher";
 
 export const SESSION_CHANGED = "sunny:console-session-changed";
 
@@ -22,6 +22,7 @@ export function switchBranch(branchId: string) {
     try {await mutationFetcher("/api/auth/web/switch-branch", { arg: { branch_id: branchId } });}
     catch (error) {
       if (error instanceof FetchError && error.status === 401) redirectToLogin();
+      if (!(error instanceof FetchError) || error.status === 429 || (error.status >= 500 && error.status !== 503)) markRefreshFailed();
       throw error;
     }
     markRefreshed();

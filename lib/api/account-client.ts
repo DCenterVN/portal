@@ -1,6 +1,6 @@
 import viMessages from "@/messages/vi.json";
 import { z } from "zod";
-import { apiFetch, FetchError } from "../fetcher";
+import { apiFetch, doRefresh, FetchError, redirectToLogin } from "../fetcher";
 import { decodePlatform } from "./platform-contract";
 import { updatedProfileSchema, updatedPhoneSchema, avatarSchema, presignAvatarSchema, sessionsSchema } from "./account-types";
 import type { UpdateProfileRequest, UpdatePhoneRequest, ChangePasswordRequest, RequestEmailChangeRequest, ConfirmEmailChangeRequest, PresignAvatarRequest, FinalizeAvatarRequest, AccountSessions } from "./account-types";
@@ -20,10 +20,17 @@ export function accountErrorMessage(error: unknown, translate?: (key: string, va
 }
 async function request(path: string, method: string, body?: unknown) {
   const headers: Record<string, string> = { "Content-Type": "application/json" };
-  const response = await apiFetch(path, {
+  const init: RequestInit = {
     method, cache: "no-store", headers,
     ...(body === undefined ? {} : { body: JSON.stringify(body) }),
-  }, method !== "GET");
+  };
+  const startedAt = Date.now();
+  let response = await apiFetch(path, init, method !== "GET");
+  if (method !== "GET" && response.status === 401 && response.headers.get("x-session-missing")) {
+    const refreshed = await doRefresh(startedAt);
+    if (refreshed === true) response = await apiFetch(path, init, true);
+    else if (refreshed === false) redirectToLogin();
+  }
   if (response.ok) return response;
   const info = await response.json().catch(invalidJson);
   throw new FetchError(fallback, response.status, info, response.headers.get("retry-after"));

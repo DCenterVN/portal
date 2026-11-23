@@ -144,15 +144,16 @@ describe("refresh hardening", () => {
 
   describe("one token rotation at a time inside a tab", () => {
     function rotationProbe() {
-      const state = { inFlight: 0, max: 0, refreshCalls: 0, release: [] as (() => void)[] };
+      const state = { inFlight: 0, max: 0, refreshCalls: 0, rotated: 0, release: [] as (() => void)[] };
       global.fetch = vi.fn(async (url: unknown) => {
         const path = String(url);
-        if (!path.endsWith("/api/auth/refresh") && !path.endsWith("/api/auth/web/switch-branch")) return res(state.refreshCalls ? 200 : 401);
+        if (!path.endsWith("/api/auth/refresh") && !path.endsWith("/api/auth/web/switch-branch")) return res(state.rotated ? 200 : 401);
         if (path.endsWith("/api/auth/refresh")) state.refreshCalls++;
         state.inFlight++;
         state.max = Math.max(state.max, state.inFlight);
         await new Promise<void>((resolve) => state.release.push(resolve));
         state.inFlight--;
+        state.rotated++;
         return res(200);
       }) as typeof fetch;
       return state;
@@ -188,8 +189,10 @@ describe("refresh hardening", () => {
       await vi.advanceTimersByTimeAsync(50);
       const other = apiFetch("/api/x");
       await drain(state, 4);
-      await Promise.all([switching, other]);
+      const [, otherRes] = await Promise.all([switching, other]);
       expect(state.max).toBe(1);
+      expect(state.refreshCalls).toBe(0);
+      expect(otherRes.status).toBe(200);
     });
 
     it("a 401 on the switch-branch call itself does not start a nested refresh", async () => {
@@ -201,6 +204,86 @@ describe("refresh hardening", () => {
       await expect(switchBranch("b1")).rejects.toThrow();
       expect(fetchMock).toHaveBeenCalledTimes(1);
     });
+  });
+
+  it("after tab A gets an unavailable refresh, queued tab B does not resend the same token", async () => {
+    stubLocks();
+    stubStorage();
+    vi.stubGlobal("document", { cookie: "CSRF-Token=x" });
+    let refreshCalls = 0;
+    global.fetch = vi.fn(async (url: unknown) => {
+      if (String(url).endsWith("/api/auth/refresh")) { refreshCalls++; return res(504); }
+      return res(401);
+    }) as typeof fetch;
+    vi.resetModules();
+    const tabA = await import("./fetcher");
+    vi.resetModules();
+    const tabB = await import("./fetcher");
+    const [a, b] = await Promise.all([tabA.apiFetch("/api/x"), tabB.apiFetch("/api/y")]);
+    expect(refreshCalls).toBe(1);
+    expect([a.status, b.status]).toEqual([503, 503]);
+    await vi.advanceTimersByTimeAsync(10);
+    await tabB.apiFetch("/api/z");
+    expect(refreshCalls).toBe(2);
+  });
+
+  it("store frame reports an unavailable refresh as an error, not as a guest", async () => {
+    vi.stubGlobal("document", { cookie: "CSRF-Token=x" });
+    global.fetch = vi.fn(async () => res(504)) as typeof fetch;
+    vi.resetModules();
+    const { fetchStoreUser } = await import("@/features/store/store-frame");
+    await expect(fetchStoreUser(vi.fn(async () => res(401)))).rejects.toThrow();
+  });
+
+  it("without navigator.locks a branch switch still waits for a running refresh in the same tab", async () => {
+    stubStorage();
+    const state = { inFlight: 0, max: 0, release: [] as (() => void)[] };
+    global.fetch = vi.fn(async (url: unknown) => {
+      const path = String(url);
+      if (!path.endsWith("/api/auth/refresh") && !path.endsWith("/api/auth/web/switch-branch")) return res(state.max ? 200 : 401);
+      state.inFlight++;
+      state.max = Math.max(state.max, state.inFlight);
+      await new Promise<void>((resolve) => state.release.push(resolve));
+      state.inFlight--;
+      return res(200);
+    }) as typeof fetch;
+    const { apiFetch } = await load();
+    const { switchBranch } = await import("@/features/console/use-branch-switch");
+    const first = apiFetch("/api/x");
+    await vi.advanceTimersByTimeAsync(50);
+    const switching = switchBranch("b1");
+    for (let i = 0; i < 4; i++) {
+      await vi.advanceTimersByTimeAsync(50);
+      state.release.splice(0).forEach((resolve) => resolve());
+    }
+    await Promise.all([first, switching]);
+    expect(state.max).toBe(1);
+  });
+
+  it.each([["504", () => Promise.resolve(res(504))], ["a network error", () => Promise.reject(new TypeError("offline"))]])("branch switch failing with %s marks the refresh as failed for queued tabs", async (_kind, outcome) => {
+    stubStorage();
+    const since = Date.now();
+    const fetchMock = vi.fn(async () => outcome());
+    global.fetch = fetchMock as typeof fetch;
+    const { doRefresh } = await load();
+    const { switchBranch } = await import("@/features/console/use-branch-switch");
+    await expect(switchBranch("b1")).rejects.toThrow();
+    fetchMock.mockClear();
+    expect(await doRefresh(since)).toBe("unavailable");
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("branch switch refused with 403 does not mark the refresh as failed", async () => {
+    stubStorage();
+    const since = Date.now();
+    const fetchMock = vi.fn(async (url: unknown) => res(String(url).endsWith("/switch-branch") ? 403 : 200));
+    global.fetch = fetchMock as typeof fetch;
+    const { doRefresh } = await load();
+    const { switchBranch } = await import("@/features/console/use-branch-switch");
+    await expect(switchBranch("b1")).rejects.toThrow();
+    fetchMock.mockClear();
+    expect(await doRefresh(since)).toBe(true);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
   it.each([401, 403])("refresh %i -> login", async (status) => {

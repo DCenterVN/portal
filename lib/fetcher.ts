@@ -63,6 +63,7 @@ function resolveFetchInput(url: string | URL | Request): string | URL | Request 
 }
 
 const REFRESHED_AT_KEY = "auth:refreshed-at";
+const REFRESH_FAILED_AT_KEY = "auth:refresh-failed-at";
 const REFRESH_TIMEOUT_MS = Number(process.env.NEXT_PUBLIC_AUTH_REFRESH_TIMEOUT_MS) || 15_000;
 const REFRESH_ATTEMPTS = 3;
 const REFRESH_BACKOFF_MS = 500;
@@ -70,29 +71,45 @@ const CSRF_COOKIE = /(?:^|;\s*)CSRF-Token=[^;]/;
 
 export type RefreshResult = boolean | "unavailable";
 
-function refreshedAt(): number {
+function readStamp(key: string): number {
   try {
-    const at = Number(globalThis.localStorage?.getItem(REFRESHED_AT_KEY)) || 0;
+    const at = Number(globalThis.localStorage?.getItem(key)) || 0;
     return at > Date.now() ? 0 : at;
   }
   catch {return 0;}
 }
 
-export function markRefreshed() {
-  try {globalThis.localStorage?.setItem(REFRESHED_AT_KEY, String(Date.now()));}
+function writeStamp(key: string) {
+  try {globalThis.localStorage?.setItem(key, String(Date.now()));}
   catch {return;}
+}
+
+export function markRefreshFailed() {
+  writeStamp(REFRESH_FAILED_AT_KEY);
+}
+
+export function markRefreshed() {
+  writeStamp(REFRESHED_AT_KEY);
+}
+
+let queueTail: Promise<unknown> = Promise.resolve();
+
+function runQueued<T>(run: () => Promise<T>): Promise<T> {
+  const next = queueTail.then(run, run);
+  queueTail = next.catch(() => undefined);
+  return next;
 }
 
 export async function withRefreshLock<T>(run: () => Promise<T>): Promise<T> {
   const locks = globalThis.navigator?.locks;
-  if (!locks) return run();
+  if (!locks) return runQueued(run);
   let started = false;
   return locks.request("auth-refresh", async () => {
     started = true;
     return run();
   }).catch((error) => {
     if (started) throw error;
-    return run();
+    return runQueued(run);
   });
 }
 
@@ -107,7 +124,14 @@ async function refreshAttempt(): Promise<true | number> {
 
 async function refreshOnce(since: number): Promise<RefreshResult> {
   if (typeof document !== "undefined" && !CSRF_COOKIE.test(document.cookie)) return false;
-  if (refreshedAt() >= since) return true;
+  if (readStamp(REFRESHED_AT_KEY) >= since) return true;
+  if (readStamp(REFRESH_FAILED_AT_KEY) >= since) return "unavailable";
+  const result = await refreshWithRetry();
+  if (result === "unavailable") markRefreshFailed();
+  return result;
+}
+
+async function refreshWithRetry(): Promise<RefreshResult> {
   for (let attempt = 1; ; attempt++) {
     const outcome = await refreshAttempt();
     if (outcome === true) {

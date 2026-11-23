@@ -6,10 +6,14 @@ import { accountResponseSchemas, sessionsSchema } from "./account-types";
 import { accountOperations, type AccountOperation } from "./account-validation";
 import { authHeaders, resolveClientIP } from "./client-ip";
 import { publicError } from "./public-error";
+import { clearSession } from "./session-rotate";
 
 const noStore = { "Cache-Control": "no-store" };
 function failure(code: string, status: number) {
   return NextResponse.json({ error: code }, { status, headers: noStore });
+}
+function sessionMissing() {
+  return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401, headers: { ...noStore, "X-Session-Missing": "1" } });
 }
 function trusted(req: NextRequest) {
   const configured = process.env.NEXT_PUBLIC_SITE_URL || (process.env.NODE_ENV !== "production" ? req.nextUrl.origin : "");
@@ -53,12 +57,6 @@ async function upstreamFailure(upstream: Response) {
   return response;
 }
 function invalidJson() { return null; }
-function clearSession(response: NextResponse) {
-  for (const name of ["access_token", "refresh_token", "__Host-refresh_token", "CSRF-Token", "portal_plane"]) {
-    response.cookies.set(name, "", { path: "/", maxAge: 0, secure: name.startsWith("__Host-") || process.env.NODE_ENV === "production", sameSite: "strict", httpOnly: name !== "CSRF-Token" });
-  }
-  return response;
-}
 async function mutationResponse(upstream: Response, operation: AccountOperation) {
   if (operation === "password" || operation === "logoutAll") {
     if (upstream.status !== 204) return failure("INTERNAL_ERROR", 503);
@@ -78,7 +76,7 @@ async function mutationResponse(upstream: Response, operation: AccountOperation)
 }
 export async function accountMutation(req: NextRequest, operation: AccountOperation) {
   if (!trusted(req)) return failure("FORBIDDEN", 403);
-  if (!req.cookies.get("access_token")?.value) return failure("UNAUTHORIZED", 401);
+  if (!req.cookies.get("access_token")?.value) return sessionMissing();
   if (operation === "emailChange" && req.cookies.get("portal_plane")?.value === "employee") return failure("FORBIDDEN", 403);
   try {
     const body = await readBody(req, operation);
@@ -93,7 +91,7 @@ export async function accountMutation(req: NextRequest, operation: AccountOperat
   } catch { return failure("INTERNAL_ERROR", 503); }
 }
 export async function accountSessions(req: NextRequest, id?: string) {
-  if (!req.cookies.get("access_token")?.value) return failure("UNAUTHORIZED", 401);
+  if (!req.cookies.get("access_token")?.value) return sessionMissing();
   if (id && !trusted(req)) return failure("FORBIDDEN", 403);
   if (id && !z.string().uuid().safeParse(id).success) return failure("BAD_REQUEST", 400);
   const page = req.nextUrl.searchParams.get("page") || "1";

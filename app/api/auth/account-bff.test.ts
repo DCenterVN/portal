@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
+vi.mock("server-only", () => ({}));
 import { PATCH as profile } from "./profile/route";
 import { DELETE as avatarDelete } from "./profile/avatar/route";
 import { POST as presign } from "./profile/avatar/presign/route";
@@ -63,7 +64,7 @@ describe("account BFF route contracts", () => {
       ...(test.body ? { body: JSON.stringify(test.body) } : {}),
     }));
     expect(response.headers.get("cache-control")).toBe("no-store");
-    if ([password, logoutAll, emailConfirm].includes(test.handler as typeof password)) expect(response.headers.get("set-cookie")).toContain("access_token=; Path=/; Max-Age=0");
+    if ([password, logoutAll, emailConfirm].includes(test.handler as typeof password)) expect(response.headers.get("set-cookie")).toMatch(/access_token=; Path=\/; Expires=[^;]+; Max-Age=0/);
   });
   it("forwards exact session DELETE path and credentials", async () => {
     vi.stubEnv("NEXT_PUBLIC_SITE_URL", "http://localhost:3000");

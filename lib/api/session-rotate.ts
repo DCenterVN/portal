@@ -4,6 +4,17 @@ import { authHeaders, resolveClientIP } from "@/lib/api/client-ip";
 import { setPortalPlane } from "@/lib/api/auth-journey-bff";
 
 
+const SESSION_COOKIES = ["access_token", "__Host-refresh_token", "refresh_token", "CSRF-Token", "portal_plane"];
+
+export function clearSession(res: NextResponse): NextResponse {
+  for (const name of SESSION_COOKIES) {
+    res.cookies.set(name, "", {path: "/", expires: new Date(0), maxAge: 0, ...(/^__(Host|Secure)-/.test(name) && {secure: true})});
+  }
+  const domain = process.env.AUTH_COOKIE_DOMAIN;
+  if (domain) res.headers.append("Set-Cookie", `CSRF-Token=; Path=/; Domain=${domain}; Max-Age=0; Expires=${new Date(0).toUTCString()}`);
+  return res;
+}
+
 export async function rotateSession(req: NextRequest, path: string, body?: unknown, employee = false) {
   let clientIP: string | undefined;
   try { clientIP = resolveClientIP(req.headers); }
@@ -40,6 +51,8 @@ export async function rotateSession(req: NextRequest, path: string, body?: unkno
         secure: true,
       });
     }
+
+    if (res.status === 401 || (res.status === 403 && path === "/auth/web/refresh")) return clearSession(nextRes);
 
     const setCookieHeaders = res.headers.getSetCookie?.() || [];
     if (res.ok && employee) setPortalPlane(nextRes, req, true, setCookieHeaders);
