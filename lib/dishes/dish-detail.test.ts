@@ -86,6 +86,36 @@ describe("loadDishDetail", () => {
     });
     expect(built).toEqual(viaLoad);
   });
+
+  it("bung gia vị và cốt bắt buộc kèm chuẩn hoá kg sang g và đọc 1 suất", async () => {
+    const phoSets = [{
+      id: "set-pho", name: "Phở bò", variant_label: "1 suất", status: "ACTIVE", sellable: false, updated_at: T,
+      slots: [
+        { slot: "DAM", swappable: false, removable: false, options: [{ sku_ref: "pkg-dam", quantity: 1, is_default: true }] },
+        { slot: "COT", swappable: false, removable: false, options: [{ sku_ref: "pkg-cot", quantity: 1, is_default: true }] },
+        { slot: "GIA_VI_THEM", swappable: false, removable: false, options: [{ sku_ref: "pkg-gv-mon", quantity: 1, is_default: true }] },
+      ],
+    }];
+    const d = deps();
+    d.spies.listVariants.mockResolvedValue(phoSets);
+    d.spies.getPackage.mockImplementation(async (id: string) => ({ id, name: id }));
+    d.spies.getActiveRecipe.mockImplementation(async (id: string) => {
+      if (id === "pkg-dam") return { components: [{ sku_ref: "sku-dau", quantity: "0.150", uom: "KG", yield_pct: "100" }] };
+      if (id === "pkg-cot") return { components: [{ sku_ref: "sku-bo", quantity: "0.100", uom: "KG", yield_pct: "80" }] };
+      if (id === "pkg-gv-mon") return { components: [{ sku_ref: "sku-la-lot", quantity: "20", uom: "G", yield_pct: "100" }] };
+      return null;
+    });
+    const detail = await loadDishDetail("prod-m1", d);
+    const v = detail.variants[0];
+    expect(v.servings).toBe(1);
+    expect(v.name).toBe("Phở bò");
+    expect(v.seasonings).toEqual([]);
+    expect(v.packs.map(p => [p.slot, p.lines])).toEqual([
+      ["DAM", [{ sku_ref: "sku-dau", quantity: "150", uom: "G", yield_pct: "100" }]],
+      ["COT", [{ sku_ref: "sku-bo", quantity: "100", uom: "G", yield_pct: "80" }]],
+      ["GIA_VI_THEM", [{ sku_ref: "sku-la-lot", quantity: "20", uom: "G", yield_pct: "100" }]],
+    ]);
+  });
 });
 
 describe("toBase", () => {

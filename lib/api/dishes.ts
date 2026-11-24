@@ -1,23 +1,42 @@
 import { z } from "zod";
 import { apiFetch, FetchError } from "@/lib/fetcher";
+import { allPages } from "@/lib/api/all-pages";
 import type { DishContent, DishDraft, DraftKind, DraftRow } from "@/lib/dishes/types";
 import type { DishDetail } from "@/lib/dishes/dish-detail";
 import type { CompleteResult } from "@/lib/dishes/complete-dish";
 
 const line = z.object({ sku_ref: z.string().nullable().default(null), quantity: z.string().nullish().transform(value => value ?? ""), uom: z.string().nullish().transform(value => value ?? "G"), yield_pct: z.string().nullish().transform(value => value ?? "100") });
 const baseLine = line.extend({ sku_ref: z.string() });
+const baseSlot = z.object({ package_ref: z.string(), lines: z.array(baseLine) }).optional();
 export const contentSchema = z.object({
   schema_version: z.literal(1), name: z.string().nullable().default(null), category_ref: z.string().nullable().default(null),
   tags: z.array(z.string()).nullish().transform(value => value ?? []), servings: z.number().nullable().default(null),
   ingredients: z.array(line.extend({ row: z.string() })).nullish().transform(value => value ?? []),
   seasonings: z.array(z.object({ row: z.string(), slot: z.enum(["COT", "NUOC_CHAM", "GIA_VI_THEM"]), package_ref: z.string().nullable().default(null), removable: z.boolean().default(false) })).nullish().transform(value => value ?? []),
-  reason: z.string().nullable().default(null), base: z.object({ product_ref: z.string(), set_ref: z.string(), set_updated_at: z.string(), slots: z.object({ DAM: z.object({ package_ref: z.string(), lines: z.array(baseLine) }).optional(), RAU: z.object({ package_ref: z.string(), lines: z.array(baseLine) }).optional(), TINH_BOT: z.object({ package_ref: z.string(), lines: z.array(baseLine) }).optional() }) }).nullable().default(null),
+  reason: z.string().nullable().default(null), base: z.object({ product_ref: z.string(), set_ref: z.string(), set_updated_at: z.string(), slots: z.object({ DAM: baseSlot, RAU: baseSlot, TINH_BOT: baseSlot, COT: baseSlot, GIA_VI_THEM: baseSlot }) }).nullable().default(null),
 });
-export const draftSchema = z.object({ id: z.string(), kind: z.enum(["CREATE", "COPY", "VARIANT", "REVISION"]), revision: z.number(), status: z.string(), source_product_ref: z.string().nullable().default(null), source_set_ref: z.string().nullable().default(null), source_set_updated_at: z.string().nullable().default(null), content: contentSchema, progress: z.record(z.string()).default({}) });
-export type { DishListRow, PackOption, CostPreview } from "@/lib/dishes/types";
-import type { DishListRow, PackOption, CostPreview } from "@/lib/dishes/types";
+export const draftSchema = z.object({ id: z.string(), kind: z.enum(["CREATE", "COPY", "VARIANT", "REVISION"]), revision: z.number(), status: z.string(), source_product_ref: z.string().nullable().default(null), source_set_ref: z.string().nullable().default(null), source_set_updated_at: z.string().nullable().default(null), product_ref: z.string().nullable().default(null), set_ref: z.string().nullable().default(null), content: contentSchema, progress: z.record(z.string()).default({}) });
+export type { DishListRow, CostPreview } from "@/lib/dishes/types";
+import type { DishListRow, CostPreview } from "@/lib/dishes/types";
 export type Page<T> = { items: T[]; next_cursor: string | null };
-export const safeMessage = (value: string) => value.replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, "mục đã chọn");
+const messageTranslations: [RegExp, string][] = [
+  [/food catalog reference not found/i, "Không tìm thấy nháp hoặc món này. Có thể mục này đã bị xoá."],
+  [/không tìm thấy product|product not found/i, "Không tìm thấy món ăn này. Có thể món đã bị xoá."],
+  [/^(?:resource )?not found$/i, "Không tìm thấy dữ liệu yêu cầu."],
+  [/^forbidden$/i, "Bạn không có quyền thực hiện thao tác này."],
+  [/^unauthorized$/i, "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại."],
+  [/^internal server error$/i, "Hệ thống gặp lỗi tạm thời. Vui lòng thử lại sau."],
+  [/^(?:service|dependency) unavailable$/i, "Dịch vụ tạm thời không khả dụng. Vui lòng thử lại sau."],
+  [/name must not be empty/i, "Tên món không được để trống."],
+  [/invalid draft kind/i, "Loại nháp không hợp lệ."],
+  [/^failed to fetch$|networkerror/i, "Không kết nối được máy chủ. Vui lòng thử lại."],
+];
+export function safeMessage(value: string): string {
+  const masked = value.replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, "mục đã chọn");
+  const normalized = masked.trim();
+  const matched = messageTranslations.find(([pattern]) => pattern.test(normalized));
+  return matched ? matched[1] : masked;
+}
 export async function dishRequest<T>(path: string, method = "GET", input?: unknown, key?: string): Promise<T> {
   const res = await apiFetch(path, { method, headers: { "Content-Type": "application/json", ...(key ? { "Idempotency-Key": key } : {}) }, ...(input === undefined ? {} : { body: JSON.stringify(input) }) });
   if (res.status === 204) return undefined as T;
@@ -52,7 +71,9 @@ export async function saveDishDraft(id: string, content: DishContent, expected_r
 export const discardDishDraft = (id: string) => dishRequest<void>(`${sales}/dish-drafts/${id}`, "DELETE");
 export const listDishDrafts = (query = "status=OPEN") => dishRequest<Page<DraftRow>>(`${sales}/dish-drafts?${query}`);
 export const listDishes = (query: string) => dishRequest<Page<DishListRow>>(`${sales}/dishes?${query}`);
+export const listAllDishes = (status = "") => allPages<DishListRow>(cursor => listDishes(new URLSearchParams({ status, cursor, limit: "50" }).toString()));
 export const getDishDetail = (id: string) => dishRequest<DishDetail>(`/api/dishes/${id}`);
+export const renameDish = (id: string, name: string) => dishRequest<{ product: { id: string; name: string; updated_at?: string } }>(`/api/sales/products/${encodeURIComponent(id)}`, "PATCH", { name: name.trim() }, crypto.randomUUID());
 export async function finishDish(id: string) {
   const res = await apiFetch(`/api/dishes/drafts/${id}/complete`, { method: "POST" });
   const result = await res.json();
@@ -60,7 +81,3 @@ export async function finishDish(id: string) {
   return result as CompleteResult;
 }
 export const previewCost = (content: DishContent) => dishRequest<CostPreview>("/api/food-packs/production/recipes/cost-preview", "POST", { servings: content.servings, lines: content.ingredients.filter(line => line.sku_ref).map(({ sku_ref, quantity, uom, yield_pct }) => ({ sku_ref, quantity, uom, yield_pct })), packages: content.seasonings.filter(line => line.package_ref).map(line => ({ sku_ref: line.package_ref, quantity: 1 })) });
-export const searchPacks = (q: string, cursor = "") => dishRequest<Page<PackOption>>(`${sales}/packages?${new URLSearchParams({ q, cursor, limit: "50" })}`);
-export const getDishPack = (id: string) => dishRequest<PackOption>(`${sales}/packages/${id}`);
-export const getPackRecipe = (id: string) => dishRequest<{ current: { components: z.infer<typeof baseLine>[] } | null }>(`/api/food-packs/production/packages/${id}/recipes`);
-export const getSaleCategories = () => dishRequest<{ categories: { id: string; name: string }[] }>("/api/sales/skus?kind=RAW_MATERIAL&limit=1");

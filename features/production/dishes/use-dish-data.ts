@@ -1,90 +1,142 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import useSWR from "swr";
 import type * as dishes from "@/lib/api/dishes";
-import type { getMaterialCategories } from "@/lib/api/material-categories";
-import type { getMaterials, getRawLabels, Material } from "@/lib/api/sales";
+import type { getMaterialTree, listMaterials, Material as CatalogMaterial, MaterialCategory } from "@/lib/api/material-catalog";
+import type { getRawLabels } from "@/lib/api/sales";
 import { useAccess } from "@/lib/access-boundary";
-import type { DishContent, GroupNode } from "@/lib/dishes/types";
-export type { Material } from "@/lib/api/sales";
-export type MaterialInfo = { name: string; group: string | null; uom: string; allergens: string | null };
-type Deps = Pick<typeof dishes, "getSaleCategories" | "getDishPack" | "searchPacks" | "getPackRecipe" | "previewCost" | "safeMessage"> & { getMaterials: typeof getMaterials; getRawLabels: typeof getRawLabels; getMaterialCategories: typeof getMaterialCategories };
+import { groupNodes, sortCategories, uomOf } from "@/lib/dishes/ingredients";
+import type { DishContent } from "@/lib/dishes/types";
+
+export type MaterialInfo = { name: string; group: string | null; category: string; uom: string; imageUrl: string | null; retired: boolean; allergens: string[] | null };
+type Deps = Pick<typeof dishes, "previewCost" | "safeMessage"> & { getRawLabels: typeof getRawLabels; getMaterialTree: typeof getMaterialTree; listMaterials: typeof listMaterials };
+export type Catalog = { tree: MaterialCategory[]; items: CatalogMaterial[] };
+
+const EMPTY_MATERIALS: CatalogMaterial[] = [];
+
 export function useDishData(content: DishContent | null, deps: Deps) {
-  const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
-  const [tree, setTree] = useState<GroupNode[]>([]);
-  const [materials, setMaterials] = useState<Record<string, MaterialInfo>>({});
   const canCreate = useAccess().can("sales:product:create");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const load = useCallback(async () => {
-    setLoading(true); setError("");
-    try {
-      const [cats, groups] = await Promise.all([deps.getSaleCategories(), deps.getMaterialCategories()]);
-      setCategories(cats.categories);
-      setTree(groups.flatMap(group => [{ code: group.code, parent_code: null }, ...group.children.map(child => ({ code: child.code, parent_code: group.code }))]));
-    } catch (e) { setError(e instanceof Error ? deps.safeMessage(e.message) : "Không tải được danh mục"); }
-    finally { setLoading(false); }
-  }, [deps]);
-  useEffect(() => { void load(); }, [load]);
-  const remember = useCallback(async (material: Material) => {
-    setMaterials(current => ({ ...current, [material.id]: { name: material.name, group: material.material_group_code ?? null, uom: material.uom_code === "KG" ? "G" : material.uom_code === "L" ? "ML" : material.uom_code, allergens: null } }));
-    try {
-      const labels = await deps.getRawLabels(material.id);
-      setMaterials(current => ({ ...current, [material.id]: { ...current[material.id], allergens: labels.allergen_summary.known ? labels.allergen_summary.contains.join(", ") || "Không có" : null } }));
-    } catch { /* Missing declarations remain unknown. */ }
-  }, [deps]);
+  const catalogSwr = useSWR<Catalog>("dish-catalog", async () => {
+    const materialTree = sortCategories(await deps.getMaterialTree());
+    return { tree: materialTree, items: await deps.listMaterials("ACTIVE", materialTree) };
+  }, { revalidateOnFocus: false });
+  const catalog = catalogSwr.data ?? null;
   const ingredientIds = content?.ingredients.flatMap(line => line.sku_ref ? [line.sku_ref] : []).join(",") ?? "";
+  const needsInactive = useMemo(() => {
+    if (!catalog) return false;
+    const activeIds = new Set(catalog.items.map(item => item.id));
+    return ingredientIds.split(",").some(id => id && !activeIds.has(id));
+  }, [catalog, ingredientIds]);
+  const retiredSwr = useSWR<CatalogMaterial[]>(
+    catalog && needsInactive ? "dish-catalog-inactive" : null,
+    () => Promise.all([deps.listMaterials("DRAFT", catalog!.tree), deps.listMaterials("SUSPENDED", catalog!.tree)]).then(lists => lists.flat()),
+    { revalidateOnFocus: false }
+  );
+  const retired = retiredSwr.data ?? EMPTY_MATERIALS;
+  const retiredReady = !needsInactive || retiredSwr.data !== undefined || Boolean(retiredSwr.error);
+  const [allergens, setAllergens] = useState<Record<string, string[] | null>>({});
+  const allergenAsked = useRef<Set<string>>(new Set());
+  const load = useCallback(async () => {
+    await catalogSwr.mutate();
+    if (needsInactive) await retiredSwr.mutate();
+  }, [catalogSwr, retiredSwr, needsInactive]);
+
+  const tree = useMemo(() => groupNodes(catalog?.tree ?? []), [catalog]);
+  const known = useMemo(() => new Map([...retired, ...(catalog?.items ?? [])].map(item => [item.id, item])), [catalog, retired]);
+  const hasUnknown = useMemo(() => ingredientIds.split(",").some(id => id && !known.has(id)), [ingredientIds, known]);
+
   useEffect(() => {
-    let alive = true;
-    const missing = new Set(ingredientIds.split(",").filter(id => id && !materials[id]));
-    if (!missing.size) return;
-    void (async () => {
-      let cursor = "";
-      do {
-        const page = await deps.getMaterials(new URLSearchParams({ limit: "100", cursor }).toString());
-        if (!alive) return;
-        for (const item of page.items) if (missing.delete(item.id)) void remember(item);
-        cursor = page.next_cursor ?? "";
-      } while (cursor && missing.size);
-    })().catch(() => { if (alive) setError("Không tải được thông tin nguyên liệu. Thử lại."); });
-    return () => { alive = false; };
-  }, [ingredientIds, deps, remember]);
-  const [packQuery, setPackQuery] = useState("");
-  const [packs, setPacks] = useState<dishes.PackOption[]>([]);
-  const [packNext, setPackNext] = useState<string | null>(null);
-  const [packLoading, setPackLoading] = useState(false);
-  const [packError, setPackError] = useState("");
-  const [packRetry, setPackRetry] = useState(0);
-  const [recipes, setRecipes] = useState<Record<string, boolean>>({});
-  const packRequest = useRef(0);
-  const loadPacks = useCallback(async (cursor = "") => {
-    const version = ++packRequest.current;
-    setPackLoading(true); setPackError("");
-    try {
-      const page = await deps.searchPacks(packQuery, cursor);
-      if (version !== packRequest.current) return;
-      setPacks(current => [...new Map([...current, ...page.items.filter(pack => pack.status !== "RETIRED")].map(pack => [pack.id, pack])).values()]); setPackNext(page.next_cursor);
-    } catch { if (version === packRequest.current) setPackError("Không tải được gói gia vị"); }
-    finally { if (version === packRequest.current) setPackLoading(false); }
-  }, [deps, packQuery]);
-  useEffect(() => { const timer = setTimeout(() => void loadPacks(), 300); return () => { clearTimeout(timer); packRequest.current++; }; }, [loadPacks, packRetry]);
-  const seasoningIds = content?.seasonings.flatMap(line => line.package_ref ? [line.package_ref] : []).join(",") ?? "";
-  useEffect(() => {
-    let alive = true;
-    for (const id of seasoningIds.split(",").filter(Boolean)) {
-      void Promise.all([deps.getPackRecipe(id), deps.getDishPack(id)]).then(([result, pack]) => { if (alive) { setRecipes(current => ({ ...current, [id]: !!result.current })); setPacks(current => [...new Map([...current, pack].map(item => [item.id, item])).values()]); } }).catch(() => { if (alive) setPackError("Không kiểm tra được công thức gia vị. Thử lại."); });
+    for (const id of ingredientIds.split(",").filter(id => id && !allergenAsked.current.has(id))) {
+      allergenAsked.current.add(id);
+      void deps.getRawLabels(id).then(labels => {
+        const value = labels.allergen_summary.known ? labels.allergen_summary.contains : null;
+        setAllergens(current => ({ ...current, [id]: value }));
+      }).catch(() => {
+        allergenAsked.current.delete(id);
+      });
     }
-    return () => { alive = false; };
-  }, [seasoningIds, deps, packRetry]);
+  }, [ingredientIds, deps]);
+
+  const materials = useMemo(() => Object.fromEntries(ingredientIds.split(",").flatMap(id => {
+    const item = known.get(id);
+    return item ? [[id, { name: item.name, group: item.group.toUpperCase() || null, category: item.category.toUpperCase(), uom: uomOf(item.unit), imageUrl: item.imageUrl, retired: item.status === "SUSPENDED", allergens: allergens[id] ?? null } satisfies MaterialInfo]] : [];
+  })), [ingredientIds, known, allergens]);
+  const retiredIds = useMemo(() => new Set(retired.filter(item => item.status === "SUSPENDED").map(item => item.id)), [retired]);
+
   const [cost, setCost] = useState<dishes.CostPreview | null>(null);
   const [costError, setCostError] = useState("");
   const [costLoading, setCostLoading] = useState(false);
   const [costRetry, setCostRetry] = useState(0);
+  const costInput = useMemo(() => {
+    if (!content?.servings || !content.ingredients.length || !catalog || (hasUnknown && !retiredReady)) {
+      return { key: "", content: null as DishContent | null };
+    }
+    const activeIngredients = content.ingredients.filter(line => !line.sku_ref || !retiredIds.has(line.sku_ref));
+    if (!activeIngredients.length || activeIngredients.some(line => !line.sku_ref || Number(line.quantity) <= 0 || !Number.isFinite(Number(line.quantity)) || Number(line.yield_pct) < 1 || Number(line.yield_pct) > 100)) {
+      return { key: "", content: null as DishContent | null };
+    }
+    return {
+      key: JSON.stringify({
+        servings: content.servings,
+        ingredients: activeIngredients.map(({ sku_ref, quantity, uom, yield_pct }) => ({ sku_ref, quantity, uom, yield_pct })),
+        seasonings: content.seasonings.map(line => line.package_ref),
+      }),
+      content: { ...content, ingredients: activeIngredients },
+    };
+  }, [content, catalog, hasUnknown, retiredReady, retiredIds]);
+  const costKey = costInput.key;
+  const costContentRef = useRef<DishContent | null>(null);
+  costContentRef.current = costInput.content;
+  const lastTabRefresh = useRef(0);
+
   useEffect(() => {
     let alive = true;
     setCost(null); setCostError("");
-    if (!content?.servings || !content.ingredients.length || content.ingredients.some(line => !line.sku_ref || Number(line.quantity) <= 0 || !Number.isFinite(Number(line.quantity)) || Number(line.yield_pct) < 1 || Number(line.yield_pct) > 100)) { setCostLoading(false); return; }
+    const activeContent = costContentRef.current;
+    if (!costKey || !activeContent) { setCostLoading(false); return; }
     setCostLoading(true);
-    const timer = setTimeout(() => void deps.previewCost(content).then(value => { if (alive) setCost(value); }).catch(() => { if (alive) setCostError("Không tải được giá vốn. Thử lại."); }).finally(() => { if (alive) setCostLoading(false); }), 600);
+    const runPreview = async () => {
+      try { return await deps.previewCost(activeContent); }
+      catch (err) {
+        if (!activeContent.seasonings.length) throw err;
+        return deps.previewCost({ ...activeContent, seasonings: [] });
+      }
+    };
+    const timer = setTimeout(() => void runPreview().then(value => { if (alive) setCost(value); }).catch(() => { if (alive) setCostError("Không tải được giá vốn. Thử lại."); }).finally(() => { if (alive) setCostLoading(false); }), 600);
     return () => { alive = false; clearTimeout(timer); };
-  }, [content, deps, costRetry]);
-  return { categories, tree, materials, remember, canCreate, loading, error, load, packs, packNext, loadPacks, packQuery, setPackQuery, packLoading, packError, retryPacks: () => setPackRetry(n => n + 1), recipes, cost, costError, costLoading, retryCost: () => setCostRetry(n => n + 1) };
+  }, [costKey, costRetry, deps]);
+
+  useEffect(() => {
+    if (!costKey || !cost || cost.complete || costLoading) return;
+    const refresh = () => {
+      if (document.visibilityState !== "visible") return;
+      const now = Date.now();
+      if (now - lastTabRefresh.current < 2000) return;
+      lastTabRefresh.current = now;
+      setCostRetry(n => n + 1);
+    };
+    window.addEventListener("focus", refresh);
+    document.addEventListener("visibilitychange", refresh);
+    return () => {
+      window.removeEventListener("focus", refresh);
+      document.removeEventListener("visibilitychange", refresh);
+    };
+  }, [costKey, cost, costLoading]);
+
+  const rawError = catalogSwr.error ?? retiredSwr.error;
+  const error = rawError instanceof Error ? deps.safeMessage(rawError.message) : rawError ? "Không tải được danh mục" : "";
+
+  return {
+    tree,
+    materials,
+    catalog,
+    catalogReady: Boolean(catalog) && retiredReady,
+    canCreate,
+    loading: catalogSwr.isLoading,
+    error,
+    load,
+    cost,
+    costError,
+    costLoading,
+    retryCost: () => setCostRetry(n => n + 1),
+  };
 }

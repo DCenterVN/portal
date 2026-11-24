@@ -9,7 +9,7 @@ const tree = [
 ];
 const ctx = (over: Partial<ValidateCtx> = {}): ValidateCtx => ({
   kind: "CREATE", tree,
-  skuGroups: { "sku-trau": "THIT_TRAU", "sku-rau": "RAU_AN_LA", "sku-toi": "HANH_TOI", "sku-gao": "GAO_NGU_COC", "sku-thit2": "THIT" },
+  skuGroups: { "sku-trau": "THIT_TRAU", "sku-rau": "RAU_AN_LA", "sku-toi": "RAU_AN_LA", "sku-gao": "GAO_NGU_COC", "sku-thit2": "THIT" },
   packagesWithRecipe: ["pkg-gvxao", "pkg-cot", "pkg-cham"],
   existingVariants: [], ...over,
 });
@@ -54,13 +54,17 @@ describe("validateDish", () => {
     expect(find(errs, "slots")).toHaveLength(1);
   });
 
-  it("tên 1..150", () => {
+  it("tên 1..150 và chặn tên bản sao chưa đổi", () => {
     expect(find(validateDish(m1({ name: "" }), ctx()), "name")).toHaveLength(1);
     expect(find(validateDish(m1({ name: "a".repeat(151) }), ctx()), "name")).toHaveLength(1);
+    expect(find(validateDish(m1({ name: "Thịt trâu (bản sao)" }), ctx()), "name")).toEqual([
+      { field: "name", message: "Đổi tên món trước khi hoàn tất" },
+    ]);
+    expect(validateDish(m1({ name: "Thịt bò xào rau muống" }), ctx())).toEqual([]);
     expect(validateDish(m1({ name: "a".repeat(150) }), ctx())).toEqual([]);
   });
 
-  it("thiếu danh mục", () => expect(find(validateDish(m1({ category_ref: null }), ctx()), "category_ref")).toHaveLength(1));
+  it("danh mục không bắt buộc", () => expect(find(validateDish(m1({ category_ref: null }), ctx()), "category_ref")).toHaveLength(0));
 
   it.each([[2, true], [3, false], [8, false], [9, true]])("hashtag %i nhãn -> lỗi=%s", (n, bad) => {
     const tags = Array.from({ length: n }, (_, i) => `t${i}`);
@@ -101,7 +105,7 @@ describe("validateDish", () => {
   });
 
   it("không có gia vị không-bỏ -> đúng câu BR-18", () => {
-    const msg = "Món cần ít nhất một gói gia vị không được bỏ";
+    const msg = "Món cần ít nhất một gia vị hoặc một cốt nước dùng";
     for (const seasonings of [[], [{ row: "g1", slot: "GIA_VI_THEM" as const, package_ref: "pkg-gvxao", removable: true }]]) {
       const errs = validateDish(m1({ seasonings }), ctx());
       expect(errs.some((e) => e.message === msg)).toBe(true);

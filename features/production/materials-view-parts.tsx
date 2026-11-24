@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty";
@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 import type { MaterialCategory, Material } from "@/lib/api/material-catalog";
 import { UNCATEGORIZED, pageNumbers } from "./materials-catalog";
 
-export function MaterialCard({ material, onOpen }: { material: Material; onOpen?: (material: Material) => void }) {
+export function MaterialCard({ material, onOpen, selected = false }: { material: Material; onOpen?: (material: Material) => void; selected?: boolean }) {
   const [failed, setFailed] = useState(false);
   const body = <>
     <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-muted">
@@ -19,6 +19,7 @@ export function MaterialCard({ material, onOpen }: { material: Material; onOpen?
         ? <img src={material.imageUrl} alt={material.name} loading="lazy" onError={() => setFailed(true)} className="size-full object-cover" />
         : <div data-testid="material-fallback" aria-hidden="true" className="flex size-full items-center justify-center bg-muted text-2xl font-medium text-muted-foreground">{material.name.trim().charAt(0).toUpperCase()}</div>}
       {material.status === "DRAFT" && <Badge variant="secondary" className="absolute top-2 left-2">Nháp</Badge>}
+      {selected && <span role="img" aria-label="Đã chọn" className="absolute top-2 right-2 flex size-6 items-center justify-center rounded-full bg-primary text-primary-foreground"><Check aria-hidden="true" className="size-4" /></span>}
     </div>
     <p className="line-clamp-2 text-left text-sm font-medium">{material.name}</p>
   </>;
@@ -27,9 +28,11 @@ export function MaterialCard({ material, onOpen }: { material: Material; onOpen?
     : <div className="flex flex-col gap-2">{body}</div>}</li>;
 }
 
-export function MaterialGrid({ items, onOpen }: { items: Material[]; onOpen?: (material: Material) => void }) {
+const WIDE_COLUMNS = "grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-6";
+
+export function MaterialGrid({ items, onOpen, selectedIds, columns = WIDE_COLUMNS }: { items: Material[]; onOpen?: (material: Material) => void; selectedIds?: ReadonlySet<string>; columns?: string }) {
   if (items.length === 0) return <Empty><EmptyHeader><EmptyTitle>Chưa có nguyên liệu nào trong loại này</EmptyTitle><EmptyDescription>Thử đổi loại, đổi trạng thái hoặc xoá từ khoá tìm kiếm.</EmptyDescription></EmptyHeader></Empty>;
-  return <ul className="grid animate-in fade-in grid-cols-2 gap-4 duration-200 motion-reduce:animate-none sm:grid-cols-4 lg:grid-cols-6">{items.map(material => <MaterialCard key={material.id} material={material} onOpen={onOpen} />)}</ul>;
+  return <ul className={cn("grid animate-in fade-in duration-200 motion-reduce:animate-none", columns)}>{items.map(material => <MaterialCard key={material.id} material={material} onOpen={onOpen} selected={selectedIds?.has(material.id)} />)}</ul>;
 }
 
 const STEP_PX = 240;
@@ -62,7 +65,7 @@ function useSlidingBox(list: React.RefObject<HTMLDivElement | null>, current: st
   return box;
 }
 
-function useScrollEdges(strip: React.RefObject<HTMLDivElement | null>) {
+function useScrollEdges(strip: React.RefObject<HTMLDivElement | null>, key: string) {
   const [edges, setEdges] = useState({ left: false, right: true });
   useLayoutEffect(() => {
     const node = strip.current;
@@ -71,8 +74,10 @@ function useScrollEdges(strip: React.RefObject<HTMLDivElement | null>) {
     measure();
     node.addEventListener("scroll", measure, { passive: true });
     window.addEventListener("resize", measure);
-    return () => { node.removeEventListener("scroll", measure); window.removeEventListener("resize", measure); };
-  }, [strip]);
+    const observer = typeof ResizeObserver !== "undefined" ? new ResizeObserver(measure) : null;
+    observer?.observe(node);
+    return () => { node.removeEventListener("scroll", measure); window.removeEventListener("resize", measure); observer?.disconnect(); };
+  }, [strip, key]);
   return edges;
 }
 
@@ -88,8 +93,8 @@ type BarProps = { current: string; category: MaterialCategory[]; counts: Record<
 export function CategoryBar({ current, category, counts, onSelect, onManage }: BarProps) {
   const strip = useRef<HTMLDivElement>(null);
   const list = useRef<HTMLDivElement>(null);
-  const box = useSlidingBox(list, current);
-  const edges = useScrollEdges(strip);
+  const box = useSlidingBox(list, `${current}|${Object.values(counts).join(",")}`);
+  const edges = useScrollEdges(strip, `${category.length}|${Object.values(counts).join(",")}`);
   useWheelScroll(strip);
   useEffect(() => {
     list.current?.querySelector('[data-state="active"]')?.scrollIntoView({ inline: "center", block: "nearest", behavior: reduced() ? "auto" : "smooth" });

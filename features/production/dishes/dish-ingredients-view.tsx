@@ -1,47 +1,67 @@
-import { useState } from "react";
+import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupText } from "@/components/ui/input-group";
 import { InlineAlert } from "@/components/patterns/inline-alert";
-import { ChevronDown } from "@/components/ui/icons";
-import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { MaterialPicker } from "../material-picker";
-import { slotLabels, slotOf, type DishContent, type GroupNode } from "@/lib/dishes/types";
+import { Tip } from "@/components/patterns/tip";
+import { uomLabel } from "@/lib/dishes/ingredients";
+import { slotLabels, slotOf, type DishContent, type GroupNode, type IngredientSlot } from "@/lib/dishes/types";
 import type { DishError } from "@/lib/dishes/validate-dish";
+import type { MaterialInfo } from "./use-dish-data";
 
-import type { MaterialInfo, Material } from "./use-dish-data";
-export function DishIngredientsView({ content, materials, tree, errors = [], readOnly = false, onChange, onMaterial }: {
-  content: DishContent; materials: Record<string, MaterialInfo>; tree: GroupNode[]; errors?: DishError[]; readOnly?: boolean;
-  onChange: (content: DishContent) => void; onMaterial: (material: Material) => void;
+const SLOTS: IngredientSlot[] = ["DAM", "RAU", "TINH_BOT", "GIA_VI_THEM", "COT"];
+type Line = DishContent["ingredients"][number];
+
+const slotPrefix = (row: string): IngredientSlot | null => {
+  const code = row.split("-")[0];
+  return SLOTS.includes(code as IngredientSlot) ? (code as IngredientSlot) : null;
+};
+
+function Thumb({ info }: { info?: MaterialInfo }) {
+  const name = info?.name ?? "?";
+  return info?.imageUrl
+    ? <img src={info.imageUrl} alt="" loading="lazy" className="size-8 shrink-0 rounded-lg object-cover" />
+    : <span aria-hidden="true" className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-xs font-medium text-muted-foreground">{name.trim().charAt(0).toUpperCase()}</span>;
+}
+
+export function DishIngredientsView({ content, materials, tree, packNames = {}, errors = [], missingCosts, readOnly = false, allergensText, onChange }: {
+  content: DishContent; materials: Record<string, MaterialInfo>; tree: GroupNode[]; packNames?: Record<string, string>; errors?: DishError[]; missingCosts?: Record<string, string>; readOnly?: boolean; allergensText?: string; onChange: (content: DishContent) => void;
 }) {
-  const [picking, setPicking] = useState<string | null>(null);
-  const update = (row: string, patch: Partial<DishContent["ingredients"][number]>) => onChange({ ...content, ingredients: content.ingredients.map(line => line.row === row ? { ...line, ...patch } : line) });
-  const select = (material: Material) => {
-    const duplicate = content.ingredients.find(line => line.sku_ref === material.id);
-    if (duplicate && duplicate.row !== picking) { setPicking(duplicate.row); return; }
-    onMaterial(material);
-    if (picking) update(picking, { sku_ref: material.id, uom: material.uom_code === "KG" ? "G" : material.uom_code === "L" ? "ML" : material.uom_code });
-    else onChange({ ...content, ingredients: [...content.ingredients, { row: crypto.randomUUID(), sku_ref: material.id, quantity: "", uom: material.uom_code === "KG" ? "G" : material.uom_code === "L" ? "ML" : material.uom_code, yield_pct: "100" }] });
-    setPicking(null);
-  };
-  const totals = ["G", "ML", "EA"].flatMap(uom => {
-    const amount = content.ingredients.filter(line => line.uom === uom).reduce((sum, line) => sum + (Number(line.quantity) || 0), 0);
-    return amount ? [`${new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 3 }).format(amount)} ${uom === "G" ? "g" : uom === "ML" ? "ml" : "cái"}`] : [];
-  });
-  const kit = ["G", "ML", "EA"].flatMap(uom => {
-    const amount = content.ingredients.filter(line => line.uom === uom).reduce((sum, line) => sum + (Number(line.quantity) || 0), 0) * (content.servings ?? 0);
-    return amount ? [`${new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 3 }).format(amount)} ${uom === "G" ? "g" : uom === "ML" ? "ml" : "cái"}`] : [];
-  });
-  return <section className="space-y-3" aria-label="Nguyên liệu món"><h2>Nguyên liệu</h2><p>Định lượng cho 1 suất. Lượng kit tự nhân theo khẩu phần, chưa gồm gia vị.</p>
-    <Table><TableHeader><TableRow>{["Nguyên liệu", "Lượng / suất", "Đơn vị", "Hao hụt %", "Ngăn đóng gói", "Lượng / kit", "Dị ứng"].map(label => <TableHead key={label}>{label}</TableHead>)}</TableRow></TableHeader><TableBody>{content.ingredients.map((line, index) => {
-      const material = line.sku_ref ? materials[line.sku_ref] : null;
-      return <TableRow key={line.row}><TableCell><div className="space-y-2"><span>{material?.name ?? (line.sku_ref ? "Nguyên liệu chưa tải được tên" : "Chọn nguyên liệu")}</span>{!readOnly && <div className="flex gap-2"><Button type="button" variant="outline" onClick={() => setPicking(line.row)}>Chọn / thay nguyên liệu dòng {index + 1}<ChevronDown aria-hidden="true" className="size-4" /></Button><Button type="button" variant="ghost" onClick={() => onChange({ ...content, ingredients: content.ingredients.filter(item => item.row !== line.row) })}>Bỏ dòng {index + 1}</Button></div>}{errors.filter(e => e.row === line.row && e.field === "sku_ref").map(e => <InlineAlert key={e.field}>{e.message}</InlineAlert>)}</div></TableCell>
-        <TableCell>{readOnly ? line.quantity : <Input aria-label={`Lượng / suất dòng ${index + 1}`} inputMode="decimal" value={line.quantity} onChange={e => update(line.row, { quantity: e.target.value })} />}{errors.filter(e => e.row === line.row && e.field === "quantity").map(e => <InlineAlert key={e.field}>{e.message}</InlineAlert>)}</TableCell>
-        <TableCell>{line.uom === "G" ? "g" : line.uom === "ML" ? "ml" : "cái"}</TableCell>
-        <TableCell>{readOnly ? 100 - Number(line.yield_pct) : <Input aria-label={`Hao hụt % dòng ${index + 1}`} inputMode="decimal" type="number" min={0} max={99} value={line.yield_pct === "" ? "" : 100 - Number(line.yield_pct)} onChange={e => update(line.row, { yield_pct: e.target.value === "" ? "" : String(100 - Number(e.target.value)) })} />}{errors.filter(e => e.row === line.row && e.field === "yield_pct").map(e => <InlineAlert key={e.field}>{e.message}</InlineAlert>)}</TableCell>
-        <TableCell>{material?.group && tree.some(node => node.code === material.group) ? slotLabels[slotOf(material.group, tree)] : "Chưa có nhóm"}</TableCell><TableCell className="text-right tabular-nums">{line.quantity && content.servings ? new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 3 }).format(Number(line.quantity) * content.servings) : "—"}</TableCell><TableCell>{material?.allergens ?? "Chưa khai báo"}</TableCell>
-      </TableRow>;
-    })}</TableBody></Table>
-    <p>Tổng / suất: {totals.join(" + ") || "Chưa có lượng"}. Tổng / kit: {kit.join(" + ") || "Chưa có lượng"}.</p>
-    {!readOnly && <><Button type="button" variant="outline" onClick={() => { const row = crypto.randomUUID(); onChange({ ...content, ingredients: [...content.ingredients, { row, sku_ref: null, quantity: "", uom: "G", yield_pct: "100" }] }); setPicking(row); }}>Thêm dòng nguyên liệu</Button>{picking && <div className="space-y-2"><MaterialPicker onSelect={select} /><Button type="button" variant="ghost" onClick={() => setPicking(null)}>Đóng chọn nguyên liệu</Button></div>}</>}
+  const update = (row: string, patch: Partial<Line>) => onChange({ ...content, ingredients: content.ingredients.map(line => line.row === row ? { ...line, ...patch } : line) });
+  const remove = (row: string) => onChange({ ...content, ingredients: content.ingredients.filter(line => line.row !== row) });
+  const legacy = content.seasonings.filter(line => line.package_ref);
+  const slotFor = (line: Line) => (readOnly ? slotPrefix(line.row) : null) ?? slotOf(line.sku_ref ? materials[line.sku_ref]?.group ?? null : null, tree);
+  return <section aria-label="Nguyên liệu món" className="overflow-hidden rounded-xl border bg-card shadow-sm">
+    <div className="flex items-center justify-between border-b bg-muted/40 px-4 py-3">
+      <h2 className="text-sm font-semibold">Món này dùng</h2>
+      <span className="text-xs text-muted-foreground">Định lượng cho 1 suất</span>
+    </div>
+    {!content.ingredients.length && !legacy.length && <p className="px-4 py-4 text-sm text-muted-foreground">Bấm một nguyên liệu bên trái để thêm vào món. Lượng tính cho 1 suất.</p>}
+    {SLOTS.map(slot => {
+      const lines = content.ingredients.filter(line => slotFor(line) === slot);
+      const packs = legacy.filter(line => line.slot === slot || (slot === "GIA_VI_THEM" && !SLOTS.includes(line.slot as IngredientSlot)));
+      if (!lines.length && !packs.length) return null;
+      return <div key={slot}>
+        <h3 className="border-y border-border/60 bg-muted/25 px-4 py-1.5 text-xs font-medium text-muted-foreground">{slotLabels[slot]}</h3>
+        <ul className="divide-y divide-border">{lines.map(line => {
+          const info = line.sku_ref ? materials[line.sku_ref] : undefined;
+          const name = info?.name ?? "Nguyên liệu không còn trong danh mục";
+          return <li key={line.row} className="space-y-1.5 px-4 py-2.5"><div className="flex items-center gap-2.5">
+            <Thumb info={info} /><span className="min-w-0 flex-1 truncate text-sm font-medium">{name}{info?.retired && <Badge variant="outline" className="ml-2 font-normal">Đã ngừng dùng</Badge>}{line.sku_ref && missingCosts?.[line.sku_ref] && <Badge variant="outline" className="ml-2 border-destructive/40 text-destructive font-normal">{missingCosts[line.sku_ref] === "UOM_MISMATCH" ? "Khác đơn vị giá" : "Chưa có giá"}</Badge>}</span>
+            {readOnly
+              ? <span className="shrink-0 text-sm font-medium tabular-nums">{line.quantity} <span className="font-normal text-muted-foreground">{uomLabel(line.uom)}</span></span>
+              : <InputGroup className="h-8 w-28 shrink-0">
+                <InputGroupInput aria-label={`Lượng mỗi suất của ${name}`} className="h-8 text-right text-sm tabular-nums" inputMode="decimal" value={line.quantity} onChange={event => update(line.row, { quantity: event.target.value })} />
+                <InputGroupAddon align="inline-end" className="pr-2.5"><InputGroupText className="text-xs">{uomLabel(line.uom)}</InputGroupText></InputGroupAddon>
+              </InputGroup>}
+            {!readOnly && <Tip label="Bỏ nguyên liệu"><Button type="button" variant="ghost" size="icon-sm" aria-label={`Bỏ ${name}`} onClick={() => remove(line.row)}><Trash2 aria-hidden="true" /></Button></Tip>}
+          </div>{errors.filter(error => error.row === line.row).map((error, index) => <InlineAlert key={`${error.field}-${index}`}>{error.message}</InlineAlert>)}</li>;
+        })}{packs.map(pack => <li key={pack.row} className="space-y-1.5 px-4 py-2.5"><div className="flex items-center gap-2.5">
+          <Thumb /><span className="min-w-0 flex-1 truncate text-sm font-medium">{packNames[pack.package_ref ?? ""] ?? "Gói gia vị đã có"}<Badge variant="outline" className="ml-2 font-normal">Gói gia vị cũ</Badge>{readOnly && <Badge variant="outline" className="ml-1.5 font-normal">{pack.removable ? "Cho bỏ" : "Bắt buộc"}</Badge>}</span>
+          {!readOnly && <Tip label="Bỏ gói gia vị"><Button type="button" variant="ghost" size="icon-sm" aria-label="Bỏ gói gia vị" onClick={() => onChange({ ...content, seasonings: content.seasonings.filter(item => item.row !== pack.row) })}><Trash2 aria-hidden="true" /></Button></Tip>}
+        </div>{errors.filter(error => error.row === pack.row).map((error, index) => <InlineAlert key={`${error.field}-${index}`}>{error.message}</InlineAlert>)}</li>)}</ul>
+      </div>;
+    })}
+    {allergensText && <div className="border-t bg-muted/20 px-4 py-2.5 text-xs text-muted-foreground"><span className="font-medium text-foreground">Dị ứng:</span> {allergensText}</div>}
   </section>;
 }

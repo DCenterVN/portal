@@ -57,7 +57,7 @@ export function useFoodPlans(initialPlans: FoodProductPlan[], targetId?: string)
   const valid = !!total && BigInt(total) <= 1000000n && !!productRef && !!code.trim() && !!servingSize.trim() && (mode === "pack" ? validRatios : components.length > 0 && components.length <= 100 && components.every(c => positiveQuantity(c.quantity)));
   const loadSets = async (append = false) => {
     setBusy(true); setError("");
-    try { const page = await listFoodSets({ cursor: append ? setCursor ?? undefined : undefined }); setSets(current => append ? [...current, ...page.items] : page.items); setSetCursor(page.next_cursor); }
+    try { const page = await listFoodSets({ cursor: append ? setCursor ?? undefined : undefined, limit: 100 }); setSets(current => append ? [...current, ...page.items] : page.items); setSetCursor(page.next_cursor); }
     catch (e) { setError(packMessage(e)); } finally { setBusy(false); }
   };
   const begin = async (plan?: FoodProductPlan) => {

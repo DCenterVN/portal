@@ -2,11 +2,10 @@ import { z } from "zod";
 import { apiFetch } from "@/lib/fetcher";
 import { decodePlatform } from "@/lib/api/platform-contract";
 import { errorMessage, mutationHeaders } from "./sales";
-// PACK schemas follow sales/api/openapi.public.yaml.
 const FoodPackageSchema = z.object({
   id: z.string().uuid(), org_ref: z.string().uuid(), branch_ref: z.string().uuid(), product_ref: z.string().uuid(), code: z.string().min(1),
   name: z.string().min(1), variant_label: z.string().min(1), net_weight_g: z.number().int().min(1).max(2147483647),
-  uom_code: z.enum(["EA"]), temperature_regime: z.string().min(1), kind: z.enum(["PRODUCED_VARIANT"]), sellable: z.literal(false),
+  uom_code: z.enum(["EA"]), temperature_regime: z.string().min(1), kind: z.enum(["PRODUCED_VARIANT"]), sellable: z.boolean(),
   status: z.string(), updated_at: z.string().datetime({ offset: true })
 }).strict();
 
@@ -26,7 +25,7 @@ const FoodSetSchema = z.object({
   id: z.string().uuid(), org_ref: z.string().uuid(), branch_ref: z.string().uuid(), product_ref: z.string().uuid(), code: z.string().min(1),
   name: z.string().min(1), variant_label: z.string().min(1), net_weight_g: z.number().int().min(1).max(2147483647),
   uom_code: z.enum(["EA"]), temperature_regime: z.string().min(1), kind: z.enum(["COMMERCIAL_SET"]), sku_type: z.enum(["SET"]),
-  sellable: z.literal(false), status: z.string(), tags: ManualHashtagsSchema, system_hashtags: z.array(z.string()),
+  sellable: z.boolean(), status: z.string(), tags: ManualHashtagsSchema, system_hashtags: z.array(z.string()),
   slots: z.array(SetSlotSchema).max(6), updated_at: z.string().datetime({ offset: true })
 }).strict();
 

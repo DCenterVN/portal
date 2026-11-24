@@ -1,49 +1,77 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { ArrowLeft, Check, RefreshCw, Save, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field } from "@/components/patterns/form-field";
-import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { ConfirmDialog } from "@/components/patterns/confirm-dialog";
-import { EntityPicker, fold } from "@/components/patterns/entity-picker";
-import type { DishContent, DishDraft } from "@/lib/dishes/types";
-import type { DishError } from "@/lib/dishes/validate-dish";
 import { InlineAlert } from "@/components/patterns/inline-alert";
+import { Tip } from "@/components/patterns/tip";
+import { SERVING_OPTIONS, type DishContent, type DishDraft } from "@/lib/dishes/types";
+import type { DishError } from "@/lib/dishes/validate-dish";
+import { DishTagsField } from "./dish-tags-field";
+
+const kindLabels: Partial<Record<DishDraft["kind"], string>> = { COPY: "Nhân bản món", VARIANT: "Tạo biến thể", REVISION: "Tạo bản sửa" };
+
 export function DishEditorView(props: {
-  draft: DishDraft; content: DishContent; categories: { id: string; name: string }[]; categoryLoading: boolean;
-  saveState: string; busy: boolean; frozen: boolean; conflict: boolean; errors: DishError[]; validationErrors: DishError[]; existingServings: number[];
+  draft: DishDraft; content: DishContent; ingredientNames: string[];
+  saveState: string; busy: boolean; frozen: boolean; conflict: boolean; canEditName?: boolean; catalogReady?: boolean; backLabel?: string; errors: DishError[]; validationErrors: DishError[]; existingServings: number[];
   onExistingVariant: (setRef: string) => void; onChange: (content: DishContent) => void; onSave: () => void; onComplete: () => void; onDiscard: () => void; onReload: () => void; onBack: () => void; children: ReactNode;
 }) {
   const [confirm, setConfirm] = useState(false);
-  const [tagText, setTagText] = useState<string | null>(null);
   const [touched, setTouched] = useState(false);
-  const locked = props.draft.kind === "VARIANT" || props.draft.kind === "REVISION";
+  const nameRef = useRef<HTMLInputElement>(null);
+  const nameLocked = props.draft.kind === "VARIANT" || (props.draft.kind === "REVISION" && props.canEditName === false);
+  const tagsLocked = props.draft.kind === "VARIANT";
+  useEffect(() => {
+    if (props.draft.kind === "COPY" && !nameLocked && !props.frozen && /\(bản sao\)\s*$/i.test(props.content.name ?? "")) {
+      nameRef.current?.focus();
+      nameRef.current?.select();
+    }
+  }, [props.draft.id, props.draft.kind, nameLocked, props.frozen]);
   const error = (field: string) => props.errors.filter(e => e.field === field && !e.row).map(e => e.message).join(". ");
-  const suggested = [...new Set(fold(props.content.name ?? "").split(/[^a-z0-9]+/).filter(word => word.length > 1))].slice(0, 8);
-  return <div className="space-y-6">
-    <Button variant="ghost" onClick={props.onBack}>Về danh sách món</Button>
-    <Card><CardContent className="space-y-4 pt-6"><h2>{props.draft.kind === "COPY" ? "Nhân bản món" : props.draft.kind === "VARIANT" ? "Tạo biến thể" : props.draft.kind === "REVISION" ? "Tạo bản sửa" : "Soạn món"}</h2>
-      {props.frozen && <p role="status">Đang hoàn tất dở. Nội dung đã khoá; bấm Hoàn tất món để tiếp tục hoặc Bỏ nháp.</p>}
-      <fieldset disabled={props.busy || props.frozen || props.conflict} className="space-y-4">
-        <div className="grid gap-3 md:grid-cols-2"><Field htmlFor="dish-name" label="Tên món" error={error("name")}><Input id="dish-name" aria-label="Tên món" value={props.content.name ?? ""} readOnly={locked} maxLength={150} onChange={e => props.onChange({ ...props.content, name: e.target.value })} /></Field>
-          {locked ? <label>Danh mục<output aria-label="Danh mục" className="block">{props.categories.find(item => item.id === props.content.category_ref)?.name ?? "Danh mục món nguồn"}</output></label> : <EntityPicker name="dish-category" label="Danh mục" value={props.content.category_ref} items={props.categories} status={props.categoryLoading ? "loading" : "ready"} getId={item => item.id} getLabel={item => item.name} onChange={id => props.onChange({ ...props.content, category_ref: id })} error={error("category_ref")} serializeValue={false} />}
-          <Field htmlFor="dish-tags" label="Hashtag" error={error("tags")}><Input id="dish-tags" aria-label="Hashtag" value={tagText ?? props.content.tags.join(", ")} onChange={e => { setTagText(e.target.value); props.onChange({ ...props.content, tags: e.target.value.split(/[,#]+/).map(tag => tag.trim().replace(/\s+/g, "-")).filter(Boolean) }); }} /><p className="text-sm text-muted-foreground">3–8 nhãn, ngăn bằng dấu phẩy.</p></Field>
-          {props.draft.kind === "REVISION" ? <label>Khẩu phần<output aria-label="Khẩu phần" className="block">{props.content.servings} người</output></label> : <Field htmlFor="dish-servings" label="Khẩu phần" error={error("servings")}><NativeSelect id="dish-servings" aria-label="Khẩu phần" value={props.content.servings ?? ""} onChange={e => props.onChange({ ...props.content, servings: e.target.value ? Number(e.target.value) : null })}><NativeSelectOption value="">Chọn khẩu phần</NativeSelectOption>{[1, 2, 3, 4, 6].filter(n => props.draft.kind !== "VARIANT" || !props.existingServings.includes(n)).map(n => <NativeSelectOption key={n} value={n}>{n} người</NativeSelectOption>)}</NativeSelect></Field>}
+  const completeBlocked = props.busy || props.conflict || (!props.frozen && props.validationErrors.length > 0);
+  const existingErrors = props.errors.filter(e => e.existing);
+  const missing = !props.frozen ? [...new Set(props.validationErrors.map(e => e.message))] : [];
+  const skipGeneral = new Set(["name", "tags", "servings", "reason", "ingredients", "removable", "slots", ...(missing.length > 0 ? ["cost"] : [])]);
+  const generalErrors = props.errors.filter(e => !e.row && !skipGeneral.has(e.field));
+  const backLabel = props.backLabel ?? "Về danh sách món";
+  return <div className="space-y-4">
+    <Card className="gap-3 py-4"><CardContent className="space-y-3 px-5">
+      <div className="flex flex-wrap items-center gap-2">
+        <Tip label={backLabel}><Button type="button" variant="ghost" size="icon-sm" aria-label={backLabel} onClick={props.onBack}><ArrowLeft aria-hidden="true" /></Button></Tip>
+        {kindLabels[props.draft.kind] && <span className="text-sm font-medium text-muted-foreground">{kindLabels[props.draft.kind]}</span>}
+        <div className="ml-auto flex items-center gap-1.5">
+          <span role="status" className="mr-1 text-xs text-muted-foreground">{props.saveState || "Tự lưu nháp sau 2 giây"}</span>
+          {props.conflict
+            ? <Tip label="Tải lại"><Button type="button" variant="outline" size="icon-sm" aria-label="Tải lại" onClick={props.onReload}><RefreshCw aria-hidden="true" /></Button></Tip>
+            : <Tip label="Lưu nháp"><Button type="button" variant="outline" size="icon-sm" aria-label="Lưu nháp" disabled={props.busy || props.frozen} onClick={props.onSave}><Save aria-hidden="true" /></Button></Tip>}
+          <Tip label="Bỏ nháp"><Button type="button" variant="ghost" size="icon-sm" aria-label="Bỏ nháp" disabled={props.busy} onClick={() => setConfirm(true)}><Trash2 className="text-destructive" aria-hidden="true" /></Button></Tip>
+          <Button type="button" size="sm" disabled={completeBlocked} onClick={() => { setTouched(true); props.onComplete(); }}>
+            <Check data-icon="inline-start" aria-hidden="true" />
+            {props.busy ? "Đang hoàn tất…" : "Hoàn tất món"}
+          </Button>
         </div>
-        {!locked && suggested.length >= 3 && <Button type="button" variant="ghost" onClick={() => { setTagText(null); props.onChange({ ...props.content, tags: suggested }); }}>Dùng hashtag gợi ý: {suggested.join(", ")}</Button>}
-        {props.children}
-        {props.draft.kind === "REVISION" && <Field htmlFor="dish-reason" label="Lý do sửa" error={error("reason")}><Input id="dish-reason" aria-label="Lý do sửa" maxLength={300} value={props.content.reason ?? ""} onChange={e => props.onChange({ ...props.content, reason: e.target.value })} /></Field>}
-      </fieldset>
-      {props.errors.filter(e => e.existing).map(e => <Button key={e.field} variant="outline" onClick={() => { if (e.existing) props.onExistingVariant(e.existing.set_ref); }}>Mở biến thể đã có: {e.existing?.variant_label}</Button>)}
-      {props.errors.filter(e => !e.row && !["name", "category_ref", "tags", "servings", "reason"].includes(e.field)).map(e => <InlineAlert key={e.field}>{e.message}</InlineAlert>)}
-      {touched && props.errors.length > 0 && <InlineAlert>Kiểm tra các ô được đánh dấu trước khi hoàn tất.</InlineAlert>}
-      <div className="flex flex-wrap items-center gap-3"><p role="status">{props.saveState || "Tự lưu nháp sau 2 giây"}</p>
-        {props.conflict ? <Button variant="outline" onClick={props.onReload}>Tải lại</Button> : <Button variant="outline" disabled={props.busy || props.frozen} onClick={props.onSave}>Lưu nháp</Button>}
-        <Button variant="ghost" disabled={props.busy} onClick={() => setConfirm(true)}>Bỏ nháp</Button>
-        <Button disabled={props.busy || props.conflict || (!props.frozen && props.validationErrors.length > 0)} onClick={() => { setTouched(true); props.onComplete(); }}>{props.busy ? "Đang hoàn tất…" : "Hoàn tất món"}</Button>
       </div>
-      {!props.frozen && props.validationErrors.length > 0 && <p>Còn thiếu: {[...new Set(props.validationErrors.map(e => e.message))].join("; ")}</p>}
+      {props.frozen && <InlineAlert tone="info">Đang hoàn tất dở. Nội dung đã khoá; bấm Hoàn tất món để tiếp tục hoặc Bỏ nháp.</InlineAlert>}
+      <fieldset disabled={props.busy || props.frozen || props.conflict} className="flex flex-wrap items-start gap-3">
+        <div className="min-w-0 flex-1"><Field htmlFor="dish-name" label="Tên món" error={error("name")}><Input ref={nameRef} id="dish-name" aria-label="Tên món" value={props.content.name ?? ""} readOnly={nameLocked} maxLength={150} onChange={e => props.onChange({ ...props.content, name: e.target.value })} /></Field></div>
+        <div className="w-44 shrink-0">{props.draft.kind === "REVISION"
+          ? <div className="grid gap-1.5"><span className="text-sm font-medium">Số suất mỗi hộp</span><output aria-label="Số suất mỗi hộp" className="flex h-9 items-center text-sm font-medium">{props.content.servings} suất</output></div>
+          : <Field htmlFor="dish-servings" label="Số suất mỗi hộp" error={error("servings")}><Select disabled={props.busy || props.frozen || props.conflict} value={props.content.servings ? String(props.content.servings) : ""} onValueChange={value => props.onChange({ ...props.content, servings: value ? Number(value) : null })}><SelectTrigger id="dish-servings" aria-label="Số suất mỗi hộp" className="w-full"><SelectValue placeholder="Chọn số suất" /></SelectTrigger><SelectContent position="popper" align="start">{SERVING_OPTIONS.filter(n => props.draft.kind !== "VARIANT" || !props.existingServings.includes(n)).map(n => <SelectItem key={n} value={String(n)}>{n} suất</SelectItem>)}</SelectContent></Select></Field>}</div>
+      </fieldset>
+      <DishTagsField name={props.content.name ?? ""} ingredientNames={props.ingredientNames} tags={props.content.tags} readOnly={tagsLocked || props.busy || props.frozen || props.conflict} catalogReady={props.catalogReady} error={error("tags")} onChange={tags => props.onChange({ ...props.content, tags })} />
+      {props.draft.kind === "REVISION" && <Field htmlFor="dish-reason" label="Lý do sửa" hint="Lưu vào lịch sử bản sửa" error={error("reason")}><Input id="dish-reason" aria-label="Lý do sửa" placeholder="Ví dụ: đổi thăn bò sang bắp, giảm bún còn 180 g" maxLength={300} disabled={props.busy || props.frozen || props.conflict} value={props.content.reason ?? ""} onChange={e => props.onChange({ ...props.content, reason: e.target.value })} /></Field>}
+      {existingErrors.map(e => <Button key={e.field} variant="outline" size="sm" onClick={() => { if (e.existing) props.onExistingVariant(e.existing.set_ref); }}>Mở biến thể đã có: {e.existing?.variant_label}</Button>)}
+      {generalErrors.map(e => <InlineAlert key={e.field}>{e.message}</InlineAlert>)}
+      {missing.length > 0
+        ? (touched && props.errors.length > 0
+          ? <InlineAlert>Còn thiếu: {missing.join("; ")}</InlineAlert>
+          : <p className="text-xs text-muted-foreground">Còn thiếu: {missing.join("; ")}</p>)
+        : touched && props.errors.length > 0 && !generalErrors.length && <InlineAlert>Kiểm tra các ô được đánh dấu trước khi hoàn tất.</InlineAlert>}
     </CardContent></Card>
+    <div className="min-w-0">{props.children}</div>
     <ConfirmDialog open={confirm} onOpenChange={setConfirm} title="Bỏ nháp món?" description="Nội dung nháp này sẽ bị bỏ." confirmLabel="Bỏ nháp" danger busy={props.busy} onConfirm={props.onDiscard} />
   </div>;
 }

@@ -3,7 +3,6 @@ import { NextRequest } from "next/server";
 import { dishServices } from "./service";
 import { completeDish, type DishDraft } from "./complete-dish";
 
-// S15c: service BFF thật + fetch giả lập. Bắt lỗi service bỏ trường kể cả khi CompleteDeps fake đầy đủ.
 const T0 = "2026-10-20T00:00:00Z";
 const T1 = "2026-10-22T00:00:00Z";
 const TAGS = ["xao", "thit-trau", "rau-muong"];
@@ -57,6 +56,12 @@ describe("dishServices.complete (BFF thật, fetch giả)", () => {
     expect(read).toEqual({ slots: setBody.slots, tags: TAGS, updated_at: T1 });
   });
 
+  it("updateProduct: PATCH /sales/products/:id với body đổi tên", async () => {
+    const hits = stubFetch(() => ({ status: 200, body: { data: { product: { id: "prod-1", name: "Tên mới" } } } }));
+    await deps().updateProduct?.("prod-1", { name: "Tên mới" }, "k-rename");
+    expect(hits).toEqual([{ method: "PATCH", path: "/sales/products/prod-1", body: { name: "Tên mới" } }]);
+  });
+
   describe("completeDish qua service thật: PUT 409 rồi đối soát bằng GET", () => {
     const draft = (): DishDraft => ({
       id: "01960000-0000-7000-8000-00000000abcd", kind: "REVISION", revision: 3, progress: { claim: "r3" }, status: "OPEN",
@@ -70,7 +75,18 @@ describe("dishServices.complete (BFF thật, fetch giả)", () => {
       });
       expect(await completeDish(draft(), deps())).toEqual({
         ok: false, failed_step: "sellable",
-        error: { status: 409, message: "Nguyên liệu trong món chưa có giá vốn. Nhập kho nguyên liệu rồi bấm Hoàn tất món lại." },
+        error: { status: 409, message: "Nguyên liệu trong món chưa có giá vốn. Thêm báo giá nhà cung cấp hoặc nhập kho nguyên liệu rồi bấm Hoàn tất món lại." },
+      });
+    });
+    it("409 cost_fact_missing giữ errors.fields và hiện tên nguyên liệu", async () => {
+      stubFetch(hit => {
+        if (hit.path.endsWith("/sellable-variant")) return { status: 409, body: { code: 409, status: "error", message: "missing cost", errors: { error_code: "cost_fact_missing", fields: { "uuid-1": ["Muối tiêu hồng"] } }, retryable: false } };
+        if (hit.path.endsWith("/progress")) return { status: 204, body: {} };
+        return { status: 200, body: { data: { updated_at: T1 } } };
+      });
+      expect(await completeDish(draft(), deps())).toEqual({
+        ok: false, failed_step: "sellable",
+        error: { status: 409, message: "Chưa có giá vốn cho: Muối tiêu hồng. Thêm báo giá nhà cung cấp hoặc nhập kho nguyên liệu rồi bấm Hoàn tất món lại." },
       });
     });
     const run = async (readBack: { slots: unknown[]; tags?: string[] }, closureTags = TAGS) => {
