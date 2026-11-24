@@ -7,7 +7,7 @@ import { ActionButton } from "@/components/patterns/action-button";
 import { Button } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
 import { useAccess } from "@/lib/access-boundary";
@@ -56,7 +56,10 @@ export const materialPatch = (material: Material, body: NewMaterial): Partial<Ne
 export function UnitField({ locked, value, onChange, error }: { locked: boolean; value: Unit | ""; onChange: (value: Unit) => void; error: string }) {
   return <Field data-invalid={error ? true : undefined}>
     <FieldLabel htmlFor="material-don-vi">Đơn vị</FieldLabel>
-    <NativeSelect id="material-don-vi" value={value} disabled={locked} aria-invalid={error ? true : undefined} onChange={event => onChange(event.target.value as Unit)}>{value === "" && <NativeSelectOption value="" disabled>Chọn đơn vị</NativeSelectOption>}{UNITS.map(item => <NativeSelectOption key={item.code} value={item.code}>{item.label}</NativeSelectOption>)}</NativeSelect>
+    <Select value={value} disabled={locked} onValueChange={next => onChange(next as Unit)}>
+      <SelectTrigger id="material-don-vi" aria-invalid={error ? true : undefined} className="w-full"><SelectValue placeholder="Chọn đơn vị">{UNITS.find(item => item.code === value)?.label}</SelectValue></SelectTrigger>
+      <SelectContent position="popper" align="start">{UNITS.map(item => <SelectItem key={item.code} value={item.code}>{item.label}</SelectItem>)}</SelectContent>
+    </Select>
     {(locked || error) && <p className={error ? "text-sm text-destructive" : "text-sm text-muted-foreground"} role={error ? "alert" : undefined}>{UNIT_LOCKED}</p>}
   </Field>;
 }
@@ -81,8 +84,11 @@ function ImageBox({ current, file, canEdit, busy, onPick, onRemove }: { current:
   </div>;
 }
 
-function Select({ id, label, value, onChange, children, disabled }: { id: string; label: string; value: string; onChange: (value: string) => void; children: React.ReactNode; disabled?: boolean }) {
-  return <Field><FieldLabel htmlFor={id}>{label}</FieldLabel><NativeSelect id={id} value={value} disabled={disabled} onChange={event => onChange(event.target.value)}>{children}</NativeSelect></Field>;
+function SelectField({ id, label, value, placeholder, options, onChange, disabled }: { id: string; label: string; value: string; placeholder: string; options: { code: string; label: string }[]; onChange: (value: string) => void; disabled?: boolean }) {
+  return <Field><FieldLabel htmlFor={id}>{label}</FieldLabel><Select value={value} disabled={disabled} onValueChange={onChange}>
+    <SelectTrigger id={id} className="w-full"><SelectValue placeholder={placeholder}>{options.find(item => item.code === value)?.label}</SelectValue></SelectTrigger>
+    <SelectContent position="popper" align="start">{options.map(item => <SelectItem key={item.code} value={item.code}>{item.label}</SelectItem>)}</SelectContent>
+  </Select></Field>;
 }
 
 type Props = { target: Material | "new" | null; tree: MaterialCategory[]; defaultCategory: string; onClose: () => void; onSaved: () => void };
@@ -133,8 +139,8 @@ export function MaterialItemSheet({ target, tree, defaultCategory, onClose, onSa
       <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-4 pb-4">
         <ImageBox current={imageUrl} file={file} canEdit={canImage} busy={busy} onPick={pickImage} onRemove={() => run(async () => { await deleteMaterialImage(material!.id); setImageUrl(null); }, false)} />
         <NameField value={name} onChange={setName} disabled={!canEdit} error={error === NAME_HAS_QUANTITY ? error : ""} />
-        <Select id="material-category" label="Loại" value={category} disabled={!canEdit} onChange={value => { setCategory(value); setGroup(tree.find(item => item.code === value)?.groups.find(item => item.active)?.code ?? ""); }}>{category === "" && <NativeSelectOption value="" disabled>Chưa xếp loại</NativeSelectOption>}{tree.filter(item => item.active).map(item => <NativeSelectOption key={item.code} value={item.code}>{item.label}</NativeSelectOption>)}</Select>
-        <Select id="material-group" label="Nhóm" value={selectedGroup} disabled={!canEdit} onChange={setGroup}>{selectedGroup === "" && <NativeSelectOption value="" disabled>Chọn nhóm</NativeSelectOption>}{options.map(item => <NativeSelectOption key={item.code} value={item.code}>{item.label}</NativeSelectOption>)}</Select>
+        <SelectField id="material-category" label="Loại" value={category} placeholder="Chưa xếp loại" disabled={!canEdit} options={tree.filter(item => item.active)} onChange={value => { setCategory(value); setGroup(tree.find(item => item.code === value)?.groups.find(item => item.active)?.code ?? ""); }} />
+        <SelectField id="material-group" label="Nhóm" value={selectedGroup} placeholder="Chọn nhóm" disabled={!canEdit} options={options} onChange={setGroup} />
         <UnitField locked={!!material && material.status !== "DRAFT"} value={unit} onChange={setUnit} error={error === UNIT_LOCKED ? error : ""} />
         {error && error !== NAME_HAS_QUANTITY && error !== UNIT_LOCKED && <p role="alert" className="text-sm text-destructive">{error}</p>}
       </div>

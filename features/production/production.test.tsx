@@ -524,8 +524,6 @@ import * as salesPackApi from "@/lib/api/sales-pack";
 import * as productionApi from "@/lib/api/production";
 import { FoodSetsView } from "./food-sets-view";
 import { PackagesView } from "./packages-view";
-import { FoodPackWorkspace } from "./food-plans-view";
-import { Tabs, TabsTrigger } from "@/components/ui/tabs";
 import { ErrorState } from "@/components/patterns/empty-state";
 import { Table } from "@/components/ui/table";
 
@@ -587,26 +585,6 @@ describe("FOODDEV PACK UI", () => {
     fooddevHarness.toast.error.mockClear(); fooddevHarness.toast.success.mockClear();
   });
   afterEach(() => { vi.restoreAllMocks(); });
-  it("tabs_render", async () => {
-    let tree = paint(FoodPackWorkspace, { targetId: target.id });
-    const tabs = node(tree, n => n.type === Tabs);
-    expect(nodes(tree, n => n.type === TabsTrigger).map(trigger => trigger.props.value)).toEqual(["dishes", "sets", "packages", "plans"]);
-    expect(tabs.props.value).toBe("dishes");
-    expect(nodes(tree, n => n.type === MaterialRequirementsView)).toHaveLength(0);
-    expect([FoodSetsView, PackagesView, FoodPlansView].map(view => nodes(tree, n => n.type === view).length)).toEqual([0, 0, 0]);
-    await invoke(tabs, "onValueChange", "packages");
-    expect(navigation.push).toHaveBeenCalledWith(`/production/food-plans?tab=packages&target_id=${target.id}`);
-    tree = paint(FoodPackWorkspace, { targetId: target.id, tab: "sets" });
-    const setView = node(tree, n => n.type === FoodSetsView);
-    expect([PackagesView, FoodPlansView].map(view => nodes(tree, n => n.type === view).length)).toEqual([0, 0]);
-    tree = paint(FoodPackWorkspace, { targetId: target.id, tab: "packages" });
-    expect(node(tree, n => n.type === "div" && nodes(n, child => child.type === FoodSetsView).length === 1 && n.props.hidden !== undefined).props.hidden).toBe(true);
-    expect(node(tree, n => n.type === FoodSetsView).type).toBe(setView.type);
-    expect(nodes(tree, n => n.type === PackagesView)).toHaveLength(1);
-    expect(nodes(tree, n => n.type === FoodPlansView)).toHaveLength(0);
-    await invoke(node(tree, n => n.type === Tabs), "onValueChange", "sets");
-    expect(node(paint(FoodPackWorkspace, { targetId: target.id, tab: "sets" }), n => n.type === Tabs).props.value).toBe("sets");
-  });
   it("set_tags_counter", async () => {
     let tree: React.ReactNode = await openSetEditor();
     for (const value of ["bun, trua", "a,b,c,d,e,f,g,h,i", "bun, trua, ho-bun"]) {

@@ -54,9 +54,13 @@ describe("validateDish", () => {
     expect(find(errs, "slots")).toHaveLength(1);
   });
 
-  it("tên 1..150", () => {
+  it("tên 1..150 và chặn tên bản sao chưa đổi", () => {
     expect(find(validateDish(m1({ name: "" }), ctx()), "name")).toHaveLength(1);
     expect(find(validateDish(m1({ name: "a".repeat(151) }), ctx()), "name")).toHaveLength(1);
+    expect(find(validateDish(m1({ name: "Thịt trâu (bản sao)" }), ctx()), "name")).toEqual([
+      { field: "name", message: "Đổi tên món trước khi hoàn tất" },
+    ]);
+    expect(validateDish(m1({ name: "Thịt bò xào rau muống" }), ctx())).toEqual([]);
     expect(validateDish(m1({ name: "a".repeat(150) }), ctx())).toEqual([]);
   });
 

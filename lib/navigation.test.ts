@@ -54,6 +54,13 @@ describe("AC-4 menu Sản phẩm theo sales:product:read", () => {
     expect(CONSOLE_ROUTES).toContain(productRoute);
     expect(isEmployeeRoute(productRoute)).toBe(true);
   });
+  it("Món ăn có mục riêng cạnh Nguyên liệu và là route console", () => {
+    const production = consoleNavFor(new Set(["sales:product:read", "production:food_plan:read"])).find(group => group.title === "Sản xuất");
+    expect(production?.items.map(item => item.label)).toEqual(["Nguyên liệu", "Món ăn", "Thực đơn"]);
+    expect(breadcrumbFor(consoleNavFor(new Set(["sales:product:read"])), "/production/dishes")).toEqual([{ label: "Sản xuất" }, { label: "Món ăn" }]);
+    expect(CONSOLE_ROUTES).toContain("/production/dishes");
+    expect(isEmployeeRoute("/production/dishes")).toBe(true);
+  });
   it("AC-1 /products của khách không là route console", () => {
     expect(isEmployeeRoute("/products")).toBe(false);
   });
@@ -95,7 +102,7 @@ describe("openGroups", () => {
   it("ADMIN: chỉ mở nhóm chứa trang đang xem và nhóm đã nhớ", () => {
     expect(openGroups(admin, "/production/food-plans", [])).toEqual(["Sản xuất"]);
     expect(openGroups(admin, "/production/food-plans", ["Kho"])).toEqual(["Kho", "Sản xuất"]);
-    expect(breadcrumbFor(admin, "/production/food-plans")).toEqual([{ label: "Sản xuất" }, { label: "Món & thực đơn" }]);
+    expect(breadcrumbFor(admin, "/production/food-plans")).toEqual([{ label: "Sản xuất" }, { label: "Thực đơn" }]);
   });
   it("SALES: có thêm nhóm Sản xuất (mục Nguyên liệu) nên chỉ mở nhóm đang đứng", () => {
     const sales = all(["sales:product:read", "sales:price_book:create"]);

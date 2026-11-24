@@ -1,88 +1,242 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type * as api from "@/lib/api/dishes";
 import type { DishDetail, Variant } from "@/lib/dishes/dish-detail";
 import { toBase } from "@/lib/dishes/dish-detail";
-import type { DishContent, DraftKind, DraftRow } from "@/lib/dishes/types";
+import { SERVING_OPTIONS, type DishContent, type DraftKind, type DraftRow } from "@/lib/dishes/types";
 import { FetchError } from "@/lib/fetcher";
+import { matchesName, PAGE_SIZE } from "../materials-catalog";
 import { z } from "zod";
-type Deps = Pick<typeof api, "listDishes" | "listDishDrafts" | "getDishDetail" | "createDishDraft" | "draftAttempt" | "safeMessage">;
-export type DishLocation = { mon?: string; mode?: string; draft?: string };
+
+type ListDeps = Pick<typeof api, "listAllDishes" | "listDishDrafts" | "createDishDraft" | "discardDishDraft" | "draftAttempt" | "safeMessage">;
+type DetailDeps = Pick<typeof api, "getDishDetail" | "createDishDraft" | "discardDishDraft" | "draftAttempt" | "safeMessage">;
+
 const existingSchema = z.object({ errors: z.object({ existing: z.object({ id: z.string() }) }) });
+const variantOrder = [4, 1, 2, 3, 6].filter((n): n is (typeof SERVING_OPTIONS)[number] => (SERVING_OPTIONS as readonly number[]).includes(n));
+
 export const emptyContent = (): DishContent => ({ schema_version: 1, name: "", category_ref: null, tags: [], servings: 2, ingredients: [], seasonings: [], reason: null, base: null });
-export function useDishes(location: DishLocation, deps: Deps, navigate: (next: DishLocation) => void) {
-  const [rows, setRows] = useState<api.DishListRow[]>([]);
+
+export function copyDishName(name: string): string {
+  const clean = name.replace(/\s*\(bản sao\)\s*$/i, "").trim();
+  return clean ? `${clean} (bản sao)` : "(bản sao)";
+}
+
+export function useDishList(deps: ListDeps, callbacks: { onOpenDraft: (draftId: string) => void }) {
+  const [allRows, setAllRows] = useState<api.DishListRow[]>([]);
   const [drafts, setDrafts] = useState<DraftRow[]>([]);
   const [draftNext, setDraftNext] = useState<string | null>(null);
   const [draftBusy, setDraftBusy] = useState(false);
-  const [detail, setDetail] = useState<DishDetail | null>(null);
-  const [selected, setSelected] = useState("");
   const [q, setQ] = useState("");
   const [status, setStatus] = useState("");
-  const [cursor, setCursor] = useState("");
-  const [next, setNext] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const [existing, setExisting] = useState("");
+  const [draftError, setDraftError] = useState("");
   const attempt = useRef(deps.draftAttempt());
   const request = useRef(0);
+  const callbacksRef = useRef(callbacks);
+  callbacksRef.current = callbacks;
+
+  const load = useCallback(async () => {
+    const version = ++request.current;
+    setBusy(true); setError(""); setDraftError("");
+    try {
+      const [loaded, open] = await Promise.all([
+        deps.listAllDishes(status),
+        deps.listDishDrafts("status=OPEN&limit=5"),
+      ]);
+      if (version !== request.current) return;
+      setAllRows(loaded);
+      setDrafts(open.items);
+      setDraftNext(open.next_cursor);
+    } catch (e) {
+      if (version === request.current) setError(e instanceof Error ? deps.safeMessage(e.message) : "Không tải được món");
+    } finally {
+      if (version === request.current) setBusy(false);
+    }
+  }, [status, deps]);
+
+  useEffect(() => { void load(); return () => { request.current++; }; }, [load]);
+
+  const loadMoreDrafts = useCallback(async () => {
+    if (!draftNext || draftBusy) return;
+    const version = request.current;
+    setDraftBusy(true); setDraftError("");
+    try {
+      const nextPage = await deps.listDishDrafts(new URLSearchParams({ status: "OPEN", limit: "5", cursor: draftNext }).toString());
+      if (version !== request.current) return;
+      setDrafts(current => [...current, ...nextPage.items.filter(item => !current.some(row => row.id === item.id))]);
+      setDraftNext(nextPage.next_cursor);
+    } catch (e) {
+      if (version === request.current) setDraftError(e instanceof Error ? deps.safeMessage(e.message) : "Không tải được nháp");
+    } finally {
+      setDraftBusy(false);
+    }
+  }, [draftNext, draftBusy, deps]);
+
+  const discardDraft = useCallback(async (id: string) => {
+    setDraftError("");
+    try {
+      await deps.discardDishDraft(id);
+      setDrafts(current => current.filter(item => item.id !== id));
+      return true;
+    } catch (e) {
+      setDraftError(e instanceof Error ? deps.safeMessage(e.message) : "Không bỏ được nháp");
+      return false;
+    }
+  }, [deps]);
+
+  const createDish = useCallback(async () => {
+    setBusy(true); setError("");
+    const input: api.CreateDraft = { kind: "CREATE", content: emptyContent() };
+    try {
+      const draft = await deps.createDishDraft(input, attempt.current(input));
+      attempt.current.done();
+      callbacksRef.current.onOpenDraft(draft.id);
+    } catch (e) {
+      setError(e instanceof Error ? deps.safeMessage(e.message) : "Không tạo được nháp");
+    } finally {
+      setBusy(false);
+    }
+  }, [deps]);
+
+  const filtered = useMemo(() => allRows.filter(row => matchesName(row.product.name, q)), [allRows, q]);
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+  const rows = useMemo(() => filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE), [filtered, safePage]);
+
+  return {
+    rows,
+    drafts,
+    draftNext,
+    draftBusy,
+    q,
+    setQ: (value: string) => { setPage(1); setQ(value); },
+    status,
+    setStatus: (value: string) => { setPage(1); setStatus(value); },
+    page: safePage,
+    totalPages,
+    setPage,
+    totalCount: filtered.length,
+    busy,
+    error,
+    draftError,
+    load,
+    loadMoreDrafts,
+    discardDraft,
+    createDish,
+  };
+}
+
+export function useDishDetail(
+  dishId: string,
+  initialVariant: string | undefined,
+  deps: DetailDeps,
+  callbacks: { onOpenDraft: (draftId: string) => void; onExistingRevision: (draftId: string) => void; onSelectVariant: (setRef: string) => void }
+) {
+  const [detail, setDetail] = useState<DishDetail | null>(null);
+  const [selected, setSelected] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const attempt = useRef(deps.draftAttempt());
+  const request = useRef(0);
+  const initialVariantRef = useRef(initialVariant);
+  initialVariantRef.current = initialVariant;
+  const callbacksRef = useRef(callbacks);
+  callbacksRef.current = callbacks;
+
   const load = useCallback(async () => {
     const version = ++request.current;
     setBusy(true); setError("");
     try {
-      if (location.mon) {
-        const loaded = await deps.getDishDetail(location.mon);
-        if (version !== request.current) return;
-        setDetail(loaded); setSelected(current => loaded.variants.some(v => v.set_ref === current) ? current : loaded.variants[0]?.set_ref ?? "");
-      } else {
-        const [page, open] = await Promise.all([deps.listDishes(new URLSearchParams({ q, status, cursor, limit: "20" }).toString()), deps.listDishDrafts("status=OPEN&kind=CREATE,COPY&limit=20")]);
-        if (version !== request.current) return;
-        setRows(page.items); setNext(page.next_cursor); setDrafts(open.items); setDraftNext(open.next_cursor);
-      }
-    } catch (e) { if (version === request.current) setError(e instanceof Error ? deps.safeMessage(e.message) : "Không tải được món"); }
-    finally { if (version === request.current) setBusy(false); }
-  }, [location.mon, q, status, cursor, deps]);
-  useEffect(() => { const timer = setTimeout(() => void load(), 250); return () => { clearTimeout(timer); request.current++; }; }, [load]);
-  const loadMoreDrafts = async () => {
-    if (!draftNext || draftBusy) return;
-    const version = request.current;
-    setDraftBusy(true); setError("");
-    try {
-      const page = await deps.listDishDrafts(new URLSearchParams({ status: "OPEN", kind: "CREATE,COPY", limit: "20", cursor: draftNext }).toString());
+      const loaded = await deps.getDishDetail(dishId);
       if (version !== request.current) return;
-      setDrafts(current => [...current, ...page.items.filter(item => !current.some(row => row.id === item.id))]);
-      setDraftNext(page.next_cursor);
-    } catch (e) { if (version === request.current) setError(e instanceof Error ? deps.safeMessage(e.message) : "Không tải được nháp"); }
-    finally { setDraftBusy(false); }
-  };
-  const begin = useCallback(async (kind: DraftKind, source?: DishDetail, variant?: Variant) => {
-    setBusy(true); setError(""); setExisting("");
-    const content = emptyContent();
-    if (source && variant) {
-      Object.assign(content, { name: source.product.name, category_ref: source.product.category_ref, tags: variant.tags ?? [], servings: kind === "VARIANT" ? [4, 1, 2, 3, 6].find(n => !source.variants.some(v => v.servings === n)) ?? null : variant.servings, base: toBase(variant, source.product.id), ingredients: variant.packs.flatMap(pack => pack.lines.map(line => ({ ...line, row: crypto.randomUUID() }))), seasonings: variant.seasonings.map(line => ({ row: crypto.randomUUID(), slot: line.slot, package_ref: line.package_ref, removable: line.removable })) });
+      setDetail(loaded);
+      setSelected(current => {
+        const preferred = initialVariantRef.current || current;
+        return loaded.variants.some(v => v.set_ref === preferred) ? preferred : loaded.variants[0]?.set_ref ?? "";
+      });
+    } catch (e) {
+      if (version === request.current) setError(e instanceof Error ? deps.safeMessage(e.message) : "Không tải được món");
+    } finally {
+      if (version === request.current) setBusy(false);
     }
-    const input: api.CreateDraft = { kind, content, ...(source && variant ? { source_product_ref: source.product.id, source_set_ref: variant.set_ref } : {}) };
+  }, [dishId, deps]);
+
+  useEffect(() => { void load(); return () => { request.current++; }; }, [load]);
+
+  useEffect(() => {
+    if (!initialVariant || !detail) return;
+    if (detail.variants.some(v => v.set_ref === initialVariant)) setSelected(initialVariant);
+  }, [initialVariant, detail]);
+
+  const selectVariant = useCallback((setRef: string) => {
+    setSelected(setRef);
+    callbacksRef.current.onSelectVariant(setRef);
+  }, []);
+
+  const updateDetailMedia = useCallback((image_urls: string[], updated_at: string) => {
+    setDetail(current => current ? { ...current, product: { ...current.product, image_urls, updated_at } } : current);
+  }, []);
+
+  const updateDetailName = useCallback((name: string, updated_at?: string) => {
+    setDetail(current => current ? { ...current, product: { ...current.product, name, ...(updated_at ? { updated_at } : {}) } } : current);
+  }, []);
+
+  const begin = useCallback(async (kind: Extract<DraftKind, "COPY" | "VARIANT" | "REVISION">, source: DishDetail, variant: Variant) => {
+    const servings = kind === "VARIANT"
+      ? variantOrder.find(n => !source.variants.some(v => v.servings === n)) ?? null
+      : variant.servings;
+    if (kind === "VARIANT" && !servings) return;
+    setBusy(true); setError("");
+    const content = {
+      ...emptyContent(),
+      name: kind === "COPY" ? copyDishName(source.product.name) : source.product.name,
+      category_ref: source.product.category_ref,
+      tags: kind === "COPY" ? [] : (variant.tags ?? []),
+      servings,
+      base: toBase(variant, source.product.id),
+      ingredients: variant.packs.flatMap(pack => pack.lines.map(line => ({ ...line, row: crypto.randomUUID() }))),
+      seasonings: variant.seasonings.map(line => ({ row: crypto.randomUUID(), slot: line.slot, package_ref: line.package_ref, removable: line.removable })),
+    };
+    const input: api.CreateDraft = { kind, content, source_product_ref: source.product.id, source_set_ref: variant.set_ref };
     try {
       const draft = await deps.createDishDraft(input, attempt.current(input));
       attempt.current.done();
-      navigate({ mon: source?.product.id, mode: kind.toLowerCase(), draft: draft.id });
+      callbacksRef.current.onOpenDraft(draft.id);
     } catch (e) {
       const found = e instanceof FetchError && e.status === 409 ? existingSchema.safeParse(e.info) : null;
       if (found?.success) {
-        setExisting(found.data.errors.existing.id);
-        setError("Đã có nháp bản sửa cho biến thể này. Mở bản đang có để tiếp tục.");
-      } else setError(e instanceof Error ? deps.safeMessage(e.message) : "Không tạo được nháp");
-    } finally { setBusy(false); }
-  }, [deps, navigate]);
-  const handledMode = useRef("");
-  useEffect(() => {
-    if (location.draft || !location.mode) return;
-    const mode = location.mode;
-    const key = `${location.mon ?? ""}:${mode}`;
-    if (handledMode.current === key) return;
-    const kind = mode === "create" ? "CREATE" : mode === "copy" ? "COPY" : mode === "variant" ? "VARIANT" : mode === "revision" ? "REVISION" : null;
-    if (!kind || (kind !== "CREATE" && (!detail || detail.product.id !== location.mon))) return;
-    handledMode.current = key;
-    void begin(kind, detail ?? undefined, detail?.variants[0]);
-  }, [location, detail, begin]);
-  return { rows, drafts, draftNext, draftBusy, loadMoreDrafts, detail, selected, setSelected, q, setQ: (value: string) => { setCursor(""); setQ(value); }, status, setStatus: (value: string) => { setCursor(""); setStatus(value); }, next, setCursor, busy, error, existing, load, begin };
+        callbacksRef.current.onExistingRevision(found.data.errors.existing.id);
+      } else {
+        setError(e instanceof Error ? deps.safeMessage(e.message) : "Không tạo được nháp");
+      }
+    } finally {
+      setBusy(false);
+    }
+  }, [deps]);
+
+  const discardOpenDraft = useCallback(async (draftId: string) => {
+    setError("");
+    try {
+      await deps.discardDishDraft(draftId);
+      setDetail(current => current ? { ...current, open_drafts: current.open_drafts.filter(row => row.id !== draftId) } : current);
+      return true;
+    } catch (e) {
+      setError(e instanceof Error ? deps.safeMessage(e.message) : "Không bỏ được nháp");
+      return false;
+    }
+  }, [deps]);
+
+  return {
+    detail,
+    selected,
+    selectVariant,
+    busy,
+    error,
+    load,
+    begin,
+    discardOpenDraft,
+    updateDetailMedia,
+    updateDetailName,
+  };
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { addIngredient, groupNodes, sortCategories } from "./ingredients";
+import { addIngredient, groupNodes, normalizeRecipeLine, sortCategories, uomLabel } from "./ingredients";
 import { content } from "./complete-dish.fixtures";
 import type { DishContent } from "./types";
 
@@ -11,6 +11,12 @@ describe("thêm nguyên liệu vào món", () => {
     expect(next.ingredients).toMatchObject([{ sku_ref: "a", uom: "G", quantity: "", yield_pct: "100" }]);
     expect(addIngredient(empty, { id: "b", unit: "L" }).ingredients[0].uom).toBe("ML");
     expect(addIngredient(empty, { id: "c", unit: "EA" }).ingredients[0].uom).toBe("EA");
+  });
+  it("chuẩn hoá đơn vị kg/l cũ sang g/ml và nhãn đơn vị", () => {
+    expect(normalizeRecipeLine({ sku_ref: "a", quantity: "0.150", uom: "KG", yield_pct: "100" })).toEqual({ sku_ref: "a", quantity: "150", uom: "G", yield_pct: "100" });
+    expect(normalizeRecipeLine({ sku_ref: "b", quantity: "0.025", uom: "L", yield_pct: "100" })).toEqual({ sku_ref: "b", quantity: "25", uom: "ML", yield_pct: "100" });
+    expect(normalizeRecipeLine({ sku_ref: "c", quantity: "2", uom: "EA", yield_pct: "100" })).toEqual({ sku_ref: "c", quantity: "2", uom: "EA", yield_pct: "100" });
+    expect([uomLabel("G"), uomLabel("KG"), uomLabel("ML"), uomLabel("L"), uomLabel("EA")]).toEqual(["g", "kg", "ml", "lít", "cái"]);
   });
   it("chặn thêm trùng", () => {
     const once = addIngredient(empty, { id: "a", unit: "KG" });

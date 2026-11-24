@@ -61,8 +61,19 @@ export function countByGroup(items: Material[], category: string, q = ""): Recor
 }
 
 export const matchesName = (name: string, text: string) => {
-  const folded = fold(name);
-  return fold(text).split(/\s+/).filter(Boolean).every(word => folded.includes(word));
+  const trimmed = text.trim();
+  if (!trimmed) return true;
+  const rawWords = name.normalize("NFC").toLowerCase().split(/[^\p{L}\p{N}]+/u).filter(Boolean);
+  const foldedWords = fold(name).split(/[^a-z0-9]+/).filter(Boolean);
+  return trimmed.split(/\s+/).filter(Boolean).every(term => {
+    const normalizedTerm = term.normalize("NFC").toLowerCase();
+    const foldedTerm = fold(term);
+    if (!foldedTerm) return true;
+    const accented = normalizedTerm !== foldedTerm;
+    return accented
+      ? rawWords.some(word => word.startsWith(normalizedTerm))
+      : foldedWords.some(word => word.startsWith(foldedTerm));
+  });
 };
 
 export function filterMaterials(items: Material[], category: string, q: string, groups: string[] = []): Material[] {

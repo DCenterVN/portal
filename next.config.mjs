@@ -7,6 +7,7 @@ const nextConfig = {
   experimental: { optimizePackageImports: ["radix-ui"] },
   async redirects() {
     return [
+      {source: "/staff", destination: "/console", permanent: false},
       {source: "/staff/switch-org", destination: "/staff/switch-branch", permanent: false},
       {source: "/company/account", destination: "/account", permanent: false},
       {source: "/platform/account", destination: "/account", permanent: false},

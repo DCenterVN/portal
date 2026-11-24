@@ -158,6 +158,22 @@ describe("completeDish", () => {
     expect(f.arg("completeDraft")[1]).toEqual({ product_ref: "prod-m1", set_ref: "set-m1" });
   });
 
+  it("(f) REVISION đổi tên -> gọi updateProduct và ghi progress product:name", async () => {
+    const f = fake();
+    const r = await completeDish(revision({ name: "Thịt bò xào rau muống" }), { ...f.deps, sourceProductName: "Thịt trâu xào rau muống" });
+    expect(r).toMatchObject({ ok: true, product_ref: "prod-m1", set_ref: "set-m1" });
+    expect(f.calls.updateProduct).toEqual([["prod-m1", { name: "Thịt bò xào rau muống" }, `dish-${ID}-r3-product:name`]]);
+    expect(f.steps()).toContain("product:name");
+  });
+
+  it("(f) REVISION giữ nguyên tên -> không gọi updateProduct", async () => {
+    const f = fake();
+    const r = await completeDish(revision(), { ...f.deps, sourceProductName: "Thịt trâu xào rau muống" });
+    expect(r).toMatchObject({ ok: true, product_ref: "prod-m1", set_ref: "set-m1" });
+    expect(f.calls.updateProduct).toBeUndefined();
+    expect(f.steps()).not.toContain("product:name");
+  });
+
   it("(f) REVISION: 409 stale ở slots -> failed_step slots, không completeDraft", async () => {
     const f = fake({ slots: { status: 409, message: "stale" } });
     const r = await completeDish(revision(), f.deps);
@@ -168,7 +184,6 @@ describe("completeDish", () => {
     expect(f.calls.completeDraft).toBeUndefined();
   });
 
-  // ---- S14c (review r1) ----
   it("claim: ghi progress claim=r<revision> với expected_revision TRƯỚC mọi lệnh ghi; mọi progress cùng revision", async () => {
     const f = fake();
     await completeDish(draft({ revision: 7 }), f.deps);
@@ -270,12 +285,29 @@ it("sellable dùng revision sau PUT và số suất, retry giữ nguyên payload
 });
 
 it.each([
-  [409, "cost_fact_missing", "Nguyên liệu trong món chưa có giá vốn. Nhập kho nguyên liệu rồi bấm Hoàn tất món lại."],
+  [409, "cost_fact_missing", "Nguyên liệu trong món chưa có giá vốn. Thêm báo giá nhà cung cấp hoặc nhập kho nguyên liệu rồi bấm Hoàn tất món lại."],
   [409, "state_conflict", "Món chưa chốt hoặc số suất đã thay đổi"],
   [503, "dependency_unavailable", "Hệ thống tạm bận"],
 ])("sellable dịch lỗi %s %s", async (status, code, message) => {
   const f = fake({ sellable: { status: Number(status), code, message: "upstream failure" } });
   expect(await completeDish(draft(), f.deps)).toMatchObject({ ok: false, failed_step: "sellable", error: { status, message: expect.stringContaining(message) } });
+  expect(f.calls.completeDraft).toBeUndefined();
+});
+
+it("sellable cost_fact_missing kèm fields hiện đủ tên nguyên liệu", async () => {
+  const f = fake({ sellable: { status: 409, code: "cost_fact_missing", message: "x", fields: { "uuid-1": ["Muối tiêu hồng"], "uuid-2": ["Cá bông biển"] } } });
+  expect(await completeDish(draft(), f.deps)).toMatchObject({
+    ok: false, failed_step: "sellable",
+    error: { status: 409, message: "Chưa có giá vốn cho: Muối tiêu hồng, Cá bông biển. Thêm báo giá nhà cung cấp hoặc nhập kho nguyên liệu rồi bấm Hoàn tất món lại." },
+  });
+});
+
+it("sellable gặp 404: gói chưa có công thức hiệu lực", async () => {
+  const f = fake({ sellable: { status: 404, message: "not found" } });
+  expect(await completeDish(draft(), f.deps)).toMatchObject({
+    ok: false, failed_step: "sellable",
+    error: { status: 404, message: "Một gói trong món chưa có công thức hiệu lực. Kiểm tra lại công thức gói rồi bấm Hoàn tất món lại." },
+  });
   expect(f.calls.completeDraft).toBeUndefined();
 });
 

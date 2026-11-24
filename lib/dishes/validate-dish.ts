@@ -1,13 +1,15 @@
-import { slotOf, type DishContent, type DraftKind, type GroupNode, type Journey } from "./types";
+import { SERVING_OPTIONS, slotOf, type DishContent, type DraftKind, type GroupNode, type Journey } from "./types";
 export type { DishContent } from "./types";
 export type DishError = { row?: string; field: string; message: string; existing?: { set_ref: string; variant_label: string } };
 export type ValidateCtx = { kind: DraftKind; tree: GroupNode[]; skuGroups: Record<string, string | null>; packagesWithRecipe: string[]; existingVariants: { servings: number; set_ref: string; variant_label: string }[]; source_journey?: Journey };
 export function validateDish(content: DishContent, ctx: ValidateCtx): DishError[] {
   const errors: DishError[] = [];
   const add = (field: string, message: string, row?: string) => errors.push({ field, message, ...(row ? { row } : {}) });
-  if (!content.name?.trim() || content.name.trim().length > 150) add("name", "Tên món cần 1–150 ký tự");
+  const trimmedName = content.name?.trim() ?? "";
+  if (!trimmedName || trimmedName.length > 150) add("name", "Nhập tên món (tối đa 150 ký tự)");
+  else if (/\(bản sao\)\s*$/i.test(trimmedName)) add("name", "Đổi tên món trước khi hoàn tất");
   if (content.tags.length < 3 || content.tags.length > 8) add("tags", "Nhập 3–8 hashtag");
-  if (!content.servings || ![1, 2, 3, 4, 6].includes(content.servings)) add("servings", "Chọn khẩu phần 1, 2, 3, 4 hoặc 6 người");
+  if (!content.servings || !(SERVING_OPTIONS as readonly number[]).includes(content.servings)) add("servings", "Chọn số suất mỗi hộp");
   if (!content.ingredients.length) add("ingredients", "Thêm ít nhất một nguyên liệu");
   const seen = new Set<string>();
   const slots = new Set<string>();
@@ -31,7 +33,7 @@ export function validateDish(content: DishContent, ctx: ValidateCtx): DishError[
   }
   if (slots.size < 2) add("slots", "Món cần nguyên liệu ở ít nhất hai nhóm, ví dụ đạm và gia vị");
   if (ctx.kind === "REVISION") {
-    if (!content.reason?.trim() || content.reason.trim().length > 300) add("reason", "Lý do sửa cần 1–300 ký tự");
+    if (!content.reason?.trim() || content.reason.trim().length > 300) add("reason", "Nhập lý do sửa món");
     if (ctx.source_journey === "SELLING") add("base", "Biến thể đang bán — tạo biến thể mới hoặc chờ đợt mở/ngừng bán");
   }
   const existing = ctx.kind === "VARIANT" && ctx.existingVariants.find(item => item.servings === content.servings);

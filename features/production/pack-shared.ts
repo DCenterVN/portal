@@ -15,5 +15,5 @@ export async function loadPackOptions() {
     const page = await listPackages({ cursor, limit: 100 });
     items.push(...page.items); cursor = page.next_cursor ?? undefined;
   } while (cursor);
-  return items.filter(item => !["RETIRED", "ARCHIVED"].includes(item.status));
+  return items.filter(item => !item.sellable && !["RETIRED", "ARCHIVED"].includes(item.status));
 }

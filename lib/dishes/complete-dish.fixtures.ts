@@ -33,7 +33,7 @@ export const base = {
   },
 };
 
-export type Fail = Record<string, { status?: number; message?: string; code?: string }>;
+export type Fail = Record<string, { status?: number; message?: string; code?: string; fields?: Record<string, string[]> }>;
 export type Slots = { slot: string; removable: boolean; options: { sku_ref: string; is_default: boolean }[] }[];
 export function fake(fail: Fail = {}, read: { recipes?: Record<string, { components: ReturnType<typeof L>[] } | null>; slots?: Slots } = {}) {
   const log: string[] = [];
@@ -44,12 +44,13 @@ export function fake(fail: Fail = {}, read: { recipes?: Record<string, { compone
     log.push(tag);
     (calls[name] ??= []).push(args);
     const f = fail[tag];
-    if (f) throw Object.assign(new Error(f.message ?? "boom"), { status: f.status ?? 500, code: f.code });
+    if (f) throw Object.assign(new Error(f.message ?? "boom"), { status: f.status ?? 500, code: f.code, ...(f.fields ? { fields: f.fields } : {}) });
   };
   const slotFromName = (name: string) => (name.endsWith("Đạm") ? "DAM" : name.endsWith("Rau") ? "RAU" : name.endsWith("Cốt nước dùng") ? "COT" : name.endsWith("Gia vị") ? "GIA_VI_THEM" : "TINH_BOT");
   const deps: CompleteDeps = {
     tree, skuGroups,
     createProduct: async (...a) => { rec("createProduct", "product", a); return { id: "prod-new" }; },
+    updateProduct: async (...a) => { rec("updateProduct", "product:name", a); },
     createPackage: async (input, key) => {
       const s = slotFromName((input as { name: string }).name);
       rec("createPackage", `package:${s}`, [input, key]);
@@ -60,7 +61,7 @@ export function fake(fail: Fail = {}, read: { recipes?: Record<string, { compone
     createSet: async (...a) => { rec("createSet", "set", a); return { id: `set-new-${++n}`, updated_at: T }; },
     replaceSlots: async (...a) => { rec("replaceSlots", "slots", a); return { updated_at: "2026-10-22T00:00:00Z" }; },
     createSellable: async (...a) => { rec("createSellable", "sellable", a); return { sku_ref: "serving-new" }; },
-    recordProgress: async (...a) => { const step = (a[1] as { step: string }).step; log.push(`progress:${step}`); (calls.recordProgress ??= []).push(a); const f = fail[`progress:${step}`]; if (f) throw Object.assign(new Error(f.message ?? "boom"), { status: f.status ?? 500, code: f.code }); },
+    recordProgress: async (...a) => { const step = (a[1] as { step: string }).step; log.push(`progress:${step}`); (calls.recordProgress ??= []).push(a); const f = fail[`progress:${step}`]; if (f) throw Object.assign(new Error(f.message ?? "boom"), { status: f.status ?? 500, code: f.code, ...(f.fields ? { fields: f.fields } : {}) }); },
     getActiveRecipe: async (pkg) => { (calls.getActiveRecipe ??= []).push([pkg]); return read.recipes?.[pkg] ?? null; },
     readSlots: async (ref) => { (calls.readSlots ??= []).push([ref]); return read.slots ?? []; },
     readSet: async (ref) => { (calls.readSlots ??= []).push([ref]); return { updated_at: "2026-10-22T00:00:00Z", slots: (read.slots ?? []).map(s => ({ ...s, swappable: false, options: s.options.map(o => ({ ...o, quantity: 1 })) })), tags: ["xao", "thit-trau", "rau-muong"] }; },

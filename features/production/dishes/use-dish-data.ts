@@ -1,60 +1,117 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import useSWR from "swr";
 import type * as dishes from "@/lib/api/dishes";
 import type { getMaterialTree, listMaterials, Material as CatalogMaterial, MaterialCategory } from "@/lib/api/material-catalog";
 import type { getRawLabels } from "@/lib/api/sales";
 import { useAccess } from "@/lib/access-boundary";
 import { groupNodes, sortCategories, uomOf } from "@/lib/dishes/ingredients";
 import type { DishContent } from "@/lib/dishes/types";
+
 export type MaterialInfo = { name: string; group: string | null; category: string; uom: string; imageUrl: string | null; retired: boolean; allergens: string[] | null };
 type Deps = Pick<typeof dishes, "previewCost" | "safeMessage"> & { getRawLabels: typeof getRawLabels; getMaterialTree: typeof getMaterialTree; listMaterials: typeof listMaterials };
 export type Catalog = { tree: MaterialCategory[]; items: CatalogMaterial[] };
+
 export function useDishData(content: DishContent | null, deps: Deps) {
-  const [catalog, setCatalog] = useState<Catalog | null>(null);
-  const [retired, setRetired] = useState<CatalogMaterial[]>([]);
-  const [allergens, setAllergens] = useState<Record<string, string[] | null>>({});
   const canCreate = useAccess().can("sales:product:create");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const load = useCallback(async () => {
-    setLoading(true); setError("");
-    try {
-      const materialTree = sortCategories(await deps.getMaterialTree());
-      setCatalog({ tree: materialTree, items: await deps.listMaterials("ACTIVE", materialTree) });
-    } catch (e) { setError(e instanceof Error ? deps.safeMessage(e.message) : "Không tải được danh mục"); }
-    finally { setLoading(false); }
-  }, [deps]);
-  useEffect(() => { void load(); }, [load]);
+  const catalogSwr = useSWR<Catalog>("dish-catalog", async () => {
+    const materialTree = sortCategories(await deps.getMaterialTree());
+    return { tree: materialTree, items: await deps.listMaterials("ACTIVE", materialTree) };
+  }, { revalidateOnFocus: false });
+  const catalog = catalogSwr.data ?? null;
   const ingredientIds = content?.ingredients.flatMap(line => line.sku_ref ? [line.sku_ref] : []).join(",") ?? "";
+  const needsInactive = useMemo(() => {
+    if (!catalog) return false;
+    const activeIds = new Set(catalog.items.map(item => item.id));
+    return ingredientIds.split(",").some(id => id && !activeIds.has(id));
+  }, [catalog, ingredientIds]);
+  const retiredSwr = useSWR<CatalogMaterial[]>(
+    catalog && needsInactive ? "dish-catalog-inactive" : null,
+    () => Promise.all([deps.listMaterials("DRAFT", catalog!.tree), deps.listMaterials("SUSPENDED", catalog!.tree)]).then(lists => lists.flat()),
+    { revalidateOnFocus: false }
+  );
+  const retired = retiredSwr.data ?? [];
+  const retiredReady = !needsInactive || retiredSwr.data !== undefined || Boolean(retiredSwr.error);
+  const [allergens, setAllergens] = useState<Record<string, string[] | null>>({});
+  const allergenAsked = useRef<Set<string>>(new Set());
+  const load = useCallback(async () => {
+    await catalogSwr.mutate();
+    if (needsInactive) await retiredSwr.mutate();
+  }, [catalogSwr, retiredSwr, needsInactive]);
+
   const tree = useMemo(() => groupNodes(catalog?.tree ?? []), [catalog]);
   const known = useMemo(() => new Map([...retired, ...(catalog?.items ?? [])].map(item => [item.id, item])), [catalog, retired]);
-  const lookedUp = useRef(false);
+  const hasUnknown = useMemo(() => ingredientIds.split(",").some(id => id && !known.has(id)), [ingredientIds, known]);
+
   useEffect(() => {
-    if (!catalog || lookedUp.current || !ingredientIds.split(",").some(id => id && !known.has(id))) return;
-    lookedUp.current = true;
-    void Promise.all([deps.listMaterials("DRAFT", catalog.tree), deps.listMaterials("SUSPENDED", catalog.tree)]).then(lists => setRetired(lists.flat())).catch(() => setError("Không tải được thông tin nguyên liệu. Thử lại."));
-  }, [catalog, ingredientIds, known, deps]);
-  const asked = useRef(new Set<string>());
-  useEffect(() => {
-    for (const id of ingredientIds.split(",").filter(id => id && !asked.current.has(id))) {
-      asked.current.add(id);
-      void deps.getRawLabels(id).then(labels => setAllergens(current => ({ ...current, [id]: labels.allergen_summary.known ? labels.allergen_summary.contains : null }))).catch(() => undefined);
+    for (const id of ingredientIds.split(",").filter(id => id && !allergenAsked.current.has(id))) {
+      allergenAsked.current.add(id);
+      void deps.getRawLabels(id).then(labels => {
+        const value = labels.allergen_summary.known ? labels.allergen_summary.contains : null;
+        setAllergens(current => ({ ...current, [id]: value }));
+      }).catch(() => {
+        allergenAsked.current.delete(id);
+      });
     }
   }, [ingredientIds, deps]);
+
   const materials = useMemo(() => Object.fromEntries(ingredientIds.split(",").flatMap(id => {
     const item = known.get(id);
     return item ? [[id, { name: item.name, group: item.group.toUpperCase() || null, category: item.category.toUpperCase(), uom: uomOf(item.unit), imageUrl: item.imageUrl, retired: item.status === "SUSPENDED", allergens: allergens[id] ?? null } satisfies MaterialInfo]] : [];
   })), [ingredientIds, known, allergens]);
+  const retiredIds = useMemo(() => new Set(retired.filter(item => item.status === "SUSPENDED").map(item => item.id)), [retired]);
+
   const [cost, setCost] = useState<dishes.CostPreview | null>(null);
   const [costError, setCostError] = useState("");
   const [costLoading, setCostLoading] = useState(false);
   const [costRetry, setCostRetry] = useState(0);
+
   useEffect(() => {
     let alive = true;
     setCost(null); setCostError("");
-    if (!content?.servings || !content.ingredients.length || content.ingredients.some(line => !line.sku_ref || Number(line.quantity) <= 0 || !Number.isFinite(Number(line.quantity)) || Number(line.yield_pct) < 1 || Number(line.yield_pct) > 100)) { setCostLoading(false); return; }
+    if (!content?.servings || !content.ingredients.length || !catalog || (hasUnknown && !retiredReady)) { setCostLoading(false); return; }
+    const activeIngredients = content.ingredients.filter(line => !line.sku_ref || !retiredIds.has(line.sku_ref));
+    if (!activeIngredients.length || activeIngredients.some(line => !line.sku_ref || Number(line.quantity) <= 0 || !Number.isFinite(Number(line.quantity)) || Number(line.yield_pct) < 1 || Number(line.yield_pct) > 100)) { setCostLoading(false); return; }
+    const activeContent = { ...content, ingredients: activeIngredients };
     setCostLoading(true);
-    const timer = setTimeout(() => void deps.previewCost(content).then(value => { if (alive) setCost(value); }).catch(() => { if (alive) setCostError("Không tải được giá vốn. Thử lại."); }).finally(() => { if (alive) setCostLoading(false); }), 600);
+    const runPreview = async () => {
+      try { return await deps.previewCost(activeContent); }
+      catch (err) {
+        if (!activeContent.seasonings.length) throw err;
+        return deps.previewCost({ ...activeContent, seasonings: [] });
+      }
+    };
+    const timer = setTimeout(() => void runPreview().then(value => { if (alive) setCost(value); }).catch(() => { if (alive) setCostError("Không tải được giá vốn. Thử lại."); }).finally(() => { if (alive) setCostLoading(false); }), 600);
     return () => { alive = false; clearTimeout(timer); };
-  }, [content, deps, costRetry]);
-  return { tree, materials, catalog, canCreate, loading, error, load, cost, costError, costLoading, retryCost: () => setCostRetry(n => n + 1) };
+  }, [content, deps, costRetry, retiredIds, catalog, hasUnknown, retiredReady]);
+
+  useEffect(() => {
+    if (!content?.ingredients.length || !cost || cost.complete || costLoading) return;
+    const refresh = () => {
+      if (document.visibilityState === "visible") setCostRetry(n => n + 1);
+    };
+    window.addEventListener("focus", refresh);
+    document.addEventListener("visibilitychange", refresh);
+    return () => {
+      window.removeEventListener("focus", refresh);
+      document.removeEventListener("visibilitychange", refresh);
+    };
+  }, [content?.ingredients.length, cost, costLoading]);
+
+  const rawError = catalogSwr.error ?? retiredSwr.error;
+  const error = rawError instanceof Error ? deps.safeMessage(rawError.message) : rawError ? "Không tải được danh mục" : "";
+
+  return {
+    tree,
+    materials,
+    catalog,
+    catalogReady: Boolean(catalog) && retiredReady,
+    canCreate,
+    loading: catalogSwr.isLoading,
+    error,
+    load,
+    cost,
+    costError,
+    costLoading,
+    retryCost: () => setCostRetry(n => n + 1),
+  };
 }

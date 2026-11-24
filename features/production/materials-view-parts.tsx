@@ -65,7 +65,7 @@ function useSlidingBox(list: React.RefObject<HTMLDivElement | null>, current: st
   return box;
 }
 
-function useScrollEdges(strip: React.RefObject<HTMLDivElement | null>) {
+function useScrollEdges(strip: React.RefObject<HTMLDivElement | null>, key: string) {
   const [edges, setEdges] = useState({ left: false, right: true });
   useLayoutEffect(() => {
     const node = strip.current;
@@ -74,8 +74,10 @@ function useScrollEdges(strip: React.RefObject<HTMLDivElement | null>) {
     measure();
     node.addEventListener("scroll", measure, { passive: true });
     window.addEventListener("resize", measure);
-    return () => { node.removeEventListener("scroll", measure); window.removeEventListener("resize", measure); };
-  }, [strip]);
+    const observer = typeof ResizeObserver !== "undefined" ? new ResizeObserver(measure) : null;
+    observer?.observe(node);
+    return () => { node.removeEventListener("scroll", measure); window.removeEventListener("resize", measure); observer?.disconnect(); };
+  }, [strip, key]);
   return edges;
 }
 
@@ -92,7 +94,7 @@ export function CategoryBar({ current, category, counts, onSelect, onManage }: B
   const strip = useRef<HTMLDivElement>(null);
   const list = useRef<HTMLDivElement>(null);
   const box = useSlidingBox(list, `${current}|${Object.values(counts).join(",")}`);
-  const edges = useScrollEdges(strip);
+  const edges = useScrollEdges(strip, `${category.length}|${Object.values(counts).join(",")}`);
   useWheelScroll(strip);
   useEffect(() => {
     list.current?.querySelector('[data-state="active"]')?.scrollIntoView({ inline: "center", block: "nearest", behavior: reduced() ? "auto" : "smooth" });

@@ -16,7 +16,9 @@ type Target = z.infer<typeof targetSchema>;
 type ReadSlot = { slot: string; removable: boolean; options: { sku_ref: string; is_default: boolean }[] };
 export type CompleteDeps = {
   tree: GroupNode[]; skuGroups: Record<string, string | null>;
+  sourceProductName?: string;
   createProduct(input: { name: string; slug: string; category_ref?: string }, key: string): Promise<{ id: string }>;
+  updateProduct?(productRef: string, input: { name: string }, key: string): Promise<void>;
   createPackage(input: PackageInput, key: string): Promise<{ id: string }>;
   createRecipe(packageRef: string, input: { components: Line[]; prep_steps: [] }, key: string): Promise<void>;
   createSet(input: Omit<PackageInput, "uom_code"> & { tags: string[] }, key: string): Promise<{ id: string; updated_at: string }>;
@@ -31,6 +33,13 @@ export type CompleteDeps = {
 export type CompleteResult = { ok: true; product_ref: string; set_ref: string } | { ok: false; failed_step: string; error: { status?: number; message: string } };
 function isConflict(error: unknown) {
   return error !== null && typeof error === "object" && "status" in error && error.status === 409;
+}
+function costMissingNames(error: unknown): string[] {
+  const fields = error && typeof error === "object" && "fields" in error ? error.fields : null;
+  if (!fields || typeof fields !== "object") return [];
+  const names = Object.values(fields).flatMap(value => (Array.isArray(value) ? value : [value]))
+    .filter((value): value is string => typeof value === "string").map(value => value.trim()).filter(Boolean);
+  return [...new Set(names)];
 }
 function sameSet(target: Target, actual: unknown) {
   const parsed = setSchema.safeParse(actual);
@@ -79,6 +88,12 @@ export async function completeDish(draft: DishDraft, deps: CompleteDeps): Promis
     const product_ref = draft.kind === "CREATE" || draft.kind === "COPY"
       ? await run("product", async () => (await deps.createProduct({ name, slug: `${slug}-${suffix}`, ...(content.category_ref ? { category_ref: content.category_ref } : {}) }, key("product"))).id)
       : content.base?.product_ref ?? "";
+    if (draft.kind === "REVISION" && deps.updateProduct && name && deps.sourceProductName !== undefined && name !== deps.sourceProductName.trim()) {
+      await run("product:name", async () => {
+        await deps.updateProduct!(product_ref, { name }, key("product:name"));
+        return product_ref;
+      });
+    }
     if (!target) {
       const slots: Slot[] = [];
       const weight = (lines: Line[]) => lines.filter(line => ["G", "ML"].includes(line.uom)).reduce((sum, line) => sum + Number(line.quantity), 0);
@@ -142,7 +157,14 @@ export async function completeDish(draft: DishDraft, deps: CompleteDeps): Promis
     const status = error && typeof error === "object" && "status" in error && typeof error.status === "number" ? error.status : 500;
     const code = error && typeof error === "object" && "code" in error ? error.code : "";
     if (failed_step === "sellable") {
-      if (code === "cost_fact_missing") return { ok: false, failed_step, error: { status, message: "Nguyên liệu trong món chưa có giá vốn. Nhập kho nguyên liệu rồi bấm Hoàn tất món lại." } };
+      if (code === "cost_fact_missing") {
+        const names = costMissingNames(error);
+        const message = names.length
+          ? `Chưa có giá vốn cho: ${names.join(", ")}. Thêm báo giá nhà cung cấp hoặc nhập kho nguyên liệu rồi bấm Hoàn tất món lại.`
+          : "Nguyên liệu trong món chưa có giá vốn. Thêm báo giá nhà cung cấp hoặc nhập kho nguyên liệu rồi bấm Hoàn tất món lại.";
+        return { ok: false, failed_step, error: { status, message } };
+      }
+      if (status === 404) return { ok: false, failed_step, error: { status, message: "Một gói trong món chưa có công thức hiệu lực. Kiểm tra lại công thức gói rồi bấm Hoàn tất món lại." } };
       if (status === 409) return { ok: false, failed_step, error: { status, message: "Món chưa chốt hoặc số suất đã thay đổi. Mở lại bản sửa để kiểm tra." } };
       if (status === 503) return { ok: false, failed_step, error: { status, message: "Hệ thống tạm bận, thử hoàn tất món lại sau ít phút." } };
     }
