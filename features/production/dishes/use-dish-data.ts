@@ -11,6 +11,8 @@ export type MaterialInfo = { name: string; group: string | null; category: strin
 type Deps = Pick<typeof dishes, "previewCost" | "safeMessage"> & { getRawLabels: typeof getRawLabels; getMaterialTree: typeof getMaterialTree; listMaterials: typeof listMaterials };
 export type Catalog = { tree: MaterialCategory[]; items: CatalogMaterial[] };
 
+const EMPTY_MATERIALS: CatalogMaterial[] = [];
+
 export function useDishData(content: DishContent | null, deps: Deps) {
   const canCreate = useAccess().can("sales:product:create");
   const catalogSwr = useSWR<Catalog>("dish-catalog", async () => {
@@ -29,7 +31,7 @@ export function useDishData(content: DishContent | null, deps: Deps) {
     () => Promise.all([deps.listMaterials("DRAFT", catalog!.tree), deps.listMaterials("SUSPENDED", catalog!.tree)]).then(lists => lists.flat()),
     { revalidateOnFocus: false }
   );
-  const retired = retiredSwr.data ?? [];
+  const retired = retiredSwr.data ?? EMPTY_MATERIALS;
   const retiredReady = !needsInactive || retiredSwr.data !== undefined || Boolean(retiredSwr.error);
   const [allergens, setAllergens] = useState<Record<string, string[] | null>>({});
   const allergenAsked = useRef<Set<string>>(new Set());
@@ -64,14 +66,33 @@ export function useDishData(content: DishContent | null, deps: Deps) {
   const [costError, setCostError] = useState("");
   const [costLoading, setCostLoading] = useState(false);
   const [costRetry, setCostRetry] = useState(0);
+  const costInput = useMemo(() => {
+    if (!content?.servings || !content.ingredients.length || !catalog || (hasUnknown && !retiredReady)) {
+      return { key: "", content: null as DishContent | null };
+    }
+    const activeIngredients = content.ingredients.filter(line => !line.sku_ref || !retiredIds.has(line.sku_ref));
+    if (!activeIngredients.length || activeIngredients.some(line => !line.sku_ref || Number(line.quantity) <= 0 || !Number.isFinite(Number(line.quantity)) || Number(line.yield_pct) < 1 || Number(line.yield_pct) > 100)) {
+      return { key: "", content: null as DishContent | null };
+    }
+    return {
+      key: JSON.stringify({
+        servings: content.servings,
+        ingredients: activeIngredients.map(({ sku_ref, quantity, uom, yield_pct }) => ({ sku_ref, quantity, uom, yield_pct })),
+        seasonings: content.seasonings.map(line => line.package_ref),
+      }),
+      content: { ...content, ingredients: activeIngredients },
+    };
+  }, [content, catalog, hasUnknown, retiredReady, retiredIds]);
+  const costKey = costInput.key;
+  const costContentRef = useRef<DishContent | null>(null);
+  costContentRef.current = costInput.content;
+  const lastTabRefresh = useRef(0);
 
   useEffect(() => {
     let alive = true;
     setCost(null); setCostError("");
-    if (!content?.servings || !content.ingredients.length || !catalog || (hasUnknown && !retiredReady)) { setCostLoading(false); return; }
-    const activeIngredients = content.ingredients.filter(line => !line.sku_ref || !retiredIds.has(line.sku_ref));
-    if (!activeIngredients.length || activeIngredients.some(line => !line.sku_ref || Number(line.quantity) <= 0 || !Number.isFinite(Number(line.quantity)) || Number(line.yield_pct) < 1 || Number(line.yield_pct) > 100)) { setCostLoading(false); return; }
-    const activeContent = { ...content, ingredients: activeIngredients };
+    const activeContent = costContentRef.current;
+    if (!costKey || !activeContent) { setCostLoading(false); return; }
     setCostLoading(true);
     const runPreview = async () => {
       try { return await deps.previewCost(activeContent); }
@@ -82,12 +103,16 @@ export function useDishData(content: DishContent | null, deps: Deps) {
     };
     const timer = setTimeout(() => void runPreview().then(value => { if (alive) setCost(value); }).catch(() => { if (alive) setCostError("Không tải được giá vốn. Thử lại."); }).finally(() => { if (alive) setCostLoading(false); }), 600);
     return () => { alive = false; clearTimeout(timer); };
-  }, [content, deps, costRetry, retiredIds, catalog, hasUnknown, retiredReady]);
+  }, [costKey, costRetry, deps]);
 
   useEffect(() => {
-    if (!content?.ingredients.length || !cost || cost.complete || costLoading) return;
+    if (!costKey || !cost || cost.complete || costLoading) return;
     const refresh = () => {
-      if (document.visibilityState === "visible") setCostRetry(n => n + 1);
+      if (document.visibilityState !== "visible") return;
+      const now = Date.now();
+      if (now - lastTabRefresh.current < 2000) return;
+      lastTabRefresh.current = now;
+      setCostRetry(n => n + 1);
     };
     window.addEventListener("focus", refresh);
     document.addEventListener("visibilitychange", refresh);
@@ -95,7 +120,7 @@ export function useDishData(content: DishContent | null, deps: Deps) {
       window.removeEventListener("focus", refresh);
       document.removeEventListener("visibilitychange", refresh);
     };
-  }, [content?.ingredients.length, cost, costLoading]);
+  }, [costKey, cost, costLoading]);
 
   const rawError = catalogSwr.error ?? retiredSwr.error;
   const error = rawError instanceof Error ? deps.safeMessage(rawError.message) : rawError ? "Không tải được danh mục" : "";
