@@ -1,4 +1,6 @@
 import React from "react";
+import { NextIntlClientProvider } from "next-intl";
+import messages from "@/messages/vi.json";
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, expect, it, vi } from "vitest";
 import { useSupplierAgreements } from "./use-supplier-agreements";
@@ -9,16 +11,16 @@ import { FetchError } from "@/lib/fetcher";
 import { AccessProvider } from "@/lib/access-boundary";
 import { SupplierAgreementsContainer as SupplierAgreementsView } from "./supplier-agreements-container";
 import { agreement, supplierID } from "@/mocks/supplier-contract";
-it("ACTIVE chỉ Ngừng dùng và Lập bảng giá mới, không có editor sửa giá", () => {
-  const html = renderToStaticMarkup(<AccessProvider value={{ plane: "company", root: "", actions: new Set(["inventory:supplier:read", "inventory:supplier:update"]) }}><SupplierAgreementsView supplierId={supplierID} initialItems={[{ ...agreement, status: "ACTIVE", effective_status: "ACTIVE" }]} /></AccessProvider>);
-  expect(html).toContain("Ngừng dùng"); expect(html).toContain("Lập bảng giá mới"); expect(html).not.toContain("Lưu nháp"); expect(html).not.toContain('name="unit_price_vnd"');
+it("ACTIVE chỉ Ngừng áp dụng, không có nút lập bảng giá thứ hai và không có editor sửa giá", () => {
+  const html = renderToStaticMarkup(<NextIntlClientProvider locale="vi" messages={messages}><AccessProvider value={{ plane: "company", root: "", actions: new Set(["inventory:supplier:read", "inventory:supplier:update"]) }}><SupplierAgreementsView supplierId={supplierID} initialItems={[{ ...agreement, status: "ACTIVE", effective_status: "ACTIVE" }]} /></AccessProvider></NextIntlClientProvider>);
+  expect(html).toContain("Ngừng áp dụng"); expect(html).not.toContain("Lập bảng giá mới"); expect(html).not.toContain("Lưu nháp"); expect(html).not.toContain('name="unit_price_vnd"');
 });
 it("SUSPENDED không mở lại; read-only không có action áp dụng", () => {
-  const html = renderToStaticMarkup(<AccessProvider value={{ plane: "company", root: "", actions: new Set(["inventory:supplier:read"]) }}><SupplierAgreementsView supplierId={supplierID} initialItems={[{ ...agreement, status: "SUSPENDED", status_reason: "Ngừng hợp tác" }]} /></AccessProvider>);
+  const html = renderToStaticMarkup(<NextIntlClientProvider locale="vi" messages={messages}><AccessProvider value={{ plane: "company", root: "", actions: new Set(["inventory:supplier:read"]) }}><SupplierAgreementsView supplierId={supplierID} initialItems={[{ ...agreement, status: "SUSPENDED", status_reason: "Ngừng hợp tác" }]} /></AccessProvider></NextIntlClientProvider>);
   expect(html).toContain("Ngừng hợp tác"); expect(html).not.toContain(">Áp dụng bảng giá<"); expect(html).not.toContain(">Lập bảng giá mới<");
 });
 it("bảng giá nhiều dòng hiển thị ngày VN và chứng từ gọn", () => {
-  const html = renderToStaticMarkup(<AccessProvider value={{ plane: "company", root: "", actions: new Set(["inventory:supplier:read"]) }}><SupplierAgreementsView supplierId={supplierID} initialItems={[{ ...agreement, document_ref: null, lines: [...agreement.lines, { ...agreement.lines[0], uom: "G", unit_price_vnd: 50 }] }]} /></AccessProvider>);
+  const html = renderToStaticMarkup(<NextIntlClientProvider locale="vi" messages={messages}><AccessProvider value={{ plane: "company", root: "", actions: new Set(["inventory:supplier:read"]) }}><SupplierAgreementsView supplierId={supplierID} initialItems={[{ ...agreement, document_ref: null, lines: [...agreement.lines, { ...agreement.lines[0], uom: "G", unit_price_vnd: 50 }] }]} /></AccessProvider></NextIntlClientProvider>);
   expect(html).toContain("Bảng giá tham chiếu");
   expect(html).toContain("01/11/2026");
   expect(html).toContain("Chưa có chứng từ");
@@ -29,7 +31,7 @@ it("bảng giá nhiều dòng hiển thị ngày VN và chứng từ gọn", () 
 
 it("ACTIVE thiếu file cho gắn bổ sung, file primary hiện Có chứng từ", () => {
   function show(primary?: string, update = true, status: "ACTIVE" | "DRAFT" | "SUSPENDED" = "ACTIVE") {
-    return renderToStaticMarkup(<AccessProvider value={{ plane: "company", root: "", actions: new Set(["inventory:supplier:read", ...(update ? ["inventory:supplier:update"] : [])]) }}><SupplierAgreementsView supplierId={supplierID} initialItems={[{ ...agreement, status, document_ref: null, primary_document_ref: primary }]} /></AccessProvider>);
+    return renderToStaticMarkup(<NextIntlClientProvider locale="vi" messages={messages}><AccessProvider value={{ plane: "company", root: "", actions: new Set(["inventory:supplier:read", ...(update ? ["inventory:supplier:update"] : [])]) }}><SupplierAgreementsView supplierId={supplierID} initialItems={[{ ...agreement, status, document_ref: null, primary_document_ref: primary }]} /></AccessProvider></NextIntlClientProvider>);
   }
   expect(show()).toContain(">Gắn chứng từ<");
   expect(show(agreement.document_ref)).toContain("Có chứng từ");
@@ -40,6 +42,7 @@ it("ACTIVE thiếu file cho gắn bổ sung, file primary hiện Có chứng t�
 });
 
 const harness = vi.hoisted(() => ({ enabled: false, slots: [] as unknown[], cursor: 0 }));
+vi.mock("./use-contract-materials", () => ({ useContractMaterials: () => ({ materials: [], failed: false, retry: () => {} }) }));
 vi.mock("react", async original => {
   const actual = await original<typeof import("react")>();
   function state<T>(initial: T | (() => T)) {
@@ -89,7 +92,7 @@ it("hook 409 giữ file finalized, retry không gửi bytes hoặc finalize lầ
   const { upload, finalize, attach } = selectedAttachment();
   attach.mockRejectedValueOnce(new FetchError("Conflict", 409));
   await attachmentHook().attach();
-  expect(attachmentHook().error).toContain("đã có chứng từ");
+  expect(attachmentHook().actionError).toContain("đã có chứng từ");
   await attachmentHook().attach();
   expect(upload).toHaveBeenCalledTimes(1); expect(finalize).toHaveBeenCalledTimes(1);
   expect(attach.mock.calls[1]).toEqual(attach.mock.calls[0]);
@@ -98,7 +101,11 @@ it("hook 404 yêu cầu phiên tải mới và hiện thông báo", async () => 
   const { finalize } = selectedAttachment();
   finalize.mockRejectedValueOnce(new FetchError("Expired", 404));
   await attachmentHook().attach();
-  expect(attachmentHook().error).toContain("không còn tồn tại");
+  expect(attachmentHook().actionError).toContain("không còn tồn tại");
   expect(attachmentHook().attachment?.uploadId).toBeUndefined();
   expect(attachmentHook().attachment?.file).toBeNull();
+});
+it("ngừng hợp tác: trạng thái rỗng chỉ một câu hướng dẫn, không nút", () => {
+  const html = renderToStaticMarkup(<NextIntlClientProvider locale="vi" messages={messages}><AccessProvider value={{ plane: "company", root: "", actions: new Set(["inventory:supplier:read", "inventory:supplier:update"]) }}><SupplierAgreementsView supplierId={supplierID} initialItems={[]} suspended /></AccessProvider></NextIntlClientProvider>);
+  expect(html).toContain("Hợp tác lại để thêm bảng giá"); expect(html).not.toContain("<button");
 });

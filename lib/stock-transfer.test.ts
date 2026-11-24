@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { FetchError } from "@/lib/fetcher";
-import { formatQuantity, fromMilli, hasVariance, insufficientSku, lotInfo, receiveRowError, shortfall, toMilli, transferEnds, transferError } from "./stock-transfer";
+import { uomLabel, formatQuantity, fromMilli, hasVariance, lotInfo, receiveRowError, shortfall, toMilli, transferEnds, transferError } from "./stock-transfer";
 
 describe("số lượng chuyển hàng đi qua chuỗi, không qua số thực", () => {
   it("đọc cả dấu phẩy và dấu chấm, tối đa 3 số lẻ", () => {
@@ -19,6 +19,8 @@ describe("số lượng chuyển hàng đi qua chuỗi, không qua số thực",
 
   it("hiển thị kiểu Việt, bỏ số 0 thừa, kèm đơn vị", () => {
     expect(formatQuantity("1.500", "KG")).toBe("1,5 kg");
+    expect(formatQuantity("38.000", "EA")).toBe("38 cái");
+    expect(formatQuantity("2.000", "L")).toBe("2 lít");
     expect(formatQuantity("2.000")).toBe("2");
     expect(formatQuantity(4.5, "KG")).toBe("4,5 kg");
     expect(formatQuantity("0.125")).toBe("0,125");
@@ -50,12 +52,14 @@ describe("dòng nhận", () => {
 });
 
 describe("lỗi từ kho", () => {
-  it("insufficient_stock: lấy được nguyên liệu sai từ câu lỗi, không hiện câu gốc", () => {
+  it("insufficient_stock: một câu chung, không đọc chữ trong message, không có mã nội bộ", () => {
     const error = new FetchError("không đủ tồn để chuyển SKU 01a15f28-7da7-7f25-9e33-1ef14be113ed", 409);
     error.code = "insufficient_stock";
-    expect(insufficientSku(error)).toBe("01a15f28-7da7-7f25-9e33-1ef14be113ed");
-    expect(transferError(error)).not.toMatch(/[0-9a-f]{8}-[0-9a-f]{4}-/);
-    expect(transferError(error)).toMatch(/tồn khả dụng/);
+    const text = transferError(error);
+    expect(text).not.toMatch(/[0-9a-f]{8}-[0-9a-f]{4}-/);
+    expect(text).toContain("Chuyển được");
+    expect(text).toContain("tải lại");
+    expect(text).not.toContain("giao hỏng");
   });
   it("mỗi mã trạng thái có câu tiếng Việt riêng", () => {
     for (const status of [403, 404, 409, 422, 503]) expect(transferError(new FetchError("x", status))).toMatch(/[ạảãàáâăêôơưđ]/);
@@ -70,4 +74,8 @@ describe("lỗi từ kho", () => {
     expect(lotInfo({ source_lot_code: "LO-2", source_lot_expires_at: "2027-02-01T00:00:00Z" })).toEqual({ code: "LO-2", expires: "2027-02-01T00:00:00Z" });
     expect(lotInfo({})).toBeUndefined();
   });
+});
+
+it("đơn vị hiển thị bằng tiếng Việt", () => {
+  expect([uomLabel("EA"), uomLabel("L"), uomLabel("KG"), uomLabel(undefined)]).toEqual(["cái", "lít", "kg", "—"]);
 });

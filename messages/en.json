@@ -243,6 +243,8 @@
     "groupsHint": "Select the leaf categories this supplier can provide. Select a parent to select all its children.",
     "search": "Search material categories",
     "selected": "Selected",
+    "selectedGroups": "Selected categories",
+    "removeGroup": "Remove category {name}",
     "selectedCount": "{count} leaf categories selected",
     "noSelection": "No material categories selected",
     "noMatches": "No matching categories. Try another name.",
@@ -382,5 +384,17 @@
     "save": "Save",
     "saving": "Saving…",
     "assignmentSaved": "Saved assignments for {name}."
-}
+  },
+  "supplierOverview": {
+    "loading": "Loading overview",
+    "activeLabel": "Active suppliers",
+    "suspendedLabel": "Stopped suppliers",
+    "noPriceLabel": "No price yet",
+    "expiringLabel": "Prices expiring soon",
+    "none": "Nothing needs attention",
+    "expiringRow": "Expires {date}",
+    "more": "{count} more suppliers",
+    "addPrice": "Add material price",
+    "addPriceFor": "Add material price for {name}"
+  }
 }

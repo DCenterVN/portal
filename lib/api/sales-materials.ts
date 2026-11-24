@@ -29,7 +29,7 @@ async function errorMessage(res: Response, fallback: string) {
 
 export interface Material {
   id: string; sku_code: string; name: string; category_ref?: string;
-  material_group_code?: string | null; uom_code: string; selectable: boolean; season_months: number[] | null;
+  material_group_code?: string | null; image_url?: string | null; uom_code: string; selectable: boolean; season_months: number[] | null;
   season_note: string | null; reference_price_vnd: number | null;
   reference_pack_quantity: string | null; reference_pack_uom: string | null;
   reference_observed_at: string | null; normalized_unit_price: string | null;
@@ -40,7 +40,8 @@ export interface MaterialPage {
   next_cursor: string; season_message: string;
 }
 export async function getMaterials(query = ""): Promise<MaterialPage> {
-  const res = await apiFetch(`/api/sales/skus?kind=RAW_MATERIAL&limit=20&${query}`);
+  const limit = /(^|&)limit=/.test(query) ? "" : "limit=20&";
+  const res = await apiFetch(`/api/sales/skus?kind=RAW_MATERIAL&${limit}${query}`);
   if (!res.ok) throw new Error(await errorMessage(res, `Không tải được nguyên liệu (${res.status})`));
   return responseData<MaterialPage>(res);
 }

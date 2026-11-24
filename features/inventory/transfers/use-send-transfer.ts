@@ -7,9 +7,12 @@ import { useRouter } from "next/navigation";
 import { mutate } from "swr";
 import { useAccess } from "@/lib/access-boundary";
 import { createTransfer } from "@/lib/api/stock-transfers";
-import { insufficientSku, formatQuantity, transferError } from "@/lib/stock-transfer";
+import { FetchError } from "@/lib/fetcher";
+import { transferError } from "@/lib/stock-transfer";
 import { blankLine, lotOptions, sendBody, sendSchema, MAX_LINES, type SendValues } from "./send-form-model";
-import { useBranchLabels, useBranchLots, useMaterialNames, useStockRows } from "./use-transfer-lookups";
+import { skuStatusNote } from "./name-lookup";
+import { usableLabel, usableRows } from "./usable-quantity";
+import { useBranchLots, useMaterialNames, useStockRows, useTransferTargets } from "./use-transfer-lookups";
 
 export function useSendTransfer() {
   const { scope } = useAccess();
@@ -17,9 +20,8 @@ export function useSendTransfer() {
   const branch = scope?.branchId ?? "";
   const stock = useStockRows(branch);
   const lots = useBranchLots(branch);
-  const names = useBranchLabels();
-  const material = useMaterialNames();
-  const rows = useMemo(() => (stock.data ?? []).filter(row => row.available_quantity > 0), [stock.data]);
+  const names = useTransferTargets();
+  const rows = useMemo(() => usableRows(stock.data ?? []), [stock.data]);
   const schema = useMemo(() => sendSchema(rows, lots.lots), [rows, lots.lots]);
   const form = useForm<SendValues>({ resolver: zodResolver(schema), mode: "onTouched", defaultValues: { to: "", lines: [blankLine()] } });
   const array = useFieldArray({ control: form.control, name: "lines" });
@@ -30,10 +32,11 @@ export function useSendTransfer() {
   useEffect(() => { if (only && !form.getValues("to")) form.setValue("to", only); }, [only, form]);
   useEffect(() => { if (soleSku && !form.getValues("lines.0.sku")) form.setValue("lines.0.sku", soleSku); }, [soleSku, form]);
 
+  const material = useMaterialNames([branch, form.watch("to")], rows.map(row => row.sku_ref));
   const watched = form.watch("lines");
   const recheck = (index: number) => { if (form.getValues(`lines.${index}.quantity`)) void form.trigger(`lines.${index}.quantity`); };
   const used = (index: number) => new Set(watched.filter((_, at) => at !== index).map(line => line.sku));
-  const skuOptions = (index: number) => rows.filter(row => !used(index).has(row.sku_ref)).map(row => ({ id: row.sku_ref, name: material(row.sku_ref), meta: `Còn khả dụng ${formatQuantity(row.available_quantity, row.uom)}` }));
+  const skuOptions = (index: number) => rows.filter(row => !used(index).has(row.sku_ref)).map(row => ({ id: row.sku_ref, name: material(row.sku_ref), meta: [usableLabel(row), skuStatusNote(material.status(row.sku_ref))].filter(Boolean).join(" · ") }));
 
   async function submit(values: SendValues) {
     const body = sendBody(values, rows);
@@ -44,13 +47,7 @@ export function useSendTransfer() {
       await mutate(key => Array.isArray(key) && ["stock-rows", "stock-transfers", "branch-lots"].includes(String(key[0])));
       router.push(`/inventory/stock-transfers/${created.id}`);
     } catch (failed) {
-      const sku = insufficientSku(failed);
-      const at = values.lines.findIndex(line => line.sku === sku);
-      if (at >= 0) {
-        const row = rows.find(item => item.sku_ref === sku);
-        form.setError(`lines.${at}.quantity`, { type: "server", message: `Không đủ tồn để gửi${row ? `: chỉ còn ${formatQuantity(row.available_quantity, row.uom)}` : ""}. Giảm số lượng hoặc chọn lô khác.` });
-        return;
-      }
+      if (failed instanceof FetchError && failed.code === "insufficient_stock") await Promise.all([stock.mutate(), lots.reload()]);
       form.setError("root", { type: "server", message: transferError(failed) });
     }
   }

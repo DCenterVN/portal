@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { toISODate } from "@/lib/format-date";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/patterns/form-field";
@@ -7,15 +8,16 @@ import { Input } from "@/components/ui/input";
 import { PageShell } from "@/components/ui/page";
 import { PageHeading } from "@/components/patterns/page-heading";
 import { EmptyState, ErrorState, LoadingState } from "@/components/patterns/empty-state";
-import { ReceiptDateInput, formatReceiptDate, parseReceiptDate, receiptToday } from "./receipt-date-input";
+import { ReceiptDateInput, formatReceiptDate, maskReceiptDate, parseReceiptDate, receiptToday } from "./receipt-date-input";
 import { ReceiptEvidenceField } from "./receipt-evidence-field";
+import { receiptQuantityText } from "./receipt-lines";
 import { useGoodsReceiptReceive } from "./use-goods-receipt-receive";
 import { InlineAlert } from "@/components/patterns/inline-alert";
 
 const images = "image/jpeg,image/png,image/webp";
 type Model = ReturnType<typeof useGoodsReceiptReceive>;
 type Row = Model["rows"][number];
-const statuses: Record<string, string> = { DRAFT: "Nháp", IN_PROGRESS: "Đang nhận", RECEIVING: "Đang nhận", COMPLETED: "Đã hoàn tất", CANCELLED: "Đã hủy" };
+const statuses: Record<string, string> = { DRAFT: "Nháp", IN_PROGRESS: "Đang nhận", RECEIVING: "Đang nhận", COMPLETED: "Đã hoàn tất", CANCELLED: "Đã huỷ" };
 
 function ReceiptLine({ row, model, previous }: { row: Row; model: Model; previous?: File }) {
   const id = row.line.receipt_line_ref;
@@ -25,13 +27,13 @@ function ReceiptLine({ row, model, previous }: { row: Row; model: Model; previou
   const title = model.setup.kind === "ready" ? model.setup.names[row.line.sku_ref] : undefined;
   return <article className="grid min-w-0 gap-4 rounded-lg border border-border bg-surface p-6" aria-busy={row.busy}>
     <h2 className="text-xl font-semibold">{title ?? "Nguyên liệu đã ngừng cung cấp"}</h2>
-    <p>Dự kiến: <span className="tabular-nums">{row.line.expected_quantity.replace(".", ",")} {row.line.uom}</span></p>
-    {row.done ? <p role="status">Đã nhận · {row.line.actual_quantity.replace(".", ",")} {row.line.uom}</p> : <>
+    <p>Dự kiến: <span className="tabular-nums">{receiptQuantityText(row.line.expected_quantity, row.line.uom)}</span></p>
+    {row.done ? <div className="flex flex-wrap items-center gap-3"><p role="status">Đã nhận · {receiptQuantityText(row.line.actual_quantity, row.line.uom)}</p>{model.canQC && <Link className="text-sm font-medium text-primary underline-offset-4 hover:underline" href={row.lotID ? `/inventory/inbound-qc?lot=${row.lotID}` : "/inventory/inbound-qc"}>Kiểm đầu vào lô này</Link>}</div> : <>
       <fieldset disabled={locked} className="grid min-w-0 gap-4 sm:grid-cols-2">
         <Field label="Mã lô nhà cung cấp" htmlFor={`${id}-lot`}><Input id={`${id}-lot`} required value={row.lot} onChange={event => patch({ lot: event.target.value })} /></Field>
         <Field label={`Lượng thực nhận (${row.line.uom})`} htmlFor={`${id}-quantity`} hint="Lớn hơn 0, tối đa 3 số thập phân."><Input id={`${id}-quantity`} inputMode="decimal" required value={row.quantity} onChange={event => patch({ quantity: event.target.value })} /></Field>
         <Field label="Hạn sử dụng" htmlFor={`${id}-expiry`} hint="dd/mm/yyyy, sau hôm nay." validate={value => parseReceiptDate(value) > receiptToday() ? undefined : "Nhập hạn sử dụng hợp lệ sau hôm nay."}>
-          <Input id={`${id}-expiry`} inputMode="numeric" placeholder="dd/mm/yyyy" required defaultValue={formatReceiptDate(row.expiry)} onChange={event => patch({ expiry: parseReceiptDate(event.target.value) })} />
+          <Input id={`${id}-expiry`} inputMode="numeric" placeholder="dd/mm/yyyy" required defaultValue={formatReceiptDate(row.expiry)} onChange={event => { event.target.value = maskReceiptDate(event.target.value); patch({ expiry: parseReceiptDate(event.target.value) }); }} />
         </Field>
         <Field label="Nhiệt độ nhận (°C)" htmlFor={`${id}-temperature`}><Input id={`${id}-temperature`} inputMode="decimal" required value={row.temperature} onChange={event => patch({ temperature: event.target.value })} /></Field>
       </fieldset>

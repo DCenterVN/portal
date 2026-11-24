@@ -41,9 +41,19 @@ it("CRUD dùng key, đúng method và giữ lỗi quyền", async () => {
   vi.stubGlobal("fetch", fetch);
   await createSupplier({ code: "NCC-GAO", name: "Gạo An Bình", material_categories: [] });
   await updateSupplier(supplierID, { name: "Tên mới" });
-  await suspendSupplier(supplierID, "SUSPEND", "Tạm ngừng");
-  expect(fetch.mock.calls.map(([, init]) => init.method)).toEqual(["POST", "PATCH", "POST"]);
+  await suspendSupplier(supplierID, "SUSPEND", { code: "QUALITY", note: "" });
+  await suspendSupplier(supplierID, "ACTIVATE", { note: "Hợp tác lại" });
+  expect(JSON.parse(fetch.mock.calls[2][1].body)).toEqual({ operation: "SUSPEND", reason_code: "QUALITY" });
+  expect(JSON.parse(fetch.mock.calls[3][1].body)).toEqual({ operation: "ACTIVATE", reason_note: "Hợp tác lại" });
+  expect(fetch.mock.calls.map(([, init]) => init.method)).toEqual(["POST", "PATCH", "POST", "POST"]);
   expect(fetch.mock.calls.every(([, init]) => Boolean(init.headers["Idempotency-Key"]))).toBe(true);
   fetch.mockResolvedValueOnce(Response.json({ errors: { error_code: "FORBIDDEN", message: "Quyền đã thu hồi" } }, { status: 403 }));
   await expect(getSupplier(supplierID)).rejects.toMatchObject({ status: 403, code: "FORBIDDEN" });
+});
+it("danh sách gửi category_code và include_total khi được hỏi, đọc tổng số", async () => {
+  const fetch = vi.fn().mockImplementation(async () => Response.json(envelope({ items: [supplier], total: 7, next_cursor: "" })));
+  vi.stubGlobal("fetch", fetch);
+  const page = await getSuppliers({ status: "ACTIVE", categoryCode: "RICE", includeTotal: true });
+  const query = new URL(String(fetch.mock.calls[0][0]), "http://portal.test").searchParams;
+  expect(query.get("category_code")).toBe("RICE"); expect(query.get("include_total")).toBe("true"); expect(page.total).toBe(7);
 });

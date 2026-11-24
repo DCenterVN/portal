@@ -120,24 +120,24 @@ describe("console effective permissions and navigation", () => {
   });
 });
 
-const frameState: { current?: ReturnType<typeof resolveConsoleSession> } = vi.hoisted(() => ({}));
+const frameState: { current?: ReturnType<typeof resolveConsoleSession>; pathname?: string } = vi.hoisted(() => ({}));
 vi.mock("react", async (importOriginal) => {
   const actual = await importOriginal<typeof React>();
   return { ...actual, useState: (initial: unknown) => actual.useState(frameState.current ?? initial) };
 });
-vi.mock("next/navigation", () => ({ usePathname: () => "/memberships" }));
+vi.mock("next/navigation", () => ({ usePathname: () => frameState.pathname ?? "/memberships" }));
 vi.mock("@/components/ui/toast", () => ({ toast: { error: vi.fn() } }));
 vi.mock("@/components/layout/console-shell", () => ({
   ConsoleShell: ({ children }: { children: React.ReactNode }) => children,
 }));
 vi.mock("next-intl", () => ({ NextIntlClientProvider: ({ children }: { children: React.ReactNode }) => children }));
-afterEach(() => { delete frameState.current; });
+afterEach(() => { delete frameState.current; delete frameState.pathname; });
 
 describe("console content authorization", () => {
   it.each([
     { name: "loading", permissions: undefined, error: undefined, visible: false, marker: 'aria-busy="true"' },
     { name: "allowed", permissions: ["org:membership:read"], error: undefined, visible: true, marker: "Protected content" },
-    { name: "denied", permissions: [], error: undefined, visible: false, marker: "Không có quyền truy cập" },
+    { name: "denied", permissions: [], error: undefined, visible: false, marker: "Bạn không có quyền xem mục này" },
     { name: "error", permissions: ["org:membership:read"], error: "Không tải được quyền", visible: false, marker: "Không tải được quyền" },
   ])("$name never mounts protected content without verified permission", ({ permissions, error, visible, marker }) => {
     frameState.current = { user: { name: "Dawn" }, context: { label: "Chi nhánh" }, branches: [], permissions, error };
@@ -146,6 +146,38 @@ describe("console content authorization", () => {
     expect(child).toHaveBeenCalledTimes(visible ? 1 : 0);
     expect(html).toContain(marker);
     if (!visible) expect(html).not.toContain("Protected content");
+  });
+
+  it("blocks STORE branch from CENTRAL_KITCHEN-only routes with branch denial message and console link", () => {
+    frameState.pathname = "/inventory/suppliers";
+    frameState.current = {
+      user: { name: "Dawn" },
+      context: { label: "Cửa hàng 1" },
+      branch: { id: "store-1", name: "Cửa hàng 1", type: "STORE", status: "ACTIVE" },
+      branches: [],
+      permissions: ["inventory:supplier:read"],
+    };
+    const child = vi.fn(() => React.createElement("p", null, "Protected content"));
+    const html = renderToStaticMarkup(React.createElement(ConsoleFrame, { children: React.createElement(child) }));
+    expect(child).toHaveBeenCalledTimes(0);
+    expect(html).toContain("Mục này chỉ dành cho Bếp trung tâm");
+    expect(html).toContain("Về tổng quan");
+    expect(html).not.toContain("Protected content");
+  });
+
+  it("allows CENTRAL_KITCHEN branch on CENTRAL_KITCHEN-only routes when permission is present", () => {
+    frameState.pathname = "/inventory/suppliers";
+    frameState.current = {
+      user: { name: "Dawn" },
+      context: { label: "Bếp trung tâm" },
+      branch: { id: "kitchen-1", name: "Bếp trung tâm", type: "CENTRAL_KITCHEN", status: "ACTIVE" },
+      branches: [],
+      permissions: ["inventory:supplier:read"],
+    };
+    const child = vi.fn(() => React.createElement("p", null, "Protected content"));
+    const html = renderToStaticMarkup(React.createElement(ConsoleFrame, { children: React.createElement(child) }));
+    expect(child).toHaveBeenCalledTimes(1);
+    expect(html).toContain("Protected content");
   });
 });
 

@@ -3,7 +3,7 @@ import { forwardInventory } from "@/lib/api/inventory-bff";
 
 export async function GET(request: NextRequest) {
   const query = new URLSearchParams();
-  for (const key of ["q","status","limit","cursor"]) {
+  for (const key of ["q","status","limit","cursor","page","category_code","include_total","sort","priced_on"]) {
     const value = request.nextUrl.searchParams.get(key);
     if (value !== null) query.set(key, value);
   }

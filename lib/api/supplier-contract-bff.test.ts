@@ -93,3 +93,9 @@ it("ảnh NCC có đủ operations và quyền sinh từ contract", () => {
     ]));
   }
 });
+it("danh sách nhà cung cấp chuyển category_code và include_total lên inventory", async () => {
+  const fetch = vi.fn().mockImplementation(async () => Response.json({ code: 200, status: "success", message: "OK", data: { items: [], next_cursor: "" } })); vi.stubGlobal("fetch", fetch);
+  await suppliers.GET(new NextRequest("http://portal.test/api/inventory/suppliers?status=ACTIVE&category_code=RICE&include_total=true&url=http://attacker", { headers: { cookie: "access_token=test-only" } }));
+  const search = new URL(String(fetch.mock.calls[0][0])).searchParams;
+  expect(search.get("category_code")).toBe("RICE"); expect(search.get("include_total")).toBe("true"); expect(search.has("url")).toBe(false);
+});

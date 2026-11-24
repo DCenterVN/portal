@@ -1,7 +1,7 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { TransferLine } from "@/lib/api/stock-transfers";
 import { formatDate } from "@/lib/format-date";
-import { VARIANCE_LABEL, formatQuantity, lotInfo, shortfall, toMilli, type LotInfo } from "@/lib/stock-transfer";
+import { VARIANCE_LABEL, formatQuantity, uomLabel, lotInfo, shortfall, toMilli, type LotInfo } from "@/lib/stock-transfer";
 
 export function LotCell({ info }: { info?: LotInfo }) {
   return <>{info?.code ?? "—"}{info?.expires && <span className="block text-xs text-muted-foreground">Hạn dùng {formatDate(info.expires)}</span>}</>;
@@ -24,7 +24,7 @@ export function TransferLinesTable({ lines, name }: Props) {
           <TableRow key={line.id}>
             <TableCell className="font-medium">{name(line.sku_ref, index + 1)}</TableCell>
             <TableCell><LotCell info={info} /></TableCell>
-            <TableCell>{line.uom.toLowerCase()}</TableCell>
+            <TableCell>{uomLabel(line.uom)}</TableCell>
             <TableCell className="text-right tabular-nums">{formatQuantity(line.sent_qty)}</TableCell>
             {done && <>
               <TableCell className="text-right tabular-nums">{line.received_qty != null ? formatQuantity(line.received_qty) : "—"}</TableCell>

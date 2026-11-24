@@ -9,6 +9,8 @@ export interface FieldProps {
   label: string;
   htmlFor: string;
   hint?: string;
+  /** Hides the label from sight but keeps it for screen readers (the column header already names it). */
+  hideLabel?: boolean;
   error?: string;
   /** Runs on blur only; a falsy result clears the error. A server `error` wins. */
   validate?: (value: string) => string | undefined;
@@ -19,7 +21,7 @@ export interface FieldProps {
 type Blur = (event: React.FocusEvent<HTMLInputElement>) => void;
 
 // The control gets aria-invalid and aria-describedby pointing at the visible error or hint.
-export function Field({ label, htmlFor, hint, error: serverError, validate, children, className }: FieldProps) {
+export function Field({ label, htmlFor, hint, hideLabel, error: serverError, validate, children, className }: FieldProps) {
   const [blurError, setBlurError] = React.useState<string>();
   const error = serverError || blurError;
   const own = error ? `${htmlFor}-error` : hint ? `${htmlFor}-hint` : undefined;
@@ -35,7 +37,7 @@ export function Field({ label, htmlFor, hint, error: serverError, validate, chil
     : children;
   return (
     <FieldRoot data-invalid={error ? true : undefined} className={cn("gap-1.5", className)}>
-      <FieldLabel htmlFor={htmlFor}>{label}</FieldLabel>
+      <FieldLabel htmlFor={htmlFor} className={hideLabel ? "sr-only" : undefined}>{label}</FieldLabel>
       {wired}
       {hint && !error && (
         <FieldDescription id={`${htmlFor}-hint`} className="text-xs">

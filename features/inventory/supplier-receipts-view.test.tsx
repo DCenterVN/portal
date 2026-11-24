@@ -30,7 +30,7 @@ const receipt = { id: supplierID, branch_ref: supplierID, supplier_ref: supplier
   lines: [{ receipt_line_ref: supplierID, sku_ref: supplierID, uom: "KG", expected_quantity: "2.500", actual_quantity: "1.000", unit_cost_vnd: 101, expected_amount_vnd: 253, actual_amount_vnd: 101 }] };
 const render = (changes: Partial<SupplierReceiptsViewProps> = {}) => renderToStaticMarkup(<SupplierReceiptsView {...props} {...changes} />);
 it("deep link receipts mở đúng tab và lazy-load thay cho hồ sơ", () => {
-  const html = renderToStaticMarkup(<NextIntlClientProvider locale="vi" messages={messages}><AccessProvider value={{ plane: "company", root: "", actions: new Set(["inventory:supplier:read"]) }}><SupplierDetailContainer supplierId={supplierID} initialSupplier={supplier} initialTab="receipts" /></AccessProvider></NextIntlClientProvider>);
+  const html = renderToStaticMarkup(<NextIntlClientProvider locale="vi" messages={messages}><AccessProvider value={{ plane: "company", root: "", actions: new Set(["inventory:supplier:read"]) }}><SupplierDetailContainer supplierId={supplierID} initialSupplier={supplier} tab="receipts"><SupplierReceiptsContainer supplierId={supplierID} /></SupplierDetailContainer></AccessProvider></NextIntlClientProvider>);
   expect(html).toContain("Đang tải lịch sử nhập");
   expect(html).toMatch(/aria-selected="true"[^>]*>Lịch sử nhập/);
   expect(html).not.toContain("Mã số thuế");
@@ -49,11 +49,11 @@ it("phiếu nhận phân biệt dự kiến và thực nhận, không đoán gi�
 it("tổng thực nhận cộng thành tiền thực nhận từng dòng, không lấy tổng dự kiến", () => {
   const lines = [{ ...receipt.lines[0], expected_amount_vnd: 250000, actual_amount_vnd: 200000 }, { ...receipt.lines[0], receipt_line_ref: "l2", expected_amount_vnd: 200000, actual_amount_vnd: 240000 }];
   const html = render({ page: { items: [{ ...receipt, status: "COMPLETED", total_amount_vnd: 450000, lines }], total: 1, next_cursor: "" } });
-  expect(html).toContain("Tổng thực nhận: 440.000 VND"); expect(html).not.toContain("450.000");
+  expect(html).toContain("Tổng thực nhận: 440.000 ₫"); expect(html).not.toContain("450.000");
 });
 it("loading, empty, lỗi và deny là trạng thái riêng", () => {
   expect(render()).toContain("Đang tải lịch sử nhập");
-  expect(render({ page: { items: [], total: 0, next_cursor: "" } })).toContain("Chưa có phiếu nhập");
+  expect(render({ page: { items: [], total: 0, next_cursor: "" } })).toContain("Chưa nhập lần nào");
   expect(render({ failure: <p role="alert">Không tải được lịch sử</p> })).toContain("Không tải được lịch sử");
   expect(render({ read: false, page: { items: [receipt], total: 1, next_cursor: "" } })).not.toContain("Gạo tẻ");
 });
@@ -73,4 +73,17 @@ it("đổi NCC hủy response cũ trước khi cập nhật state", async () => 
   harness.effects.forEach(effect => effect());
   await Promise.resolve();
   expect(getSupplierHistory).toHaveBeenLastCalledWith("019a8000-0000-7000-8000-000000000002", { cursor: "", from: "", to: "" });
+});
+
+it("lịch sử rỗng không hiện phân trang và dùng chữ nhà cung cấp", () => {
+  const html = render({ page: { items: [], total: 0, next_cursor: "" } });
+  expect(html).toContain("Chưa nhập lần nào từ nhà cung cấp này");
+  expect(html).not.toContain("đầu mối");
+  expect(html).not.toContain("Trang 1"); expect(html).not.toContain("dd/mm/yyyy"); expect(html).toContain("ngày/tháng/năm");
+  expect(render({ page: { items: [], total: 0, next_cursor: "" }, hasPrevious: true })).toContain("Trang 1");
+});
+it("phiếu đã hoàn tất không có liên kết Mở phiếu nhập", () => {
+  const html = render({ page: { items: [{ ...receipt, status: "COMPLETED" }], total: 1, next_cursor: "" } });
+  expect(html).not.toContain("Mở phiếu nhập");
+  expect(html).not.toContain("goods-receipts"); expect(html).not.toContain("Nhận hàng");
 });

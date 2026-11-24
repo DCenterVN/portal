@@ -12,40 +12,22 @@ const tones = {
 
 export type StatusTone = keyof typeof tones;
 
-const statusTones: Record<string, StatusTone> = {
-  PUBLISHED: "success",
-  QC_PASSED: "success",
-  DELIVERED: "success",
-  RECEIVED: "success",
-  CONSUMED: "success",
-  HELD: "success",
-  PASS: "success",
-  PASSED: "success",
-  CONFIRMED: "info",
-  PACKED: "info",
-  DELIVERING: "info",
-  IN_TRANSIT: "info",
-  IN_PROGRESS: "info",
-  IN_PLANNING: "info",
-  HANDED_OFF: "info",
-  ACCEPTED: "info",
-  ALLOCATED: "info",
-  PUBLISHING: "info",
-  READY_FOR_HANDOFF: "info",
-  REVIEWED: "info",
-  COMPLETED: "info",
-  AWAITING_PAYMENT: "warning",
-  WAITING_PRICE_APPROVAL: "warning",
-  SUSPENDED: "warning",
-  PENDING: "warning",
-  DELIVERY_FAILED: "danger",
-  REVOKED: "danger",
-  REJECTED: "danger",
-  CANCELLED: "danger",
-  QC_FAILED: "danger",
-  FAILED: "danger",
-  FAIL: "danger",
+const groups: Record<Exclude<StatusTone, "info">, string[]> = {
+  neutral: ["DRAFT", "PLANNED", "NEW", "CANCELLED", "RETIRED", "ARCHIVED", "CLOSED", "BOM_RETIRED", "PLACED", "RELEASED", "DISPOSED"],
+  warning: [
+    "PENDING", "CONFIRMED", "IN_PROGRESS", "IN_TRANSIT", "DELIVERING", "PACKED", "AWAITING_PAYMENT", "WAITING_PRICE_APPROVAL", "SUSPENDED",
+    "IN_PLANNING", "IN_PRODUCTION", "PUBLISHING", "READY_FOR_HANDOFF", "REVIEWED", "HANDED_OFF", "ACCEPTED", "SCHEDULED", "ALLOCATED",
+    "UNDER_QC", "SELLING", "PENDING_COD", "INITIATED", "REFUND_PENDING",
+  ],
+  success: [
+    "COMPLETED", "RECEIVED", "DELIVERED", "PUBLISHED", "QC_PASSED", "PASS", "PASSED", "CONSUMED", "ACTIVE", "BOM_ACTIVE", "APPROVED", "HELD", "SUCCESS",
+  ],
+  danger: ["FAILED", "FAIL", "QC_FAILED", "REJECTED", "DELIVERY_FAILED", "REVOKED", "EXPIRED", "QUARANTINED"],
 };
+
+const statusTones: Record<string, StatusTone> = Object.fromEntries(
+  Object.entries(groups).flatMap(([tone, codes]) => codes.map((code) => [code, tone as StatusTone])),
+);
 
 export function statusTone(status: string): StatusTone {
   return statusTones[status] ?? "neutral";

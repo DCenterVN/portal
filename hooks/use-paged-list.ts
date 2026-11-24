@@ -2,6 +2,7 @@
 
 import { useEffect, useReducer, useRef, useState } from "react";
 import type { CursorPage } from "@/lib/api/all-pages";
+import { requestErrorMessage } from "@/lib/error-message";
 
 type Paging = { scope: string; filter: string; cursors: string[]; next: string; revision: number };
 
@@ -23,7 +24,7 @@ export function usePagedList<T>(load: (cursor: string, filter: string) => Promis
     setLoading(true); setError("");
     loadRef.current(cursor, paging.filter)
       .then(page => { if (active) { setItems(page.items); update({ next: page.next_cursor ?? "" }); } })
-      .catch(cause => { if (active) setError(cause instanceof Error ? cause.message : "Không tải được dữ liệu. Thử lại sau."); })
+      .catch(cause => { if (active) setError(requestErrorMessage(cause)); })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
   }, [cursor, scope, paging.filter, paging.revision]);
@@ -32,6 +33,7 @@ export function usePagedList<T>(load: (cursor: string, filter: string) => Promis
     filter: paging.filter,
     setFilter: (filter: string) => update({ filter, cursors: [""], next: "" }),
     reload: () => update({ cursors: [""], revision: paging.revision + 1 }),
+    page: cursors.length,
     hasPrevious: cursors.length > 1,
     hasNext: Boolean(paging.next),
     next: () => update({ cursors: [...cursors, paging.next] }),

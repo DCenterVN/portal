@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { apiFetch } from "@/lib/fetcher";
-import { errorMessage, mutationHeaders, responseData } from "@/lib/api/production-http";
+import { errorMessage, apiFailure, mutationHeaders, responseData } from "@/lib/api/production-http";
 import { allPages, type CursorPage } from "@/lib/api/all-pages";
 import type { FoodSlot } from "@/lib/api/production-pack";
 
@@ -275,11 +275,11 @@ export async function decideQC(orderId: string, input: { decision: "PASS" | "FAI
 
 // ---------------- Shelf Placement (VT-08 / VT-16) ----------------
 
-export async function getShelfPlacements(): Promise<ShelfPlacement[]> {
-  const res = await apiFetch("/api/inventory/shelf-placements");
+export async function getShelfPlacementsPage(cursor = ""): Promise<{ items: ShelfPlacement[]; next_cursor: string }> {
+  const res = await apiFetch(`/api/inventory/shelf-placements${cursor ? `?${new URLSearchParams({ cursor })}` : ""}`);
   if (!res.ok) throw new Error(await errorMessage(res, `Không tải được kệ hàng (${res.status})`));
-  const payload = await responseData<{ items?: ShelfPlacement[] }>(res);
-  return payload.items || [];
+  const payload = await responseData<{ items?: ShelfPlacement[]; next_cursor?: string | null }>(res);
+  return { items: payload.items || [], next_cursor: payload.next_cursor ?? "" };
 }
 
 export async function placeOnShelf(input: { finished_lot_ref: string; branch_ref: string; shelf_code: string; placed_quantity: number; uom?: string; trace_code?: string }): Promise<ShelfPlacement> {
@@ -288,7 +288,7 @@ export async function placeOnShelf(input: { finished_lot_ref: string; branch_ref
     headers: mutationHeaders(),
     body: JSON.stringify(input),
   });
-  if (!res.ok) throw new Error(await errorMessage(res, "Không thể đưa hàng lên kệ"));
+  if (!res.ok) throw await apiFailure(res, "Không thể đưa hàng lên kệ");
   return responseData<ShelfPlacement>(res);
 }
 

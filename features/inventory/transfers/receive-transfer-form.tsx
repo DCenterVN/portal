@@ -15,11 +15,12 @@ import { PageHeading } from "@/components/patterns/page-heading";
 import { useAccess } from "@/lib/access-boundary";
 import type { StockTransfer } from "@/lib/api/stock-transfers";
 import { formatDateTime } from "@/lib/format-date";
-import { VARIANCE_LABEL, VARIANCE_REASONS, formatQuantity, lotInfo, shortfall, toMilli } from "@/lib/stock-transfer";
+import { VARIANCE_LABEL, VARIANCE_REASONS, formatQuantity, uomLabel, lotInfo, shortfall, toMilli } from "@/lib/stock-transfer";
 import { LotCell } from "./transfer-lines-table";
 import { ReceiverSwitch } from "./receiver-switch";
 import { useReceiveTransfer } from "./use-receive-transfer";
 import { useTransferDetail } from "./use-transfer-detail";
+import { NamesLoadError } from "./names-load-error";
 import { useBranchLabels, useMaterialNames } from "./use-transfer-lookups";
 import { Tip } from "@/components/patterns/tip";
 
@@ -28,7 +29,7 @@ const REASONS = VARIANCE_REASONS.map(id => ({ id, label: VARIANCE_LABEL[id] }));
 function ReceiveBody({ transfer }: { transfer: StockTransfer }) {
   const { scope } = useAccess();
   const names = useBranchLabels();
-  const material = useMaterialNames();
+  const material = useMaterialNames([transfer.from_branch_ref, transfer.to_branch_ref], transfer.lines.map(line => line.sku_ref));
   const receive = useReceiveTransfer(transfer);
   const { form, evidence } = receive;
   const { errors, isSubmitting } = form.formState;
@@ -44,6 +45,7 @@ function ReceiveBody({ transfer }: { transfer: StockTransfer }) {
           <div><dt className="text-muted-foreground">Người gửi</dt><dd className="font-medium">{sender}</dd></div>
           <div><dt className="text-muted-foreground">Giờ gửi</dt><dd className="font-medium tabular-nums">{formatDateTime(transfer.sent_at)}</dd></div>
         </dl>
+        {material.failed && <NamesLoadError retry={material.retry} />}
         <fieldset disabled={isSubmitting} className="grid min-w-0 gap-3">
           <legend className="font-semibold">Dòng hàng</legend>
           <Table aria-label="Dòng hàng nhận" className="min-w-max">
@@ -56,7 +58,7 @@ function ReceiveBody({ transfer }: { transfer: StockTransfer }) {
                 <TableRow key={line.id}>
                   <TableCell className="align-top pt-8 font-medium">{material(line.sku_ref, index + 1)}</TableCell>
                   <TableCell className="align-top pt-8"><LotCell info={info} /></TableCell>
-                  <TableCell className="align-top pt-8">{line.uom.toLowerCase()}</TableCell>
+                  <TableCell className="align-top pt-8">{uomLabel(line.uom)}</TableCell>
                   <TableCell className="align-top pt-8 text-right tabular-nums">{formatQuantity(line.sent_qty)}</TableCell>
                   <TableCell className="w-40 align-top">
                     <Field label={`Số nhận dòng ${index + 1}`} htmlFor={`receive-qty-${index}`} error={errors.rows?.[index]?.received?.message}>
@@ -72,7 +74,7 @@ function ReceiveBody({ transfer }: { transfer: StockTransfer }) {
                       )} />
                     )}
                   </TableCell>
-                  <TableCell className="align-top pt-8 text-right tabular-nums">{short ? `${formatQuantity(shortfall(line.sent_qty, rows[index].received))} ${line.uom.toLowerCase()}` : "—"}</TableCell>
+                  <TableCell className="align-top pt-8 text-right tabular-nums">{short ? `${formatQuantity(shortfall(line.sent_qty, rows[index].received))} ${uomLabel(line.uom)}` : "—"}</TableCell>
                 </TableRow>
               );
             })}</TableBody>

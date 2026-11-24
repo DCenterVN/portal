@@ -1,16 +1,20 @@
-export const CONSOLE_ROUTES = ["/account", "/audit", "/branches", "/branches/[id]", "/console", "/inventory/shelves", "/inventory/stock-transfers", "/inventory/stock-transfers/new", "/inventory/stock-transfers/[id]", "/inventory/stock-transfers/[id]/receive", "/inventory/suppliers", "/inventory/suppliers/[id]", "/inventory/goods-receipts/new", "/inventory/goods-receipts/[id]/receive", "/memberships", "/memberships/[userId]", "/production/dishes", "/production/dishes/[id]", "/production/dishes/drafts/[draftId]", "/production/food-plans", "/production/material-requirements", "/production/materials", "/production/orders", "/production/qc", "/production/targets", "/roles", "/sales/orders", "/sales/pricing", "/sales/products"] as const;
+export const CONSOLE_ROUTES = ["/account", "/audit", "/branches", "/branches/[id]", "/console", "/inventory/inbound-qc", "/inventory/shelves", "/inventory/storage-locations", "/inventory/stock-transfers", "/inventory/stock-transfers/new", "/inventory/stock-transfers/[id]", "/inventory/stock-transfers/[id]/receive", "/inventory/suppliers", "/inventory/suppliers/new", "/inventory/suppliers/overview", "/inventory/suppliers/[id]", "/inventory/suppliers/[id]/receipts", "/inventory/suppliers/[id]/info", "/inventory/suppliers/[id]/edit", "/inventory/suppliers/[id]/prices/new", "/inventory/suppliers/[id]/prices/[agreementId]", "/inventory/goods-receipts/new", "/inventory/goods-receipts/[id]/receive", "/memberships", "/memberships/[userId]", "/production/dishes", "/production/dishes/[id]", "/production/dishes/drafts/[draftId]", "/production/food-plans", "/production/material-requirements", "/production/materials", "/production/orders", "/production/qc", "/production/targets", "/roles", "/sales/orders", "/sales/pricing", "/sales/products"] as const;
 export function isEmployeeRoute(pathname: string): boolean {
   return [...CONSOLE_ROUTES, "/staff", "/switch-branch", "/switch-org"].some(path => pathname === path || pathname.startsWith(`${path}/`));
 }
+
+export const FORBIDDEN_MESSAGE = "Tài khoản của bạn chưa có quyền xem hoặc thực hiện việc này ở chi nhánh đang chọn.";
 
 export class FetchError extends Error {
   info: unknown;
   status: number;
   code?: string;
   retryAfterMs?: number;
+  serviceMessage: string;
 
   constructor(message: string, status: number, info?: unknown, retryAfter?: string | null) {
-    super(message);
+    super(status === 403 ? FORBIDDEN_MESSAGE : message);
+    this.serviceMessage = message;
     this.name = "FetchError";
     this.status = status;
     this.info = info;

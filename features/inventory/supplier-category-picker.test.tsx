@@ -42,3 +42,10 @@ it("unknown stored codes ask for migration instead of vanishing", () => {
  expect(html).toContain("Nhóm cũ cần chọn lại");
  expect(html).not.toContain("OLD_CODE");
 });
+
+it("nhóm con chỉ mở khi bấm nhóm cha, nhóm đã chọn vẫn hiện thành nhãn", () => {
+  const html = renderToStaticMarkup(<NextIntlClientProvider locale="vi" messages={messages}><SupplierCategoryPicker categories={tree} selected={["GA"]} onChange={() => {}} /></NextIntlClientProvider>);
+  expect(html).toContain('aria-expanded="false"'); expect(html).toContain("Mở nhóm Thịt");
+  expect(html).not.toContain(">Bò<"); expect(html).not.toContain(">Tôm<");
+  expect(html).toContain("Bỏ nhóm Gà");
+});

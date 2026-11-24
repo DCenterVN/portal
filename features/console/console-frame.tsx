@@ -1,19 +1,21 @@
 "use client";
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
 import messages from "@/messages/vi.json";
 import { AccessProvider } from "@/lib/access-boundary";
 import type { AccessScope } from "@/lib/access-context";
-import { ErrorState, LoadingState } from "@/components/patterns/empty-state";
+import { EmptyState, ErrorState, LoadingState } from "@/components/patterns/empty-state";
+import { buttonVariants } from "@/components/ui/button";
 import { ConsoleShell } from "@/components/layout/console-shell";
 import { branchChoices } from "@/lib/branch-choices";
-import { branchLabel, type BranchChoice } from "@/lib/branch-label";
+import { branchLabel, branchTypeLabel, type BranchChoice } from "@/lib/branch-label";
 import { logoutTo } from "@/lib/auth/client";
 import { apiFetch } from "@/lib/fetcher";
 import { toast } from "@/components/ui/toast";
-import { consoleNavFor, consoleRouteAllowed } from "@/lib/navigation";
+import { consoleNavFor, consoleRouteDenial, consoleRouteTitle, type RouteDenial } from "@/lib/navigation";
 import { SESSION_CHANGED, useBranchSwitch } from "./use-branch-switch";
 
 type ConsoleSession = {
@@ -92,6 +94,28 @@ export async function fetchConsoleSession(fetcher: typeof fetch = apiFetch): Pro
   return session;
 }
 
+function deniedView(denial: Exclude<RouteDenial, null>, pathname: string) {
+  const page = consoleRouteTitle(pathname);
+  const back = <Link href="/console" className={buttonVariants({ variant: "outline" })}>Về tổng quan</Link>;
+  if (denial.reason === "branch") {
+    const kind = branchTypeLabel(denial.branch);
+    return (
+      <EmptyState
+        title={`Mục này chỉ dành cho ${kind}`}
+        description={page ? `${page} không áp dụng cho chi nhánh đang chọn. Chuyển sang ${kind} nếu bạn cần thao tác.` : undefined}
+        action={back}
+      />
+    );
+  }
+  return (
+    <EmptyState
+      title="Bạn không có quyền xem mục này"
+      description={page ? `Tài khoản của bạn chưa được cấp quyền truy cập ${page}. Liên hệ quản trị viên để được cấp quyền.` : "Tài khoản của bạn chưa được cấp quyền xem trang này. Liên hệ quản trị viên để được cấp quyền."}
+      action={back}
+    />
+  );
+}
+
 export function ConsoleFrame({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<ConsoleSession>(EMPTY_SESSION);
   const { busy, select } = useBranchSwitch(async () => setSession(await fetchConsoleSession()));
@@ -116,11 +140,13 @@ export function ConsoleFrame({ children }: { children: ReactNode }) {
 
   const pathname = usePathname() ?? "";
   const actions = useMemo(() => new Set(session.permissions), [session.permissions]);
-  const nav = useMemo(() => consoleNavFor(actions), [actions]);
+  const branchType = session.branch?.type;
+  const nav = useMemo(() => consoleNavFor(actions, branchType), [actions, branchType]);
+  const denial = session.permissions ? consoleRouteDenial(pathname, actions, branchType) : null;
   const body = session.error ? <ErrorState title={session.error} />
     : !session.permissions ? <LoadingState title={messages.memberships.loading} />
-    : consoleRouteAllowed(pathname, actions) ? children
-    : <ErrorState denied title="Không có quyền truy cập" description="Tài khoản của bạn chưa được cấp quyền xem trang này. Liên hệ quản trị viên để được cấp quyền." />;
+    : denial ? deniedView(denial, pathname)
+    : children;
 
   const branchSwitch = session.branch ? { branch: session.branch, branches: session.branches, busy, onSelect: (id: string) => void select(id) } : undefined;
 

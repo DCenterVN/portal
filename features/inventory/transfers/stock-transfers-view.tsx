@@ -13,6 +13,8 @@ import { PageHeading } from "@/components/patterns/page-heading";
 import { useAccess } from "@/lib/access-boundary";
 import { formatDateTime } from "@/lib/format-date";
 import { TRANSFER_STATUS_LABEL, type TransferStatus } from "@/lib/stock-transfer";
+import { TablePager } from "@/components/patterns/table-pager";
+import { useLocalPages } from "@/lib/local-pages";
 import { TransferStatusBadge } from "./transfer-status-badge";
 import { useBranchLabels } from "./use-transfer-lookups";
 import { useTransferList, type TransferTab } from "./use-transfer-list";
@@ -21,6 +23,7 @@ export function StockTransfersView() {
   const { can, scope } = useAccess();
   const list = useTransferList();
   const names = useBranchLabels();
+  const pages = useLocalPages(list.rows, `${list.tab}|${list.status}`);
   const empty = list.status ? `Không có phiếu ${TRANSFER_STATUS_LABEL[list.status as TransferStatus].toLowerCase()} trong mục này.` : list.tab === "arrive" ? "Chưa có phiếu nào đang đến chi nhánh này." : "Chi nhánh này chưa gửi phiếu nào.";
   return (
     <PageShell>
@@ -53,7 +56,7 @@ export function StockTransfersView() {
           : !list.rows.length ? <EmptyState title={empty} action={list.status ? <Button variant="outline" onClick={() => list.setStatus("")}>Xoá lọc</Button> : undefined} />
           : <Table aria-label="Phiếu chuyển hàng">
             <TableHeader><TableRow>{["Mã phiếu", "Nơi gửi → nơi nhận", "Số dòng", "Người gửi", "Giờ gửi", "Trạng thái"].map(label => <TableHead key={label}>{label}</TableHead>)}</TableRow></TableHeader>
-            <TableBody>{list.rows.map(item => (
+            <TableBody>{pages.rows.map(item => (
               <TableRow key={item.id}>
                 <TableCell className="font-medium"><Link className="text-primary underline-offset-4 hover:underline" href={`/inventory/stock-transfers/${item.id}`}>{item.code}</Link></TableCell>
                 <TableCell>{names.ends(item).from} → {names.ends(item).to}</TableCell>
@@ -64,6 +67,7 @@ export function StockTransfersView() {
               </TableRow>
             ))}</TableBody>
           </Table>}
+        {(pages.hasPrevious || pages.hasNext) && <TablePager label="Phân trang phiếu chuyển hàng" status={`Trang ${pages.page}`} hasPrevious={pages.hasPrevious} onPrevious={pages.previous} hasNext={pages.hasNext} onNext={pages.next} />}
       </div>
     </PageShell>
   );

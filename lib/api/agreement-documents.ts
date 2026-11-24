@@ -13,7 +13,7 @@ export async function downloadDocument(supplier: string, document: string): Prom
   return result.url;
 }
 export async function presignDocument(supplier: string, file: File, sha256: string, key?: string): Promise<DocumentUpload> {
-  if (!validContractFile(file)) throw new Error("Chọn PDF, JPEG, PNG hoặc WebP, tối đa 5 MiB");
+  if (!validContractFile(file)) throw new Error("Chọn PDF, JPEG, PNG hoặc WebP, tối đa 5 MB");
   return inventoryRequest(`${base(supplier)}/presign`, presignSchema, inventoryMutation("POST", { filename: file.name, content_type: file.type, size_bytes: file.size, sha256 }, key));
 }
 export function validContractFile(file: File): boolean {

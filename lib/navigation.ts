@@ -1,19 +1,22 @@
 import {
-  Boxes, ClipboardCheck, Factory, FileSpreadsheet, LayoutDashboard, ListChecks, Package, PackagePlus, ShieldCheck,
+  Boxes, ClipboardCheck, Factory, FileSpreadsheet, LayoutDashboard, ListChecks, MapPin, Package, PackagePlus, ShieldCheck,
   Store, Tag, Truck, Users, UtensilsCrossed, Warehouse, Building2, KeyRound, ScrollText, type LucideIcon,
 } from "lucide-react";
 
 export type NavItem = { href: string; label: string; match: string; icon?: LucideIcon };
 export type NavGroup = { title: string; icon?: LucideIcon; items: NavItem[] };
-type NavRule = NavItem & { action?: string };
+const KITCHEN = "CENTRAL_KITCHEN";
+type NavRule = NavItem & { action?: string; also?: string[]; branch?: string; gate?: string };
 
 export const CONSOLE_NAV: { title: string; icon: LucideIcon; items: NavRule[] }[] = [
   { title: "Tổng quan", icon: LayoutDashboard, items: [{ href: "/console", label: "Tổng quan", match: "/console", icon: LayoutDashboard }] },
   { title: "Kho", icon: Warehouse, items: [
-    { href: "/inventory/goods-receipts/new", label: "Nhập hàng", match: "/inventory/goods-receipts/new", icon: PackagePlus, action: "inventory:goods_receipt:create" },
+    { href: "/inventory/goods-receipts/new", label: "Nhập hàng", match: "/inventory/goods-receipts", icon: PackagePlus, action: "inventory:goods_receipt:create", branch: KITCHEN, gate: "/inventory/goods-receipts/new" },
+    { href: "/inventory/inbound-qc", label: "Kiểm đầu vào", match: "/inventory/inbound-qc", icon: ClipboardCheck, action: "inventory:qc:update" },
     { href: "/inventory/shelves", label: "Kệ hàng", match: "/inventory/shelves", icon: Warehouse, action: "inventory:shelf_placement:read" },
+    { href: "/inventory/storage-locations", label: "Vị trí kho", match: "/inventory/storage-locations", icon: MapPin, action: "inventory:lot:read" },
     { href: "/inventory/stock-transfers", label: "Chuyển hàng", match: "/inventory/stock-transfers", icon: Truck, action: "inventory:transfer:read" },
-    { href: "/inventory/suppliers", label: "Nhà cung cấp", match: "/inventory/suppliers", icon: Store, action: "inventory:supplier:read" },
+    { href: "/inventory/suppliers", label: "Nhà cung cấp", match: "/inventory/suppliers", icon: Store, action: "inventory:supplier:read", branch: KITCHEN },
   ] },
   {
     title: "Sản xuất",
@@ -49,14 +52,17 @@ export function isActive(pathname: string, match: string): boolean {
   return pathname === match || pathname.startsWith(`${match}/`);
 }
 
-export function consoleNavFor(actions: ReadonlySet<string>): NavGroup[] {
+const holds = (item: NavRule, actions: ReadonlySet<string>) => (!item.action || actions.has(item.action)) && (item.also ?? []).every((key) => actions.has(key));
+const inBranch = (item: NavRule, branchType?: string) => !item.branch || branchType === undefined || item.branch === branchType;
+
+export function consoleNavFor(actions: ReadonlySet<string>, branchType?: string): NavGroup[] {
   return CONSOLE_NAV
     .map((group) => ({
       title: group.title,
       icon: group.icon,
       items: group.items
-        .filter((item) => !item.action || actions.has(item.action))
-        .map(({ action: _action, ...item }) => item),
+        .filter((item) => inBranch(item, branchType) && holds(item, actions))
+        .map(({ action: _action, also: _also, branch: _branch, gate: _gate, ...item }) => item),
     }))
     .filter((group) => group.items.length > 0);
 }
@@ -68,9 +74,26 @@ export function openGroups(nav: NavGroup[], pathname: string, saved: readonly st
     .map((group) => group.title);
 }
 
-export function consoleRouteAllowed(pathname: string, actions: ReadonlySet<string>): boolean {
+export type RouteDenial = { reason: "branch"; branch: string } | { reason: "permission" } | null;
+
+export function consoleRouteDenial(pathname: string, actions: ReadonlySet<string>, branchType?: string): RouteDenial {
   const item = CONSOLE_NAV.flatMap((group) => group.items).find((entry) => isActive(pathname, entry.match));
-  return !item?.action || actions.has(item.action);
+  if (!item) return null;
+  if (!inBranch(item, branchType)) return { reason: "branch", branch: item.branch ?? "" };
+  if (item.gate && !isActive(pathname, item.gate)) return null;
+  return holds(item, actions) ? null : { reason: "permission" };
+}
+
+export function consoleRouteTitle(pathname: string): string {
+  for (const group of CONSOLE_NAV) {
+    const item = group.items.find((entry) => isActive(pathname, entry.match));
+    if (item) return group.title === item.label ? item.label : `${group.title} › ${item.label}`;
+  }
+  return "";
+}
+
+export function consoleRouteAllowed(pathname: string, actions: ReadonlySet<string>, branchType?: string): boolean {
+  return consoleRouteDenial(pathname, actions, branchType) === null;
 }
 
 export type Crumb = ({ label: string } | { labelKey: string }) & { href?: string };

@@ -8,7 +8,7 @@ import { FetchError } from "@/lib/fetcher";
 export type ReceiptEvidence = { media_ref: string; sha256: string; file: File };
 type Upload = { file: File; key: string; finalizeKey: string; target?: Awaited<ReturnType<typeof presignReceiptEvidence>>; uploaded: boolean };
 type Config = {
-  receipt: string; line: string; attempt: string; purpose: EvidencePurpose;
+  receipt: string; line: string; attempt: string; purpose: EvidencePurpose; inspection?: string;
   disabled: boolean; hashes: string[]; onChange: (evidence?: ReceiptEvidence) => void;
 };
 
@@ -38,13 +38,13 @@ export function useReceiptEvidenceUpload(props: Config) {
     try {
       const sha256 = await fileSHA256(next);
       if (props.hashes.includes(sha256)) throw new Error("Ảnh trùng với ô khác của lần nhận này. Chọn tệp khác.");
-      upload.target ??= await presignReceiptEvidence(props.receipt, { goods_receipt_line_id: props.line, receive_attempt_ref: props.attempt, purpose: props.purpose, content_type: next.type, size_bytes: next.size, sha256 }, upload.key);
+      upload.target ??= await presignReceiptEvidence(props.receipt, { goods_receipt_line_id: props.line, receive_attempt_ref: props.attempt, purpose: props.purpose, content_type: next.type, size_bytes: next.size, sha256, ...(props.inspection ? { inspection_ref: props.inspection } : {}) }, upload.key);
       if (!upload.uploaded) { await uploadReceiptEvidence(upload.target, next); upload.uploaded = true; }
       const result = await finalizeReceiptEvidence(props.receipt, upload.target.upload_id, upload.finalizeKey);
       props.onChange({ media_ref: result.media_ref, sha256: result.sha256, file: next });
     } catch (cause) {
       setReload(cause instanceof FetchError && cause.status === 409 && cause.code === "state_conflict");
-      setError(cause instanceof FetchError && cause.status === 403 ? "Bạn cần quyền cập nhật phiếu nhập" : cause instanceof Error ? cause.message : "Không tải được tệp. Hãy thử lại.");
+      setError(cause instanceof FetchError && cause.status === 403 ? props.purpose === "QC_DEFECT" ? "Bạn cần quyền kiểm chất lượng đầu vào" : "Bạn cần quyền cập nhật phiếu nhập" : cause instanceof Error ? cause.message : "Không tải được tệp. Hãy thử lại.");
     } finally { inFlight.current = false; setBusy(false); }
   }
   const resetCommand = () => { command.current = null; };

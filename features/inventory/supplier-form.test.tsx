@@ -59,9 +59,9 @@ vi.mock("@/components/patterns/confirm-dialog", () => ({ ConfirmDialog: () => nu
 it("form thêm/sửa có đủ section và mọi trường hồ sơ", () => {
   for (const value of [undefined, supplier]) {
     const html = renderToStaticMarkup(<NextIntlClientProvider locale="vi" messages={messages}><AccessProvider value={{ plane: "company", root: "", actions: new Set(["inventory:supplier:create", "inventory:supplier:update"]) }}><SupplierFormContainer supplier={value} onClose={() => {}} onSaved={() => {}} /></AccessProvider></NextIntlClientProvider>);
-    for (const label of ["Thông tin chung", "Địa chỉ", "Liên hệ", "Nhóm nguyên liệu", "Người liên hệ", "Điện thoại", "Email", "Ghi chú nội bộ", "Phường, xã", "Tỉnh, thành phố"]) expect(html).toContain(label);
+    for (const label of ["Thông tin chính", "Liên hệ và địa chỉ", "Nhóm nguyên liệu", "Người liên hệ", "Điện thoại", "Thư điện tử", "Ghi chú nội bộ", "Phường, xã", "Số nhà, đường", "Tỉnh, thành phố"]) expect(html).toContain(label);
     expect(html).toContain("Lưu nhà cung cấp");
-    expect(html).toContain("Chọn ảnh");
+    expect(html).toContain("Chọn ảnh từ máy");
     expect(html).toContain("image/jpeg,image/png,image/webp");
     expect(html).not.toContain("e30=");
   }
@@ -82,4 +82,19 @@ it("PATCH giữ nhóm legacy khi chưa chọn lại và gửi rõ rỗng khi xo�
   expect(untouched).not.toHaveProperty("material_categories");
   const cleared = supplierFormInput({ ...values, phone: "", line: "", ward: "", province: "" }, [], true);
   expect(cleared).toMatchObject({ contact_phone: "", address: { line: "", ward: "", province: "" }, material_category_codes: [] });
+});
+
+it("sửa thì mã chỉ đọc kèm một dòng giải thích, tạo thì có gợi ý mã", () => {
+  const render = (value?: typeof supplier) => renderToStaticMarkup(<NextIntlClientProvider locale="vi" messages={messages}><AccessProvider value={{ plane: "company", root: "", actions: new Set(["inventory:supplier:create", "inventory:supplier:update"]) }}><SupplierFormContainer supplier={value} onClose={() => {}} onSaved={() => {}} /></AccessProvider></NextIntlClientProvider>);
+  expect(render(supplier)).toContain("Mã giữ nguyên sau khi tạo");
+  expect(render()).not.toContain("Mã giữ nguyên sau khi tạo");
+  expect(render()).not.toContain("Nhập mã và tên nhà cung cấp để lưu.");
+});
+
+it("chế độ trang không dựng ngăn trượt, có tiêu đề, Huỷ và Lưu ở cuối form", () => {
+  const html = renderToStaticMarkup(<NextIntlClientProvider locale="vi" messages={messages}><AccessProvider value={{ plane: "company", root: "", actions: new Set(["inventory:supplier:create", "inventory:supplier:update"]) }}><SupplierFormContainer layout="page" supplier={supplier} onClose={() => {}} onSaved={() => {}} /></AccessProvider></NextIntlClientProvider>);
+  expect(html).toContain("<h1");
+  expect(html).not.toContain('role="dialog"');
+  expect(html).toContain(messages.supplierForm.cancel);
+  expect(html).toContain(messages.supplierForm.save);
 });

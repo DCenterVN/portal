@@ -526,35 +526,28 @@ function expectS6Roles(html: string, primaryCount: number) {
 describe("S6 rendered inventory, permission and production state roles", () => {
   it.each([false, true])("keeps shelves labelled states, QR links and fail-closed action (empty=%s)", (empty) => {
     const html = surfaceMarkup(React.createElement(ShelvesView, { initialPlacements: empty ? [] : shelfFixtures }));
-    expectS6Roles(html, 1);
-    expect(classesFor(html, "button")).toMatch(PRIMARY_FILL);
-    expect(html).toContain('disabled=""');
+    expectS6Roles(html, 0);
     if (empty) expect(html).toContain("Chưa có mặt hàng nào được đưa lên kệ");
     else {
       expect(html).toContain("PLACED");
       expect(html).toContain("DEPLETED");
       expect(html).toContain("border-border");
-      expect(classesFor(html, "a")).toContain("text-primary");
+      expect(classesFor(html, "a", 'href="/traceability')).toContain("text-primary");
       expect(html).toContain('href="/traceability/QR-PLACED"');
     }
   });
 
-  it("gives shelf submit sole primary emphasis with EntityPicker and permission guard", () => {
-    const html = surfaceMarkup(withAccess(["inventory:shelf_placement:create"], React.createElement(ShelvesView, { initialPlacements: shelfFixtures })), [shelfFixtures, false, "", true, "KE-MAT-01", "lot", 20, false]);
+  it("gives shelf submit sole primary emphasis on the placement form with permission guard", () => {
+    const pendingLot = { lot_id: "lot", sku_ref: "sku", supplier_lot_code: "LOT-1", uom: "EA", remaining_quantity: 3, pending_quantity: 3, inspection_quantity: 0, expires_at: "2026-12-10T10:00:00Z", origin: "TRANSFER", source_code: "CK-1" };
+    const html = surfaceMarkup(withAccess(["inventory:shelf_placement:create"], React.createElement(ShelvesView, { initialPlacements: shelfFixtures })), [shelfFixtures, false, "", [pendingLot], false, "", pendingLot, "KE-MAT-01", 3, "", false]);
     expectS6Roles(html, 1);
     expect(classesFor(html, "button")).not.toMatch(PRIMARY_FILL);
     expect(classesFor(html, "button", 'type="submit"')).toMatch(PRIMARY_FILL);
     expect(html.match(/required=""/g)).toHaveLength(2);
-    const comboboxes = (html.match(/<button\b[^>]*>/g) ?? []).filter((button) => button.includes('role="combobox"'));
-    expect(comboboxes).toHaveLength(1);
-    expect(comboboxes[0]).toContain('aria-required="true"');
-    expect(comboboxes[0]).toContain('id="finished-lot-picker"');
-    expect(html).toContain('for="finished-lot-picker"');
-    expect(html).toContain("Lô thành phẩm đã QC đạt");
-    expect(html).toContain('>Tìm theo mã lệnh sản xuất<');
-    expect(html).not.toContain('placeholder="UUID');
+    expect(html).toContain('for="shelf-code"');
+    expect(html).toContain("Xếp lô");
     expect(html).not.toContain('type="hidden"');
-    expect(html.match(/<button[^>]*type="submit"[^>]*>/)?.[0]).toContain('disabled=""');
+    expect(html.match(/<button[^>]*type="submit"[^>]*>/)?.[0]).not.toContain('disabled=""');
     expect(html).toContain("Xác nhận lên kệ &amp; Sinh mã QR");
   });
 
@@ -675,7 +668,7 @@ describe("S7 rendered target, cart, orders and product creation roles", () => {
     for (const order of salesOrderFixtures) {
       const link = (html.match(/<a\b[\s\S]*?<\/a>/g) ?? []).find((tag) => tag.includes(`/orders/${order.id}`))!;
       expect(link).toContain(`>${order.status === "CANCELLED" ? "Đã hủy" : "Chờ thanh toán"}</span>`);
-      expect(link).toContain(order.status === "CANCELLED" ? "bg-destructive" : "bg-warning-soft");
+      expect(link).toContain(order.status === "CANCELLED" ? "before:bg-muted-foreground/50" : "bg-warning-soft");
       expect(link).toContain("660.000");
       expect(link).toContain(formatDateTime(order.created_at));
       expect(link).not.toContain(order.cart_ref);

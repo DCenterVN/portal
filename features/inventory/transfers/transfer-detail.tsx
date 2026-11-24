@@ -15,6 +15,7 @@ import { TransferEvidence } from "./transfer-evidence";
 import { TransferHistory, transferHistory } from "./transfer-history";
 import { TransferLinesTable } from "./transfer-lines-table";
 import { TransferStatusBadge } from "./transfer-status-badge";
+import { NamesLoadError } from "./names-load-error";
 import { useBranchLabels, useMaterialNames } from "./use-transfer-lookups";
 import { useTransferDetail } from "./use-transfer-detail";
 
@@ -22,7 +23,7 @@ export function TransferDetail({ id }: { id: string }) {
   const { scope } = useAccess();
   const detail = useTransferDetail(id);
   const names = useBranchLabels();
-  const material = useMaterialNames();
+  const material = useMaterialNames([detail.transfer?.from_branch_ref ?? "", detail.transfer?.to_branch_ref ?? ""], detail.transfer?.lines.map(line => line.sku_ref));
   const [confirming, setConfirming] = useState(false);
   const { transfer } = detail;
   if (detail.error) return <ErrorState title="Không mở được phiếu này ở chi nhánh đang chọn." description="Phiếu không tồn tại hoặc không thuộc chi nhánh bạn được xem." onRetry={detail.reload} />;
@@ -43,6 +44,7 @@ export function TransferDetail({ id }: { id: string }) {
       <div className="mt-4 grid gap-6">
         {detail.needsReceiverBranch && <ReceiverSwitch receiver={transfer.to_branch_ref} receiverLabel={receiver} atSender={transfer.from_branch_ref === scope?.branchId} />}
         {detail.cancelError && <InlineAlert>{detail.cancelError}</InlineAlert>}
+        {material.failed && <NamesLoadError retry={material.retry} />}
         <dl className="grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
           <div><dt className="text-muted-foreground">Chi nhánh gửi</dt><dd className="font-medium">{sender}</dd></div>
           <div><dt className="text-muted-foreground">Chi nhánh nhận</dt><dd className="font-medium">{receiver}</dd></div>
