@@ -8,7 +8,8 @@ export const metadata = {
   description: "Soạn công thức, định lượng và hoàn tất món ăn",
 };
 
-export default async function DishDraftPage({ params }: { params: Promise<{ draftId: string }> }) {
+export default async function DishDraftPage({ params, searchParams }: { params: Promise<{ draftId: string }>; searchParams?: Promise<{ from?: string }> }) {
   const { draftId } = await params;
-  return <DishDraftScreen draftId={draftId} />;
+  const { from } = searchParams ? await searchParams : {};
+  return <DishDraftScreen draftId={draftId} fromDrafts={from === "drafts"} />;
 }

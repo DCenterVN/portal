@@ -47,7 +47,7 @@ export function DishIngredientsView({ content, materials, tree, packNames = {}, 
           const info = line.sku_ref ? materials[line.sku_ref] : undefined;
           const name = info?.name ?? "Nguyên liệu không còn trong danh mục";
           return <li key={line.row} className="space-y-1.5 px-4 py-2.5"><div className="flex items-center gap-2.5">
-            <Thumb info={info} /><span className="min-w-0 flex-1 truncate text-sm font-medium">{name}{info?.retired && <Badge variant="outline" className="ml-2 font-normal">Đã ngừng dùng</Badge>}{line.sku_ref && missingCosts?.[line.sku_ref] && <Badge variant="outline" className="ml-2 border-destructive/40 text-destructive font-normal">{missingCosts[line.sku_ref] === "UOM_MISMATCH" ? "Khác đơn vị giá" : "Chưa có giá"}</Badge>}</span>
+            <Thumb info={info} /><span className="min-w-0 flex-1 truncate text-sm font-medium">{name}{info?.retired && <Badge variant="outline" className="ml-2 font-normal">Đã ngừng dùng</Badge>}{info?.draft && <Badge variant="secondary" className="ml-2 font-normal">Chưa duyệt</Badge>}{line.sku_ref && missingCosts?.[line.sku_ref] && <Badge variant="outline" className="ml-2 border-destructive/40 text-destructive font-normal">{missingCosts[line.sku_ref] === "UOM_MISMATCH" ? "Khác đơn vị giá" : "Chưa có giá"}</Badge>}</span>
             {readOnly
               ? <span className="shrink-0 text-sm font-medium tabular-nums">{line.quantity} <span className="font-normal text-muted-foreground">{uomLabel(line.uom)}</span></span>
               : <InputGroup className="h-8 w-28 shrink-0">

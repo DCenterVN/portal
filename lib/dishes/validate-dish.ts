@@ -1,7 +1,7 @@
 import { SERVING_OPTIONS, slotOf, type DishContent, type DraftKind, type GroupNode, type Journey } from "./types";
 export type { DishContent } from "./types";
 export type DishError = { row?: string; field: string; message: string; existing?: { set_ref: string; variant_label: string } };
-export type ValidateCtx = { kind: DraftKind; tree: GroupNode[]; skuGroups: Record<string, string | null>; packagesWithRecipe: string[]; existingVariants: { servings: number; set_ref: string; variant_label: string }[]; source_journey?: Journey };
+export type ValidateCtx = { kind: DraftKind; tree: GroupNode[]; skuGroups: Record<string, string | null>; inactiveSkus?: Record<string, "DRAFT" | "SUSPENDED">; packagesWithRecipe: string[]; existingVariants: { servings: number; set_ref: string; variant_label: string }[]; source_journey?: Journey };
 export function validateDish(content: DishContent, ctx: ValidateCtx): DishError[] {
   const errors: DishError[] = [];
   const add = (field: string, message: string, row?: string) => errors.push({ field, message, ...(row ? { row } : {}) });
@@ -15,13 +15,16 @@ export function validateDish(content: DishContent, ctx: ValidateCtx): DishError[
   const slots = new Set<string>();
   for (const line of content.ingredients) {
     if (!line.sku_ref || seen.has(line.sku_ref)) add("sku_ref", line.sku_ref ? "Nguyên liệu đã có ở dòng trước" : "Chọn nguyên liệu", line.row);
-    if (line.sku_ref) {
-      seen.add(line.sku_ref);
+    if (line.sku_ref) seen.add(line.sku_ref);
+    const inactive = line.sku_ref ? ctx.inactiveSkus?.[line.sku_ref] : undefined;
+    if (inactive === "SUSPENDED") add("sku_ref", "Nguyên liệu đã ngừng dùng — đổi sang nguyên liệu đang dùng", line.row);
+    else if (inactive === "DRAFT") add("sku_ref", "Nguyên liệu đang là nháp — duyệt nguyên liệu trước khi hoàn tất món", line.row);
+    if (line.sku_ref && !inactive) {
       const group = ctx.skuGroups[line.sku_ref];
       if (!group || !ctx.tree.some(node => node.code === group)) add("sku_ref", "Nguyên liệu chưa thuộc nhóm hợp lệ — gán nhóm ở kho trước khi hoàn tất", line.row);
       else slots.add(slotOf(group, ctx.tree));
     }
-    if (!/^\d+(\.\d{1,3})?$/.test(line.quantity) || Number(line.quantity) <= 0) add("quantity", "Lượng phải lớn hơn 0, tối đa 3 số lẻ", line.row);
+    if (!/^\d+(\.\d{1,3})?$/.test(line.quantity) || Number(line.quantity) <= 0) add("quantity", "Nhập lượng lớn hơn 0 (tối đa 3 chữ số thập phân)", line.row);
     if (!line.yield_pct.trim() || !Number.isFinite(Number(line.yield_pct)) || Number(line.yield_pct) < 1 || Number(line.yield_pct) > 100) add("yield_pct", "Hao hụt cần từ 0 đến 99%", line.row);
   }
   if (!slots.has("GIA_VI_THEM") && !slots.has("COT") && !content.seasonings.some(line => line.package_ref && !line.removable)) add("removable", "Món cần ít nhất một gia vị hoặc một cốt nước dùng", content.seasonings[0]?.row);

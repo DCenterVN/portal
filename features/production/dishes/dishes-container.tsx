@@ -31,7 +31,7 @@ import { useDishData } from "./use-dish-data";
 
 const dataApi = { ...api, getMaterialTree, listMaterials, getRawLabels };
 
-export function DishListScreen() {
+export function DishListScreen({ initialTab = "dishes" }: { initialTab?: "dishes" | "drafts" }) {
   const router = useRouter();
   const canCreate = useAccess().can("sales:product:create");
   const list = useDishList(api, {
@@ -46,7 +46,9 @@ export function DishListScreen() {
       drafts={list.drafts}
       draftNext={list.draftNext}
       draftBusy={list.draftBusy}
+      draftsLoading={list.draftsLoading}
       draftError={list.draftError}
+      initialTab={initialTab}
       q={list.q}
       status={list.status}
       page={list.page}
@@ -57,6 +59,7 @@ export function DishListScreen() {
       onQ={list.setQ}
       onStatus={list.setStatus}
       onPage={list.setPage}
+      onTabChange={next => router.replace((next === "drafts" ? "/production/dishes?tab=drafts" : "/production/dishes") as Route, { scroll: false })}
       onCreate={() => void list.createDish()}
       onMoreDrafts={() => void list.loadMoreDrafts()}
       onDiscardDraft={onDiscardDraft}
@@ -167,8 +170,9 @@ export function DishDetailScreen({ dishId, initialVariant }: { dishId: string; i
   </PageShell>;
 }
 
-export function DishDraftScreen({ draftId }: { draftId: string }) {
+export function DishDraftScreen({ draftId, fromDrafts }: { draftId: string; fromDrafts?: boolean }) {
   const router = useRouter();
+  const listHref = fromDrafts ? "/production/dishes?tab=drafts" : "/production/dishes";
   const canEditImage = useAccess().can("sales:product:update");
   const [touched, setTouched] = useState(false);
   const [pendingImage, setPendingImage] = useState<{ file: File; preview: string } | null>(null);
@@ -221,9 +225,9 @@ export function DishDraftScreen({ draftId }: { draftId: string }) {
     const backToDish = (draft.kind === "VARIANT" || draft.kind === "REVISION") && draft.source_product_ref;
     const target = backToDish
       ? `/production/dishes/${draft.source_product_ref}${draft.source_set_ref ? `?variant=${encodeURIComponent(draft.source_set_ref)}` : ""}`
-      : "/production/dishes";
+      : listHref;
     router.replace(target as Route);
-  }, [clearPendingImage, router]);
+  }, [clearPendingImage, listHref, router]);
 
   const onClosed = useCallback((draft: DishDraft) => {
     if (draft.product_ref) {
@@ -232,8 +236,8 @@ export function DishDraftScreen({ draftId }: { draftId: string }) {
       return;
     }
     toast.info("Nháp này đã đóng");
-    router.replace("/production/dishes" as Route);
-  }, [router]);
+    router.replace(listHref as Route);
+  }, [listHref, router]);
 
   const editor = useDishDraft(draftId, api, { onComplete, onDiscard, onClosed });
 
@@ -257,6 +261,7 @@ export function DishDraftScreen({ draftId }: { draftId: string }) {
     kind: editor.draft?.kind ?? "CREATE" as const,
     tree: data.tree,
     skuGroups: Object.fromEntries(Object.entries(data.materials).map(([id, material]) => [id, material.group])),
+    inactiveSkus: Object.fromEntries(Object.entries(data.materials).flatMap<[string, "DRAFT" | "SUSPENDED"]>(([id, m]) => m.retired ? [[id, "SUSPENDED"]] : m.draft ? [[id, "DRAFT"]] : [])),
     packagesWithRecipe: editor.content?.seasonings.flatMap(line => line.package_ref ? [line.package_ref] : []) ?? [],
     existingVariants: sourceDetail?.variants.flatMap(v => v.servings ? [{ servings: v.servings, set_ref: v.set_ref, variant_label: v.variant_label }] : []) ?? [],
     source_journey: sourceDetail?.variants.find(v => v.set_ref === editor.content?.base?.set_ref)?.journey,
@@ -292,7 +297,7 @@ export function DishDraftScreen({ draftId }: { draftId: string }) {
     const backToDish = (draft?.kind === "VARIANT" || draft?.kind === "REVISION") && draft.source_product_ref;
     const target = backToDish
       ? `/production/dishes/${draft.source_product_ref}${draft.source_set_ref ? `?variant=${encodeURIComponent(draft.source_set_ref)}` : ""}`
-      : "/production/dishes";
+      : listHref;
     if (discarded) router.replace(target as Route);
     else router.push(target as Route);
   };
@@ -322,7 +327,7 @@ export function DishDraftScreen({ draftId }: { draftId: string }) {
 
   return <PageShell>
     {data.error && <InlineAlert>{data.error} <Button variant="outline" onClick={() => void data.load()}>Thử lại</Button></InlineAlert>}
-    {editor.error && <InlineAlert>{editor.error}<div className="mt-2 flex flex-wrap gap-2"><Button variant="outline" onClick={() => void editor.reload()}>Tải lại nháp</Button><Button variant="outline" onClick={() => router.push("/production/dishes" as Route)}>Về danh sách món</Button></div></InlineAlert>}
+    {editor.error && <InlineAlert>{editor.error}<div className="mt-2 flex flex-wrap gap-2"><Button variant="outline" onClick={() => void editor.reload()}>Tải lại nháp</Button><Button variant="outline" onClick={() => router.push(listHref as Route)}>Về danh sách món</Button></div></InlineAlert>}
     {(editor.loading || (!editor.draft && !editor.error)) && <LoadingState title="Đang tải nháp món…" />}
     {editor.draft && editor.content && <div onBlurCapture={event => { if (!(event.relatedTarget instanceof HTMLButtonElement)) setTouched(true); }} onClickCapture={event => { if (event.target instanceof Element && event.target.closest("button")) setTouched(true); }}>
       <DishEditorView

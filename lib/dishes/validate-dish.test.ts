@@ -167,4 +167,28 @@ describe("validateDish", () => {
     expect(validateDish(m1({ servings: 4 }), ctx({ kind: "VARIANT", existingVariants }))).toEqual([]);
     expect(find(validateDish(m1({ servings: 2 }), ctx({ kind: "COPY", existingVariants })), "servings")).toHaveLength(0);
   });
+
+  it("chặn nguyên liệu DRAFT và SUSPENDED ở inactiveSkus và không cộng ô", () => {
+    const draftErrs = validateDish(
+      m1({ ingredients: [{ row: "r1", sku_ref: "sku-trau", quantity: "150", uom: "G", yield_pct: "100" }] }),
+      ctx({ inactiveSkus: { "sku-trau": "DRAFT" } }),
+    );
+    expect(find(draftErrs, "sku_ref", "r1")).toEqual([{
+      field: "sku_ref",
+      row: "r1",
+      message: "Nguyên liệu đang là nháp — duyệt nguyên liệu trước khi hoàn tất món",
+    }]);
+    expect(find(draftErrs, "slots")).toHaveLength(1);
+
+    const suspendedErrs = validateDish(
+      m1({ ingredients: [{ row: "r1", sku_ref: "sku-trau", quantity: "150", uom: "G", yield_pct: "100" }] }),
+      ctx({ inactiveSkus: { "sku-trau": "SUSPENDED" } }),
+    );
+    expect(find(suspendedErrs, "sku_ref", "r1")).toEqual([{
+      field: "sku_ref",
+      row: "r1",
+      message: "Nguyên liệu đã ngừng dùng — đổi sang nguyên liệu đang dùng",
+    }]);
+    expect(find(suspendedErrs, "slots")).toHaveLength(1);
+  });
 });

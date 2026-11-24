@@ -2,13 +2,13 @@
 
 import type { Route } from "next";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Plus, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EmptyState, LoadingState } from "@/components/patterns/empty-state";
 import { InlineAlert } from "@/components/patterns/inline-alert";
 import { journeyLabels, type DishListRow, type DraftRow, type Journey } from "@/lib/dishes/types";
@@ -50,7 +50,9 @@ export function DishListView(props: {
   drafts: DraftRow[];
   draftNext: string | null;
   draftBusy: boolean;
+  draftsLoading?: boolean;
   draftError?: string;
+  initialTab?: "dishes" | "drafts";
   q: string;
   status: string;
   page: number;
@@ -61,29 +63,37 @@ export function DishListView(props: {
   onQ: (q: string) => void;
   onStatus: (status: string) => void;
   onPage: (page: number) => void;
+  onTabChange?: (tab: "dishes" | "drafts") => void;
   onCreate: () => void;
   onMoreDrafts: () => void;
   onDiscardDraft?: (id: string) => Promise<void> | void;
   onRetry: () => void;
 }) {
-  const [tab, setTab] = useState<"dishes" | "drafts">("dishes");
-  const filteredDrafts = props.drafts.filter(draft => matchesName(draft.title || "", props.q));
-  return <div className="space-y-4" aria-busy={props.busy}>
+  const [tab, setTab] = useState<"dishes" | "drafts">(props.initialTab ?? "dishes");
+  const [draftQ, setDraftQ] = useState("");
+  useEffect(() => {
+    if (props.initialTab) setTab(props.initialTab);
+  }, [props.initialTab]);
+  const handleTabChange = (value: string) => {
+    const next = value === "drafts" ? "drafts" : "dishes";
+    setTab(next);
+    props.onTabChange?.(next);
+  };
+  const filteredDrafts = props.drafts.filter(draft => matchesName(draft.title || "", draftQ));
+  return <Tabs value={tab} onValueChange={handleTabChange} className="gap-4" aria-busy={props.busy}>
     <div className="flex flex-wrap items-center gap-2">
-      <Tabs value={tab} onValueChange={value => setTab(value === "drafts" ? "drafts" : "dishes")}>
-        <TabsList aria-label="Chế độ xem món ăn">
-          <TabsTrigger value="dishes">Món ăn</TabsTrigger>
-          <TabsTrigger value="drafts">
-            Nháp đang soạn
-            {(props.drafts.length > 0 || Boolean(props.draftNext)) && (
-              <Badge variant="secondary" className="ml-1.5 px-1.5 py-0 text-xs font-normal tabular-nums">
-                {props.draftNext ? `${props.drafts.length}+` : props.drafts.length}
-              </Badge>
-            )}
-          </TabsTrigger>
-        </TabsList>
-      </Tabs>
-      <InputGroup className="w-70 shrink-0"><InputGroupAddon><Search aria-hidden="true" /></InputGroupAddon><InputGroupInput aria-label={tab === "drafts" ? "Tìm nháp" : "Tìm món"} placeholder={tab === "drafts" ? "Tìm tên nháp…" : "Tìm tên món…"} value={props.q} onChange={e => props.onQ(e.target.value)} /></InputGroup>
+      <TabsList aria-label="Chế độ xem món ăn">
+        <TabsTrigger value="dishes">Món ăn</TabsTrigger>
+        <TabsTrigger value="drafts">
+          Nháp đang soạn
+          {(props.drafts.length > 0 || Boolean(props.draftNext)) && (
+            <Badge variant="secondary" className="ml-1.5 px-1.5 py-0 text-xs font-normal tabular-nums">
+              {props.draftNext ? `${props.drafts.length}+` : props.drafts.length}
+            </Badge>
+          )}
+        </TabsTrigger>
+      </TabsList>
+      <InputGroup className="w-70 shrink-0"><InputGroupAddon><Search aria-hidden="true" /></InputGroupAddon><InputGroupInput aria-label={tab === "drafts" ? "Tìm nháp" : "Tìm món"} placeholder={tab === "drafts" ? "Tìm tên nháp…" : "Tìm tên món…"} value={tab === "drafts" ? draftQ : props.q} onChange={e => (tab === "drafts" ? setDraftQ(e.target.value) : props.onQ(e.target.value))} /></InputGroup>
       {tab === "dishes" && <Select value={props.status || ALL_STATUS} onValueChange={value => props.onStatus(value === ALL_STATUS ? "" : value)}>
         <SelectTrigger aria-label="Trạng thái" className="w-48 shrink-0"><SelectValue /></SelectTrigger>
         <SelectContent position="popper" align="start">
@@ -96,7 +106,7 @@ export function DishListView(props: {
       </Select>}
       {props.canCreate && <Button className="ml-auto shrink-0" disabled={props.busy} onClick={props.onCreate}><Plus data-icon="inline-start" aria-hidden="true" />Tạo món</Button>}
     </div>
-    {tab === "dishes" ? <>
+    <TabsContent value="dishes" className="space-y-4">
       {props.busy
         ? <LoadingState title="Đang tải danh sách món…" />
         : props.error
@@ -105,13 +115,14 @@ export function DishListView(props: {
             ? <EmptyState title="Chưa có món phù hợp" description="Tạo món mới hoặc đổi bộ lọc để xem món." />
             : <ul className="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-6 animate-in fade-in duration-200 motion-reduce:animate-none">{props.rows.map(row => <DishCard key={row.product.id} row={row} />)}</ul>}
       {!props.busy && !props.error && <NumberedPager current={props.page} total={props.totalPages} onGo={props.onPage} />}
-    </> : <>
+    </TabsContent>
+    <TabsContent value="drafts" className="space-y-4">
       {props.draftError && <InlineAlert>{props.draftError}</InlineAlert>}
-      {props.busy && !props.drafts.length
+      {props.draftsLoading
         ? <LoadingState title="Đang tải nháp đang soạn…" />
         : !filteredDrafts.length && !props.draftNext
-          ? <EmptyState title={props.q.trim() ? "Không tìm thấy nháp phù hợp" : "Chưa có nháp đang soạn"} description={props.q.trim() ? "Thử từ khoá khác hoặc xoá ô tìm kiếm." : "Mọi món đang tạo hoặc bản sửa dở sẽ lưu tại đây để mở tiếp."} />
-          : <DraftList title="Nháp đang soạn" drafts={filteredDrafts} emptyText={props.q.trim() ? "Không có nháp phù hợp trong trang đã tải — bấm Tải thêm để tìm tiếp." : "Bấm Tải thêm để xem các nháp còn lại."} hasMore={Boolean(props.draftNext)} busy={props.busy} loading={props.draftBusy} onDiscard={props.canCreate ? props.onDiscardDraft : undefined} onMore={props.onMoreDrafts} />}
-    </>}
-  </div>;
+          ? <EmptyState title={draftQ.trim() ? "Không tìm thấy nháp phù hợp" : "Chưa có nháp đang soạn"} description={draftQ.trim() ? "Thử từ khoá khác hoặc xoá ô tìm kiếm." : "Mọi món đang tạo hoặc bản sửa dở sẽ lưu tại đây để mở tiếp."} />
+          : <DraftList title="Nháp đang soạn" drafts={filteredDrafts} emptyText={draftQ.trim() ? "Không có nháp phù hợp trong trang đã tải — bấm Tải thêm để tìm tiếp." : "Bấm Tải thêm để xem các nháp còn lại."} hasMore={Boolean(props.draftNext)} busy={false} loading={props.draftBusy} fromDraftsTab onDiscard={props.canCreate ? props.onDiscardDraft : undefined} onMore={props.onMoreDrafts} />}
+    </TabsContent>
+  </Tabs>;
 }

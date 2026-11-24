@@ -8,6 +8,7 @@ export const metadata = {
   description: "Danh mục món ăn và công thức định lượng theo suất",
 };
 
-export default function DishesPage() {
-  return <DishListScreen />;
+export default async function DishesPage({ searchParams }: { searchParams?: Promise<{ tab?: string }> }) {
+  const params = searchParams ? await searchParams : {};
+  return <DishListScreen initialTab={params.tab === "drafts" ? "drafts" : "dishes"} />;
 }
