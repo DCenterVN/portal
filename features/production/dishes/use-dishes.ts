@@ -29,6 +29,7 @@ export function useDishList(deps: ListDeps, callbacks: { onOpenDraft: (draftId: 
   const [status, setStatus] = useState("");
   const [page, setPage] = useState(1);
   const [busy, setBusy] = useState(false);
+  const [draftsLoaded, setDraftsLoaded] = useState(false);
   const [error, setError] = useState("");
   const [draftError, setDraftError] = useState("");
   const attempt = useRef(deps.draftAttempt());
@@ -51,7 +52,10 @@ export function useDishList(deps: ListDeps, callbacks: { onOpenDraft: (draftId: 
     } catch (e) {
       if (version === request.current) setError(e instanceof Error ? deps.safeMessage(e.message) : "Không tải được món");
     } finally {
-      if (version === request.current) setBusy(false);
+      if (version === request.current) {
+        setBusy(false);
+        setDraftsLoaded(true);
+      }
     }
   }, [status, deps]);
 
@@ -118,6 +122,7 @@ export function useDishList(deps: ListDeps, callbacks: { onOpenDraft: (draftId: 
     setPage,
     totalCount: filtered.length,
     busy,
+    draftsLoading: busy && !draftsLoaded,
     error,
     draftError,
     load,

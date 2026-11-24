@@ -14,13 +14,14 @@ import { draftKindLabels, type DraftKind, type DraftRow } from "@/lib/dishes/typ
 
 export const person = (name: string) => name.replace(/[0-9a-f]{8}-[0-9a-f-]{27,}/gi, "Thành viên chi nhánh");
 
-export function DraftList({ title = "Nháp đang soạn", drafts, emptyText, hasMore, busy, loading, onDiscard, onMore }: {
+export function DraftList({ title = "Nháp đang soạn", drafts, emptyText, hasMore, busy, loading, fromDraftsTab, onDiscard, onMore }: {
   title?: string;
   drafts: DraftRow[];
   emptyText: string;
   hasMore?: boolean;
   busy?: boolean;
   loading?: boolean;
+  fromDraftsTab?: boolean;
   onDiscard?: (id: string) => Promise<void> | void;
   onMore?: () => void;
 }) {
@@ -32,7 +33,7 @@ export function DraftList({ title = "Nháp đang soạn", drafts, emptyText, has
       {!drafts.length
         ? <p className="px-4 py-4 text-sm text-muted-foreground">{emptyText}</p>
         : <div className="divide-y divide-border">{drafts.map(draft => <div key={draft.id} className="flex items-center gap-2 pr-2 hover:bg-muted/30">
-          <Link href={`/production/dishes/drafts/${draft.id}` as Route} className="flex min-w-0 flex-1 flex-wrap items-center gap-2 px-4 py-2.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring">
+          <Link href={(fromDraftsTab ? `/production/dishes/drafts/${draft.id}?from=drafts` : `/production/dishes/drafts/${draft.id}`) as Route} className="flex min-w-0 flex-1 flex-wrap items-center gap-2 px-4 py-2.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring">
             <Badge variant="outline" className="shrink-0 font-normal">{draftKindLabels[draft.kind as DraftKind] ?? draft.kind}</Badge>
             <span className="min-w-0 truncate font-medium">{draft.title || "Món chưa đặt tên"}</span>
             <span className="text-xs text-muted-foreground">{person(draft.updated_by)} · {formatDateTime(draft.updated_at)}</span>

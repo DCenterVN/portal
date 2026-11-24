@@ -11,6 +11,7 @@ const harness = vi.hoisted(() => ({
   active: false,
   queued: false,
   onRerender: null as null | (() => void),
+  inactiveData: undefined as Array<{ id: string; name: string; category: string; group: string; imageUrl: string | null; status: "ACTIVE" | "DRAFT" | "SUSPENDED"; unit: string }> | undefined,
 }));
 
 function depsEqual(a?: React.DependencyList, b?: React.DependencyList) {
@@ -83,7 +84,7 @@ const catalogData = vi.hoisted(() => ({
 
 vi.mock("swr", () => ({
   default: (key: string | null) => ({
-    data: key === "dish-catalog" ? catalogData : undefined,
+    data: key === "dish-catalog" ? catalogData : key === "dish-catalog-inactive" ? harness.inactiveData : undefined,
     isLoading: false,
     error: undefined,
     mutate: vi.fn(),
@@ -175,6 +176,7 @@ describe("useDishData", () => {
     harness.active = false;
     harness.queued = false;
     harness.onRerender = null;
+    harness.inactiveData = undefined;
   });
 
   afterEach(() => {
@@ -247,5 +249,35 @@ describe("useDishData", () => {
     expect(previewCost).toHaveBeenCalledTimes(2);
     expect(view.current().cost).toEqual(secondCost);
     expect(view.current().costLoading).toBe(false);
+  });
+
+  it("does not send DRAFT materials to previewCost and flags draft in materials", async () => {
+    harness.inactiveData = [{ id: "sku-draft", name: "Thịt nháp", category: "thit", group: "thit_bo", imageUrl: null, status: "DRAFT", unit: "KG" }];
+    const expectedCost = makeCost(50000);
+    const previewCost = vi.fn(async () => expectedCost);
+    const deps = makeDeps(previewCost);
+    const content = makeContent({
+      ingredients: [
+        { row: "row-1", sku_ref: "sku-1", quantity: "200", uom: "G", yield_pct: "100" },
+        { row: "row-2", sku_ref: "sku-draft", quantity: "100", uom: "G", yield_pct: "100" },
+      ],
+    });
+    const view = createRenderer(content, deps);
+
+    expect(view.current().materials["sku-draft"]?.draft).toBe(true);
+    expect(view.current().materials["sku-draft"]?.retired).toBe(false);
+
+    await vi.advanceTimersByTimeAsync(600);
+    expect(previewCost).toHaveBeenCalledTimes(1);
+    expect(previewCost).toHaveBeenCalledWith(expect.objectContaining({
+      ingredients: [{ row: "row-1", sku_ref: "sku-1", quantity: "200", uom: "G", yield_pct: "100" }],
+    }));
+
+    const onlyDraft = makeContent({
+      ingredients: [{ row: "row-2", sku_ref: "sku-draft", quantity: "100", uom: "G", yield_pct: "100" }],
+    });
+    view.rerender(onlyDraft);
+    await vi.advanceTimersByTimeAsync(600);
+    expect(previewCost).toHaveBeenCalledTimes(1);
   });
 });

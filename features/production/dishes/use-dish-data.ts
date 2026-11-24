@@ -7,7 +7,7 @@ import { useAccess } from "@/lib/access-boundary";
 import { groupNodes, sortCategories, uomOf } from "@/lib/dishes/ingredients";
 import type { DishContent } from "@/lib/dishes/types";
 
-export type MaterialInfo = { name: string; group: string | null; category: string; uom: string; imageUrl: string | null; retired: boolean; allergens: string[] | null };
+export type MaterialInfo = { name: string; group: string | null; category: string; uom: string; imageUrl: string | null; retired: boolean; draft: boolean; allergens: string[] | null };
 type Deps = Pick<typeof dishes, "previewCost" | "safeMessage"> & { getRawLabels: typeof getRawLabels; getMaterialTree: typeof getMaterialTree; listMaterials: typeof listMaterials };
 export type Catalog = { tree: MaterialCategory[]; items: CatalogMaterial[] };
 
@@ -58,9 +58,9 @@ export function useDishData(content: DishContent | null, deps: Deps) {
 
   const materials = useMemo(() => Object.fromEntries(ingredientIds.split(",").flatMap(id => {
     const item = known.get(id);
-    return item ? [[id, { name: item.name, group: item.group.toUpperCase() || null, category: item.category.toUpperCase(), uom: uomOf(item.unit), imageUrl: item.imageUrl, retired: item.status === "SUSPENDED", allergens: allergens[id] ?? null } satisfies MaterialInfo]] : [];
+    return item ? [[id, { name: item.name, group: item.group.toUpperCase() || null, category: item.category.toUpperCase(), uom: uomOf(item.unit), imageUrl: item.imageUrl, retired: item.status === "SUSPENDED", draft: item.status === "DRAFT", allergens: allergens[id] ?? null } satisfies MaterialInfo]] : [];
   })), [ingredientIds, known, allergens]);
-  const retiredIds = useMemo(() => new Set(retired.filter(item => item.status === "SUSPENDED").map(item => item.id)), [retired]);
+  const inactiveIds = useMemo(() => new Set(retired.map(item => item.id)), [retired]);
 
   const [cost, setCost] = useState<dishes.CostPreview | null>(null);
   const [costError, setCostError] = useState("");
@@ -70,7 +70,7 @@ export function useDishData(content: DishContent | null, deps: Deps) {
     if (!content?.servings || !content.ingredients.length || !catalog || (hasUnknown && !retiredReady)) {
       return { key: "", content: null as DishContent | null };
     }
-    const activeIngredients = content.ingredients.filter(line => !line.sku_ref || !retiredIds.has(line.sku_ref));
+    const activeIngredients = content.ingredients.filter(line => !line.sku_ref || !inactiveIds.has(line.sku_ref));
     if (!activeIngredients.length || activeIngredients.some(line => !line.sku_ref || Number(line.quantity) <= 0 || !Number.isFinite(Number(line.quantity)) || Number(line.yield_pct) < 1 || Number(line.yield_pct) > 100)) {
       return { key: "", content: null as DishContent | null };
     }
@@ -82,7 +82,7 @@ export function useDishData(content: DishContent | null, deps: Deps) {
       }),
       content: { ...content, ingredients: activeIngredients },
     };
-  }, [content, catalog, hasUnknown, retiredReady, retiredIds]);
+  }, [content, catalog, hasUnknown, retiredReady, inactiveIds]);
   const costKey = costInput.key;
   const costContentRef = useRef<DishContent | null>(null);
   costContentRef.current = costInput.content;

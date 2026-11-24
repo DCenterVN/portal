@@ -51,16 +51,21 @@ export function DishDetailView(props: {
           {renameError && <p role="alert" className="w-full text-xs text-destructive">{renameError}</p>}
         </form>}
         {props.canCreate && props.variant && <div className="ml-auto flex flex-wrap gap-2">
-          <Button type="button" variant="outline" size="sm" disabled={props.busy} onClick={props.onCopy}>
-            <Copy data-icon="inline-start" aria-hidden="true" />
-            Nhân bản
-          </Button>
-          {allServingsTaken
-            ? <Tip label="Đã đủ các mức suất"><span tabIndex={0} className="inline-flex"><Button type="button" variant="outline" size="sm" disabled><Plus data-icon="inline-start" aria-hidden="true" />Tạo biến thể</Button></span></Tip>
-            : <Button type="button" variant="outline" size="sm" disabled={props.busy} onClick={props.onVariant}><Plus data-icon="inline-start" aria-hidden="true" />Tạo biến thể</Button>}
-          {isSelling
-            ? <Tip label="Biến thể đang bán — tạo biến thể mới hoặc ngừng bán để sửa"><span tabIndex={0} className="inline-flex"><Button type="button" size="sm" disabled><Pencil data-icon="inline-start" aria-hidden="true" />Tạo bản sửa</Button></span></Tip>
-            : <Button type="button" size="sm" disabled={props.busy} onClick={props.onRevision}><Pencil data-icon="inline-start" aria-hidden="true" />Tạo bản sửa</Button>}
+          <Tip label="Nhân bản món">
+            <Button type="button" variant="outline" size="icon-sm" aria-label="Nhân bản món" disabled={props.busy} onClick={props.onCopy}>
+              <Copy aria-hidden="true" />
+            </Button>
+          </Tip>
+          <Tip label={allServingsTaken ? "Đã đủ các mức suất" : "Tạo biến thể"}>
+            {allServingsTaken
+              ? <span tabIndex={0} className="inline-flex"><Button type="button" variant="outline" size="icon-sm" aria-label="Tạo biến thể" disabled><Plus aria-hidden="true" /></Button></span>
+              : <Button type="button" variant="outline" size="icon-sm" aria-label="Tạo biến thể" disabled={props.busy} onClick={props.onVariant}><Plus aria-hidden="true" /></Button>}
+          </Tip>
+          <Tip label={isSelling ? "Biến thể đang bán — tạo biến thể mới hoặc ngừng bán để sửa" : "Tạo bản sửa"}>
+            {isSelling
+              ? <span tabIndex={0} className="inline-flex"><Button type="button" variant="outline" size="icon-sm" aria-label="Tạo bản sửa" disabled><Pencil aria-hidden="true" /></Button></span>
+              : <Button type="button" variant="outline" size="icon-sm" aria-label="Tạo bản sửa" disabled={props.busy} onClick={props.onRevision}><Pencil aria-hidden="true" /></Button>}
+          </Tip>
         </div>}
       </div>
       <Tabs value={props.selected} onValueChange={props.onSelect}>

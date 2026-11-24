@@ -28,9 +28,13 @@ export function DishMaterialPicker({ catalog, selectedIds, readOnly = false, pic
   const term = fold(text.trim());
   const bestCategory = useMemo(() => {
     if (!term) return "";
+    const exact = (code: string) => items.some(item => (item.category || UNCATEGORIZED) === code && fold(item.name) === term);
     const starts = (code: string) => items.some(item => (item.category || UNCATEGORIZED) === code && fold(item.name).startsWith(term));
     const active = tree.filter(item => item.active && counts[item.code]);
-    return active.find(item => starts(item.code))?.code ?? [...active].sort((a, b) => (counts[b.code] ?? 0) - (counts[a.code] ?? 0))[0]?.code ?? "";
+    return active.find(item => exact(item.code))?.code
+      ?? active.find(item => starts(item.code))?.code
+      ?? [...active].sort((a, b) => (counts[b.code] ?? 0) - (counts[a.code] ?? 0))[0]?.code
+      ?? "";
   }, [items, tree, counts, term]);
   const category = (asked && counts[asked] ? asked : bestCategory || tree.find(item => item.active && counts[item.code])?.code) ?? asked;
   const matches = useMemo(() => filterMaterials(items, category, text, groups), [items, category, text, groups]);
