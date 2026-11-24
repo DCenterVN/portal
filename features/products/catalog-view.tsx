@@ -15,6 +15,7 @@ import { applyCatalogFilters, CatalogFilters, CatalogQuickFilters, type CatalogF
 
 import { CatalogProductCard } from "./catalog-product-card";
 import { StoreBranchPicker } from "./store-branch-picker";
+import { TablePager } from "@/components/patterns/table-pager";
 
 interface CatalogViewProps {
   branchId?: string;
@@ -25,16 +26,19 @@ interface CatalogViewProps {
   error?: string;
   nextCursor?: string;
   onLoadMore?: () => void;
+  onLoadPrevious?: () => void;
+  page?: number;
+  hasPrevious?: boolean;
   loadingMore?: boolean;
   onRetry?: () => void;
 }
 
 export function CatalogLoader() {
   const state = useCatalog();
-  return <NextIntlClientProvider locale="vi" messages={{ Catalog: viMessages.Catalog }} timeZone="Asia/Ho_Chi_Minh"><StoreBranchPicker /><CatalogView {...state} onLoadMore={() => void state.loadMore()} onRetry={() => void state.reload()} /></NextIntlClientProvider>;
+  return <NextIntlClientProvider locale="vi" messages={{ Catalog: viMessages.Catalog }} timeZone="Asia/Ho_Chi_Minh"><StoreBranchPicker /><CatalogView {...state} onLoadMore={() => void state.loadMore()} onLoadPrevious={() => void state.loadPrevious()} onRetry={() => void state.reload()} /></NextIntlClientProvider>;
 }
 
-export function CatalogView({ products, loading, error, nextCursor, onLoadMore, loadingMore, onRetry, filters: externalFilters, onFiltersChange, branchId }: CatalogViewProps) {
+export function CatalogView({ products, loading, error, nextCursor, onLoadMore, onLoadPrevious, page = 1, hasPrevious = false, loadingMore, onRetry, filters: externalFilters, onFiltersChange, branchId }: CatalogViewProps) {
   const t = useTranslations("Catalog");
   const [localFilters, setLocalFilters] = useState<CatalogFilterValues>({});
   const filters = externalFilters ?? localFilters;
@@ -72,7 +76,7 @@ export function CatalogView({ products, loading, error, nextCursor, onLoadMore, 
             <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4">
               {visible.map(product => <CatalogProductCard key={product.id} product={product} branchId={branchId} />)}
             </div>}
-          {nextCursor && <div className="text-center"><Button variant="outline" size="md" disabled={loadingMore} onClick={onLoadMore}>{loadingMore ? t("loading") : t("more")}</Button></div>}
+          {(nextCursor || hasPrevious) && <TablePager label="Phân trang món" busy={loadingMore} status={`Trang ${page}`} hasPrevious={hasPrevious} onPrevious={() => onLoadPrevious?.()} hasNext={Boolean(nextCursor)} onNext={() => onLoadMore?.()} className="justify-center" />}
         </section>
         <Sheet open={filterOpen} onOpenChange={setFilterOpen}>
           <SheetContent side="right" className="catalog w-full overflow-y-auto sm:max-w-sm">

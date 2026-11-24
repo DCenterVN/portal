@@ -8,6 +8,7 @@ import { useAccess } from "@/lib/access-boundary";
 import { getActiveSuppliers, getSupplier, type Supplier } from "@/lib/api/suppliers";
 import { loadContractMaterials } from "./use-contract-materials";
 import { getAllAgreements, resolveReceiptReferencePrice, type Agreement, type ResolvedAgreementPrice } from "@/lib/api/supplier-agreements";
+import { getSupplierHistory, type SupplierReceipt } from "@/lib/api/supplier-history";
 import { createGoodsReceipt, receiptDraftSchema } from "@/lib/api/goods-receipts";
 import { type Material } from "@/lib/api/sales";
 import { getMaterialCategories } from "@/lib/api/material-categories";
@@ -39,6 +40,7 @@ export function useGoodsReceipt() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [receiveHref, setReceiveHref] = useState("");
+  const [openReceipts, setOpenReceipts] = useState<SupplierReceipt[]>([]);
   const router = useRouter();
   const [success, setSuccess] = useState("");
   const [reconfirm, setReconfirm] = useState(false);
@@ -82,7 +84,7 @@ export function useGoodsReceipt() {
       const raw = sessionStorage.getItem(storageKey);
       const parsed = raw ? receiptDraftSchema.safeParse(JSON.parse(raw)) : null;
       if (parsed?.success) { setSupplier(parsed.data.supplier); setDate(parsed.data.date); setLines(parsed.data.lines.map(line => ({ ...line, key: crypto.randomUUID() }))); }
-    } catch { /* Storage không quyết định quyền hoặc giá. */ }
+    } catch { setRestored(true); }
     const fromAddress = new URLSearchParams(typeof window === "undefined" ? "" : window.location.search).get("supplier");
     if (fromAddress && setup.kind === "ready") {
       setSupplier(fromAddress); setLines(items => items.map(({ key, sku, quantity }) => ({ key, sku, quantity }))); setPrices({ kind: "loading" });
@@ -91,7 +93,7 @@ export function useGoodsReceipt() {
   }, [storageKey, restored]);
   useEffect(() => {
     if (!storageKey || !restored || success) return;
-    try { sessionStorage.setItem(storageKey, JSON.stringify({ supplier, date, lines: lines.map(({ sku, quantity }) => ({ sku, quantity })) })); } catch { /* Bản nháp trong RAM vẫn dùng được. */ }
+    try { sessionStorage.setItem(storageKey, JSON.stringify({ supplier, date, lines: lines.map(({ sku, quantity }) => ({ sku, quantity })) })); } catch { return undefined; }
   }, [storageKey, restored, supplier, date, lines, success]);
   useEffect(() => {
     if (!supplier || !allowed) return;
@@ -100,6 +102,14 @@ export function useGoodsReceipt() {
     getAllAgreements(supplier).then(items => { if (live) setPrices({ kind: "ready", supplier, items }); }).catch(() => { if (live) setPrices({ kind: "error" }); });
     return () => { live = false; };
   }, [supplier, allowed, priceRevision]);
+  useEffect(() => {
+    if (!supplier || !allowed) { setOpenReceipts([]); return; }
+    let live = true;
+    getSupplierHistory(supplier)
+      .then(history => { if (live) setOpenReceipts(history.items.filter(item => item.status === "DRAFT" || item.status === "IN_PROGRESS")); })
+      .catch(() => { if (live) setOpenReceipts([]); });
+    return () => { live = false; };
+  }, [supplier, allowed]);
   const suppliers = supplierList ?? [];
   const priceReady = prices.kind === "ready" && prices.supplier === supplier;
   const priceOf = (material: Material): "none" | "ambiguous" | ResolvedAgreementPrice => {
@@ -147,14 +157,14 @@ export function useGoodsReceipt() {
       setReceiveHref(href);
       setSuccess(`Đã tạo phiếu nhập ở trạng thái ${status}${receipt.total_amount_vnd === undefined ? "" : `, tổng ${receipt.total_amount_vnd.toLocaleString("vi-VN")} VND`}.`);
       toast.success("Đã tạo phiếu nhập", { description: `${status}${total}`, ...(can("inventory:goods_receipt:update") ? { action: { label: "Nhận hàng", onClick: () => router.push(href as Route) } } : {}) });
-      try { sessionStorage.removeItem(storageKey); } catch { /* Không ảnh hưởng phiếu đã tạo. */ }
+      try { sessionStorage.removeItem(storageKey); } catch { setReceiveHref(href); }
     } catch (cause) {
       if (cause instanceof FetchError && cause.status === 409) { setReconfirm(true); setPriceRevision(value => value + 1); const message = "Điều kiện hoặc giá hợp đồng đã thay đổi. Kiểm tra lại bảng giá trước khi tạo lại."; setError(message); toast.error(message); }
       else { const message = cause instanceof Error ? cause.message : "Không tạo được phiếu nhập"; setError(message); toast.error(message); }
     } finally { inFlight.current = false; setBusy(false); }
   }
   return {
-    allowed, setupKind, suppliers, unpricedIds, selectedSupplier, priceTable, categories, pricedCount, referenceOf, materials, supplier, date, rows, busy, error: error || priceError, success, receiveHref, canReceive: can("inventory:goods_receipt:update"), reconfirm, valid,
+    allowed, setupKind, suppliers, unpricedIds, selectedSupplier, priceTable, categories, pricedCount, referenceOf, materials, supplier, date, rows, busy, error: error || priceError, success, receiveHref, canReceive: can("inventory:goods_receipt:update"), reconfirm, valid, openReceipts,
     pricesKind: prices.kind, canUpdate: can("inventory:supplier:update"),
     onSupplier: (id: string | null) => { setSupplier(id ?? ""); setLines(items => items.map(({ key, sku, quantity }) => ({ key, sku, quantity }))); setReconfirm(false); setPrices({ kind: "loading" }); },
     onDate: (value: string) => { setDate(value); setLines(items => items.map(({ key, sku, quantity }) => ({ key, sku, quantity }))); setReconfirm(false); },

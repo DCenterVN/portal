@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
+import { allPages } from "@/lib/api/all-pages";
 import { useAccess } from "@/lib/access-boundary";
 import { toast } from "@/components/ui/toast";
 import { getDraftProducts, type DraftProduct, type Material } from "@/lib/api/sales";
 import { listFoodSets, getFoodSet, type FoodSet, type FoodPackage } from "@/lib/api/sales-pack";
 import { createFoodPlan, getFoodPlan, getFoodPlans, getTargets, getMaterialRequirements, updateFoodPlan, publishFoodPlan, resumeFoodPlanHandoff, reviewFoodPlan, type FoodProductPlan, type ProductionTarget, type PreparationPlanInput, type PackPlanInput } from "@/lib/api/production";
+import { RetryableError } from "@/lib/api/production-http";
 import { isStale, loadPackOptions, packMessage } from "./pack-shared";
 import { percentRatio, pinnedPlanSchema, positiveQuantity, ratioPercent, ratioTotal, servingCount, slotRatioValues } from "./food-plan-ratios";
 import { slotCountMessage } from "./food-set-rules";
@@ -19,7 +21,6 @@ export function useFoodPlans(initialPlans: FoodProductPlan[], targetId?: string)
   const [packs, setPacks] = useState<FoodPackage[]>([]);
   const [chosenSet, setChosenSet] = useState<FoodSet | null>(null);
   const [ratios, setRatios] = useState<Record<string, string>>({});
-  const [setCursor, setSetCursor] = useState<string | null>(null);
   const [plans, setPlans] = useState(initialPlans);
   const [targets, setTargets] = useState<ProductionTarget[]>([]);
   const [products, setProducts] = useState<DraftProduct[]>([]);
@@ -35,8 +36,9 @@ export function useFoodPlans(initialPlans: FoodProductPlan[], targetId?: string)
   const [error, setError] = useState("");
   const [ready, setReady] = useState(false);
   const [notice, setNotice] = useState("");
+  const [retry, setRetry] = useState<(() => void) | null>(null);
   const load = async () => {
-    setBusy(true); setError("");
+    setBusy(true); setError(""); setRetry(null);
     try {
       const [allTargets, allProducts] = await Promise.all([getTargets(), getDraftProducts()]);
       setTargets(allTargets); setProducts(allProducts);
@@ -55,9 +57,9 @@ export function useFoodPlans(initialPlans: FoodProductPlan[], targetId?: string)
   const slotCountError = chosenSet ? slotCountMessage(chosenSet.slots) : "";
   const validRatios = !!chosenSet && !slotCountError && chosenSet.slots.every(slot => ratioTotal(slotRatioValues(slot, ratios)) === 1000000n);
   const valid = !!total && BigInt(total) <= 1000000n && !!productRef && !!code.trim() && !!servingSize.trim() && (mode === "pack" ? validRatios : components.length > 0 && components.length <= 100 && components.every(c => positiveQuantity(c.quantity)));
-  const loadSets = async (append = false) => {
+  const loadSets = async () => {
     setBusy(true); setError("");
-    try { const page = await listFoodSets({ cursor: append ? setCursor ?? undefined : undefined, limit: 100 }); setSets(current => append ? [...current, ...page.items] : page.items); setSetCursor(page.next_cursor); }
+    try { const items = await allPages(cursor => listFoodSets({ cursor: cursor || undefined, limit: 100 })); setSets(items); }
     catch (e) { setError(packMessage(e)); } finally { setBusy(false); }
   };
   const begin = async (plan?: FoodProductPlan) => {
@@ -106,11 +108,11 @@ export function useFoodPlans(initialPlans: FoodProductPlan[], targetId?: string)
     finally { setBusy(false); }
   };
   const legacyAction = async (plan: FoodProductPlan) => {
-    setBusy(true); setError("");
+    setBusy(true); setError(""); setRetry(null);
     try {
       const updated = plan.status === "DRAFT" ? await reviewFoodPlan(plan.id) : plan.status === "REVIEWED" ? (await publishFoodPlan(plan.id)).food_plan : (await resumeFoodPlanHandoff(plan.id)).food_plan;
       setPlans(current => current.map(p => p.id === updated.id ? updated : p));
-    } catch (e) { setError(packMessage(e)); }
+    } catch (e) { setError(packMessage(e, { variant: products.find(product => product.id === plan.product_ref)?.name })); if (e instanceof RetryableError) setRetry(() => () => void legacyAction(plan)); }
     finally { setBusy(false); }
   };
   const chooseSet = async (id: string | null) => {
@@ -138,9 +140,9 @@ export function useFoodPlans(initialPlans: FoodProductPlan[], targetId?: string)
   const removeComponent = (index: number) => setComponents(current => current.filter((_, i) => i !== index));
   const addMaterial = (m: Material) => setComponents(current => current.some(c => c.sku_ref === m.id) ? current : [...current, { sku_ref: m.id, name: m.name, quantity: "0.200", uom: m.uom_code }]);
   return {
-    can, canCreate, canUpdate, plans, targets, products, sets, packs, setCursor, chosenSet, ratios, mode, showForm, setShowForm, editing,
+    can, canCreate, canUpdate, plans, targets, products, sets, packs, chosenSet, ratios, mode, showForm, setShowForm, editing,
     productRef, code, servingSize, kits, setKits, servings, components, busy, error, ready, notice,
-    availableProducts, total, slotCountError, valid,
+    availableProducts, total, slotCountError, valid, target, retry,
     load, loadSets, begin, save, legacyAction, chooseSet, changeProduct, changeServingSize, changeMode, setRatio, changeComponent, removeComponent, addMaterial,
   };
 }

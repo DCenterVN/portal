@@ -280,4 +280,27 @@ describe("useDishData", () => {
     await vi.advanceTimersByTimeAsync(600);
     expect(previewCost).toHaveBeenCalledTimes(1);
   });
+
+  it("excludes missing materials from previewCost when retired catalog is loaded", async () => {
+    harness.inactiveData = [];
+    const expectedCost = makeCost(50000);
+    const previewCost = vi.fn(async () => expectedCost);
+    const deps = makeDeps(previewCost);
+    const content = makeContent({
+      ingredients: [
+        { row: "row-1", sku_ref: "sku-1", quantity: "200", uom: "G", yield_pct: "100" },
+        { row: "row-2", sku_ref: "sku-deleted", quantity: "100", uom: "G", yield_pct: "100" },
+      ],
+    });
+    const view = createRenderer(content, deps);
+
+    expect(view.current().catalogReady).toBe(true);
+    expect(view.current().materials["sku-deleted"]).toBeUndefined();
+
+    await vi.advanceTimersByTimeAsync(600);
+    expect(previewCost).toHaveBeenCalledTimes(1);
+    expect(previewCost).toHaveBeenCalledWith(expect.objectContaining({
+      ingredients: [{ row: "row-1", sku_ref: "sku-1", quantity: "200", uom: "G", yield_pct: "100" }],
+    }));
+  });
 });

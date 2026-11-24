@@ -1,12 +1,11 @@
 import { Suspense } from "react";
-import { BRAND_NAME } from "@/lib/brand";
 import { InboundQcView } from "@/features/inventory/inbound-qc/inbound-qc-view";
 import { lotListKey, lotListQuery, lotTableState } from "@/features/inventory/inbound-qc/inbound-qc-table";
 import { inboundLotParams, lotPageSchema } from "@/lib/api/inbound-qc";
 import { inventoryServerGet } from "@/lib/api/inventory-server";
 
 export const metadata = {
-  title: `Kiểm đầu vào — ${BRAND_NAME}`,
+  title: "Kiểm đầu vào",
   description: "Kiểm chất lượng lô nguyên liệu vừa nhận, duyệt hoặc từ chối lô",
 };
 

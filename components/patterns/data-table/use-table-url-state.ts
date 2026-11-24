@@ -12,10 +12,13 @@ export function useTableUrlState(config: TableUrlConfig) {
   const pathname = usePathname();
   const params = useSearchParams();
   const state = React.useMemo(() => parseTableUrl(params, config), [params, config]);
+  const latest = React.useRef(state);
+  latest.current = state;
   const [typed, setTyped] = React.useState<string | null>(null);
   const timer = React.useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const commit = React.useCallback((next: TableUrlState) => {
+    latest.current = next;
     const query = buildTableUrl(next, config);
     router.replace((query ? `${pathname}?${query}` : pathname) as Route, { scroll: false });
   }, [config, pathname, router]);
@@ -26,21 +29,21 @@ export function useTableUrlState(config: TableUrlConfig) {
   const setQuery = (q: string) => {
     setTyped(q);
     clearTimeout(timer.current);
-    timer.current = setTimeout(() => commit(withQuery(state, q)), searchDelay);
+    timer.current = setTimeout(() => commit(withQuery(latest.current, q)), searchDelay);
   };
 
   return {
     state,
     query: typed ?? state.q,
     setQuery,
-    setFilter: (key: string, values: string[]) => commit(withFilter(state, key, values)),
-    setSort: (sort: SortState) => commit(withSort(state, sort)),
-    setPageSize: (size: number) => commit(withPageSize(state, size)),
-    setPage: (page: number) => commit(withPage(state, page)),
-    nextCursor: (cursor: string) => commit(withNextCursor(state, cursor)),
-    previousCursor: () => commit(withPreviousCursor(state)),
-    firstPage: () => commit(withFirstPage(state)),
-    clear: () => { setTyped(""); commit(clearFilters(state)); },
+    setFilter: (key: string, values: string[]) => commit(withFilter(latest.current, key, values)),
+    setSort: (sort: SortState) => commit(withSort(latest.current, sort)),
+    setPageSize: (size: number) => commit(withPageSize(latest.current, size)),
+    setPage: (page: number) => commit(withPage(latest.current, page)),
+    nextCursor: (cursor: string) => commit(withNextCursor(latest.current, cursor)),
+    previousCursor: () => commit(withPreviousCursor(latest.current)),
+    firstPage: () => commit(withFirstPage(latest.current)),
+    clear: () => { setTyped(""); commit(clearFilters(latest.current)); },
     cursor: state.cursors[state.cursors.length - 1] ?? "",
     cursorPage: state.cursors.length + 1,
   };

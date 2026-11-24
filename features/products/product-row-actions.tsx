@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Ban, Pencil, Trash2 } from "lucide-react";
+import { Ban, Pencil, RotateCcw, Trash2 } from "lucide-react";
 import { RowActions } from "@/components/patterns/row-actions";
 import { ConfirmDialog } from "@/components/patterns/confirm-dialog";
 import { Field } from "@/components/patterns/form-field";
@@ -13,7 +13,8 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogD
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/toast";
-import { deleteProduct, suspendProduct, updateProduct } from "@/lib/api/product-lifecycle";
+import { ProductResumeVariantsDialog } from "./product-resume-variants-dialog";
+import { deleteProduct, resumeProduct, suspendProduct, updateProduct } from "@/lib/api/product-lifecycle";
 import type { Product } from "@/lib/api/sales";
 
 const editSchema = z.object({
@@ -21,7 +22,7 @@ const editSchema = z.object({
   description: z.string().trim().max(2000, "Mô tả tối đa 2000 ký tự"),
 });
 type EditValues = z.infer<typeof editSchema>;
-type Mode = "edit" | "suspend" | "delete" | null;
+type Mode = "edit" | "suspend" | "resume" | "variants" | "delete" | null;
 const failure = (error: unknown) => error instanceof Error ? error.message : "Không thực hiện được. Vui lòng thử lại.";
 
 function EditDialog({ product, onClose, onDone }: { product: Product; onClose: () => void; onDone: () => Promise<void> }) {
@@ -61,6 +62,8 @@ export function ProductRowActions({ product, canUpdate, canDelete, onChanged }: 
     <RowActions label={product.name} actions={[
       { label: "Sửa", icon: Pencil, onSelect: () => setMode("edit"), hidden: !canUpdate },
       { label: "Ngừng bán", icon: Ban, onSelect: () => { setReason(""); setMode("suspend"); }, hidden: !canUpdate || product.status !== "ACTIVE" },
+      { label: "Mở bán lại", icon: RotateCcw, onSelect: () => { setReason(""); setMode("resume"); }, hidden: !canUpdate || product.status !== "SUSPENDED" },
+      { label: "Mở bán lại suất bán", icon: RotateCcw, onSelect: () => setMode("variants"), hidden: !canUpdate || product.status !== "ACTIVE" },
       { label: "Xoá", icon: Trash2, danger: true, onSelect: () => setMode("delete"), hidden: !canDelete || product.status !== "DRAFT" },
     ]} />
     {mode === "edit" && <EditDialog product={product} onClose={() => setMode(null)} onDone={onChanged} />}
@@ -69,6 +72,12 @@ export function ProductRowActions({ product, canUpdate, canDelete, onChanged }: 
       confirmDisabled={!reason.trim()} onConfirm={() => void run(() => suspendProduct(product.id, reason.trim()), "Đã ngừng bán sản phẩm.")}>
       <Field label="Lý do" htmlFor="suspend-reason"><Textarea id="suspend-reason" rows={3} value={reason} onChange={event => setReason(event.target.value)} placeholder="Ví dụ: hết mùa nguyên liệu" /></Field>
     </ConfirmDialog>
+    <ConfirmDialog open={mode === "resume"} onOpenChange={open => !open && setMode(null)} title={`Mở bán lại ${product.name}?`}
+      description="Khách đặt được lại sản phẩm này. Các suất bán đã ngừng theo sản phẩm và còn giá hợp lệ cũng được mở lại." confirmLabel="Mở bán lại" busy={busy}
+      confirmDisabled={!reason.trim()} onConfirm={() => void run(() => resumeProduct(product.id, reason.trim()), "Đã mở bán lại sản phẩm.")}>
+      <Field label="Lý do" htmlFor="resume-reason"><Textarea id="resume-reason" rows={3} value={reason} onChange={event => setReason(event.target.value)} placeholder="Ví dụ: đã có lại nguyên liệu" /></Field>
+    </ConfirmDialog>
+    {mode === "variants" && <ProductResumeVariantsDialog product={product} onClose={() => setMode(null)} onDone={onChanged} />}
     <ConfirmDialog open={mode === "delete"} onOpenChange={open => !open && setMode(null)} title={`Xoá bản nháp ${product.name}?`}
       description="Bản nháp bị xoá sẽ không khôi phục được." confirmLabel="Xoá" danger busy={busy}
       onConfirm={() => void run(() => deleteProduct(product.id), "Đã xoá bản nháp.")} />

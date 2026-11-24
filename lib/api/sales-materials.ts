@@ -64,7 +64,10 @@ const UpdateRawLabelsRequestSchema = z.object({
   allergen_summary: RawAllergensSchema,
   avoidance_flags: z.array(z.enum(["PORK", "BEEF", "ANIMAL", "ALCOHOL", "MSG", "SPICY", "NGU_VI_TAN"])).refine(items => new Set(items).size === items.length, "Duplicate values"),
   diet_flags: z.array(z.enum(["VEGETARIAN", "VEGAN"])).refine(items => new Set(items).size === items.length, "Duplicate values").nullable(),
-  expected_updated_at: z.string().datetime({ offset: true })
+  expected_updated_at: z.string().datetime({ offset: true }),
+  uom_code: z.enum(["KG", "L", "EA"]).optional(),
+  material_group_code: z.string().min(1).optional(),
+  season_months: z.array(z.number().int().min(1).max(12)).optional()
 }).strict();
 
 export type UpdateRawLabelsRequest = z.infer<typeof UpdateRawLabelsRequestSchema>;
@@ -80,4 +83,8 @@ async function rawLabelsRequest<T>(path: string, schema: z.ZodType<T>, method = 
 export function getRawLabels(id: string) { return rawLabelsRequest(`/skus/${encodeURIComponent(id)}/labels`, RawLabelsViewSchema); }
 export function updateRawLabels(id: string, input: UpdateRawLabelsRequest) {
   return rawLabelsRequest(`/skus/${encodeURIComponent(id)}/labels`, RawLabelsViewSchema, "PATCH", UpdateRawLabelsRequestSchema.parse(input));
+}
+export async function setRawUnit(id: string, input: { uom_code?: "KG" | "L" | "EA"; material_group_code?: string }) {
+  const current = await getRawLabels(id);
+  return updateRawLabels(id, { allergen_summary: current.allergen_summary, avoidance_flags: current.avoidance_flags, diet_flags: current.diet_flags, expected_updated_at: current.updated_at, ...input });
 }

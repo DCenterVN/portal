@@ -6,7 +6,7 @@ export const orderStatuses: Record<string, string> = {
 };
 export const orderDetailFields = {
   payment_method: z.enum(["COD", "BANK_TRANSFER", "CASH"]).nullish(),
-  payment_status: z.enum(["PENDING_COD", "INITIATED", "SUCCESS", "FAILED"]).nullish(),
+  payment_status: z.enum(["PENDING_COD", "INITIATED", "SUCCESS", "FAILED", "REFUND_PENDING"]).nullish(),
   items: z.array(z.object({
     sku_code: z.string().optional(), sku_name: z.string(), variant_label: z.string().nullish(),
     quantity: z.number(), unit_price_vnd: z.number(), line_total_vnd: z.number(),

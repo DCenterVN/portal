@@ -1,15 +1,16 @@
 "use client";
 
 import React, { useId } from "react";
+import Link from "next/link";
 import { InlineAlert } from "@/components/patterns/inline-alert";
 import { ErrorState } from "@/components/patterns/empty-state";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { StatusBadge, statusTone } from "@/components/patterns/status-badge";
-import { uomLabel } from "./package-rules";
+import { formatServings } from "@/lib/stock-transfer";
 import { productionOrderStatuses } from "./order-status";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -26,6 +27,8 @@ import { PageShell } from "@/components/ui/page";
 import { PageHeading } from "@/components/patterns/page-heading";
 import type { ProductionOrder } from "@/lib/api/production";
 import { qcStatuses, useQcDecision } from "./use-qc-decision";
+import { qcWhoCanDecide } from "./qc-rules";
+import { ExecutionFlowBar } from "./execution-flow-bar";
 
 interface QCViewProps {
   completedOrders?: ProductionOrder[];
@@ -33,24 +36,28 @@ interface QCViewProps {
 
 export function QCView({ completedOrders }: QCViewProps) {
   const formId = useId();
-  const { list, status, setStatus, orders, listLoading, listError, reload, selectedOrder, setSelectedOrder, temperature, setTemperature, packagePassed, setPackagePassed, sensoryNotes, setSensoryNotes, loading, handleDecision } = useQcDecision(completedOrders);
+  const { canDecide, list, status, setStatus, orders, listLoading, listError, reload, selectedOrder, setSelectedOrder, temperature, setTemperature, packagePassed, setPackagePassed, sensoryNotes, setSensoryNotes, loading, handleDecision } = useQcDecision(completedOrders);
 
   return (
     <PageShell>
       <PageHeading
         title="Kiểm định chất lượng thành phẩm"
         description="Nghiệm thu cảm quan, nhiệt độ tâm cấp đông (-18°C) và kiểm tra bao bì"
+        actions={<Link className={buttonVariants({ size: "sm", variant: "outline" })} href="/inventory/shelves">Sang kệ hàng & QR</Link>}
       />
+      <ExecutionFlowBar current="qc" />
 
       <InlineAlert tone="info" className="mb-6">
         Người kiểm định phải khác người đã nấu hoặc đóng gói mẻ này. Nếu trùng người, hệ thống sẽ không cho ghi kết quả.
       </InlineAlert>
 
-      {selectedOrder && (
+      {!canDecide && <InlineAlert tone="warning" className="mb-6">{qcWhoCanDecide} Tài khoản này chỉ xem được danh sách.</InlineAlert>}
+
+      {selectedOrder && canDecide && (
         <Card className="mb-6">
           <CardContent className="pt-6">
             <h3 className="mb-4 text-lg font-semibold">
-              Nghiệm thu Lệnh: {selectedOrder.order_code} ({selectedOrder.planned_quantity} {uomLabel(selectedOrder.uom)})
+              Nghiệm thu Lệnh: {selectedOrder.order_code} ({formatServings(selectedOrder.planned_quantity)})
             </h3>
             <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="grid gap-1.5">
@@ -84,10 +91,10 @@ export function QCView({ completedOrders }: QCViewProps) {
             </div>
             <div className="flex gap-2">
               <Button disabled={loading || !sensoryNotes.trim()} onClick={() => handleDecision("PASS")}>
-                Phê duyệt QC (PASS) — Cho phép lên kệ
+                Đạt — cho phép lên kệ
               </Button>
               <Button disabled={loading || !sensoryNotes.trim()} variant="destructive" onClick={() => handleDecision("FAIL")}>
-                Từ chối QC (FAIL) — Hủy lô
+                Không đạt — huỷ lô
               </Button>
               <Button variant="ghost" onClick={() => setSelectedOrder(null)}>Hủy bỏ</Button>
             </div>
@@ -121,15 +128,18 @@ export function QCView({ completedOrders }: QCViewProps) {
                 orders.map((o) => (
                   <TableRow key={o.id}>
                     <TableCell className="font-mono font-medium">{o.order_code}</TableCell>
-                    <TableCell>{o.actual_output_quantity > 0 ? o.actual_output_quantity : o.planned_quantity} {uomLabel(o.uom)}</TableCell>
+                    <TableCell>{formatServings(o.actual_output_quantity > 0 ? o.actual_output_quantity : o.planned_quantity)}</TableCell>
                     <TableCell>
                       <StatusBadge tone={statusTone(o.status)}>{productionOrderStatuses[o.status] ?? o.status}</StatusBadge>
                     </TableCell>
                     <TableCell className="text-right">
-                      {o.status === "COMPLETED" && (
+                      {o.status === "COMPLETED" && canDecide && (
                         <Button size="sm" variant={!selectedOrder && orders.find((order) => order.status === "COMPLETED")?.id === o.id ? "default" : "outline"} onClick={() => setSelectedOrder(o)}>
                           Tiến hành nghiệm thu
                         </Button>
+                      )}
+                      {o.status === "QC_PASSED" && (
+                        <Link className={buttonVariants({ size: "sm", variant: "ghost" })} href="/inventory/shelves">Xếp lên kệ</Link>
                       )}
                     </TableCell>
                   </TableRow>
@@ -139,7 +149,7 @@ export function QCView({ completedOrders }: QCViewProps) {
           </Table>
         </CardContent>
       </Card>}
-      <TablePager label="Phân trang lô thành phẩm" busy={listLoading} hasPrevious={list.hasPrevious} onPrevious={list.previous} hasNext={list.hasNext} onNext={list.next} />
+      <TablePager label="Phân trang lô thành phẩm" busy={listLoading} status={`Trang ${list.page}`} hasPrevious={list.hasPrevious} onPrevious={list.previous} hasNext={list.hasNext} onNext={list.next} />
     </PageShell>
   );
 }

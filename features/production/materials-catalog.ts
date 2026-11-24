@@ -1,4 +1,5 @@
 import type { MaterialCategory, Material, MaterialGroup, Status } from "@/lib/api/material-catalog";
+import { materialCategoryRank } from "@/lib/material-category-order";
 
 export const PAGE_SIZE = 24;
 export const SEARCH_DELAY_MS = 300;
@@ -18,12 +19,7 @@ export function suggestCode(name: string): string {
   return fold(name).replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "").toUpperCase();
 }
 
-const categoryOrder = ["THIT", "CA_LOAI", "CA", "THUY_HAI_SAN", "TRUNG_SUA", "DO_CHE_BIEN", "RAU_CU", "RAU", "CU_QUA", "NAM", "TRAI_CAY", "GAO_NGU_COC", "DO_KHO", "GIA_VI", "COT_NUOC_DUNG"];
-const categoryRank = (category: MaterialCategory) => {
-  const index = categoryOrder.indexOf(category.code.toUpperCase());
-  return index < 0 ? categoryOrder.length : index;
-};
-export const sortCategories = (tree: MaterialCategory[]) => [...tree].sort((a, b) => categoryRank(a) - categoryRank(b));
+export const sortCategories = (tree: MaterialCategory[]) => [...tree].sort((a, b) => materialCategoryRank(a.code) - materialCategoryRank(b.code));
 
 export const groupsOf = (tree: MaterialCategory[], category: string): MaterialGroup[] => tree.find(item => item.code === category)?.groups.filter(item => item.active) ?? [];
 

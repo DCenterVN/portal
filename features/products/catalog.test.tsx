@@ -105,9 +105,13 @@ describe("AC-6 trạng thái loading / empty / error / success khác nhau", () =
   it("bốn trạng thái cho bốn HTML khác nhau", () => {
     expect(new Set([loading, empty, error, success]).size).toBe(4);
   });
-  it("next_cursor hiện Xem thêm, không có cursor thì không", () => {
-    expect(visible(render({ nextCursor: "c2" }))).toContain("Xem thêm");
-    expect(visible(render())).not.toContain("Xem thêm");
+  it("next_cursor hiện Trang sau, không còn Xem thêm; trang 2 có Trang trước", () => {
+    const first = visible(render({ nextCursor: "c2" }));
+    expect(first).toContain("Trang sau");
+    expect(first).toContain("Trang 1");
+    expect(first).not.toContain("Xem thêm");
+    expect(visible(render({ nextCursor: "c3", page: 2, hasPrevious: true }))).toContain("Trang 2");
+    expect(visible(render())).not.toContain("Trang sau");
   });
   it("AC-6 có nút mở bộ lọc cho mobile và đủ ô lọc tên, giá, sắp xếp", () => {
     const out = render();

@@ -1,10 +1,9 @@
-import { BRAND_NAME } from "@/lib/brand";
 import { DishDetailScreen } from "@/features/production/dishes/dishes-container";
 
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: `Chi tiết món ăn — ${BRAND_NAME}`,
+  title: "Chi tiết món ăn",
   description: "Chi tiết biến thể, công thức và giá vốn món ăn",
 };
 

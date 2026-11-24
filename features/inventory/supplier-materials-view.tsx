@@ -18,7 +18,7 @@ export type SupplierMaterialsViewProps = {
 
 function Thumb({ row }: { row: PriceRow }) {
   if (row.image) return <img src={row.image} alt="" className="size-8 shrink-0 rounded-lg object-cover" />;
-  return <div aria-hidden className="grid size-8 shrink-0 place-items-center rounded-lg bg-tint text-xs font-semibold">{row.name.slice(0, 1).toLocaleUpperCase("vi")}</div>;
+  return <div aria-hidden className="grid size-8 shrink-0 place-items-center rounded-lg bg-muted text-xs font-semibold text-muted-foreground">{row.name.slice(0, 1).toLocaleUpperCase("vi")}</div>;
 }
 
 export function SupplierMaterialsView({ state, rows, drafts, active, canUpdate, supplierId, profile, onAdd, onEdit, onStatus, onRetry }: SupplierMaterialsViewProps) {

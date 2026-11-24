@@ -3,11 +3,7 @@ import path from "node:path";
 import ts from "typescript";
 import { expect, it } from "vitest";
 
-// Existing screens outside S2–S4 stay tracked until their D-246 slices land.
-const allowlist: Record<string, { reason: string; debt: "D-246" }> = {
-  "features/sales/pricing-floor-view.tsx": { reason: "S1 giá sàn chờ BE, brief cấm thực hiện trong S2–S4.", debt: "D-246" },
-};
-// contract_ref is a paper contract number; audit separately filters UUID values.
+const allowlist: Record<string, { reason: string; debt: "D-246" }> = {};
 const forbiddenField = /^(?!contract_ref$)(?:id|.*_id|.*_ref)$/;
 const forbiddenLabel = /UUID|\bID\b|_ref|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-/i;
 

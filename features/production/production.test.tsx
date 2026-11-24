@@ -199,14 +199,13 @@ import { GET as listPlansBff, POST as createPlanBff } from "@/app/api/production
 import { POST as productBff } from "@/app/api/sales/products/route";
 import type { Material } from "@/lib/api/sales";
 
-const fooddevPermissions = ["sales:product:read", "sales:product:create", "production:target:read", "production:target:create", "production:food_plan:read", "production:food_plan:create", "production:food_plan:update", "production:material_requirement:read"];
+const fooddevPermissions = ["sales:product:read", "sales:product:create", "production:target:read", "production:target:create", "production:food_plan:read", "production:food_plan:create", "production:food_plan:update", "production:material_requirement:read", "sales:purchase_price:read"];
 const product = { id: "product-real", name: "Canh chua cá", status: "DRAFT" };
 const target: ProductionTarget = { id: "target-real", title: "Thử set", target_code: "TGT", branch_ref: "main", status: "APPROVED", period_start: "2026-10-20", period_end: "2026-10-21", lines: [{ product_ref: product.id, target_quantity: "100", uom: "EA" }], created_at: "2026-10-20", created_by: "food-dev" };
 const material: Material = { id: "fish-real", name: "Cá tươi", sku_code: "FH-FISH", selectable: true, uom_code: "KG", season_months: null, season_note: null, normalized_unit_price: "70000", reference_price_vnd: 21000, reference_pack_quantity: "0.300", reference_pack_uom: "KG", reference_observed_at: null, price_source: "foodhub_seed" };
 const plan: FoodProductPlan = { id: "plan-real", plan_code: "SET", target_ref: target.id, product_ref: product.id, variant_sku_code: "CANH", planned_quantity: "4.000", servings_per_set: 4, purpose: "PREPARATION", revision: 7, serving_size: "1 suất", uom: "EA", components: [{ sku_ref: material.id, quantity: "0.333", uom: "KG" }], status: "DRAFT", nutrition_snapshot: {}, created_by: "food-dev", created_at: "2026-10-20" };
 const requirement = { ...material, sku_ref: material.id, quantity: "0.999", uom: "KG" };
-const requirements = { target_id: target.id, plan_revision: 7, plan_revisions: { [plan.id]: 7 }, computed_at: "2026-10-20T01:00:00Z", lines: [requirement], all_lines: [requirement], total: 1, hidden_count: 0, season_message: "chưa có dữ liệu mùa" };
-// Feature sub-views take the hook state as `s` and hold no hooks, so the walker renders them inline.
+const requirements = { target_id: target.id, plan_revision: 7, plan_revisions: { [plan.id]: 7 }, computed_at: "2026-10-20T01:00:00Z", lines: [requirement], all_lines: [requirement], total: 1, hidden_count: 0, season_message: "Chưa có dữ liệu mùa" };
 type TestNode = React.ReactElement<Record<string, unknown> & { children?: React.ReactNode }>;
 function nodes(tree: React.ReactNode, match: (node: TestNode) => boolean): TestNode[] {
   if (!React.isValidElement<Record<string, unknown> & { children?: React.ReactNode }>(tree)) return [];
@@ -242,7 +241,7 @@ function api(permissions = fooddevPermissions) {
     if (path === "/api/production/targets") return json(method === "POST" ? { ...target, ...body } : { items: [target] });
     if (path.endsWith("/food-plans")) return json(method === "POST" ? { ...plan, ...body } : { items: [plan] });
     if (path.endsWith("/plan-real")) return json(method === "PUT" ? { ...plan, ...body, revision: 8 } : plan);
-    if (path === "/api/sales/skus") return json({ items: [material], categories: [], next_cursor: "next-real", season_message: "chưa có dữ liệu mùa" });
+    if (path === "/api/sales/skus") return json({ items: [material], categories: [], next_cursor: "next-real", season_message: "Chưa có dữ liệu mùa" });
     throw Error(`Request ngoài dự kiến ${path}`);
   });
   vi.stubGlobal("fetch", fetcher);
@@ -283,7 +282,7 @@ describe("FOODDEV forms and warehouse", () => {
     expect(node(tree, n => n.type === LoadingState)).toBeDefined();
     await effects();
     expect(nodes(render(MaterialPicker, props), n => n.type === EmptyState)).toHaveLength(0);
-    resolveMaterials(json({ items: [], categories: [], next_cursor: "", season_message: "chưa có dữ liệu mùa" }));
+    resolveMaterials(json({ items: [], categories: [], next_cursor: "", season_message: "Chưa có dữ liệu mùa" }));
     await new Promise(resolve => setImmediate(resolve));
     tree = render(MaterialPicker, props);
     expect(nodes(tree, n => n.type === LoadingState)).toHaveLength(0);
@@ -291,7 +290,7 @@ describe("FOODDEV forms and warehouse", () => {
     const html = renderToStaticMarkup(tree);
     expect(html).toContain("Không có nguyên liệu phù hợp");
     expect(html).toContain("Hãy đổi bộ lọc");
-    expect(html).toContain("chưa có dữ liệu mùa");
+    expect(html).toContain("Chưa có dữ liệu mùa");
     expect(props.onSelect).not.toHaveBeenCalled();
   });
   it.each(["plans", "materials"])("shows %s API failures without an empty state", async view => {
@@ -349,7 +348,7 @@ describe("FOODDEV forms and warehouse", () => {
     expect(html).not.toContain('aria-busy="true"');
     expect(html).toContain("Không có dòng phù hợp");
     expect(html).toContain("Hãy đổi bộ lọc");
-    expect(html).toContain("Revision:");
+    expect(html).toContain("Lần sửa:");
     expect(html).toContain("Tổng 0 dòng");
   });
   it("FOOD_DEV creates a draft product and uses its real product ID in an APPROVED target", async () => {
@@ -357,16 +356,18 @@ describe("FOODDEV forms and warehouse", () => {
     let tree = render(TargetsView, props); await effects(); tree = render(TargetsView, props);
     await invoke(node(tree, n => n.type === Button && React.Children.toArray(n.props.children).includes("Tạo chỉ tiêu")), "onClick");
     tree = render(TargetsView, props);
+    expect(renderToStaticMarkup(tree)).not.toContain("Tạo sản phẩm nháp");
+    await invoke(node(tree, named("Tạo sản phẩm mới")), "onClick"); tree = render(TargetsView, props);
     expect(renderToStaticMarkup(tree)).toContain("Tạo sản phẩm nháp");
     await invoke(node(tree, n => n.props.label === "Tên sản phẩm"), "onChange", "Canh chua cá 4 suất");
-    tree = render(TargetsView, props); await invoke(node(tree, named("Tạo product DRAFT")), "onClick");
+    tree = render(TargetsView, props); await invoke(node(tree, named("Lưu sản phẩm nháp")), "onClick");
     tree = render(TargetsView, props);
     await invoke(node(tree, n => n.props.label === "Tiêu đề"), "onChange", "Set bữa trưa");
     tree = render(TargetsView, props);
     await invoke(node(tree, n => n.type === "form"), "onSubmit", { preventDefault() {} });
     expect(requests.find(r => r.path === "/api/sales/products" && r.method === "POST")?.body).toEqual({ name: "Canh chua cá 4 suất", slug: "canh-chua-ca-4-suat" });
     expect(requests.find(r => r.path === "/api/production/targets" && r.method === "POST")?.body.lines).toEqual([{ product_ref: product.id, target_quantity: "4", uom: "EA" }]);
-    expect(renderToStaticMarkup(render(TargetsView, props))).toContain("APPROVED");
+    expect(renderToStaticMarkup(render(TargetsView, props))).toContain("Đã duyệt");
   });
   it("FOOD_DEV creates and edits PREPARATION with exact decimal and the revision fetched from server", async () => {
     const { requests } = api(); const props = { initialPlans: [plan], targetId: target.id };
@@ -376,9 +377,10 @@ describe("FOODDEV forms and warehouse", () => {
     let tree = render(FoodPlansView, props); await effects(); tree = render(FoodPlansView, props);
     expect(renderToStaticMarkup(tree)).not.toMatch(/Thẩm định|Publish BOM|Kiểm tra &amp; handoff/);
     await invoke(node(tree, named("Tạo set")), "onClick"); tree = render(FoodPlansView, props);
+    expect(setList).toHaveBeenCalledWith(expect.objectContaining({ limit: 100 }));
     await invoke(node(tree, n => n.type === EntityPicker), "onChange", product.id);
     tree = render(FoodPlansView, props);
-    await invoke(node(tree, n => n.type === EntityPicker && n.props.label === "Mã set"), "onChange", packSet.id);
+    await invoke(node(tree, n => n.type === EntityPicker && n.props.label === "Biến thể set"), "onChange", packSet.id);
     await invoke(node(tree, n => n.type === MaterialPicker), "onSelect", material);
     tree = render(FoodPlansView, props);
     await invoke(node(tree, n => n.type === "form"), "onSubmit", { preventDefault() {} });
@@ -406,8 +408,8 @@ describe("FOODDEV forms and warehouse", () => {
     const props = { targetId: target.id };
     render(MaterialRequirementsView, props); await effects();
     const html = renderToStaticMarkup(render(MaterialRequirementsView, props));
-    expect(html).toContain("0.999 KG"); expect(html).not.toContain("0.9990000001");
-    expect(html).toContain("chưa có dữ liệu mùa"); expect(html).toContain("Giá bán seed");
+    expect(html).toContain("0,999 kg"); expect(html).not.toContain("0.9990000001");
+    expect(html).toContain("Chưa có dữ liệu mùa"); expect(html).not.toContain("Giá bán seed");
     expect(html).toContain("Tổng nhu cầu đầy đủ"); expect(html).not.toMatch(/Lưu set|Tạo set|Sửa set|Publish/);
   });
   it("retains full totals and the season message when filtering hides every row", async () => {
@@ -415,7 +417,7 @@ describe("FOODDEV forms and warehouse", () => {
     vi.stubGlobal("fetch", vi.fn(async () => json({ ...requirements, lines: [], hidden_count: 1 })));
     const props = { foodPlanId: plan.id }; render(MaterialRequirementsView, props); await effects();
     const html = renderToStaticMarkup(render(MaterialRequirementsView, props));
-    expect(html).toContain("chưa có dữ liệu mùa"); expect(html).toContain("Đang ẩn 1 dòng"); expect(html).toContain("0.999 KG");
+    expect(html).toContain("Chưa có dữ liệu mùa"); expect(html).toContain("Đang ẩn 1 dòng"); expect(html).toContain("0,999 kg");
   });
   it.each(["targets", "food-plans"])("filters %s requirements by month and price without writing the recipe", async scope => {
     const fetcher = vi.fn<typeof fetch>(async () => json({ ...requirements, lines: [], hidden_count: 1 }));
@@ -437,7 +439,7 @@ describe("FOODDEV forms and warehouse", () => {
     const html = renderToStaticMarkup(render(MaterialRequirementsView, props));
     expect(html).toContain("Đã ẩn 1 / 1 nguyên liệu");
     expect(html).toContain("Không có dòng phù hợp");
-    expect(html).toContain("0.999 KG");
+    expect(html).toContain("0,999 kg");
     expect(fetcher.mock.calls.every(([, init]) => (init?.method ?? "GET") === "GET")).toBe(true);
   });
   it.each(["", "0"])("omits blank filters and sends a KG price basis only for a supplied maximum %s", async priceMax => {
@@ -468,7 +470,7 @@ describe("FOODDEV forms and warehouse", () => {
     const { requests } = api();
     const props = { onSelect: vi.fn() }; render(MaterialPicker, props); await effects();
     let tree = render(MaterialPicker, props);
-    expect(renderToStaticMarkup(tree)).toContain("chưa có dữ liệu mùa");
+    expect(renderToStaticMarkup(tree)).toContain("Chưa có dữ liệu mùa");
     await invoke(node(tree, n => n.type === EntityPicker && n.props.label === "Nguyên liệu"), "onChange", material.id);
     expect(props.onSelect).toHaveBeenCalledWith(material);
     await invoke(node(tree, n => n.type === TablePager), "onNext");
@@ -524,6 +526,7 @@ import * as salesPackApi from "@/lib/api/sales-pack";
 import * as productionApi from "@/lib/api/production";
 import { FoodSetsView } from "./food-sets-view";
 import { PackagesView } from "./packages-view";
+import { productCreateError } from "./pack-shared";
 import { ErrorState } from "@/components/patterns/empty-state";
 import { Table } from "@/components/ui/table";
 
@@ -556,7 +559,7 @@ async function openPackPlan() {
   paint(FoodPlansView, props); await effects();
   await invoke(node(paint(FoodPlansView, props), named("Tạo set")), "onClick");
   let tree = paint(FoodPlansView, props);
-  await invoke(node(tree, n => n.type === EntityPicker && n.props.label === "Mã set"), "onChange", packSet.id);
+  await invoke(node(tree, n => n.type === EntityPicker && n.props.label === "Biến thể set"), "onChange", packSet.id);
   tree = paint(FoodPlansView, props);
   await invoke(labelControl(tree, "Nguồn định mức"), "onChange", { target: { value: "pack" } });
   tree = paint(FoodPlansView, props);
@@ -986,8 +989,13 @@ describe("FOODDEV PACK UI", () => {
     paint(FoodSetsView, {}); await effects();
     expect(salesPackApi.listFoodSets).toHaveBeenCalledTimes(2);
   });
+  it("product_duplicate_error_is_vietnamese", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => Response.json({ code: 409, status: "error", message: "catalog identity already exists", errors: { error_code: "idempotency_conflict" } }, { status: 409 })));
+    const failure = await salesApi.createDraftProduct({ name: "Ba chỉ chiên giòn", slug: "ba-chi-chien-gion" }).catch(error => error);
+    expect(productCreateError(failure)).toBe("Đã có sản phẩm tên này. Chọn sản phẩm đó hoặc đặt tên khác.");
+  });
   it("warehouse_read_only", async () => {
-    fooddevHarness.permissions = ["sales:variant:read", "sales:product:read", "production:recipe:read", "production:food_plan:read", "production:material_requirement:read"];
+    fooddevHarness.permissions = ["sales:variant:read", "sales:product:read", "production:recipe:read", "production:food_plan:read", "production:material_requirement:read", "sales:purchase_price:read"];
     for (const View of [FoodSetsView, PackagesView]) {
       fooddevHarness.slots = []; paint(View, {}); await effects();
       const tree = paint(View, {});
@@ -1044,8 +1052,9 @@ describe("FOODDEV PACK UI", () => {
     paint(MaterialRequirementsView, props); await effects();
     const tree = paint(MaterialRequirementsView, props);
     const html = renderToStaticMarkup(tree);
+    expect(html).toContain("Tính lúc 20/10/2026 08:00");
     expect(salesPackApi.listPackages).toHaveBeenCalled();
-    expect(html).toContain("Gói đã pin · công thức v1"); expect(html).toContain("0.999 KG");
+    expect(html).toContain("Gói đang dùng · công thức v1"); expect(html).toContain("0,999 kg");
     expect(html).not.toMatch(/[0-9a-f]{8}-[0-9a-f]{4}-/);
     expect(nodes(tree, item => item.type === ErrorState)).toHaveLength(0);
   });
@@ -1056,7 +1065,7 @@ describe("FOODDEV PACK UI", () => {
     vi.mocked(productionApi.getFoodPlan).mockResolvedValue(pinned);
     paint(MaterialRequirementsView, { foodPlanId: plan.id }); await effects();
     const html = renderToStaticMarkup(paint(MaterialRequirementsView, { foodPlanId: plan.id }));
-    expect(html).toContain("123000 VND/KG"); expect(html).toContain("CONTRACT"); expect(html).toContain("0.999 KG"); expect(html).toContain("Gói đã pin · công thức v3"); expect(html).not.toContain("bom-pinned");
+    expect(html).toContain("123.000 ₫/kg"); expect(html).toContain("Giá hợp đồng"); expect(html).toContain("0,999 kg"); expect(html).toContain("Gói đang dùng · công thức v3"); expect(html).not.toContain("bom-pinned");
   });
   it("requirements_supplier_price_renders_without_error", async () => {
     const quoted = { ...requirement, price: { unit_price_vnd: 25000, uom: "KG", source: "SUPPLIER_PRICE", observed_at: packTime } };
@@ -1064,7 +1073,7 @@ describe("FOODDEV PACK UI", () => {
     paint(MaterialRequirementsView, { foodPlanId: plan.id }); await effects();
     const tree = paint(MaterialRequirementsView, { foodPlanId: plan.id });
     const html = renderToStaticMarkup(tree);
-    expect(html).toContain("25000 VND/KG"); expect(html).toContain("SUPPLIER_PRICE");
+    expect(html).toContain("25.000 ₫/kg"); expect(html).toContain("Giá nhà cung cấp"); expect(html).not.toContain("SUPPLIER_PRICE");
     expect(html).not.toContain("Không tải được nhu cầu");
     expect(nodes(tree, item => item.type === ErrorState)).toHaveLength(0);
   });

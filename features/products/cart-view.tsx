@@ -11,7 +11,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import {
   Table,
   TableBody,
-  TableCell,
   TableHead,
   TableHeader,
   TableRow,
@@ -25,8 +24,12 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import type { Cart } from "@/lib/api/sales";
+import { useState } from "react";
 import { formatVND } from "@/lib/format";
 import { CheckoutForm } from "./checkout-form";
+import { CartItemRow } from "./cart-item-row";
+import { ConfirmDialog } from "@/components/patterns/confirm-dialog";
+import type { CartItem } from "@/lib/api/sales";
 import { useCart } from "./use-cart";
 import { EmptyState, ErrorState, LoadingState } from "@/components/patterns/empty-state";
 import { PageShell } from "@/components/ui/page";
@@ -38,7 +41,8 @@ interface CartViewProps {
 
 export function CartView({ initialCart }: CartViewProps) {
   const cart = useCart(initialCart);
-  const { items, cartId, submittingOrder, createdOrderCode, setCreatedOrderCode, loading, error, reload, totalAmount, totalQuantity, changeCheckoutOpen } = cart;
+  const { items, cartId, submittingOrder, createdOrderCode, setCreatedOrderCode, loading, error, reload, totalAmount, totalQuantity, changeCheckoutOpen, itemBusy, changeQuantity, removeItem } = cart;
+  const [removing, setRemoving] = useState<CartItem | null>(null);
   if (loading) return <PageShell><LoadingState title="Đang tải giỏ hàng…" /></PageShell>;
   if (error) return <PageShell><ErrorState title="Không thể tải giỏ hàng" description={error} onRetry={reload} /></PageShell>;
 
@@ -64,7 +68,6 @@ export function CartView({ initialCart }: CartViewProps) {
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-        {/* Left Column: Cart Items List */}
         <div className="lg:col-span-2">
           <Card className="border-border bg-card overflow-hidden">
             {items.length > 0 ? (
@@ -83,32 +86,11 @@ export function CartView({ initialCart }: CartViewProps) {
                     <TableHead className="w-28 text-xs font-semibold text-muted-foreground text-right">
                       Thành Tiền
                     </TableHead>
+                    <TableHead className="w-12"><span className="sr-only">Xoá món</span></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {items.map((item) => (
-                    <TableRow key={item.product_id} className="border-b border-border">
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          <img src={item.image_url || "/images/mon-mac-dinh.svg"} alt="" className="size-10 shrink-0 rounded-sm object-cover" />
-                          <span className="font-semibold text-xs text-foreground">{item.name}</span>
-                        </div>
-                      </TableCell>
-
-                      <TableCell className="text-right font-serif font-semibold text-xs text-foreground">
-                        {formatVND(item.price_snapshot_vnd)}
-                      </TableCell>
-
-                      <TableCell className="text-center text-xs font-semibold text-foreground">
-                        {item.quantity}
-                      </TableCell>
-
-                      <TableCell className="text-right font-serif font-semibold text-xs text-foreground">
-                        {formatVND(item.quantity * item.price_snapshot_vnd)}
-                      </TableCell>
-
-                    </TableRow>
-                  ))}
+                  {items.map((item) => <CartItemRow key={item.product_id} item={item} busy={itemBusy} onQuantity={(target, quantity) => void changeQuantity(target, quantity)} onRemove={setRemoving} />)}
                 </TableBody>
               </Table>
             ) : (
@@ -117,7 +99,6 @@ export function CartView({ initialCart }: CartViewProps) {
           </Card>
         </div>
 
-        {/* Right Column: Checkout Summary */}
         <div>
           <Card className="border-border bg-card p-6 space-y-5">
             <CardHeader className="p-0 pb-4 border-b border-border">
@@ -168,6 +149,12 @@ export function CartView({ initialCart }: CartViewProps) {
       </div>
 
       <CheckoutForm {...cart} />
+      <ConfirmDialog
+        open={removing !== null} onOpenChange={(open) => !open && setRemoving(null)}
+        title="Bỏ món khỏi giỏ?" description={removing ? `${removing.name} sẽ được xoá khỏi giỏ hàng.` : undefined}
+        confirmLabel="Xoá món" danger busy={itemBusy}
+        onConfirm={() => { if (removing) void removeItem(removing).then(() => setRemoving(null)); }}
+      />
       <Dialog open={createdOrderCode !== null} onOpenChange={(open) => !open && setCreatedOrderCode(null)}>
         <DialogContent className="bg-card text-center sm:max-w-sm">
           <DialogHeader className="text-center items-center">

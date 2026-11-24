@@ -6,8 +6,11 @@ import { usePagedList } from "@/hooks/use-paged-list";
 import { useAccess } from "@/lib/access-boundary";
 import { toast } from "@/components/ui/toast";
 import { approveTarget, createTarget, deleteTarget, getTargetsPage, updateTarget, type ProductionTarget } from "@/lib/api/production";
+import { targetStatuses } from "./order-status";
 import { fold } from "@/components/patterns/entity-picker";
-import { getDraftProducts, createDraftProduct, type DraftProduct, type DataResult } from "@/lib/api/sales";
+import { getDraftProducts, createDraftProduct, type DataResult } from "@/lib/api/sales";
+import { productCreateError } from "./pack-shared";
+import { loadActiveSets, withSetNotes, type ProductChoice } from "./product-choices";
 
 type TargetLine = { product_ref: string; target_quantity: string; uom: string };
 
@@ -26,38 +29,43 @@ export function useTargets(initialTargets?: ProductionTarget[], initialShowCreat
   const [periodEnd, setPeriodEnd] = useState(dateInput(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)));
   const [lines, setLines] = useState<TargetLine[]>([{ product_ref: "", target_quantity: "4", uom: "EA" }]);
   const [loading, setLoading] = useState(false);
-  const [products, setProducts] = useState<DataResult<DraftProduct[]> | null>(null);
+  const [products, setProducts] = useState<DataResult<ProductChoice[]> | null>(null);
 
   const reloadProducts = async () => {
     setProducts(null);
-    try { setProducts({ data: await getDraftProducts(), source: "api" }); }
+    try {
+      const [drafts, sets] = await Promise.all([getDraftProducts(), loadActiveSets().catch(() => null)]);
+      setProducts({ data: withSetNotes(drafts, sets), source: "api" });
+    }
     catch (e) { setProducts({ data: [], source: "unavailable", error: messageOf(e) }); }
   };
 
-  useEffect(() => {
-    void getDraftProducts().then(data => setProducts({ data, source: "api" })).catch(e => setProducts({ data: [], source: "unavailable", error: messageOf(e) }));
-  }, []);
+  useEffect(() => { void reloadProducts(); }, []);
 
   const [productName, setProductName] = useState("");
   const productSlug = fold(productName).trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
   const [productError, setProductError] = useState("");
+  const [productOpen, setProductOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<ProductionTarget | null>(null);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "draft" | "ready" | "active" | "done">("all");
   const availableProducts = products?.data;
   const addProduct = async () => {
     setLoading(true); setProductError("");
     try {
       const product = await createDraftProduct({ name: productName.trim(), slug: productSlug.trim() });
-      setProducts(current => ({ data: [...(current?.data ?? []), product], source: "api" }));
+      setProducts(current => ({ data: [...(current?.data ?? []), ...withSetNotes([product], [])], source: "api" }));
       setLines(current => current.map((line, index) => index === 0 ? { ...line, product_ref: product.id } : line));
-      setProductName("");
-    } catch (e) { setProductError(messageOf(e)); }
+      setProductName(""); setProductOpen(false);
+    } catch (e) { setProductError(productCreateError(e)); }
     finally { setLoading(false); }
   };
 
   const canCreate = can("production:target:create");
   const canApprove = can("production:target_approval:create");
-  const primaryTargetId = !canCreate && !showCreate ? targets.find((target) => (target.status === "DRAFT" && canApprove) || target.status === "APPROVED" || target.status === "IN_PLANNING")?.id : undefined;
+  const canApproveTarget = (target: ProductionTarget) => canApprove && !(scope?.userId && target.created_by === scope.userId);
+  const primaryTargetId = !canCreate && !showCreate ? targets.find((target) => (target.status === "DRAFT" && canApproveTarget(target)) || target.status === "APPROVED" || target.status === "IN_PLANNING")?.id : undefined;
   const validLines = lines.every((line) => line.product_ref.trim() && /^\d+$/.test(line.target_quantity) && BigInt(line.target_quantity) > 0n && line.uom.trim());
   const updateLine = (index: number, patch: Partial<TargetLine>) => setLines((current) => current.map((line, lineIndex) => lineIndex === index ? { ...line, ...patch } : line));
 
@@ -85,7 +93,7 @@ export function useTargets(initialTargets?: ProductionTarget[], initialShowCreat
       } else {
         const created = await createTarget({ title: title.trim(), branch_ref: branchRef, ...periodRange(), lines });
         if (list.hasPrevious) list.reload(); else setTargets(current => [created, ...current]);
-        toast.success("Đã tạo chỉ tiêu APPROVED", { description: `Mã ${created.target_code}` });
+        toast.success("Đã tạo chỉ tiêu nháp, chờ duyệt", { description: `Mã ${created.target_code}` });
       }
       resetForm();
     } catch (error) {
@@ -113,11 +121,25 @@ export function useTargets(initialTargets?: ProductionTarget[], initialShowCreat
     try {
       const updated = await approveTarget(id, decision);
       setTargets((current) => current.map((target) => target.id === id ? updated : target));
-      toast.success(decision === "APPROVE" ? "Đã duyệt chỉ tiêu" : "Đã từ chối chỉ tiêu", { description: `${updated.target_code}: ${updated.status}` });
+      toast.success(decision === "APPROVE" ? "Đã duyệt chỉ tiêu" : "Đã từ chối chỉ tiêu", { description: `${updated.target_code}: ${targetStatuses[updated.status] ?? updated.status}` });
     } catch (error) {
       toast.error("Lỗi duyệt chỉ tiêu", { description: messageOf(error) });
     }
   };
 
-  return { list, targets, editingId, startEdit, resetForm, deleting, setDeleting, handleDelete, listLoading, listError, can, branchName, branchRef, showCreate, setShowCreate, title, setTitle, periodStart, setPeriodStart, periodEnd, setPeriodEnd, lines, setLines, loading, products, productName, setProductName, productSlug, productError, availableProducts, addProduct, reloadProducts, canCreate, canApprove, primaryTargetId, validLines, updateLine, handleCreate, handleApprove };
+  const matchesStatus = (status: ProductionTarget["status"]) => {
+    if (statusFilter === "all") return true;
+    if (statusFilter === "draft") return status === "DRAFT";
+    if (statusFilter === "ready") return status === "APPROVED" || status === "IN_PLANNING";
+    if (statusFilter === "active") return status === "HANDED_OFF" || status === "IN_PRODUCTION";
+    return status === "COMPLETED" || status === "REJECTED";
+  };
+  const query = fold(search).trim();
+  const filteredTargets = targets.filter((target) => {
+    if (!matchesStatus(target.status)) return false;
+    if (!query) return true;
+    return fold(target.title).includes(query) || fold(target.target_code).includes(query);
+  });
+
+  return { list, targets, filteredTargets, search, setSearch, statusFilter, setStatusFilter, editingId, startEdit, resetForm, deleting, setDeleting, handleDelete, listLoading, listError, can, branchName, branchRef, showCreate, setShowCreate, title, setTitle, periodStart, setPeriodStart, periodEnd, setPeriodEnd, lines, setLines, loading, products, productName, setProductName, productOpen, setProductOpen, productSlug, productError, availableProducts, addProduct, reloadProducts, canCreate, canApprove, canApproveTarget, primaryTargetId, validLines, updateLine, handleCreate, handleApprove };
 }

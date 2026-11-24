@@ -4,17 +4,19 @@ import { z } from "zod";
 import { orderDetailFields } from "@/lib/order-detail";
 import { decodePlatform } from "@/lib/api/platform-contract";
 import { FetchError, apiFetch } from "@/lib/fetcher";
+import { apiFailure } from "./production-http";
+import { publicError } from "./public-error";
 import { allPages, type CursorPage } from "./all-pages";
 import { RawAllergensSchema } from "./sales-materials";
-export { getMaterials, createMaterial, getRawLabels, updateRawLabels } from "./sales-materials";
+export { getMaterials, createMaterial, getRawLabels, updateRawLabels, setRawUnit } from "./sales-materials";
 export type { Material, MaterialPage, CreateMaterialInput, ExistingMaterial, RawAllergens, RawLabelsView, UpdateRawLabelsRequest } from "./sales-materials";
 export type ProductVariant = z.infer<typeof catalogEntrySchema>["variants"][number];
 export interface Product { allergen_summary?: z.infer<typeof catalogAllergensSchema> | null; variants?: ProductVariant[]; variant_label?: string | null; portion_count?: number | null; net_weight_g?: number | null; nutrition?: CatalogNutrition | null; id: string; sku_code: string; name: string; description?: string; barcode?: string; uom: string; base_price_vnd?: number; status: "DRAFT" | "ACTIVE" | "SUSPENDED"; created_at: string; updated_at?: string; sku_ref?: string; branch_ref?: string; image_urls?: string[]; available_quantity?: number; }
 export interface CreateProductInput { sku_code: string; name: string; description?: string; uom: string; base_price_vnd: number; }
-export interface CartItem { product_id: string; sku_code: string; name: string; quantity: number; price_snapshot_vnd: number; uom: string; image_url?: string; }
+export interface CartItem { product_id: string; item_id?: string; sku_code: string; name: string; quantity: number; price_snapshot_vnd: number; uom: string; image_url?: string; }
 export interface Cart { id: string; items: CartItem[]; total_amount_vnd: number; }
 export type Order = z.infer<typeof orderDisplaySchema>;
-export interface SalesCartResponse { cart: { id: string; status: "ACTIVE" | "CHECKED_OUT"; version: number }; items: Array<{ sku_ref: string; quantity: number; price_snapshot_vnd: number }> }
+export interface SalesCartResponse { cart: { id: string; status: "ACTIVE" | "CHECKED_OUT"; version: number }; items: Array<{ id?: string; sku_ref: string; quantity: number; price_snapshot_vnd: number }> }
 export type DataSource = "api" | "unavailable";
 export interface DataResult<T> { data: T; source: DataSource; error?: string; }
 export interface PricingPreview {
@@ -22,11 +24,11 @@ export interface PricingPreview {
   cost_snapshot_ref: string;
   policy_version_ref: string;
   floor_multiplier_bps: number;
-  material_cost_vnd: number;
+  material_cost_vnd?: number;
   full_cost_per_output_vnd: number;
   minimum_sale_price_vnd: number;
   compliance_status: string;
-	component_breakdown: Array<{ input_sku_ref: string; quantity: number; uom: string; unit_cost_vnd: number; subtotal_vnd: number }>;
+	component_breakdown: Array<{ input_sku_ref: string; input_sku_name?: string; input_uom_code?: string; quantity: number; uom: string; unit_cost_vnd?: number; subtotal_vnd?: number }>;
 }
 export interface PriceFloorPolicy {
   id: string;
@@ -42,7 +44,6 @@ export async function errorMessage(res: Response, fallback: string) { const body
 export function mutationHeaders(key = crypto.randomUUID()) { return { "Content-Type": "application/json", "Idempotency-Key": key }; }
 export async function getProducts(): Promise<DataResult<Product[]>> {
   try {
-    // ponytail: Loads all pages; switch to server search + paging when products reach the thousands.
     const items = await allPages(async cursor => {
       const query = new URLSearchParams({ page_size: "100", cursor });
       const res = await apiFetch(`/api/sales/products?${query}`);
@@ -67,7 +68,7 @@ export async function getProductById(id: string): Promise<DataResult<Product | n
 const catalogAllergensSchema = z.object({
   known: z.boolean().default(false),
   contains: RawAllergensSchema.innerType().shape.contains.default([]),
-  unknown: z.array(z.string()).default([]),
+  unknown: z.array(z.union([z.string(), z.object({ name: z.string() }).transform(item => item.name)])).default([]),
 }).nullish().transform(value => value ?? { known: false, contains: [], unknown: [] });
 const catalogEntrySchema = z.object({
   nutrition: catalogNutritionSchema.nullish(),
@@ -132,8 +133,6 @@ export async function createProduct(input: CreateProductInput): Promise<Product>
   if (!res.ok) throw new Error(await errorMessage(res, "Không thể tạo sản phẩm"));
   return normalizeProduct(await res.json());
 }
-// ---------------- Pricing Floor & Price Book (VT-04 / VT-15) ----------------
-
 async function responseData<T>(res: Response): Promise<T> {
 	const payload = await res.json();
 	return (payload?.data ?? payload) as T;
@@ -166,7 +165,7 @@ export async function approvePrice(priceBookId: string, versionId: string): Prom
     headers: mutationHeaders(),
     body: "{}",
   });
-  if (!res.ok) throw new Error(await errorMessage(res, "Không thể duyệt giá bán (kiểm tra SoD hoặc vi phạm giá sàn)"));
+  if (!res.ok) throw new FetchError(await errorMessage(res, "Không thể duyệt giá bán (kiểm tra SoD hoặc vi phạm giá sàn)"), res.status);
 	return responseData<{ status: string }>(res);
 }
 
@@ -201,8 +200,16 @@ export async function addToCart(cartId: string, item: { sku_ref: string; branch_
 }
 const salesCartSchema = z.object({
   cart: z.object({ id: z.string(), status: z.enum(["ACTIVE", "CHECKED_OUT"]), version: z.number() }),
-  items: z.array(z.object({ sku_ref: z.string(), quantity: z.number(), price_snapshot_vnd: z.number() })),
+  items: z.array(z.object({ id: z.string().optional(), sku_ref: z.string(), quantity: z.number(), price_snapshot_vnd: z.number() })),
 });
+async function mutateCartItem(cartId: string, itemId: string, method: "PATCH" | "DELETE", fallback: string, quantity?: number): Promise<SalesCartResponse> {
+  const query = new URLSearchParams({ branch_id: getCartBranch() });
+  const res = await apiFetch(`/api/sales/carts/${encodeURIComponent(cartId)}/items/${encodeURIComponent(itemId)}?${query}`, { method, headers: mutationHeaders(), ...(quantity === undefined ? {} : { body: JSON.stringify({ quantity }) }) });
+  if (!res.ok) throw new Error(await errorMessage(res, fallback));
+  return decodePlatform(await res.json(), salesCartSchema);
+}
+export const updateCartItem = (cartId: string, itemId: string, quantity: number) => mutateCartItem(cartId, itemId, "PATCH", "Không thể đổi số lượng", quantity);
+export const removeCartItem = (cartId: string, itemId: string) => mutateCartItem(cartId, itemId, "DELETE", "Không thể xoá món khỏi giỏ");
 export async function getCart(cartId: string): Promise<SalesCartResponse> {
   const branch = getCartBranch();
   const query = branch ? `?${new URLSearchParams({ branch_id: branch })}` : "";
@@ -237,7 +244,8 @@ export async function createOrder(cartRef: string, input: CheckoutInput, key: st
   if (res.status !== 201) {
     const body: unknown = await res.json().catch(() => null);
     const error = z.object({ message: z.string().optional(), error: z.string().optional() }).safeParse(body);
-    throw new FetchError(error.success ? error.data.message ?? "Không thể tạo đơn hàng. Vui lòng thử lại." : "Không thể tạo đơn hàng. Vui lòng thử lại.", res.status, body);
+    const code = body && typeof body === "object" ? publicError(body as Record<string, unknown>)?.error : undefined;
+    throw new FetchError(error.success ? error.data.message ?? "Không thể tạo đơn hàng. Vui lòng thử lại." : "Không thể tạo đơn hàng. Vui lòng thử lại.", res.status, code ? { ...(body as object), error: code } : body);
   }
   return decodePlatform(await res.json(), orderDisplaySchema);
 }
@@ -295,7 +303,7 @@ export function recordCartResponse(response: SalesCartResponse, knownProduct?: P
   const next = response.items.map((item) => {
     const known = previous.find((entry) => entry.product_id === item.sku_ref);
     const product = (knownProduct?.sku_ref ?? knownProduct?.id) === item.sku_ref ? knownProduct : undefined;
-    return { product_id: item.sku_ref, sku_code: product?.sku_code || known?.sku_code || "", name: product?.name || (known?.name?.includes(item.sku_ref) ? undefined : known?.name) || "Món đã chọn", quantity: item.quantity, price_snapshot_vnd: item.price_snapshot_vnd, uom: product?.uom || known?.uom || "—", image_url: product?.image_urls?.[0] || known?.image_url };
+    return { product_id: item.sku_ref, item_id: item.id ?? known?.item_id, sku_code: product?.sku_code || known?.sku_code || "", name: product?.name || (known?.name?.includes(item.sku_ref) ? undefined : known?.name) || "Món đã chọn", quantity: item.quantity, price_snapshot_vnd: item.price_snapshot_vnd, uom: product?.uom || known?.uom || "—", image_url: product?.image_urls?.[0] || known?.image_url };
   });
   window.localStorage.setItem(cartItemsKey, JSON.stringify(next));
 }
@@ -321,6 +329,6 @@ export async function getDraftProducts(): Promise<DraftProduct[]> {
 }
 export async function createDraftProduct(input: { name: string; slug: string }): Promise<DraftProduct> {
   const res = await apiFetch("/api/sales/products", { method: "POST", headers: mutationHeaders(), body: JSON.stringify(input) });
-  if (!res.ok) throw new Error(await errorMessage(res, "Không tạo được sản phẩm nháp"));
+  if (!res.ok) throw await apiFailure(res, await errorMessage(res.clone(), "Không tạo được sản phẩm nháp"));
   return (await responseData<{ product: DraftProduct }>(res)).product;
 }

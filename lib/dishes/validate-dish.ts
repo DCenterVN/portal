@@ -1,7 +1,7 @@
 import { SERVING_OPTIONS, slotOf, type DishContent, type DraftKind, type GroupNode, type Journey } from "./types";
 export type { DishContent } from "./types";
 export type DishError = { row?: string; field: string; message: string; existing?: { set_ref: string; variant_label: string } };
-export type ValidateCtx = { kind: DraftKind; tree: GroupNode[]; skuGroups: Record<string, string | null>; inactiveSkus?: Record<string, "DRAFT" | "SUSPENDED">; packagesWithRecipe: string[]; existingVariants: { servings: number; set_ref: string; variant_label: string }[]; source_journey?: Journey };
+export type ValidateCtx = { kind: DraftKind; tree: GroupNode[]; skuGroups: Record<string, string | null>; inactiveSkus?: Record<string, "DRAFT" | "SUSPENDED" | "MISSING">; packagesWithRecipe: string[]; existingVariants: { servings: number; set_ref: string; variant_label: string }[]; source_journey?: Journey };
 export function validateDish(content: DishContent, ctx: ValidateCtx): DishError[] {
   const errors: DishError[] = [];
   const add = (field: string, message: string, row?: string) => errors.push({ field, message, ...(row ? { row } : {}) });
@@ -19,6 +19,7 @@ export function validateDish(content: DishContent, ctx: ValidateCtx): DishError[
     const inactive = line.sku_ref ? ctx.inactiveSkus?.[line.sku_ref] : undefined;
     if (inactive === "SUSPENDED") add("sku_ref", "Nguyên liệu đã ngừng dùng — đổi sang nguyên liệu đang dùng", line.row);
     else if (inactive === "DRAFT") add("sku_ref", "Nguyên liệu đang là nháp — duyệt nguyên liệu trước khi hoàn tất món", line.row);
+    else if (inactive === "MISSING") add("sku_ref", "Nguyên liệu không còn trong danh mục — xoá dòng này hoặc chọn nguyên liệu khác", line.row);
     if (line.sku_ref && !inactive) {
       const group = ctx.skuGroups[line.sku_ref];
       if (!group || !ctx.tree.some(node => node.code === group)) add("sku_ref", "Nguyên liệu chưa thuộc nhóm hợp lệ — gán nhóm ở kho trước khi hoàn tất", line.row);

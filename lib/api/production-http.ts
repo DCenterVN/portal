@@ -26,3 +26,19 @@ export async function responseData<T>(res: Response): Promise<T> {
 export function mutationHeaders(key = crypto.randomUUID()) {
   return { "Content-Type": "application/json", "Idempotency-Key": key };
 }
+
+export class RetryableError extends Error {}
+
+export async function codedFailure(res: Response, fallback: string) {
+  if (res.status !== 409) return new Error(await errorMessage(res, fallback));
+  const body = await res.clone().json().catch(() => null);
+  const error = new FetchError(await errorMessage(res, fallback), 409, body);
+  const code = body?.errors?.error_code ?? body?.error_code;
+  if (typeof code === "string") error.code = code;
+  return error;
+}
+
+export async function salesAwareError(res: Response, fallback: string) {
+  if (res.status === 503) return new RetryableError("Bán hàng đang lỗi, thử lại sau");
+  return codedFailure(res, fallback);
+}

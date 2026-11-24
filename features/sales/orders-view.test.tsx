@@ -3,7 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { expect, it, vi } from "vitest";
 import { SalesOrderButtons } from "./orders-view";
 import type { StaffOrder } from "@/lib/api/staff-orders";
-import { orderActions } from "./order-actions";
+import { orderActions, reservationLabels } from "./order-actions";
 import { consoleNavFor, consoleRouteAllowed } from "@/lib/navigation";
 import { isEmployeeRoute } from "@/lib/fetcher";
 
@@ -11,8 +11,9 @@ it.each([
   ["AWAITING_PAYMENT", ["Xác nhận đơn", "Huỷ đơn"], ["Xác nhận đã nhận tiền", "Huỷ đơn"]],
   ["CONFIRMED", ["Đóng gói", "Huỷ đơn"], ["Đóng gói", "Huỷ đơn"]],
   ["PACKED", ["Giao đơn"], ["Giao đơn"]],
-  ["DELIVERING", ["Đã giao", "Giao thất bại"], ["Đã giao", "Giao thất bại"]],
-  ["DELIVERED", [], []], ["DELIVERY_FAILED", [], []], ["COMPLETED", [], []], ["CANCELLED", [], []],
+  ["DELIVERING", ["Đã giao", "Giao thất bại", "Đổi người giao"], ["Đã giao", "Giao thất bại", "Đổi người giao"]],
+  ["DELIVERY_FAILED", ["Giao lại"], ["Giao lại"]],
+  ["DELIVERED", [], []], ["COMPLETED", [], []], ["CANCELLED", [], []],
 ] as const)("renders permitted buttons for %s × COD/transfer", (status, cod, transfer) => {
   for (const [payment_method, labels] of [["COD", cod], ["BANK_TRANSFER", transfer]] as const) {
     const order: StaffOrder = { id: "o", status, payment_method, payment_status: undefined, total_vnd: 100, created_at: "2026-11-11" };
@@ -47,4 +48,24 @@ it("missing payment method hides both confirmations", () => {
   const html = renderToStaticMarkup(<SalesOrderButtons order={{ id: "o", status: "AWAITING_PAYMENT", total_vnd: 100, created_at: "2026-11-11" }} can={() => true} busy={false} act={vi.fn()} />);
   expect(html).not.toContain(">Xác nhận đơn</button>");
   expect(html).not.toContain(">Xác nhận đã nhận tiền</button>");
+});
+it.each([["PENDING", "Đang giữ hàng"], ["FAILED", "Không giữ được hàng"]])("đơn %s tắt nút Xác nhận kèm lý do", (reservation_state, label) => {
+  const order: StaffOrder = { id: "o", status: "AWAITING_PAYMENT", payment_method: "COD", reservation_state, total_vnd: 100, created_at: "2026-11-11" };
+  const html = renderToStaticMarkup(<SalesOrderButtons order={order} can={() => true} busy={false} act={vi.fn()} />);
+  expect(html).toMatch(/<button[^>]*disabled=""[^>]*>Xác nhận đơn<\/button>/);
+  expect(html).toContain("Chưa giữ được hàng");
+  expect(html).toContain("Huỷ đơn");
+  expect(reservationLabels[reservation_state]).toBe(label);
+});
+it("đơn đã giữ hàng vẫn xác nhận được", () => {
+  const order: StaffOrder = { id: "o", status: "AWAITING_PAYMENT", payment_method: "COD", reservation_state: "HELD", total_vnd: 100, created_at: "2026-11-11" };
+  const html = renderToStaticMarkup(<SalesOrderButtons order={order} can={() => true} busy={false} act={vi.fn()} />);
+  expect(html).not.toMatch(/<button[^>]*disabled=""[^>]*>Xác nhận đơn<\/button>/);
+  expect(html).not.toContain("Chưa giữ được hàng");
+});
+it("packed order shows cancel button to sales role only", () => {
+  const order: StaffOrder = { id: "o", status: "PACKED", payment_method: "COD", total_vnd: 100, created_at: "2026-11-11" };
+  const render = (roles: string[]) => renderToStaticMarkup(<SalesOrderButtons order={order} roles={roles} can={() => true} busy={false} act={vi.fn()} />);
+  expect(render(["SALES"])).toContain(">Huỷ đơn</button>");
+  expect(render(["CS_AGENT"])).not.toContain(">Huỷ đơn</button>");
 });

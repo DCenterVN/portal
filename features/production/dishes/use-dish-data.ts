@@ -70,7 +70,7 @@ export function useDishData(content: DishContent | null, deps: Deps) {
     if (!content?.servings || !content.ingredients.length || !catalog || (hasUnknown && !retiredReady)) {
       return { key: "", content: null as DishContent | null };
     }
-    const activeIngredients = content.ingredients.filter(line => !line.sku_ref || !inactiveIds.has(line.sku_ref));
+    const activeIngredients = content.ingredients.filter(line => !line.sku_ref || (known.has(line.sku_ref) && !inactiveIds.has(line.sku_ref)));
     if (!activeIngredients.length || activeIngredients.some(line => !line.sku_ref || Number(line.quantity) <= 0 || !Number.isFinite(Number(line.quantity)) || Number(line.yield_pct) < 1 || Number(line.yield_pct) > 100)) {
       return { key: "", content: null as DishContent | null };
     }
@@ -82,7 +82,7 @@ export function useDishData(content: DishContent | null, deps: Deps) {
       }),
       content: { ...content, ingredients: activeIngredients },
     };
-  }, [content, catalog, hasUnknown, retiredReady, inactiveIds]);
+  }, [content, catalog, hasUnknown, retiredReady, known, inactiveIds]);
   const costKey = costInput.key;
   const costContentRef = useRef<DishContent | null>(null);
   costContentRef.current = costInput.content;

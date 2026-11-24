@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { StatusBadge } from "@/components/patterns/status-badge";
 import { useSupplierCategories } from "./use-supplier-form";
@@ -120,9 +121,17 @@ export function SupplierStatusDialog({ supplier, changeStatus, setChangeStatus, 
   </ConfirmDialog>;
 }
 
-type SupplierPhotoProps = { name: string; url: string; onError: () => void };
-export function SupplierPhoto({ name, url, onError }: SupplierPhotoProps) {
+type SupplierPhotoProps = { name: string; url: string; onError: () => void; decorative?: boolean };
+export function SupplierPhoto({ name, url, onError, decorative }: SupplierPhotoProps) {
   const t = useTranslations("supplierForm");
-  if (url) return <img src={url} alt={t("photoAlt", { name })} onError={onError} className="size-9 shrink-0 rounded-lg object-cover" />;
-  return <div role="img" aria-label={t("photoAlt", { name })} className="grid size-9 shrink-0 place-items-center rounded-lg bg-tint"><span className="text-xl font-semibold">{name.trim().slice(0, 1).toLocaleUpperCase("vi-VN")}</span></div>;
+  if (url) return <Avatar aria-hidden={decorative || undefined}><img src={url} alt={decorative ? "" : t("photoAlt", { name })} onError={onError} className="aspect-square size-full object-cover" /></Avatar>;
+  return (
+    <Avatar
+      aria-hidden={decorative || undefined}
+      role={decorative ? undefined : "img"}
+      aria-label={decorative ? undefined : t("photoAlt", { name })}
+    >
+      <AvatarFallback className="text-xs font-semibold">{name.trim().slice(0, 1).toLocaleUpperCase("vi-VN")}</AvatarFallback>
+    </Avatar>
+  );
 }

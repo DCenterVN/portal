@@ -125,7 +125,7 @@ export function DataTable<T>({ columns, rows, initialData, rowId, rowLabel, mode
   const span = columnsView.length + (expandable ? 1 : 0) + (rowActions ? 1 : 0);
   const loading = status === "loading" && !source;
   return <div data-slot="data-table" className={cn("w-full", className)}>
-    {toolbar && <DataTableToolbar {...toolbar} columns={columns} sort={activeSort} onSort={onSort} hidden={hidden} onToggleColumn={toggle} />}
+    {toolbar && <DataTableToolbar {...toolbar} columns={columns} hidden={hidden} onToggleColumn={toggle} />}
     <div className="overflow-hidden rounded-lg border bg-card">
       <Table>
         <TableHeader className="bg-muted/40">

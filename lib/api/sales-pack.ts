@@ -98,7 +98,7 @@ export function retirePackage(id: string) { return retireSalesPack(`/packages/${
 export function createFoodSet(input: CreateFoodSetRequest) {
   return salesPackRequest("/sets", FoodSetSchema, "POST", CreateFoodSetRequestSchema.parse(input));
 }
-export function listFoodSets(filters: { q?: string; tags?: string[]; category_slug?: string; month?: number; cursor?: string; limit?: number } = {}) {
+export function listFoodSets(filters: { q?: string; tags?: string[]; category_slug?: string; month?: number; product_ref?: string; cursor?: string; limit?: number } = {}) {
   const query = new URLSearchParams();
   for (const [key, value] of Object.entries(filters)) {
     if (Array.isArray(value)) value.forEach(tag => query.append(key, tag));

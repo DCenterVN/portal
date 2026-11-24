@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import type { Route } from "next";
-import useSWRInfinite from "swr/infinite";
+import useSWR from "swr";
+import { cursorPagesStart, currentCursor, goNext, goPrevious, hasPrevious, pageNumber } from "@/lib/cursor-pages";
 import { buildCatalogQuery, readNutritionFilters } from "@/lib/api/catalog-query";
 import type { CatalogFilterValues } from "./catalog-filters";
 import { useTranslations } from "next-intl";
@@ -27,11 +28,15 @@ export function useCatalog() {
     const timer = setTimeout(() => setQuery(requestedQuery), 250);
     return () => clearTimeout(timer);
   }, [requestedQuery]);
-  const { data, error, isLoading, isValidating, size, setSize, mutate } = useSWRInfinite(
-    (index, previous: Awaited<ReturnType<typeof getCatalog>> | null) => index && !previous?.next_cursor ? null : [query, index ? previous?.next_cursor : undefined],
-    ([requestQuery, cursor]: [string, string | undefined]) => getCatalog({ ...readNutritionFilters(new URLSearchParams(requestQuery)), branch_id: new URLSearchParams(requestQuery).get("branch_id") ?? undefined, cursor }),
-    { keepPreviousData: true, revalidateFirstPage: false },
+  const [paging, setPaging] = useState({ query, pages: cursorPagesStart });
+  const pages = paging.query === query ? paging.pages : cursorPagesStart;
+  const cursor = currentCursor(pages) || undefined;
+  const { data, error, isLoading, isValidating, mutate } = useSWR(
+    [query, cursor],
+    ([requestQuery, requestCursor]: [string, string | undefined]) => getCatalog({ ...readNutritionFilters(new URLSearchParams(requestQuery)), branch_id: new URLSearchParams(requestQuery).get("branch_id") ?? undefined, cursor: requestCursor }),
+    { keepPreviousData: true },
   );
+  const nextCursor = data?.next_cursor;
   const onFiltersChange = (value: CatalogFilterValues) => {
     const next = new URLSearchParams(search.toString());
     for (const key of ["kcal_max", "protein_min", "label", "q", "minPrice", "maxPrice", "sort", "cursor"]) next.delete(key);
@@ -43,24 +48,24 @@ export function useCatalog() {
     router.replace(`/products${next.size ? `?${next}` : ""}` as Route, { scroll: false });
   };
   return {
-    products: data?.flatMap(page => page.data) ?? [], loading: isLoading && !data,
-    error: error instanceof Error ? error.message : data?.find(page => page.error)?.error,
-    nextCursor: data?.at(-1)?.next_cursor, loadingMore: isValidating,
-    loadMore: () => setSize(size + 1), reload: () => mutate(), filters, onFiltersChange, branchId,
+    products: data?.data ?? [], loading: isLoading && !data,
+    error: error instanceof Error ? error.message : data?.error,
+    nextCursor, loadingMore: isValidating, page: pageNumber(pages), hasPrevious: hasPrevious(pages),
+    loadMore: () => setPaging({ query, pages: goNext(pages, nextCursor ?? "") }), loadPrevious: () => setPaging({ query, pages: goPrevious(pages) }), reload: () => mutate(), filters, onFiltersChange, branchId,
   };
 }
 
-export function useCatalogCart(product: Product) {
+export function useCatalogCart(product: Product, branchId?: string) {
   const t = useTranslations("Catalog");
   const [adding, setAdding] = useState(false);
   const add = useCallback(async () => {
     if (!product.sku_ref || !product.branch_ref || adding) return;
     setAdding(true);
     try {
-      const result = await addToCart(getOrCreateCartId(), { sku_ref: product.sku_ref, branch_id: product.branch_ref, quantity: 1 });
+      const result = await addToCart(getOrCreateCartId(), { sku_ref: product.sku_ref, branch_id: branchId ?? product.branch_ref, quantity: 1 });
       recordCartResponse(result, product); toast.success(t("added"), { description: product.name });
     } catch (cause) { toast.error(t("addError"), { description: cause instanceof Error ? cause.message : t("addError") }); }
     finally { setAdding(false); }
-  }, [product, adding, t]);
+  }, [product, branchId, adding, t]);
   return { adding, add };
 }

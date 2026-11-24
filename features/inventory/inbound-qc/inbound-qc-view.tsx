@@ -13,6 +13,7 @@ import { LotQcPanel } from "./lot-qc-panel";
 import { DEFAULT_LOT_STATUS } from "./inbound-qc-table";
 import { lotStatusLabel, lotStatusTone } from "./qc-steps";
 import { useInboundQc, type InboundLotsInitial } from "./use-inbound-qc";
+import { InventoryFlowBar } from "../inventory-flow-bar";
 
 const filters = ["RECEIVED", "UNDER_QC", "APPROVED", "QUARANTINED"].map(value => ({ value, label: lotStatusLabel[value] }));
 
@@ -38,6 +39,7 @@ export function InboundQcView({ focusLot = "", initial }: { focusLot?: string; i
   const pagination: DataTablePagination = { kind: "page", page: state.page, pageSize: state.pageSize, pageSizes: [10, 20, 50], count: rows?.length ?? 0, total: page?.total, busy: loading, onPage: url.setPage, onPageSize: url.setPageSize };
   return <PageShell>
     <PageHeading title="Kiểm đầu vào" description="Lô nguyên liệu vừa nhận cần kiểm trước khi vào kho và tính giá vốn." />
+    <InventoryFlowBar current="inbound-qc" />
     <DataTable<InboundLot>
       mode="server" columns={columns} rows={rows} rowId={lot => lot.id} rowLabel={lot => lot.supplier_lot_code} onRowOpen={model.select}
       status={loading && !rows ? "loading" : error && !rows ? "error" : "ready"} error={error} onRetry={model.reload}

@@ -196,3 +196,67 @@ it("tạo thành công gọi toast.success một lần kèm nút Nhận hàng; l
   expect(create).toHaveBeenCalledTimes(2);
   expect(toast.error).toHaveBeenCalledWith("Kho đang đóng");
 });
+
+it("hiển thị danh sách phiếu nhập đang mở kèm nút nhận hàng tiếp", async () => {
+  const { GoodsReceiptView } = await import("./goods-receipt-form");
+  const html = renderToStaticMarkup(
+    <GoodsReceiptView
+      allowed
+      setupKind="ready"
+      suppliers={[supplier]}
+      materials={[]}
+      supplier={supplierID}
+      date="2026-10-27"
+      rows={[{ key: "a", sku: "", quantity: 1, amount: null, uom: undefined, unitPrice: undefined, referencePrice: undefined }]}
+      busy={false}
+      success=""
+      error=""
+      pricesKind="ready"
+      reconfirm={false}
+      valid={false}
+      canUpdate={false}
+      openReceipts={[
+        {
+          id: documentID,
+          branch_ref: documentID,
+          supplier_ref: supplierID,
+          status: "IN_PROGRESS",
+          created_at: "2026-10-26T08:00:00Z",
+          expected_at: "2026-10-27T12:00:00+07:00",
+          completed_at: null,
+          total_amount_vnd: 125000,
+          lines: [
+            {
+              receipt_line_ref: documentID,
+              sku_ref: material.id,
+              uom: "KG",
+              expected_quantity: "5",
+              actual_quantity: "2",
+              unit_cost_vnd: 25000,
+              expected_amount_vnd: 125000,
+              actual_amount_vnd: 50000,
+            },
+          ],
+        },
+      ]}
+      onPrice={vi.fn()}
+      onSupplier={vi.fn()}
+      onDate={vi.fn()}
+      onSku={vi.fn()}
+      onQuantity={vi.fn()}
+      onAdd={vi.fn()}
+      onRemove={vi.fn()}
+      onRetry={vi.fn()}
+      onPriceRetry={vi.fn()}
+      onReconfirm={vi.fn()}
+      onSubmit={vi.fn()}
+    />
+  );
+  expect(html).toContain('aria-label="Phiếu nhập đang mở"');
+  expect(html).toContain("27/10/2026");
+  expect(html).toContain("Đang nhận");
+  expect(html).toContain("1 dòng hàng");
+  expect(html).toContain("125.000");
+  expect(html).toContain("Nhận hàng tiếp");
+  expect(html).toContain(`/inventory/goods-receipts/${documentID}/receive?supplier=${supplierID}`);
+});

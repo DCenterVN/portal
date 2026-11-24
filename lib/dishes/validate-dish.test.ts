@@ -191,4 +191,17 @@ describe("validateDish", () => {
     }]);
     expect(find(suspendedErrs, "slots")).toHaveLength(1);
   });
+
+  it("chặn nguyên liệu MISSING ở inactiveSkus và không cộng ô", () => {
+    const missingErrs = validateDish(
+      m1({ ingredients: [{ row: "r1", sku_ref: "sku-trau", quantity: "150", uom: "G", yield_pct: "100" }] }),
+      ctx({ inactiveSkus: { "sku-trau": "MISSING" } }),
+    );
+    expect(find(missingErrs, "sku_ref", "r1")).toEqual([{
+      field: "sku_ref",
+      row: "r1",
+      message: "Nguyên liệu không còn trong danh mục — xoá dòng này hoặc chọn nguyên liệu khác",
+    }]);
+    expect(find(missingErrs, "slots")).toHaveLength(1);
+  });
 });

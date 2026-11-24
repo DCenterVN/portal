@@ -1,9 +1,8 @@
 import { redirect } from "next/navigation";
 import { Leaf, CookingPot, ClipboardCheck } from "lucide-react";
-import { BRAND_NAME } from "@/lib/brand";
 import { TraceLookup } from "@/features/traceability/trace-lookup";
 
-export const metadata = { title: `Truy xuất nguồn gốc — ${BRAND_NAME}` };
+export const metadata = { title: "Truy xuất nguồn gốc" };
 
 const steps = [
   { title: "Nguyên liệu", detail: "Nguồn cung và lô nguyên liệu", icon: Leaf },

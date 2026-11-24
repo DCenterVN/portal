@@ -16,7 +16,7 @@ import { ProductDetailInfo } from "./product-detail-info";
 import { RelatedProducts } from "./related-products";
 
 export function ProductDetailView({ initialProduct, branchId }: { initialProduct: Product; branchId?: string }) {
-  const detail = useProductDetail(initialProduct);
+  const detail = useProductDetail(initialProduct, branchId);
   const { product, variantOptions, variantLabel, summary, pricePerPerson, selectVariant, addingToCart, quantity, setQuantity, canBuy, handleAddToCart } = detail;
   return <PageShell className="catalog product-detail bg-background">
     <nav aria-label="Đường dẫn" className="mb-6 flex min-w-0 items-center gap-2 text-sm text-muted-foreground">

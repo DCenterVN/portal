@@ -1,6 +1,7 @@
 "use client";
 
 import type { Route } from "next";
+import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import * as api from "@/lib/api/dishes";
@@ -13,11 +14,12 @@ import { costPreviewErrors } from "@/lib/dishes/precheck-cost";
 import { allergenSummary } from "@/lib/dishes/allergens";
 import type { DishDetail } from "@/lib/dishes/dish-detail";
 import type { DishContent, DishDraft } from "@/lib/dishes/types";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { PageShell } from "@/components/ui/page";
 import { toast } from "@/components/ui/toast";
 import { LoadingState } from "@/components/patterns/empty-state";
 import { InlineAlert } from "@/components/patterns/inline-alert";
+import { PageHeading } from "@/components/patterns/page-heading";
 import { DishListView } from "./dish-list-view";
 import { DishEditorView } from "./dish-editor-view";
 import { DishIngredientsView } from "./dish-ingredients-view";
@@ -41,6 +43,17 @@ export function DishListScreen({ initialTab = "dishes" }: { initialTab?: "dishes
     if (await list.discardDraft(id)) toast.success("Đã bỏ nháp");
   };
   return <PageShell>
+    <PageHeading
+      className="mb-6"
+      title="Món ăn & công thức"
+      description="Xây dựng định mức nguyên liệu, gia vị và kiểm tra giá vốn trước khi đưa món vào chỉ tiêu sản xuất."
+      actions={
+        <div className="flex flex-wrap gap-2">
+          <Link className={buttonVariants({ variant: "outline", size: "sm" })} href="/production/materials">Danh mục nguyên liệu</Link>
+          <Link className={buttonVariants({ variant: "outline", size: "sm" })} href="/production/targets">Sang chỉ tiêu sản xuất</Link>
+        </div>
+      }
+    />
     <DishListView
       rows={list.rows}
       drafts={list.drafts}
@@ -257,15 +270,29 @@ export function DishDraftScreen({ draftId, fromDrafts }: { draftId: string; from
   }, [sourceProductRef]);
 
   const data = useDishData(editor.content, dataApi);
-  const ctx = useMemo(() => ({
-    kind: editor.draft?.kind ?? "CREATE" as const,
-    tree: data.tree,
-    skuGroups: Object.fromEntries(Object.entries(data.materials).map(([id, material]) => [id, material.group])),
-    inactiveSkus: Object.fromEntries(Object.entries(data.materials).flatMap<[string, "DRAFT" | "SUSPENDED"]>(([id, m]) => m.retired ? [[id, "SUSPENDED"]] : m.draft ? [[id, "DRAFT"]] : [])),
-    packagesWithRecipe: editor.content?.seasonings.flatMap(line => line.package_ref ? [line.package_ref] : []) ?? [],
-    existingVariants: sourceDetail?.variants.flatMap(v => v.servings ? [{ servings: v.servings, set_ref: v.set_ref, variant_label: v.variant_label }] : []) ?? [],
-    source_journey: sourceDetail?.variants.find(v => v.set_ref === editor.content?.base?.set_ref)?.journey,
-  }), [editor.draft?.kind, data.tree, data.materials, editor.content?.seasonings, sourceDetail, editor.content?.base?.set_ref]);
+  const ctx = useMemo(() => {
+    const inactiveEntries: Array<[string, "DRAFT" | "SUSPENDED" | "MISSING"]> = Object.entries(data.materials).flatMap<[string, "DRAFT" | "SUSPENDED" | "MISSING"]>(([id, m]) =>
+      m.retired ? [[id, "SUSPENDED"]] : m.draft ? [[id, "DRAFT"]] : []
+    );
+    if (data.catalogReady && editor.content?.ingredients) {
+      const seen = new Set(inactiveEntries.map(([id]) => id));
+      for (const line of editor.content.ingredients) {
+        if (line.sku_ref && !data.materials[line.sku_ref] && !seen.has(line.sku_ref)) {
+          seen.add(line.sku_ref);
+          inactiveEntries.push([line.sku_ref, "MISSING"]);
+        }
+      }
+    }
+    return {
+      kind: editor.draft?.kind ?? "CREATE" as const,
+      tree: data.tree,
+      skuGroups: Object.fromEntries(Object.entries(data.materials).map(([id, material]) => [id, material.group])),
+      inactiveSkus: Object.fromEntries(inactiveEntries),
+      packagesWithRecipe: editor.content?.seasonings.flatMap(line => line.package_ref ? [line.package_ref] : []) ?? [],
+      existingVariants: sourceDetail?.variants.flatMap(v => v.servings ? [{ servings: v.servings, set_ref: v.set_ref, variant_label: v.variant_label }] : []) ?? [],
+      source_journey: sourceDetail?.variants.find(v => v.set_ref === editor.content?.base?.set_ref)?.journey,
+    };
+  }, [editor.draft?.kind, data.tree, data.materials, data.catalogReady, editor.content?.ingredients, editor.content?.seasonings, sourceDetail, editor.content?.base?.set_ref]);
 
   const costErrors = useMemo(
     () => editor.content && !data.costLoading && !data.costError && data.cost && !data.cost.complete ? costPreviewErrors(editor.content, data.cost) : [],

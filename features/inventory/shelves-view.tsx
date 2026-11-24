@@ -28,6 +28,7 @@ import { uomLabel } from "@/lib/stock-transfer";
 import { skuStatusNote } from "./transfers/name-lookup";
 import { NamesLoadError } from "./transfers/names-load-error";
 import { useShelfPlacement } from "./use-shelf-placement";
+import { InventoryFlowBar } from "./inventory-flow-bar";
 
 interface ShelvesViewProps {
   initialPlacements?: ShelfPlacement[];
@@ -43,6 +44,7 @@ export function ShelvesView({ initialPlacements }: ShelvesViewProps) {
         title="Kệ hàng và tem truy xuất"
         description="Xếp hàng chờ lên kệ của chi nhánh (từ sản xuất, chuyển kho hoặc hàng giao hỏng quay về) và quản lý mã QR truy vết"
       />
+      <InventoryFlowBar current="shelves" />
 
       <h2 className="mb-2 text-base font-semibold">Hàng chờ lên kệ</h2>
       {productName.failed && <NamesLoadError retry={productName.retry} />}

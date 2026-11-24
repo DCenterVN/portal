@@ -26,6 +26,25 @@ describe("account mutations and session refresh", () => {
     expect(calls).toEqual(["/api/auth/email/confirm", "/api/auth/refresh", "/api/auth/email/confirm"]);
   });
 
+  it("when refresh returns 503 three times, confirmEmailChange rejects with 503 instead of 401", async () => {
+    vi.useFakeTimers();
+    try {
+      let refreshCalls = 0;
+      global.fetch = vi.fn(async (url: unknown) => {
+        const path = new URL(String(url), "http://portal.invalid").pathname;
+        if (path === "/api/auth/refresh") { refreshCalls++; return json(503, {}); }
+        return json(401, { error: "UNAUTHORIZED" }, { "x-session-missing": "1" });
+      }) as typeof fetch;
+      const pending = confirmEmailChange({ token: "t" } as never);
+      const assertion = expect(pending).rejects.toMatchObject({ status: 503 });
+      await vi.advanceTimersByTimeAsync(2000);
+      await assertion;
+      expect(refreshCalls).toBe(3);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("a wrong current password is never refreshed or replayed", async () => {
     const fetchMock = vi.fn(async () => json(401, { error: "UNAUTHORIZED" }));
     global.fetch = fetchMock as typeof fetch;

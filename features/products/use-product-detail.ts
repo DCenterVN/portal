@@ -28,7 +28,7 @@ export function productComponents(nutrition: CatalogNutrition | null | undefined
   });
 }
 
-export function useProductDetail(initialProduct: Product) {
+export function useProductDetail(initialProduct: Product, branchId?: string) {
   const variants = initialProduct.variants?.filter(variant => variant.sellable === true) ?? [];
   const [selectedSku, setSelectedSku] = useState("");
   const variant = variants.find(item => item.id === selectedSku) ?? variants[0];
@@ -77,7 +77,7 @@ export function useProductDetail(initialProduct: Product) {
     if (!canBuy || !product.sku_ref || !product.branch_ref || addingToCart) return;
     setAddingToCart(true);
     try {
-      const cart = await addToCart(getOrCreateCartId(), { sku_ref: product.sku_ref, branch_id: product.branch_ref, quantity });
+      const cart = await addToCart(getOrCreateCartId(), { sku_ref: product.sku_ref, branch_id: branchId ?? product.branch_ref, quantity });
       recordCartResponse(cart, product);
       toast.success("Đã thêm vào giỏ hàng", { description: `Đã thêm ${quantity} ${product.uom} ${product.name} vào giỏ hàng.` });
     } catch (error) { toast.error("Không thể thêm vào giỏ", { description: error instanceof Error ? error.message : "Vui lòng thử lại." }); }

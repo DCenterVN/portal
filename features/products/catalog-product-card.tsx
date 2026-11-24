@@ -14,7 +14,7 @@ import { CatalogArtwork } from "./catalog-artwork";
 
 export function CatalogProductCard({ product, branchId }: { product: Product; branchId?: string }) {
   const t = useTranslations("Catalog");
-  const { adding, add } = useCatalogCart(product);
+  const { adding, add } = useCatalogCart(product, branchId);
   const href = `/products/${product.id}${branchId ? `?branch_id=${encodeURIComponent(branchId)}` : ""}` as Route;
   return <Card className="flex min-w-0 flex-col gap-0 overflow-hidden border-0 bg-muted/30 p-0 shadow-none">
                 <Link href={href} aria-label={product.name} className="block aspect-[4/3] overflow-hidden bg-media focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring">

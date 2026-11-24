@@ -1,12 +1,11 @@
 import type { Route } from "next";
 import { redirect } from "next/navigation";
-import { BRAND_NAME } from "@/lib/brand";
 import { FoodPlansView } from "@/features/production/food-plans-view";
 
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: `Thực đơn — ${BRAND_NAME}`,
+  title: "Thực đơn & kế hoạch sản xuất",
   description: "Chuyên gia dinh dưỡng xây dựng công thức, định lượng nguyên liệu và xuất bản lệnh sản xuất (VT-21)",
 };
 

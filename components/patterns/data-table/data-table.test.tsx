@@ -7,6 +7,14 @@ import { vi } from "vitest";
 import { DataTable, rowOpenProps, type DataTableProps } from "./data-table";
 import { DataTableFooter } from "./data-table-footer";
 import type { CursorPagination, DataTableColumn, PagePagination } from "./types";
+import { useTableUrlState } from "./use-table-url-state";
+
+const navMocks = vi.hoisted(() => ({ replace: vi.fn(), params: "f.zone=A&f.status=ACTIVE" }));
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ replace: navMocks.replace }),
+  usePathname: () => "/items",
+  useSearchParams: () => new URLSearchParams(navMocks.params),
+}));
 
 type Row = { id: string; name: string; price: number };
 const rows: Row[] = [{ id: "1", name: "Gạo", price: 100 }, { id: "2", name: "Đậu", price: 50 }];
@@ -66,18 +74,26 @@ describe("DataTable", () => {
   it("có cột thao tác khi khai rowActions", () => {
     expect(html({ rowActions: () => [{ label: "Sửa", icon: Pencil, onSelect: noop }] })).toContain("Thao tác cho Gạo");
   });
-  it("thanh công cụ: ô tìm, nút lọc dạng thẻ, Xoá lọc chỉ khi đang lọc", () => {
+  it("thanh công cụ: ô tìm, nút lọc gộp, chip khi đang lọc, Xoá lọc chỉ khi đang lọc", () => {
     const toolbar = { search: { value: "", onChange: noop, placeholder: "Tìm", label: "Tìm nhà cung cấp" }, filters: [{ id: "s", title: "Trạng thái", options: [{ value: "A", label: "Đang hợp tác" }], selected: ["A"], onChange: noop }], onClear: noop };
     const out = html({ toolbar });
     expect(out).toContain('aria-label="Tìm nhà cung cấp"');
-    expect(out).toContain("Đang hợp tác");
-    expect(out).toContain("Hiển thị");
-    expect(out).toContain("Sắp xếp");
+    expect(out).toContain('aria-label="Lọc theo Trạng thái (1 đang chọn)"');
+    expect(out).toContain("text-xs");
+    expect(out).not.toContain("text-[10px]");
+    expect(out).toContain('aria-label="Cột hiển thị"');
+    expect(out).not.toContain("Sắp xếp");
     expect(out).not.toContain("Xoá lọc");
-    expect(html({ toolbar: { ...toolbar, active: true } })).toContain("Xoá lọc");
+    expect(out).not.toContain("Trạng thái: Đang hợp tác");
+    const emptyFilter = html({ toolbar: { ...toolbar, filters: [{ ...toolbar.filters[0], selected: [] }] } });
+    expect(emptyFilter).toContain('aria-label="Lọc theo Trạng thái"');
+    const activeOut = html({ toolbar: { ...toolbar, active: true } });
+    expect(activeOut).toContain("Xoá lọc");
+    expect(activeOut).toContain("Trạng thái: Đang hợp tác");
+    expect(activeOut).toContain('aria-label="Bỏ lọc Trạng thái: Đang hợp tác"');
   });
-  it("không có cột sắp xếp được thì không có nút Sắp xếp", () => {
-    expect(html({ columns: columns.map(column => ({ ...column, sortable: false })), toolbar: {} })).not.toContain("Sắp xếp");
+  it("không có cột hideable thì không có nút Cột hiển thị", () => {
+    expect(html({ columns: columns.map(column => ({ ...column, hideable: false })), toolbar: {} })).not.toContain('aria-label="Cột hiển thị"');
   });
 });
 
@@ -153,5 +169,22 @@ describe("dòng bấm được", () => {
     props.onKeyDown({ key: "Enter", target: {}, currentTarget: row } as never);
     props.onKeyDown({ key: "a", target: row, currentTarget: row } as never);
     expect(open).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe("FilterMenu bỏ chọn nhiều bộ lọc", () => {
+  it("xoá lần lượt ≥2 bộ lọc trong cùng 1 sự kiện không bị ghi đè closure cũ", () => {
+    navMocks.replace.mockReset();
+    navMocks.params = "f.zone=A&f.status=ACTIVE";
+    let api: ReturnType<typeof useTableUrlState> | undefined;
+    function Probe() {
+      api = useTableUrlState({ filterKeys: ["zone", "status"], pageSizes: [10, 20], defaultPageSize: 10 });
+      return null;
+    }
+    renderToStaticMarkup(<Probe />);
+    api?.setFilter("zone", []);
+    api?.setFilter("status", []);
+    expect(navMocks.replace).toHaveBeenNthCalledWith(1, "/items?f.status=ACTIVE", { scroll: false });
+    expect(navMocks.replace).toHaveBeenNthCalledWith(2, "/items", { scroll: false });
   });
 });
