@@ -118,7 +118,7 @@ describe("/api/dishes/semi-finished", () => {
       const method = init?.method ?? "GET";
       const headers = new Headers(init?.headers);
       calls.push({ path, method, key: headers.get("Idempotency-Key") });
-      if (path === "/sales/products" && method === "GET") return json(200, { items: [{ id: "prod-btp", slug: "btp-bep-trung-tam" }], next_cursor: null });
+      if (path === "/sales/products" && method === "GET") return json(200, { items: [{ product: { id: "prod-btp", slug: "btp-bep-trung-tam" }, variants: [] }], next_cursor: null });
       if (path === "/sales/packages" && method === "POST") {
         return json(201, { id: PKG_KIMCHI, code: "BTP-CHUA-1", name: "Kim chi", variant_label: "1 túi · 60 g", net_weight_g: 60, updated_at: T });
       }
@@ -139,6 +139,7 @@ describe("/api/dishes/semi-finished", () => {
     });
     const res = await POST(req);
     expect(res.status).toBe(422);
+    expect(calls.some(c => c.path === "/sales/products" && c.method === "POST")).toBe(false);
     const delCall = calls.find(c => c.path === `/sales/packages/${PKG_KIMCHI}` && c.method === "DELETE");
     expect(delCall).toBeTruthy();
     expect(delCall?.key).toBeTruthy();

@@ -77,23 +77,26 @@ function mergePackageAllergens(components: { sku_ref: string }[], bySku: Record<
   return [...merged].sort();
 }
 
+type UpstreamProductRow = { id?: string; slug?: string; product?: { id: string; slug: string } };
+const unwrapProduct = (row: UpstreamProductRow) => row.product ?? (row.id && row.slug ? { id: row.id, slug: row.slug } : null);
+
 async function ensureSemiProduct(call: ReturnType<typeof caller>): Promise<string> {
-  const products = await allPages<{ id: string; slug: string }>(cursor => {
+  const products = await allPages<UpstreamProductRow>(cursor => {
     const q = new URLSearchParams({ page_size: "100", ...(cursor ? { cursor } : {}) });
-    return call<{ items: { id: string; slug: string }[]; next_cursor: string | null }>("sales", `/sales/products?${q}`);
+    return call<{ items: UpstreamProductRow[]; next_cursor: string | null }>("sales", `/sales/products?${q}`);
   });
-  const existing = products.find(p => p.slug === BTP_PRODUCT_SLUG);
+  const existing = products.map(unwrapProduct).find(p => p?.slug === BTP_PRODUCT_SLUG);
   if (existing) return existing.id;
   try {
     const created = await call<{ product: { id: string } }>("sales", "/sales/products", "POST", { name: BTP_PRODUCT_NAME, slug: BTP_PRODUCT_SLUG }, crypto.randomUUID());
     return created.product.id;
   } catch (err) {
     if (err && typeof err === "object" && "status" in err && err.status === 409) {
-      const reload = await allPages<{ id: string; slug: string }>(cursor => {
+      const reload = await allPages<UpstreamProductRow>(cursor => {
         const q = new URLSearchParams({ page_size: "100", ...(cursor ? { cursor } : {}) });
-        return call<{ items: { id: string; slug: string }[]; next_cursor: string | null }>("sales", `/sales/products?${q}`);
+        return call<{ items: UpstreamProductRow[]; next_cursor: string | null }>("sales", `/sales/products?${q}`);
       });
-      const hit = reload.find(p => p.slug === BTP_PRODUCT_SLUG);
+      const hit = reload.map(unwrapProduct).find(p => p?.slug === BTP_PRODUCT_SLUG);
       if (hit) return hit.id;
     }
     throw err;
