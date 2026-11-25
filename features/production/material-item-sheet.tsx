@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
 import { useAccess } from "@/lib/access-boundary";
+import { FetchError } from "@/lib/fetcher";
 import type { MaterialCategory, Material, Unit } from "@/lib/api/material-catalog";
 import type { NewMaterial } from "@/lib/api/material-catalog-write";
 import { activateMaterial, createMaterial, deleteMaterial, deleteMaterialImage, suspendMaterial, updateMaterial, uploadMaterialImage, viMessage, NAME_HAS_QUANTITY, UNIT_LOCKED } from "@/lib/api/material-catalog-write";
@@ -28,6 +29,7 @@ export function actionsFor(material: Material, can: Can): Label[] {
 }
 
 export const canDeleteMaterial = (material: Material, can: Can) => material.status !== "ACTIVE" && can("sales:material:lifecycle");
+export const isDeletedMissing = (kind: "material" | "delete-material", cause: unknown) => kind === "delete-material" && cause instanceof FetchError && cause.status === 404;
 
 export function NameField({ value, onChange, disabled, error }: { value: string; onChange: (value: string) => void; disabled: boolean; error: string }) {
   return <Field data-invalid={error ? true : undefined}>
@@ -116,7 +118,10 @@ export function MaterialItemSheet({ target, tree, defaultCategory, onClose, onSa
   async function run(job: () => Promise<unknown>, close = true, kind: "material" | "delete-material" = "material") {
     setBusy(true); setError("");
     try { await job(); onSaved(); if (close) onClose(); }
-    catch (cause) { setError(viMessage(cause, kind)); }
+    catch (cause) {
+      if (isDeletedMissing(kind, cause)) { onSaved(); if (close) onClose(); return; }
+      setError(viMessage(cause, kind));
+    }
     finally { setBusy(false); }
   }
   const body = { name: name.trim(), uom_code: unit as Unit, material_group_code: selectedGroup.toUpperCase() };

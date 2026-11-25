@@ -7,7 +7,7 @@ import { listMaterials } from "@/lib/api/material-catalog";
 import { MaterialsView } from "./materials-view";
 import { MaterialGrid } from "./materials-view-parts";
 import { readFileSync } from "node:fs";
-import { MaterialActions, NameField, UnitField, materialPatch, actionsFor, canDeleteMaterial, unitOf, groupChoice, locksFor } from "./material-item-sheet";
+import { MaterialActions, NameField, UnitField, materialPatch, actionsFor, canDeleteMaterial, isDeletedMissing, unitOf, groupChoice, locksFor } from "./material-item-sheet";
 import { suggestCode, UNCATEGORIZED, filterMaterials, countByCategory } from "./materials-catalog";
 import { CategoryBar } from "./materials-view-parts";
 import { TREE } from "./materials-fixtures";
@@ -293,9 +293,13 @@ describe("xoá nguyên liệu", () => {
     expect(canDeleteMaterial(material("ACTIVE"), can("food_dev"))).toBe(false);
     expect(canDeleteMaterial(material("DRAFT"), can("warehouse"))).toBe(false);
   });
-  it("409 khi xoá có câu tiếng Việt riêng, không dùng chữ món", () => {
+  it("409 khi xoá phân loại theo error_code và coi 404 khi xoá là đã xoá", () => {
     const active = new FetchError("sku must not be active", 409, { errors: { error_code: "state_conflict" } });
+    const inUse = new FetchError("x", 409, { errors: { error_code: "resource_in_use" } });
     expect(viMessage(active, "delete-material")).toBe("Cần ngừng dùng nguyên liệu trước khi xoá");
+    expect(viMessage(inUse, "delete-material")).toBe("Chưa xoá được: nguyên liệu đang được dùng trong công thức hoặc bảng giá");
     expect(viMessage(new FetchError("x", 409, { errors: { error_code: "state_conflict" } }), "delete-material")).not.toMatch(/món/i);
+    expect(isDeletedMissing("delete-material", new FetchError("missing", 404))).toBe(true);
+    expect(isDeletedMissing("material", new FetchError("missing", 404))).toBe(false);
   });
 });
