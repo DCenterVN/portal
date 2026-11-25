@@ -287,16 +287,16 @@ describe("xoá nguyên liệu", () => {
     expect(calls[0].body).toBeUndefined();
     expect(calls[0].headers["Idempotency-Key"]).toBeTruthy();
   });
-  it("nút Xoá nguyên liệu chỉ có khi nháp hoặc đã ngừng và có quyền vòng đời", () => {
+  it("nút Xoá nguyên liệu chỉ có khi nháp và có quyền vòng đời", () => {
     expect(canDeleteMaterial(material("DRAFT"), can("food_dev"))).toBe(true);
-    expect(canDeleteMaterial(material("SUSPENDED"), can("food_dev"))).toBe(true);
+    expect(canDeleteMaterial(material("SUSPENDED"), can("food_dev"))).toBe(false);
     expect(canDeleteMaterial(material("ACTIVE"), can("food_dev"))).toBe(false);
     expect(canDeleteMaterial(material("DRAFT"), can("warehouse"))).toBe(false);
   });
   it("409 khi xoá phân loại theo error_code và coi 404 khi xoá là đã xoá", () => {
-    const active = new FetchError("sku must not be active", 409, { errors: { error_code: "state_conflict" } });
+    const active = new FetchError("only draft materials can be deleted; suspend active materials instead", 409, { errors: { error_code: "state_conflict" } });
     const inUse = new FetchError("x", 409, { errors: { error_code: "resource_in_use" } });
-    expect(viMessage(active, "delete-material")).toBe("Cần ngừng dùng nguyên liệu trước khi xoá");
+    expect(viMessage(active, "delete-material")).toBe("Chỉ xoá được nguyên liệu ở trạng thái nháp; nguyên liệu đã kích hoạt chỉ có thể ngừng dùng");
     expect(viMessage(inUse, "delete-material")).toBe("Chưa xoá được: nguyên liệu đang được dùng trong công thức hoặc bảng giá");
     expect(viMessage(new FetchError("x", 409, { errors: { error_code: "state_conflict" } }), "delete-material")).not.toMatch(/món/i);
     expect(isDeletedMissing("delete-material", new FetchError("missing", 404))).toBe(true);

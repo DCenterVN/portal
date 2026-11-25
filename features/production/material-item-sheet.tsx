@@ -28,7 +28,7 @@ export function actionsFor(material: Material, can: Can): Label[] {
   return labels;
 }
 
-export const canDeleteMaterial = (material: Material, can: Can) => material.status !== "ACTIVE" && can("sales:material:lifecycle");
+export const canDeleteMaterial = (material: Material, can: Can) => material.status === "DRAFT" && can("sales:material:lifecycle");
 export const isDeletedMissing = (kind: "material" | "delete-material", cause: unknown) => kind === "delete-material" && cause instanceof FetchError && cause.status === 404;
 
 export function NameField({ value, onChange, disabled, error }: { value: string; onChange: (value: string) => void; disabled: boolean; error: string }) {

@@ -55,7 +55,7 @@ export function viMessage(error: unknown, kind: "material" | "category" | "new-c
   if (status === 409) {
     if (kind === "delete-material") {
       if (code === "resource_in_use" || code === "conflict") return "Chưa xoá được: nguyên liệu đang được dùng trong công thức hoặc bảng giá";
-      if (code === "state_conflict" && error instanceof FetchError && /active|đang dùng|ngừng/i.test(error.message)) return "Cần ngừng dùng nguyên liệu trước khi xoá";
+      if (code === "state_conflict" && error instanceof FetchError && /draft|nháp|active|suspend|đang dùng|ngừng/i.test(error.message)) return "Chỉ xoá được nguyên liệu ở trạng thái nháp; nguyên liệu đã kích hoạt chỉ có thể ngừng dùng";
       return "Chưa xoá được: nguyên liệu đang được dùng hoặc đã đổi trạng thái, hãy tải lại danh sách";
     }
     if (kind === "new-category") return "Đã có loại hoặc nhóm mã này";
