@@ -13,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAccess } from "@/lib/access-boundary";
 import type { MaterialCategory, Material, Unit } from "@/lib/api/material-catalog";
 import type { NewMaterial } from "@/lib/api/material-catalog-write";
-import { activateMaterial, createMaterial, deleteMaterialImage, suspendMaterial, updateMaterial, uploadMaterialImage, viMessage, NAME_HAS_QUANTITY, UNIT_LOCKED } from "@/lib/api/material-catalog-write";
+import { activateMaterial, createMaterial, deleteMaterial, deleteMaterialImage, suspendMaterial, updateMaterial, uploadMaterialImage, viMessage, NAME_HAS_QUANTITY, UNIT_LOCKED } from "@/lib/api/material-catalog-write";
 
 type Can = (action: string) => boolean;
 type Label = "Lưu" | "Duyệt" | "Ngừng dùng…" | "Dùng lại";
@@ -26,6 +26,8 @@ export function actionsFor(material: Material, can: Can): Label[] {
   if (can("sales:material:lifecycle")) labels.push(...(material.status === "DRAFT" ? ["Duyệt" as const] : []), "Ngừng dùng…");
   return labels;
 }
+
+export const canDeleteMaterial = (material: Material, can: Can) => material.status !== "ACTIVE" && can("sales:material:lifecycle");
 
 export function NameField({ value, onChange, disabled, error }: { value: string; onChange: (value: string) => void; disabled: boolean; error: string }) {
   return <Field data-invalid={error ? true : undefined}>
@@ -104,16 +106,17 @@ export function MaterialItemSheet({ target, tree, defaultCategory, onClose, onSa
   const [imageUrl, setImageUrl] = useState(material?.imageUrl ?? null);
   const [reason, setReason] = useState("");
   const [asking, setAsking] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const { options, value: selectedGroup } = groupChoice(tree, category, group);
   const { fields: canEdit, image: canImage } = locksFor(target === "new" ? "new" : material ?? "new", can);
   const ready = name.trim() !== "" && selectedGroup !== "" && unit !== "" && !busy;
 
-  async function run(job: () => Promise<unknown>, close = true) {
+  async function run(job: () => Promise<unknown>, close = true, kind: "material" | "delete-material" = "material") {
     setBusy(true); setError("");
     try { await job(); onSaved(); if (close) onClose(); }
-    catch (cause) { setError(viMessage(cause, "material")); }
+    catch (cause) { setError(viMessage(cause, kind)); }
     finally { setBusy(false); }
   }
   const body = { name: name.trim(), uom_code: unit as Unit, material_group_code: selectedGroup.toUpperCase() };
@@ -145,8 +148,11 @@ export function MaterialItemSheet({ target, tree, defaultCategory, onClose, onSa
         {error && error !== NAME_HAS_QUANTITY && error !== UNIT_LOCKED && <p role="alert" className="text-sm text-destructive">{error}</p>}
       </div>
       <SheetFooter className="flex-row justify-end">
+        {material && canDeleteMaterial(material, can) && <Button variant="outline" className="mr-auto" disabled={busy} onClick={() => setDeleting(true)}>Xoá nguyên liệu</Button>}
         {material ? <MaterialActions labels={actionsFor(material, can)} busy={busy} blocked={unit === ""} onAction={onAction} /> : <ActionButton pending={busy} disabled={!ready} onClick={create}>{title}</ActionButton>}
       </SheetFooter>
+      <ConfirmDialog open={deleting} onOpenChange={setDeleting} title="Xoá nguyên liệu này?" description="Nguyên liệu sẽ bị xoá hẳn khỏi danh sách và không khôi phục được." confirmLabel="Xoá nguyên liệu" danger busy={busy}
+        onConfirm={() => { setDeleting(false); run(() => deleteMaterial(material!.id), true, "delete-material"); }} />
       <ConfirmDialog open={asking} onOpenChange={setAsking} title="Ngừng dùng nguyên liệu này?" description="Nguyên liệu sẽ không chọn được nữa. Hãy ghi lý do." confirmLabel="Ngừng dùng" danger busy={busy} confirmDisabled={reason.trim() === ""}
         onConfirm={() => run(() => suspendMaterial(material!.id, reason))}>
         <Textarea aria-label="Lý do ngừng dùng" value={reason} onChange={event => setReason(event.target.value)} placeholder="Lý do (bắt buộc)" />

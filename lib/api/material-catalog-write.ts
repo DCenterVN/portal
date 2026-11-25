@@ -15,6 +15,7 @@ function write<T = unknown>(url: string, method: "POST" | "PATCH" | "DELETE", bo
 export type NewMaterial = { name: string; uom_code: Unit; material_group_code: string };
 export const createMaterial = (input: NewMaterial, key?: string) => write("/api/sales/skus", "POST", input, key, z.object({ id: z.string() }));
 export const updateMaterial = (id: string, patch: Partial<NewMaterial>, key?: string) => write(skus(id), "PATCH", patch, key);
+export const deleteMaterial = (id: string) => write(skus(id), "DELETE");
 export const activateMaterial = (id: string) => write(`${skus(id)}/activate`, "POST", {});
 export const deleteMaterialImage = (id: string) => write(`${skus(id)}/image`, "DELETE");
 
@@ -39,10 +40,11 @@ export const NAME_HAS_QUANTITY = 'Tên nguyên liệu không ghi khối lượng
 
 export const UNIT_LOCKED = "Chỉ đổi đơn vị khi nguyên liệu còn là nháp";
 
-export function viMessage(error: unknown, kind: "material" | "category" | "new-category"): string {
+export function viMessage(error: unknown, kind: "material" | "category" | "new-category" | "delete-material"): string {
   const status = error instanceof FetchError ? error.status : 0;
   if (status === 403) return "Bạn không có quyền làm việc này";
   if (status === 409) {
+    if (kind === "delete-material") return error instanceof FetchError && /active|đang dùng|ngừng/i.test(error.message) ? "Cần ngừng dùng nguyên liệu trước khi xoá" : "Chưa xoá được: nguyên liệu đang được dùng hoặc đã đổi trạng thái, hãy tải lại danh sách";
     if (kind === "new-category") return "Đã có loại hoặc nhóm mã này";
     if (kind === "material" && error instanceof FetchError && error.code === "duplicate_resource") return "Đã có nguyên liệu tên này";
     if (kind === "material" && error instanceof FetchError && /đơn vị gốc/i.test(error.message)) return UNIT_LOCKED;

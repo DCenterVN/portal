@@ -1,13 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { AccessProvider } from "@/lib/access-boundary";
-import { createMaterial, suspendMaterial, uploadMaterialImage, createCategory, viMessage } from "@/lib/api/material-catalog-write";
+import { createMaterial, deleteMaterial, suspendMaterial, uploadMaterialImage, createCategory, viMessage } from "@/lib/api/material-catalog-write";
 import { FetchError } from "@/lib/fetcher";
 import { listMaterials } from "@/lib/api/material-catalog";
 import { MaterialsView } from "./materials-view";
 import { MaterialGrid } from "./materials-view-parts";
 import { readFileSync } from "node:fs";
-import { MaterialActions, NameField, UnitField, materialPatch, actionsFor, unitOf, groupChoice, locksFor } from "./material-item-sheet";
+import { MaterialActions, NameField, UnitField, materialPatch, actionsFor, canDeleteMaterial, unitOf, groupChoice, locksFor } from "./material-item-sheet";
 import { suggestCode, UNCATEGORIZED, filterMaterials, countByCategory } from "./materials-catalog";
 import { CategoryBar } from "./materials-view-parts";
 import { TREE } from "./materials-fixtures";
@@ -273,5 +273,29 @@ describe("lô 7: các trường hợp riêng", () => {
     const bar = (counts: Record<string, number>) => renderToStaticMarkup(<CategoryBar current="thit" category={TREE} counts={counts} onSelect={() => {}} />);
     expect(bar({ [UNCATEGORIZED]: 2 })).toContain("Chưa xếp loại");
     expect(bar({})).not.toContain("Chưa xếp loại");
+  });
+});
+
+describe("xoá nguyên liệu", () => {
+  const can = (role: keyof typeof ROLES) => (action: string) => ROLES[role].includes(action);
+  const material = (status: "ACTIVE" | "DRAFT" | "SUSPENDED") => ({ id: "1", name: "A", category: "thit", group: "lon", imageUrl: null, status, unit: "KG" as const });
+  it("deleteMaterial gửi DELETE tới đúng đường và có Idempotency-Key", async () => {
+    reply.mockReturnValue({ status: 200, body: { data: {} } });
+    await deleteMaterial("m 1");
+    expect(path(calls[0])).toBe("/api/sales/skus/m%201");
+    expect(calls[0].method).toBe("DELETE");
+    expect(calls[0].body).toBeUndefined();
+    expect(calls[0].headers["Idempotency-Key"]).toBeTruthy();
+  });
+  it("nút Xoá nguyên liệu chỉ có khi nháp hoặc đã ngừng và có quyền vòng đời", () => {
+    expect(canDeleteMaterial(material("DRAFT"), can("food_dev"))).toBe(true);
+    expect(canDeleteMaterial(material("SUSPENDED"), can("food_dev"))).toBe(true);
+    expect(canDeleteMaterial(material("ACTIVE"), can("food_dev"))).toBe(false);
+    expect(canDeleteMaterial(material("DRAFT"), can("warehouse"))).toBe(false);
+  });
+  it("409 khi xoá có câu tiếng Việt riêng, không dùng chữ món", () => {
+    const active = new FetchError("sku must not be active", 409, { errors: { error_code: "state_conflict" } });
+    expect(viMessage(active, "delete-material")).toBe("Cần ngừng dùng nguyên liệu trước khi xoá");
+    expect(viMessage(new FetchError("x", 409, { errors: { error_code: "state_conflict" } }), "delete-material")).not.toMatch(/món/i);
   });
 });

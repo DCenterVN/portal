@@ -137,3 +137,13 @@ describe("BFF sửa và xoá món trong giỏ", () => {
     expect(init).toMatchObject({ method, headers: expect.objectContaining({ "Idempotency-Key": "khoa" }) });
   });
 });
+
+it("forwards material deletion to sales skus/{id} with the idempotency key", async () => {
+  const { DELETE } = await import("./skus/[id]/route");
+  global.fetch = vi.fn().mockResolvedValue(new Response(null, { status: 204 }));
+  const req = new NextRequest("http://localhost:3000/api/sales/skus/a%20b", { method: "DELETE", headers: { cookie: "access_token=jwt", "Idempotency-Key": "delete-key" } });
+  const response = await DELETE(req, { params: Promise.resolve({ id: "a b" }) });
+  expect(response.status).toBe(204);
+  expect(String(vi.mocked(global.fetch).mock.calls[0][0])).toContain("/sales/skus/a%20b");
+  expect(global.fetch).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({ method: "DELETE", headers: expect.objectContaining({ "Idempotency-Key": "delete-key" }) }));
+});

@@ -7,3 +7,8 @@ export async function PATCH(request: NextRequest, context: Context) {
   const { id } = await context.params;
   return forwardSales(request, `/sales/skus/${encodeURIComponent(id)}`, "PATCH");
 }
+
+export async function DELETE(request: NextRequest, context: Context) {
+  const { id } = await context.params;
+  return forwardSales(request, `/sales/skus/${encodeURIComponent(id)}`, "DELETE");
+}
