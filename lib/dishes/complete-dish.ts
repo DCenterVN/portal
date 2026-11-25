@@ -1,11 +1,11 @@
-import { slotOf, slotLabels, type DishDraft as StoredDishDraft, type DishContent, type DishBase, type GroupNode, type Line } from "./types";
+import { FOOD_SLOTS, formatVariantLabel, normalizeText, slotOf, slotLabels, type DishDraft as StoredDishDraft, type DishContent, type DishBase, type GroupNode, type Line } from "./types";
 export { slotOf } from "./types";
 import { z } from "zod";
 import { contentSchema } from "@/lib/api/dishes";
 export type DishDraft = Omit<StoredDishDraft, "content"> & { content: Omit<DishContent, "base"> & { base: unknown } };
 type PackageInput = { product_ref: string; code: string; name: string; variant_label: string; net_weight_g: number; uom_code: string; temperature_regime: string };
 const slotSchema = z.object({
-  slot: z.enum(["DAM", "RAU", "TINH_BOT", "COT", "NUOC_CHAM", "GIA_VI_THEM"]),
+  slot: z.enum(FOOD_SLOTS),
   swappable: z.boolean(), removable: z.boolean(),
   options: z.array(z.object({ sku_ref: z.string().min(1), quantity: z.number().positive().finite(), is_default: z.boolean() })),
 });
@@ -62,7 +62,10 @@ function readTarget(value: string, draft: DishDraft, content: DishContent): Targ
   return target;
 }
 function sameLines(a: Line[], b: Line[]) {
-  return a.length === b.length && a.every(line => b.some(other => other.sku_ref === line.sku_ref && other.uom === line.uom && Number(other.quantity) === Number(line.quantity) && Number(other.yield_pct) === Number(line.yield_pct)));
+  const prepOf = (line: Line) => normalizeText(line.prep_note ?? "");
+  return a.length === b.length && a.every(line => b.some(other =>
+    other.sku_ref === line.sku_ref && other.uom === line.uom && Number(other.quantity) === Number(line.quantity) && Number(other.yield_pct) === Number(line.yield_pct) && prepOf(other) === prepOf(line)
+  ));
 }
 export async function completeDish(draft: DishDraft, deps: CompleteDeps): Promise<CompleteResult> {
   let failed_step = "claim";
@@ -98,7 +101,12 @@ export async function completeDish(draft: DishDraft, deps: CompleteDeps): Promis
       const slots: Slot[] = [];
       const weight = (lines: Line[]) => lines.filter(line => ["G", "ML"].includes(line.uom)).reduce((sum, line) => sum + Number(line.quantity), 0);
       for (const slot of ["DAM", "RAU", "TINH_BOT", "COT", "GIA_VI_THEM"] as const) {
-        const lines: Line[] = content.ingredients.filter(line => line.sku_ref && slotOf(deps.skuGroups[line.sku_ref] ?? null, deps.tree) === slot).map(line => ({ sku_ref: line.sku_ref ?? "", quantity: line.quantity, uom: line.uom, yield_pct: line.yield_pct }));
+        const lines: Line[] = content.ingredients
+          .filter(line => line.sku_ref && slotOf(deps.skuGroups[line.sku_ref] ?? null, deps.tree) === slot)
+          .map(line => {
+            const prep = line.prep_note ? normalizeText(line.prep_note) : "";
+            return { sku_ref: line.sku_ref ?? "", quantity: line.quantity, uom: line.uom, yield_pct: line.yield_pct, ...(prep ? { prep_note: prep } : {}) };
+          });
         if (!lines.length) continue;
         const base = content.base?.slots[slot as keyof DishBase["slots"]];
         let ref = base?.package_ref;
@@ -118,7 +126,7 @@ export async function completeDish(draft: DishDraft, deps: CompleteDeps): Promis
         slots.push({ slot, swappable: false, removable: false, options: [{ sku_ref: ref ?? "", quantity: 1, is_default: true }] });
       }
       for (const line of content.seasonings) slots.push({ slot: line.slot, swappable: false, removable: line.removable, options: [{ sku_ref: line.package_ref ?? "", quantity: 1, is_default: true }] });
-      const variant_label = `${content.servings} người`;
+      const variant_label = formatVariantLabel(content.servings ?? 1, content.variant_note);
       let set_ref = content.base?.set_ref ?? "";
       let expected_updated_at = content.base?.set_updated_at ?? "";
       if (draft.kind !== "REVISION") {

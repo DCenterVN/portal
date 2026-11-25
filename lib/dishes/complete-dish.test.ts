@@ -39,7 +39,7 @@ describe("completeDish", () => {
     expect(recRau).toEqual({ components: [L("sku-rau", "200"), L("sku-toi", "10")], prep_steps: [] });
 
     const [set, kSet] = f.arg("createSet");
-    expect(set).toMatchObject({ product_ref: "prod-new", name: "Thịt trâu xào rau muống · 2 người", variant_label: "2 người", net_weight_g: 720, temperature_regime: "CHILLED", tags: ["xao", "thit-trau", "rau-muong"] });
+    expect(set).toMatchObject({ product_ref: "prod-new", name: "Thịt trâu xào rau muống · 2 suất", variant_label: "2 suất", net_weight_g: 720, temperature_regime: "CHILLED", tags: ["xao", "thit-trau", "rau-muong"] });
     expect(kSet).toBe(`dish-${ID}-r3-set`);
 
     const [setRef, slotsIn, kSlots] = f.arg("replaceSlots");
@@ -125,7 +125,7 @@ describe("completeDish", () => {
     expect(f.calls.createProduct).toBeUndefined();
     expect(f.calls.createPackage).toBeUndefined();
     expect(f.calls.createRecipe).toBeUndefined();
-    expect(f.arg("createSet")[0]).toMatchObject({ product_ref: "prod-m1", name: "Thịt trâu xào rau muống · 4 người", variant_label: "4 người", net_weight_g: 1440 });
+    expect(f.arg("createSet")[0]).toMatchObject({ product_ref: "prod-m1", name: "Thịt trâu xào rau muống · 4 suất", variant_label: "4 suất", net_weight_g: 1440 });
     const slots = (f.arg("replaceSlots")[1] as { slots: { slot: string; options: { sku_ref: string; quantity: number }[] }[] }).slots;
     expect(slots.find((s) => s.slot === "DAM")?.options[0]).toMatchObject({ sku_ref: "pkg-dam-m1", quantity: 1 });
     expect(slots.find((s) => s.slot === "RAU")?.options[0]).toMatchObject({ sku_ref: "pkg-rau-m1", quantity: 1 });
@@ -331,4 +331,35 @@ it("progress slots cũ chứa set ref: đối soát cấu hình và đọc revis
   delete failures.sellable;
   expect(await completeDish(d, f.deps)).toMatchObject({ ok: true });
   expect(f.calls.createSellable[1][1]).toEqual({ expected_updated_at: "2026-10-23T00:00:00Z", portion_count: 2 });
+});
+
+it("tạo biến thể kèm variant_note, prep_note và gói DO_CHUA", async () => {
+  const f = fake();
+  const c = content({
+    variant_note: "Cốt bò truyền thống",
+    ingredients: [
+      { ...ing("r1", L("sku-trau", "150")), prep_note: "thái lát mỏng" },
+      ing("r2", L("sku-rau", "200")),
+    ],
+    seasonings: [
+      { row: "s1", slot: "COT", package_ref: "pkg-cot-bo", removable: false },
+      { row: "s2", slot: "DO_CHUA", package_ref: "pkg-kimchi", removable: true },
+    ],
+  });
+  const r = await completeDish(draft({ content: c }), f.deps);
+  expect(r).toMatchObject({ ok: true, product_ref: "prod-new" });
+  expect(f.arg("createRecipe", 0)[1]).toEqual({
+    components: [{ ...L("sku-trau", "150"), prep_note: "thái lát mỏng" }],
+    prep_steps: [],
+  });
+  expect(f.arg("createSet")[0]).toMatchObject({
+    name: "Thịt trâu xào rau muống · 2 suất · Cốt bò truyền thống",
+    variant_label: "2 suất · Cốt bò truyền thống",
+  });
+  const slots = (f.arg("replaceSlots")[1] as { slots: { slot: string; removable: boolean; options: { sku_ref: string }[] }[] }).slots;
+  expect(slots.find(s => s.slot === "DO_CHUA")).toMatchObject({
+    slot: "DO_CHUA",
+    removable: true,
+    options: [{ sku_ref: "pkg-kimchi" }],
+  });
 });

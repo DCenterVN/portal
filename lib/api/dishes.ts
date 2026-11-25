@@ -1,18 +1,26 @@
 import { z } from "zod";
 import { apiFetch, FetchError } from "@/lib/fetcher";
 import { allPages } from "@/lib/api/all-pages";
-import type { DishContent, DishDraft, DraftKind, DraftRow } from "@/lib/dishes/types";
+import { SEA_SLOTS, type DishContent, type DishDraft, type DraftKind, type DraftRow } from "@/lib/dishes/types";
 import type { DishDetail } from "@/lib/dishes/dish-detail";
 import type { CompleteResult } from "@/lib/dishes/complete-dish";
 
-const line = z.object({ sku_ref: z.string().nullable().default(null), quantity: z.string().nullish().transform(value => value ?? ""), uom: z.string().nullish().transform(value => value ?? "G"), yield_pct: z.string().nullish().transform(value => value ?? "100") });
+const line = z.object({
+  sku_ref: z.string().nullable().default(null),
+  quantity: z.string().nullish().transform(value => value ?? ""),
+  uom: z.string().nullish().transform(value => value ?? "G"),
+  yield_pct: z.string().nullish().transform(value => value ?? "100"),
+  prep_note: z.string().nullish().transform(value => (value ? value : undefined)),
+});
 const baseLine = line.extend({ sku_ref: z.string() });
 const baseSlot = z.object({ package_ref: z.string(), lines: z.array(baseLine) }).optional();
 export const contentSchema = z.object({
   schema_version: z.literal(1), name: z.string().nullable().default(null), category_ref: z.string().nullable().default(null),
-  tags: z.array(z.string()).nullish().transform(value => value ?? []), servings: z.number().nullable().default(null),
+  tags: z.array(z.string()).nullish().transform(value => value ?? []),
+  servings: z.number().nullable().default(null),
+  variant_note: z.string().nullish().transform(value => value ?? null),
   ingredients: z.array(line.extend({ row: z.string() })).nullish().transform(value => value ?? []),
-  seasonings: z.array(z.object({ row: z.string(), slot: z.enum(["COT", "NUOC_CHAM", "GIA_VI_THEM"]), package_ref: z.string().nullable().default(null), removable: z.boolean().default(false) })).nullish().transform(value => value ?? []),
+  seasonings: z.array(z.object({ row: z.string(), slot: z.enum(SEA_SLOTS), package_ref: z.string().nullable().default(null), removable: z.boolean().default(false) })).nullish().transform(value => value ?? []),
   reason: z.string().nullable().default(null), base: z.object({ product_ref: z.string(), set_ref: z.string(), set_updated_at: z.string(), slots: z.object({ DAM: baseSlot, RAU: baseSlot, TINH_BOT: baseSlot, COT: baseSlot, GIA_VI_THEM: baseSlot }) }).nullable().default(null),
 });
 export const draftSchema = z.object({ id: z.string(), kind: z.enum(["CREATE", "COPY", "VARIANT", "REVISION"]), revision: z.number(), status: z.string(), source_product_ref: z.string().nullable().default(null), source_set_ref: z.string().nullable().default(null), source_set_updated_at: z.string().nullable().default(null), product_ref: z.string().nullable().default(null), set_ref: z.string().nullable().default(null), content: contentSchema, progress: z.record(z.string()).default({}) });

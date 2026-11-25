@@ -204,4 +204,47 @@ describe("validateDish", () => {
     }]);
     expect(find(missingErrs, "slots")).toHaveLength(1);
   });
+
+  it("cho phép cùng số suất khi khác variant_note và chặn khi trùng variantKey", () => {
+    const baseVariant = { servings: 2, variant_note: "Cốt bò truyền thống", set_ref: "s1", variant_label: "2 suất · Cốt bò truyền thống" };
+    const diffErrs = validateDish(
+      m1({ variant_note: "Cốt chua cay" }),
+      ctx({ kind: "VARIANT", existingVariants: [baseVariant] }),
+    );
+    expect(find(diffErrs, "servings")).toEqual([]);
+
+    const dupErrs = validateDish(
+      m1({ variant_note: "  cốt bò  truyền   thống " }),
+      ctx({ kind: "VARIANT", existingVariants: [baseVariant] }),
+    );
+    expect(find(dupErrs, "servings")).toEqual([{
+      field: "servings",
+      message: "Món đã có biến thể cùng nhãn",
+      existing: { set_ref: "s1", variant_label: "2 suất · Cốt bò truyền thống" },
+    }]);
+  });
+
+  it("DO_CHUA không tính là gia vị giữ món, nhưng kiểm tra prep_note độ dài và ký tự điều khiển", () => {
+    const noSpiceErrs = validateDish(
+      m1({
+        ingredients: [{ row: "r1", sku_ref: "sku-trau", quantity: "150", uom: "G", yield_pct: "100" }],
+        seasonings: [{ row: "s1", slot: "DO_CHUA", package_ref: "pkg-kimchi", removable: false }],
+      }),
+      ctx({ packagesWithRecipe: ["pkg-kimchi"] }),
+    );
+    expect(find(noSpiceErrs, "removable")).toHaveLength(1);
+
+    const longNote = "x".repeat(121);
+    const noteErrs = validateDish(
+      m1({
+        ingredients: [
+          { row: "r1", sku_ref: "sku-trau", quantity: "150", uom: "G", yield_pct: "100", prep_note: longNote },
+          { row: "r2", sku_ref: "sku-muong", quantity: "200", uom: "G", yield_pct: "100", prep_note: "băm\nnhỏ" },
+        ],
+      }),
+      ctx(),
+    );
+    expect(find(noteErrs, "prep_note", "r1")).toHaveLength(1);
+    expect(find(noteErrs, "prep_note", "r2")).toHaveLength(1);
+  });
 });

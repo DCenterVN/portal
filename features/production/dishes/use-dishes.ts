@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type * as api from "@/lib/api/dishes";
 import type { DishDetail, Variant } from "@/lib/dishes/dish-detail";
 import { toBase } from "@/lib/dishes/dish-detail";
-import { SERVING_OPTIONS, type DishContent, type DraftKind, type DraftRow } from "@/lib/dishes/types";
+import { type DishContent, type DraftKind, type DraftRow } from "@/lib/dishes/types";
 import { FetchError } from "@/lib/fetcher";
 import { matchesName, PAGE_SIZE } from "../materials-catalog";
 import { z } from "zod";
@@ -11,9 +11,8 @@ type ListDeps = Pick<typeof api, "listAllDishes" | "listDishDrafts" | "createDis
 type DetailDeps = Pick<typeof api, "getDishDetail" | "createDishDraft" | "discardDishDraft" | "draftAttempt" | "safeMessage">;
 
 const existingSchema = z.object({ errors: z.object({ existing: z.object({ id: z.string() }) }) });
-const variantOrder = [4, 1, 2, 3, 6].filter((n): n is (typeof SERVING_OPTIONS)[number] => (SERVING_OPTIONS as readonly number[]).includes(n));
 
-export const emptyContent = (): DishContent => ({ schema_version: 1, name: "", category_ref: null, tags: [], servings: 2, ingredients: [], seasonings: [], reason: null, base: null });
+export const emptyContent = (): DishContent => ({ schema_version: 1, name: "", category_ref: null, tags: [], servings: 2, variant_note: null, ingredients: [], seasonings: [], reason: null, base: null });
 
 export function copyDishName(name: string): string {
   const clean = name.replace(/\s*\(bản sao\)\s*$/i, "").trim();
@@ -188,10 +187,7 @@ export function useDishDetail(
   }, []);
 
   const begin = useCallback(async (kind: Extract<DraftKind, "COPY" | "VARIANT" | "REVISION">, source: DishDetail, variant: Variant) => {
-    const servings = kind === "VARIANT"
-      ? variantOrder.find(n => !source.variants.some(v => v.servings === n)) ?? null
-      : variant.servings;
-    if (kind === "VARIANT" && !servings) return;
+    const servings = variant.servings ?? 2;
     setBusy(true); setError("");
     const content = {
       ...emptyContent(),
@@ -199,6 +195,7 @@ export function useDishDetail(
       category_ref: source.product.category_ref,
       tags: kind === "COPY" ? [] : (variant.tags ?? []),
       servings,
+      variant_note: kind === "VARIANT" ? "" : (variant.variant_note ?? null),
       base: toBase(variant, source.product.id),
       ingredients: variant.packs.flatMap(pack => pack.lines.map(line => ({ ...line, row: crypto.randomUUID() }))),
       seasonings: variant.seasonings.map(line => ({ row: crypto.randomUUID(), slot: line.slot, package_ref: line.package_ref, removable: line.removable })),

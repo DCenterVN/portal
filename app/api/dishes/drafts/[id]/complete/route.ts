@@ -5,7 +5,7 @@ import { loadDishDetail } from "@/lib/dishes/dish-detail";
 import { completeDish } from "@/lib/dishes/complete-dish";
 import { prepareComplete } from "@/lib/dishes/prepare-complete";
 import { validateDish } from "@/lib/dishes/validate-dish";
-import { costPreviewErrors } from "@/lib/dishes/precheck-cost";
+import { blockingCostErrors } from "@/lib/dishes/precheck-cost";
 import { safeMessage } from "@/lib/api/dishes";
 export async function POST(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   const { id } = await context.params;
@@ -22,8 +22,8 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
     if (Object.keys(prepared.draft.progress).length === 0) {
       try {
         const preview = await services.previewCost(prepared.draft.content);
-        const costErrors = costPreviewErrors(prepared.draft.content, preview);
-        if (costErrors.length) return NextResponse.json({ message: "Chưa đủ giá vốn để hoàn tất món", errors: costErrors }, { status: 422, headers: { "Cache-Control": "no-store" } });
+        const costErrors = blockingCostErrors(prepared.draft.content, preview);
+        if (costErrors.length) return NextResponse.json({ message: "Chưa hoàn tất được món", errors: costErrors }, { status: 422, headers: { "Cache-Control": "no-store" } });
       } catch (err) {
         const errStatus = err && typeof err === "object" && "status" in err && typeof err.status === "number" ? err.status : 500;
         if (errStatus >= 500) return NextResponse.json({ message: "Không kiểm tra được giá vốn lúc này. Thử hoàn tất món lại sau ít phút." }, { status: 503, headers: { "Cache-Control": "no-store" } });

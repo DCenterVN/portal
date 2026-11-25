@@ -56,7 +56,7 @@ describe("loadDishDetail", () => {
     });
     expect(v2.packs.find((p) => p.slot === "RAU")?.lines).toEqual([L("sku-rau", "200"), L("sku-toi", "10", "90")]);
     expect(v2.seasonings).toEqual([{ slot: "GIA_VI_THEM", package_ref: "pkg-gv", package_name: "Gia vị xào", removable: true }]);
-    expect(d.spies.getActiveRecipe).not.toHaveBeenCalledWith("pkg-gv");
+    expect(d.spies.getActiveRecipe).toHaveBeenCalledWith("pkg-gv");
 
     expect(r.open_drafts).toMatchObject([{ id: "d-1", kind: "VARIANT" }]);
     expect(r.revision_history).toEqual([{ id: "d-9", completed_at: T2, updated_by: "Bình", reason: "đổi tỏi sang hành" }]);
@@ -114,6 +114,42 @@ describe("loadDishDetail", () => {
       ["DAM", [{ sku_ref: "sku-dau", quantity: "150", uom: "G", yield_pct: "100" }]],
       ["COT", [{ sku_ref: "sku-bo", quantity: "100", uom: "G", yield_pct: "80" }]],
       ["GIA_VI_THEM", [{ sku_ref: "sku-la-lot", quantity: "20", uom: "G", yield_pct: "100" }]],
+    ]);
+  });
+
+  it("phân loại BTP-* và DO_CHUA vào seasonings kèm components và tách variant_note", () => {
+    const detail = buildDishDetail({
+      product: { id: "prod-bun", name: "Bún bò", slug: "bun-bo", category_ref: null, status: "ACTIVE" },
+      variants: [{
+        id: "set-btp",
+        variant_label: "2 suất · Cốt bò truyền thống",
+        status: "ACTIVE",
+        sellable: true,
+        updated_at: T,
+        slots: [
+          { slot: "TINH_BOT", removable: false, options: [{ sku_ref: "pkg-bun", is_default: true }] },
+          { slot: "COT", removable: false, options: [{ sku_ref: "pkg-cot", is_default: true }] },
+          { slot: "DO_CHUA", removable: true, options: [{ sku_ref: "pkg-chua", is_default: true }] },
+        ],
+      }],
+      packageNames: { "pkg-bun": "Bún", "pkg-cot": "Cốt bò", "pkg-chua": "Kim chi cải thảo" },
+      packageCodes: { "pkg-bun": "D-TINH_BOT-1", "pkg-cot": "BTP-COT-BO", "pkg-chua": "BTP-CHUA-KC" },
+      recipes: {
+        "pkg-bun": { components: [L("sku-bun", "200")] },
+        "pkg-cot": { components: [L("sku-xuong", "300")] },
+        "pkg-chua": { components: [{ ...L("sku-caithao", "60"), prep_note: "cắt khúc" }] },
+      },
+      openDrafts: [],
+      revisions: [],
+    });
+    const v = detail.variants[0];
+    expect(v.servings).toBe(2);
+    expect(v.variant_note).toBe("Cốt bò truyền thống");
+    expect(v.packs).toHaveLength(1);
+    expect(v.packs[0].slot).toBe("TINH_BOT");
+    expect(v.seasonings).toEqual([
+      { slot: "COT", package_ref: "pkg-cot", package_name: "Cốt bò", removable: false, components: [L("sku-xuong", "300")] },
+      { slot: "DO_CHUA", package_ref: "pkg-chua", package_name: "Kim chi cải thảo", removable: true, components: [{ ...L("sku-caithao", "60"), prep_note: "cắt khúc" }] },
     ]);
   });
 });

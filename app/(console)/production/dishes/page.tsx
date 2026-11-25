@@ -9,5 +9,6 @@ export const metadata = {
 
 export default async function DishesPage({ searchParams }: { searchParams?: Promise<{ tab?: string }> }) {
   const params = searchParams ? await searchParams : {};
-  return <DishListScreen initialTab={params.tab === "drafts" ? "drafts" : "dishes"} />;
+  const initialTab = params.tab === "drafts" ? "drafts" : params.tab === "semi" ? "semi" : "dishes";
+  return <DishListScreen initialTab={initialTab} />;
 }

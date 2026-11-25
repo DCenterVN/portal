@@ -5,6 +5,7 @@ import { listPackages, type FoodPackage, type FoodSlot } from "@/lib/api/sales-p
 export const FOOD_SLOTS: { id: FoodSlot; name: string }[] = [
   { id: "TINH_BOT", name: "Tinh bột" }, { id: "DAM", name: "Đạm" }, { id: "RAU", name: "Rau" },
   { id: "COT", name: "Cốt (gia vị)" }, { id: "NUOC_CHAM", name: "Nước chấm (gia vị)" }, { id: "GIA_VI_THEM", name: "Gia vị thêm" },
+  { id: "DO_CHUA", name: "Đồ chua ăn kèm" },
 ];
 export const slotName = (slot: FoodSlot) => FOOD_SLOTS.find(item => item.id === slot)?.name;
 export const packMessage = (error: unknown, context?: Parameters<typeof codedErrorMessage>[1]) => codedErrorMessage(error, context) ?? (error instanceof Error ? error.message : "Không tải được dữ liệu");

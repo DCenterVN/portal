@@ -8,7 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { DishDetail, Variant } from "@/lib/dishes/dish-detail";
-import { journeyLabels, SERVING_OPTIONS } from "@/lib/dishes/types";
+import { journeyLabels } from "@/lib/dishes/types";
 import { DraftList, person } from "./dish-draft-list";
 
 export function DishDetailView(props: {
@@ -21,7 +21,6 @@ export function DishDetailView(props: {
   const [renaming, setRenaming] = useState(false);
   const [renameError, setRenameError] = useState("");
   const sameLabel = (label: string) => props.detail.variants.filter(v => v.variant_label === label).length > 1;
-  const allServingsTaken = SERVING_OPTIONS.every(n => props.detail.variants.some(v => v.servings === n));
   const isSelling = props.variant?.journey === "SELLING";
   return <div className="space-y-6">
     <Card className="gap-3 py-4"><CardContent className="space-y-4 px-5">
@@ -56,10 +55,8 @@ export function DishDetailView(props: {
               <Copy aria-hidden="true" />
             </Button>
           </Tip>
-          <Tip label={allServingsTaken ? "Đã đủ các mức suất" : "Tạo biến thể"}>
-            {allServingsTaken
-              ? <span tabIndex={0} className="inline-flex"><Button type="button" variant="outline" size="icon-sm" aria-label="Tạo biến thể" disabled><Plus aria-hidden="true" /></Button></span>
-              : <Button type="button" variant="outline" size="icon-sm" aria-label="Tạo biến thể" disabled={props.busy} onClick={props.onVariant}><Plus aria-hidden="true" /></Button>}
+          <Tip label="Tạo biến thể">
+            <Button type="button" variant="outline" size="icon-sm" aria-label="Tạo biến thể" disabled={props.busy} onClick={props.onVariant}><Plus aria-hidden="true" /></Button>
           </Tip>
           <Tip label={isSelling ? "Biến thể đang bán — tạo biến thể mới hoặc ngừng bán để sửa" : "Tạo bản sửa"}>
             {isSelling

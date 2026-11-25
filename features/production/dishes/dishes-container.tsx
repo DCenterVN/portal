@@ -10,7 +10,10 @@ import { getMaterialTree, listMaterials } from "@/lib/api/material-catalog";
 import { getRawLabels } from "@/lib/api/sales";
 import { useAccess } from "@/lib/access-boundary";
 import { validateDish } from "@/lib/dishes/validate-dish";
-import { costPreviewErrors } from "@/lib/dishes/precheck-cost";
+import { blockingCostErrors } from "@/lib/dishes/precheck-cost";
+import { SemiFinishedSheet } from "./semi-finished-sheet";
+import { useSemiFinished } from "./use-semi-finished";
+import type { SemiSlot } from "@/lib/api/semi-finished";
 import { allergenSummary } from "@/lib/dishes/allergens";
 import type { DishDetail } from "@/lib/dishes/dish-detail";
 import type { DishContent, DishDraft } from "@/lib/dishes/types";
@@ -33,12 +36,19 @@ import { useDishData } from "./use-dish-data";
 
 const dataApi = { ...api, getMaterialTree, listMaterials, getRawLabels };
 
-export function DishListScreen({ initialTab = "dishes" }: { initialTab?: "dishes" | "drafts" }) {
+export function DishListScreen({ initialTab = "dishes" }: { initialTab?: "dishes" | "drafts" | "semi" }) {
   const router = useRouter();
   const canCreate = useAccess().can("sales:product:create");
+  const [activeTab, setActiveTab] = useState<"dishes" | "drafts" | "semi">(initialTab);
+  const [semiSheetOpen, setSemiSheetOpen] = useState(false);
+  const [semiDefaultSlot, setSemiDefaultSlot] = useState<SemiSlot>("DO_CHUA");
+  useEffect(() => {
+    setActiveTab(initialTab);
+  }, [initialTab]);
   const list = useDishList(api, {
     onOpenDraft: id => router.push(`/production/dishes/drafts/${id}` as Route),
   });
+  const semi = useSemiFinished(activeTab === "semi");
   const onDiscardDraft = async (id: string) => {
     if (await list.discardDraft(id)) toast.success("Đã bỏ nháp");
   };
@@ -62,6 +72,9 @@ export function DishListScreen({ initialTab = "dishes" }: { initialTab?: "dishes
       draftsLoading={list.draftsLoading}
       draftError={list.draftError}
       initialTab={initialTab}
+      semiItems={semi.items}
+      semiLoading={semi.loading}
+      semiError={semi.error}
       q={list.q}
       status={list.status}
       page={list.page}
@@ -72,11 +85,28 @@ export function DishListScreen({ initialTab = "dishes" }: { initialTab?: "dishes
       onQ={list.setQ}
       onStatus={list.setStatus}
       onPage={list.setPage}
-      onTabChange={next => router.replace((next === "drafts" ? "/production/dishes?tab=drafts" : "/production/dishes") as Route, { scroll: false })}
+      onTabChange={next => {
+        setActiveTab(next);
+        router.replace((next === "drafts" ? "/production/dishes?tab=drafts" : next === "semi" ? "/production/dishes?tab=semi" : "/production/dishes") as Route, { scroll: false });
+      }}
       onCreate={() => void list.createDish()}
+      onCreateSemi={slot => {
+        setSemiDefaultSlot(slot ?? "DO_CHUA");
+        setSemiSheetOpen(true);
+      }}
+      onRetrySemi={() => void semi.reload()}
       onMoreDrafts={() => void list.loadMoreDrafts()}
       onDiscardDraft={onDiscardDraft}
       onRetry={() => void list.load()}
+    />
+    <SemiFinishedSheet
+      open={semiSheetOpen}
+      defaultSlot={semiDefaultSlot}
+      onOpenChange={setSemiSheetOpen}
+      onCreated={async item => {
+        await semi.prepend(item);
+        toast.success(`Đã tạo bán thành phẩm "${item.name}"`);
+      }}
     />
   </PageShell>;
 }
@@ -103,10 +133,12 @@ export function DishDetailScreen({ dishId, initialVariant }: { dishId: string; i
     name: detailState.detail.product.name,
     category_ref: detailState.detail.product.category_ref,
     servings: variant.servings,
+    variant_note: variant.variant_note,
     ingredients: variant.packs.flatMap(pack => pack.lines.map((line, index) => ({ ...line, row: `${pack.slot}-${index}` }))),
     seasonings: variant.seasonings.map((line, index) => ({ row: `${line.slot}-${index}`, slot: line.slot, package_ref: line.package_ref, removable: line.removable })),
   }, [detailState.detail, variant]);
   const data = useDishData(detailContent, dataApi);
+  const semi = useSemiFinished(Boolean(detailContent?.seasonings.length));
 
   const uploadExistingImage = async (file: File) => {
     if (!detailState.detail) return;
@@ -147,7 +179,18 @@ export function DishDetailScreen({ dishId, initialVariant }: { dishId: string; i
   };
 
   const packNames = useMemo(() => Object.fromEntries(detailState.detail?.variants.flatMap(v => v.seasonings.map(line => [line.package_ref, line.package_name])) ?? []), [detailState.detail]);
-  const detailAllergens = detailContent?.ingredients.flatMap(line => line.sku_ref ? [data.materials[line.sku_ref]?.allergens ?? null] : []) ?? [];
+  const packComponents = useMemo(() => Object.fromEntries(
+    detailState.detail?.variants.flatMap(v =>
+      v.seasonings.flatMap(line => line.components?.length
+        ? [[line.package_ref, line.components.map(c => ({ ...c, name: data.materials[c.sku_ref]?.name }))]]
+        : []
+      )
+    ) ?? [],
+  ), [detailState.detail, data.materials]);
+  const detailAllergens = [
+    ...(detailContent?.ingredients.flatMap(line => line.sku_ref ? [data.materials[line.sku_ref]?.allergens ?? null] : []) ?? []),
+    ...(detailContent?.seasonings.flatMap(line => line.package_ref && semi.byId[line.package_ref] ? [semi.byId[line.package_ref].allergens] : []) ?? []),
+  ];
   const cost = <DishCostView cost={data.cost} loading={data.costLoading} error={data.costError} onRetry={data.retryCost} />;
   const detailImageBox = detailState.detail
     ? <DishImageBox current={detailState.detail.product.image_urls?.[0] ?? null} canEdit={canEditImage} busy={imageBusy || detailState.busy} error={imageError} onPick={file => void uploadExistingImage(file)} onRemove={() => void removeExistingImage()} />
@@ -175,7 +218,7 @@ export function DishDetailScreen({ dishId, initialVariant }: { dishId: string; i
           onDiscardDraft={onDiscardDraft}
         >
           <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
-            {detailContent && <DishIngredientsView content={detailContent} materials={data.materials} tree={data.tree} packNames={packNames} allergensText={allergenSummary(detailAllergens)} readOnly onChange={() => {}} />}
+            {detailContent && <DishIngredientsView content={detailContent} materials={data.materials} tree={data.tree} packNames={packNames} semiById={semi.byId} packComponents={packComponents} allergensText={allergenSummary(detailAllergens)} readOnly onChange={() => {}} />}
             <div className="min-w-0 space-y-4 lg:sticky lg:top-4">{detailImageBox}{cost}</div>
           </div>
         </DishDetailView>
@@ -192,6 +235,8 @@ export function DishDraftScreen({ draftId, fromDrafts }: { draftId: string; from
   const [imageBusy, setImageBusy] = useState(false);
   const [imageError, setImageError] = useState("");
   const [sourceDetail, setSourceDetail] = useState<DishDetail | null>(null);
+  const [semiSheetOpen, setSemiSheetOpen] = useState(false);
+  const [semiDefaultSlot, setSemiDefaultSlot] = useState<SemiSlot>("DO_CHUA");
   const pendingRef = useRef(pendingImage);
   pendingRef.current = pendingImage;
 
@@ -270,6 +315,7 @@ export function DishDraftScreen({ draftId, fromDrafts }: { draftId: string; from
   }, [sourceProductRef]);
 
   const data = useDishData(editor.content, dataApi);
+  const semi = useSemiFinished(!editor.frozen || Boolean(editor.content?.seasonings.length));
   const ctx = useMemo(() => {
     const inactiveEntries: Array<[string, "DRAFT" | "SUSPENDED" | "MISSING"]> = Object.entries(data.materials).flatMap<[string, "DRAFT" | "SUSPENDED" | "MISSING"]>(([id, m]) =>
       m.retired ? [[id, "SUSPENDED"]] : m.draft ? [[id, "DRAFT"]] : []
@@ -289,13 +335,13 @@ export function DishDraftScreen({ draftId, fromDrafts }: { draftId: string; from
       skuGroups: Object.fromEntries(Object.entries(data.materials).map(([id, material]) => [id, material.group])),
       inactiveSkus: Object.fromEntries(inactiveEntries),
       packagesWithRecipe: editor.content?.seasonings.flatMap(line => line.package_ref ? [line.package_ref] : []) ?? [],
-      existingVariants: sourceDetail?.variants.flatMap(v => v.servings ? [{ servings: v.servings, set_ref: v.set_ref, variant_label: v.variant_label }] : []) ?? [],
+      existingVariants: sourceDetail?.variants.flatMap(v => v.servings ? [{ servings: v.servings, variant_note: v.variant_note, set_ref: v.set_ref, variant_label: v.variant_label }] : []) ?? [],
       source_journey: sourceDetail?.variants.find(v => v.set_ref === editor.content?.base?.set_ref)?.journey,
     };
   }, [editor.draft?.kind, data.tree, data.materials, data.catalogReady, editor.content?.ingredients, editor.content?.seasonings, sourceDetail, editor.content?.base?.set_ref]);
 
   const costErrors = useMemo(
-    () => editor.content && !data.costLoading && !data.costError && data.cost && !data.cost.complete ? costPreviewErrors(editor.content, data.cost) : [],
+    () => editor.content && !data.costLoading && !data.costError && data.cost && !data.cost.complete ? blockingCostErrors(editor.content, data.cost) : [],
     [editor.content, data.costLoading, data.costError, data.cost]
   );
   const validation = editor.content ? [...validateDish(editor.content, ctx), ...costErrors] : [];
@@ -387,14 +433,40 @@ export function DishDraftScreen({ draftId, fromDrafts }: { draftId: string; from
           content={editor.content}
           data={data}
           packNames={packNames}
+          semiItems={semi.items}
+          semiLoading={semi.loading}
+          semiError={semi.error}
+          canCreateSemi={data.canCreate}
           errors={errors}
           readOnly={editor.frozen}
           disabled={editor.busy || imageBusy || editor.conflict || !data.canCreate}
           cost={cost}
           imageBox={draftImageBox}
+          onRetrySemi={() => void semi.reload()}
+          onOpenCreateSemi={slot => {
+            setSemiDefaultSlot(slot);
+            setSemiSheetOpen(true);
+          }}
           onChange={editor.change}
         />
       </DishEditorView>
     </div>}
+    <SemiFinishedSheet
+      open={semiSheetOpen}
+      defaultSlot={semiDefaultSlot}
+      onOpenChange={setSemiSheetOpen}
+      onCreated={async item => {
+        await semi.prepend(item);
+        toast.success(`Đã tạo bán thành phẩm "${item.name}"`);
+        if (editor.content && !editor.frozen) {
+          const row = `${item.slot}-${item.id}`;
+          const removable = item.slot === "DO_CHUA";
+          editor.change({
+            ...editor.content,
+            seasonings: [...editor.content.seasonings.filter(line => line.slot !== item.slot), { row, slot: item.slot, package_ref: item.id, removable }],
+          });
+        }
+      }}
+    />
   </PageShell>;
 }

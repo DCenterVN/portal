@@ -58,15 +58,25 @@ const run = () => POST(
 afterEach(() => vi.unstubAllGlobals());
 
 describe("POST /api/dishes/drafts/[id]/complete precheck giá vốn", () => {
-  it("nháp chưa khoá + thiếu giá: 422 { message, errors } và không ghi gì", async () => {
+  it("nháp chưa khoá + thiếu giá NO_PRICE: vẫn cho hoàn tất 200", async () => {
     const up = stubUpstream({}, { status: 200, body: missingPrice });
     const res = await run();
     const body = await res.json();
+    expect(res.status).toBe(200);
+    expect(body.ok).toBe(true);
+    expect(body.product_ref).toBe("prod-1");
+    expect(up.hit("/sales/products")).toBe(true);
+  });
+
+  it("nháp chưa khoá + UOM_MISMATCH hoặc NO_RECIPE: 422 { message, errors } và không ghi gì", async () => {
+    const mismatch = { complete: false, total_vnd: 0, per_serving_vnd: 0, lines: [{ sku_ref: "sku-a", name: "Thịt bò", quantity: "100", uom: "G", cost_vnd: null, missing: "UOM_MISMATCH" }] };
+    const up = stubUpstream({}, { status: 200, body: mismatch });
+    const res = await run();
+    const body = await res.json();
     expect(res.status).toBe(422);
-    expect(body.message).toBe("Chưa đủ giá vốn để hoàn tất món");
+    expect(body.message).toBe("Chưa hoàn tất được món");
     expect(body.errors[0].field).toBe("cost");
     expect(body.errors.some((error: { row?: string; field: string }) => error.row === "r1" && error.field === "sku_ref")).toBe(true);
-    expect(body.failed_step).toBeUndefined();
     expect(up.hit("/progress")).toBe(false);
     expect(up.hit("/sales/products")).toBe(false);
   });

@@ -5,7 +5,7 @@ import type { DishDraft, Journey } from "./types";
 export type ServerDraft = CompletingDraft & { source_product_ref: string | null; source_set_ref: string | null; source_set_updated_at?: string | null };
 export type PrepareDeps = { loadDetail(productRef: string): Promise<DishDetail> };
 export type Prepared =
-  | { ok: true; draft: DishDraft; sourceJourney?: Journey; sourceProductName?: string; existingVariants: { servings: number; set_ref: string; variant_label: string }[] }
+  | { ok: true; draft: DishDraft; sourceJourney?: Journey; sourceProductName?: string; existingVariants: { servings: number; variant_note?: string | null; set_ref: string; variant_label: string }[] }
   | { ok: false; status: 409; message: string };
 
 export async function prepareComplete(draft: ServerDraft, deps: PrepareDeps): Promise<Prepared> {
@@ -21,6 +21,6 @@ export async function prepareComplete(draft: ServerDraft, deps: PrepareDeps): Pr
     sourceJourney: variant.journey,
     sourceProductName: detail.product.name,
     existingVariants: draft.kind === "VARIANT" && !draft.progress.claim
-      ? detail.variants.flatMap(item => item.servings === null ? [] : [{ servings: item.servings, set_ref: item.set_ref, variant_label: item.variant_label }]) : [],
+      ? detail.variants.flatMap(item => item.servings === null ? [] : [{ servings: item.servings, ...(item.variant_note ? { variant_note: item.variant_note } : {}), set_ref: item.set_ref, variant_label: item.variant_label }]) : [],
   };
 }

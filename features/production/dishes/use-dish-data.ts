@@ -67,11 +67,12 @@ export function useDishData(content: DishContent | null, deps: Deps) {
   const [costLoading, setCostLoading] = useState(false);
   const [costRetry, setCostRetry] = useState(0);
   const costInput = useMemo(() => {
-    if (!content?.servings || !content.ingredients.length || !catalog || (hasUnknown && !retiredReady)) {
+    const hasSeasonings = content?.seasonings.some(line => Boolean(line.package_ref)) ?? false;
+    if (!content?.servings || (!content.ingredients.length && !hasSeasonings) || !catalog || (hasUnknown && !retiredReady)) {
       return { key: "", content: null as DishContent | null };
     }
     const activeIngredients = content.ingredients.filter(line => !line.sku_ref || (known.has(line.sku_ref) && !inactiveIds.has(line.sku_ref)));
-    if (!activeIngredients.length || activeIngredients.some(line => !line.sku_ref || Number(line.quantity) <= 0 || !Number.isFinite(Number(line.quantity)) || Number(line.yield_pct) < 1 || Number(line.yield_pct) > 100)) {
+    if ((content.ingredients.length > 0 && !activeIngredients.length) || (!activeIngredients.length && !hasSeasonings) || activeIngredients.some(line => !line.sku_ref || Number(line.quantity) <= 0 || !Number.isFinite(Number(line.quantity)) || Number(line.yield_pct) < 1 || Number(line.yield_pct) > 100)) {
       return { key: "", content: null as DishContent | null };
     }
     return {
@@ -97,7 +98,7 @@ export function useDishData(content: DishContent | null, deps: Deps) {
     const runPreview = async () => {
       try { return await deps.previewCost(activeContent); }
       catch (err) {
-        if (!activeContent.seasonings.length) throw err;
+        if (!activeContent.seasonings.length || !activeContent.ingredients.length) throw err;
         return deps.previewCost({ ...activeContent, seasonings: [] });
       }
     };

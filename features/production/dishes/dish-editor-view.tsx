@@ -8,7 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ConfirmDialog } from "@/components/patterns/confirm-dialog";
 import { InlineAlert } from "@/components/patterns/inline-alert";
 import { Tip } from "@/components/patterns/tip";
-import { SERVING_OPTIONS, type DishContent, type DishDraft } from "@/lib/dishes/types";
+import { MAX_VARIANT_NOTE_LENGTH, SERVING_OPTIONS, type DishContent, type DishDraft } from "@/lib/dishes/types";
 import type { DishError } from "@/lib/dishes/validate-dish";
 import { DishTagsField } from "./dish-tags-field";
 
@@ -34,7 +34,7 @@ export function DishEditorView(props: {
   const completeBlocked = props.busy || props.conflict || (!props.frozen && props.validationErrors.length > 0);
   const existingErrors = props.errors.filter(e => e.existing);
   const missing = !props.frozen ? [...new Set(props.validationErrors.map(e => e.message))] : [];
-  const skipGeneral = new Set(["name", "tags", "servings", "reason", "ingredients", "removable", "slots", ...(missing.length > 0 ? ["cost"] : [])]);
+  const skipGeneral = new Set(["name", "tags", "servings", "variant_note", "reason", "ingredients", "removable", "slots", ...(missing.length > 0 ? ["cost"] : [])]);
   const generalErrors = props.errors.filter(e => !e.row && !skipGeneral.has(e.field));
   const backLabel = props.backLabel ?? "Về danh sách món";
   return <div className="space-y-4">
@@ -55,11 +55,14 @@ export function DishEditorView(props: {
         </div>
       </div>
       {props.frozen && <InlineAlert tone="info">Đang hoàn tất dở. Nội dung đã khoá; bấm Hoàn tất món để tiếp tục hoặc Bỏ nháp.</InlineAlert>}
-      <fieldset disabled={props.busy || props.frozen || props.conflict} className="flex flex-wrap items-start gap-3">
-        <div className="min-w-0 flex-1"><Field htmlFor="dish-name" label="Tên món" error={error("name")}><Input ref={nameRef} id="dish-name" aria-label="Tên món" value={props.content.name ?? ""} readOnly={nameLocked} maxLength={150} onChange={e => props.onChange({ ...props.content, name: e.target.value })} /></Field></div>
-        <div className="w-44 shrink-0">{props.draft.kind === "REVISION"
+      <fieldset disabled={props.busy || props.frozen || props.conflict} className="grid gap-3 md:grid-cols-[minmax(0,1fr)_160px_240px]">
+        <Field htmlFor="dish-name" label="Tên món" error={error("name")}><Input ref={nameRef} id="dish-name" aria-label="Tên món" value={props.content.name ?? ""} readOnly={nameLocked} maxLength={150} onChange={e => props.onChange({ ...props.content, name: e.target.value })} /></Field>
+        <div>{props.draft.kind === "REVISION"
           ? <div className="grid gap-1.5"><span className="text-sm font-medium">Số suất mỗi hộp</span><output aria-label="Số suất mỗi hộp" className="flex h-9 items-center text-sm font-medium">{props.content.servings} suất</output></div>
-          : <Field htmlFor="dish-servings" label="Số suất mỗi hộp" error={error("servings")}><Select disabled={props.busy || props.frozen || props.conflict} value={props.content.servings ? String(props.content.servings) : ""} onValueChange={value => props.onChange({ ...props.content, servings: value ? Number(value) : null })}><SelectTrigger id="dish-servings" aria-label="Số suất mỗi hộp" className="w-full"><SelectValue placeholder="Chọn số suất" /></SelectTrigger><SelectContent position="popper" align="start">{SERVING_OPTIONS.filter(n => props.draft.kind !== "VARIANT" || !props.existingServings.includes(n)).map(n => <SelectItem key={n} value={String(n)}>{n} suất</SelectItem>)}</SelectContent></Select></Field>}</div>
+          : <Field htmlFor="dish-servings" label="Số suất mỗi hộp" error={error("servings")}><Select disabled={props.busy || props.frozen || props.conflict} value={props.content.servings ? String(props.content.servings) : ""} onValueChange={value => props.onChange({ ...props.content, servings: value ? Number(value) : null })}><SelectTrigger id="dish-servings" aria-label="Số suất mỗi hộp" className="w-full"><SelectValue placeholder="Chọn số suất" /></SelectTrigger><SelectContent position="popper" align="start">{SERVING_OPTIONS.map(n => <SelectItem key={n} value={String(n)}>{n} suất</SelectItem>)}</SelectContent></Select></Field>}</div>
+        <div>{props.draft.kind === "REVISION"
+          ? <div className="grid gap-1.5"><span className="text-sm font-medium">Nhãn biến thể</span><output aria-label="Nhãn biến thể" className="flex h-9 items-center text-sm text-muted-foreground">{props.content.variant_note || "Mặc định"}</output></div>
+          : <Field htmlFor="dish-variant-note" label="Nhãn biến thể (tuỳ chọn)" hint="Phân biệt cốt / vị giữa các biến thể" error={error("variant_note")}><Input id="dish-variant-note" aria-label="Nhãn biến thể" placeholder="Ví dụ: Cốt bò, Cốt chua cay…" maxLength={MAX_VARIANT_NOTE_LENGTH} value={props.content.variant_note ?? ""} onChange={e => props.onChange({ ...props.content, variant_note: e.target.value })} /></Field>}</div>
       </fieldset>
       <DishTagsField name={props.content.name ?? ""} ingredientNames={props.ingredientNames} tags={props.content.tags} readOnly={tagsLocked || props.busy || props.frozen || props.conflict} catalogReady={props.catalogReady} error={error("tags")} onChange={tags => props.onChange({ ...props.content, tags })} />
       {props.draft.kind === "REVISION" && <Field htmlFor="dish-reason" label="Lý do sửa" hint="Lưu vào lịch sử bản sửa" error={error("reason")}><Input id="dish-reason" aria-label="Lý do sửa" placeholder="Ví dụ: đổi thăn bò sang bắp, giảm bún còn 180 g" maxLength={300} disabled={props.busy || props.frozen || props.conflict} value={props.content.reason ?? ""} onChange={e => props.onChange({ ...props.content, reason: e.target.value })} /></Field>}

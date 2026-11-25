@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { costPreviewErrors } from "./precheck-cost";
+import { blockingCostErrors, costPreviewErrors } from "./precheck-cost";
 import type { CostPreview, DishContent } from "./types";
 
 const content = {
@@ -79,6 +79,22 @@ describe("costPreviewErrors", () => {
     expect(rows).toEqual([
       { row: "g1", field: "package_ref", message: "Tỏi băm: Chưa có giá vốn — thêm báo giá nhà cung cấp hoặc nhập kho" },
       { row: "g1", field: "package_ref", message: "Ớt xiêm: Chưa có giá vốn — thêm báo giá nhà cung cấp hoặc nhập kho" },
+    ]);
+  });
+});
+
+describe("blockingCostErrors", () => {
+  it("bỏ qua NO_PRICE nhưng vẫn chặn UOM_MISMATCH và NO_RECIPE", () => {
+    expect(blockingCostErrors(content, preview([line({ missing: "NO_PRICE", cost_vnd: null })]))).toEqual([]);
+    const blocking = blockingCostErrors(content, preview([
+      line({ missing: "NO_PRICE", cost_vnd: null }),
+      line({ sku_ref: "sku-b", missing: "UOM_MISMATCH", cost_vnd: null }),
+      line({ sku_ref: "pkg-1", name: "Nước chấm", from: "PACKAGE", package_ref: "pkg-1", missing: "NO_RECIPE", cost_vnd: null }),
+    ]));
+    expect(blocking.slice(1)).toEqual([
+      { row: "r2", field: "sku_ref", message: "Có báo giá nhưng khác đơn vị — cập nhật báo giá cùng đơn vị hoặc nhập kho" },
+      { row: "g1", field: "package_ref", message: "Nước chấm: Gói chưa có công thức hiệu lực" },
+      { row: "g2", field: "package_ref", message: "Nước chấm: Gói chưa có công thức hiệu lực" },
     ]);
   });
 });

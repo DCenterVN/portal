@@ -3,7 +3,7 @@ import type { SetSlot } from "@/lib/api/sales-pack";
 
 export const variantLabel = (value: string) => /^(VAR|D|SV)-[0-9a-f]{8}-/i.test(value) ? "—" : value;
 export const positiveQuantity = (s: string) => /^\d+(\.\d{1,3})?$/.test(s) && /[1-9]/.test(s);
-export const servingCount = (label: string) => /^([12346]) người$/.exec(label)?.[1];
+export const servingCount = (label: string) => /^(\d+)\s*(?:người|suất)/i.exec(label)?.[1];
 
 export const pinnedPlanSchema = z.object({ pack_plan: z.object({
   set_ref: z.string(), set_updated_at: z.string(),
