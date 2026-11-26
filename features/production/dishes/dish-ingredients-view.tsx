@@ -29,8 +29,8 @@ function Thumb({ info }: { info?: MaterialInfo }) {
     : <span aria-hidden="true" className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-xs font-medium text-muted-foreground">{name.trim().charAt(0).toUpperCase()}</span>;
 }
 
-export function DishIngredientsView({ content, materials, tree, packNames = {}, semiById = {}, packComponents = {}, errors = [], missingCosts, readOnly = false, allergensText, onChange }: {
-  content: DishContent; materials: Record<string, MaterialInfo>; tree: GroupNode[]; packNames?: Record<string, string>; semiById?: Record<string, SemiFinishedItem>; packComponents?: Record<string, SemiFinishedLine[]>; errors?: DishError[]; missingCosts?: Record<string, string>; readOnly?: boolean; allergensText?: string; onChange: (content: DishContent) => void;
+export function DishIngredientsView({ content, materials, tree, packNames = {}, semiById = {}, packComponents = {}, catalogReady = true, semiLoading = false, errors = [], missingCosts, readOnly = false, allergensText, onChange }: {
+  content: DishContent; materials: Record<string, MaterialInfo>; tree: GroupNode[]; packNames?: Record<string, string>; semiById?: Record<string, SemiFinishedItem>; packComponents?: Record<string, SemiFinishedLine[]>; catalogReady?: boolean; semiLoading?: boolean; errors?: DishError[]; missingCosts?: Record<string, string>; readOnly?: boolean; allergensText?: string; onChange: (content: DishContent) => void;
 }) {
   const update = (row: string, patch: Partial<Line>) => onChange({ ...content, ingredients: content.ingredients.map(line => line.row === row ? { ...line, ...patch } : line) });
   const remove = (row: string) => onChange({ ...content, ingredients: content.ingredients.filter(line => line.row !== row) });
@@ -52,7 +52,7 @@ export function DishIngredientsView({ content, materials, tree, packNames = {}, 
         <h3 className="border-y border-border/60 bg-muted/25 px-4 py-1.5 text-xs font-medium text-muted-foreground">{slotLabels[slot]}</h3>
         <ul className="divide-y divide-border">{lines.map(line => {
           const info = line.sku_ref ? materials[line.sku_ref] : undefined;
-          const name = info?.name ?? "Nguyên liệu không còn trong danh mục";
+          const name = info?.name ?? (catalogReady ? "Nguyên liệu không còn trong danh mục" : "Đang tải nguyên liệu…");
           return <li key={line.row} className="space-y-1.5 px-4 py-2.5"><div className="flex items-center gap-2.5">
             <Thumb info={info} /><span className="min-w-0 flex-1 truncate text-sm font-medium">{name}{info?.retired && <Badge variant="outline" className="ml-2 font-normal">Đã ngừng dùng</Badge>}{info?.draft && <Badge variant="secondary" className="ml-2 font-normal">Chưa duyệt</Badge>}{line.sku_ref && missingCosts?.[line.sku_ref] && <Badge variant="outline" className="ml-2 border-destructive/40 text-destructive font-normal">{missingCosts[line.sku_ref] === "UOM_MISMATCH" ? "Khác đơn vị giá" : "Chưa có giá"}</Badge>}</span>
             {readOnly
@@ -130,7 +130,7 @@ export function DishIngredientsView({ content, materials, tree, packNames = {}, 
                 {!semi && !components.length && <Badge variant="outline" className="font-normal">Gói đã có</Badge>}
                 {readOnly && <Badge variant="outline" className="font-normal">{pack.removable ? "Cho bỏ" : "Bắt buộc"}</Badge>}
               </div>
-              {components.length > 0 && <p className="text-xs text-muted-foreground">Từ: {formatSemiIngredients(components)}</p>}
+              {components.length > 0 && <p className="text-xs text-muted-foreground">{(semiLoading || !catalogReady) && components.some(c => !c.name?.trim()) ? "Đang tải thành phần…" : `Từ: ${formatSemiIngredients(components)}`}</p>}
               {!readOnly && <div className="flex flex-wrap items-center gap-2 pt-0.5">
                 <Switch
                   id={`removable-${pack.row}`}

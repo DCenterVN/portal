@@ -178,7 +178,10 @@ export function DishDetailScreen({ dishId, initialVariant }: { dishId: string; i
     if (await detailState.discardOpenDraft(id)) toast.success("Đã bỏ nháp");
   };
 
-  const packNames = useMemo(() => Object.fromEntries(detailState.detail?.variants.flatMap(v => v.seasonings.map(line => [line.package_ref, line.package_name])) ?? []), [detailState.detail]);
+  const packNames = useMemo(() => Object.fromEntries([
+    ...Object.entries(semi.byId).map(([id, item]) => [id, item.name]),
+    ...(detailState.detail?.variants.flatMap(v => v.seasonings.map(line => [line.package_ref, line.package_name])) ?? []),
+  ]), [semi.byId, detailState.detail]);
   const packComponents = useMemo(() => Object.fromEntries(
     detailState.detail?.variants.flatMap(v =>
       v.seasonings.flatMap(line => line.components?.length
@@ -191,7 +194,7 @@ export function DishDetailScreen({ dishId, initialVariant }: { dishId: string; i
     ...(detailContent?.ingredients.flatMap(line => line.sku_ref ? [data.materials[line.sku_ref]?.allergens ?? null] : []) ?? []),
     ...(detailContent?.seasonings.flatMap(line => line.package_ref && semi.byId[line.package_ref] ? [semi.byId[line.package_ref].allergens] : []) ?? []),
   ];
-  const cost = <DishCostView cost={data.cost} loading={data.costLoading} error={data.costError} onRetry={data.retryCost} />;
+  const cost = <DishCostView cost={data.cost} packNames={packNames} loading={data.costLoading} error={data.costError} onRetry={data.retryCost} />;
   const detailImageBox = detailState.detail
     ? <DishImageBox current={detailState.detail.product.image_urls?.[0] ?? null} canEdit={canEditImage} busy={imageBusy || detailState.busy} error={imageError} onPick={file => void uploadExistingImage(file)} onRemove={() => void removeExistingImage()} />
     : null;
@@ -218,7 +221,7 @@ export function DishDetailScreen({ dishId, initialVariant }: { dishId: string; i
           onDiscardDraft={onDiscardDraft}
         >
           <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
-            {detailContent && <DishIngredientsView content={detailContent} materials={data.materials} tree={data.tree} packNames={packNames} semiById={semi.byId} packComponents={packComponents} allergensText={allergenSummary(detailAllergens)} readOnly onChange={() => {}} />}
+            {detailContent && <DishIngredientsView content={detailContent} materials={data.materials} tree={data.tree} packNames={packNames} semiById={semi.byId} packComponents={packComponents} catalogReady={data.catalogReady} semiLoading={semi.loading} allergensText={allergenSummary(detailAllergens)} readOnly onChange={() => {}} />}
             <div className="min-w-0 space-y-4 lg:sticky lg:top-4">{detailImageBox}{cost}</div>
           </div>
         </DishDetailView>
@@ -346,7 +349,11 @@ export function DishDraftScreen({ draftId, fromDrafts }: { draftId: string; from
   );
   const validation = editor.content ? [...validateDish(editor.content, ctx), ...costErrors] : [];
   const errors = touched || editor.errors.length ? (editor.errors.length ? editor.errors : validation) : [];
-  const cost = <DishCostView cost={data.cost} loading={data.costLoading} error={data.costError} onRetry={data.retryCost} />;
+  const packNames = useMemo(() => Object.fromEntries([
+    ...Object.entries(semi.byId).map(([id, item]) => [id, item.name]),
+    ...(sourceDetail?.variants.flatMap(v => v.seasonings.map(line => [line.package_ref, line.package_name])) ?? []),
+  ]), [semi.byId, sourceDetail]);
+  const cost = <DishCostView cost={data.cost} packNames={packNames} loading={data.costLoading} error={data.costError} onRetry={data.retryCost} />;
 
   const pickPendingImage = (file: File) => {
     setImageError("");
@@ -394,7 +401,6 @@ export function DishDraftScreen({ draftId, fromDrafts }: { draftId: string; from
         onPick={() => {}}
       />;
 
-  const packNames = useMemo(() => Object.fromEntries(sourceDetail?.variants.flatMap(v => v.seasonings.map(line => [line.package_ref, line.package_name])) ?? []), [sourceDetail]);
   const ingredientNames = editor.content?.ingredients.flatMap(line => line.sku_ref && data.materials[line.sku_ref] ? [data.materials[line.sku_ref].name] : []) ?? [];
   const backToDish = Boolean((editor.draft?.kind === "VARIANT" || editor.draft?.kind === "REVISION") && editor.draft.source_product_ref);
 

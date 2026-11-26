@@ -40,6 +40,7 @@ export function DishSemiPicker({
   error = "",
   readOnly = false,
   canCreate = false,
+  hideToolbarCreate = false,
   onPick,
   onCreateNew,
   onRetry,
@@ -50,6 +51,7 @@ export function DishSemiPicker({
   error?: string;
   readOnly?: boolean;
   canCreate?: boolean;
+  hideToolbarCreate?: boolean;
   onPick?: (item: SemiFinishedItem) => void;
   onCreateNew?: (defaultSlot: SemiSlot) => void;
   onRetry?: () => void;
@@ -94,7 +96,7 @@ export function DishSemiPicker({
             onChange={e => setText(e.target.value)}
           />
         </InputGroup>
-        {canCreate && !readOnly && onCreateNew && (
+        {canCreate && !readOnly && !hideToolbarCreate && onCreateNew && (
           <Button type="button" size="sm" variant="outline" className="shrink-0" onClick={() => onCreateNew(defaultCreateSlot)}>
             <Plus className="mr-1 size-4" aria-hidden="true" />
             Tạo mới

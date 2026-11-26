@@ -141,6 +141,7 @@ export function DishListView(props: {
         loading={props.semiLoading}
         error={props.semiError}
         canCreate={props.canCreate}
+        hideToolbarCreate
         onCreateNew={slot => props.onCreateSemi?.(slot)}
         onRetry={props.onRetrySemi}
       />

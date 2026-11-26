@@ -108,7 +108,7 @@ export function DishDraftBody({ content, data, packNames, semiItems = [], semiLo
       <div id="dish-draft-summary" className="min-w-0 space-y-4 lg:sticky lg:top-4">
         {imageBox}
         <fieldset disabled={disabled} className="min-w-0">
-          <DishIngredientsView content={content} materials={data.materials} tree={data.tree} packNames={packNames} semiById={semiById} errors={errors} missingCosts={missingCosts} readOnly={readOnly} allergensText={allergenSummary(allergens)} onChange={onChange} />
+          <DishIngredientsView content={content} materials={data.materials} tree={data.tree} packNames={packNames} semiById={semiById} catalogReady={data.catalogReady} semiLoading={semiLoading} errors={errors} missingCosts={missingCosts} readOnly={readOnly} allergensText={allergenSummary(allergens)} onChange={onChange} />
         </fieldset>
         {cost}
       </div>
