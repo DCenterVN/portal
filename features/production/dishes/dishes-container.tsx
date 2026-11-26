@@ -13,7 +13,7 @@ import { validateDish } from "@/lib/dishes/validate-dish";
 import { blockingCostErrors } from "@/lib/dishes/precheck-cost";
 import { SemiFinishedSheet } from "./semi-finished-sheet";
 import { useSemiFinished } from "./use-semi-finished";
-import type { SemiSlot } from "@/lib/api/semi-finished";
+import { slotOfSemiKind, type SemiKind, type SemiSlot } from "@/lib/api/semi-finished";
 import { allergenSummary } from "@/lib/dishes/allergens";
 import type { DishDetail } from "@/lib/dishes/dish-detail";
 import type { DishContent, DishDraft } from "@/lib/dishes/types";
@@ -42,6 +42,7 @@ export function DishListScreen({ initialTab = "dishes" }: { initialTab?: "dishes
   const [activeTab, setActiveTab] = useState<"dishes" | "drafts" | "semi">(initialTab);
   const [semiSheetOpen, setSemiSheetOpen] = useState(false);
   const [semiDefaultSlot, setSemiDefaultSlot] = useState<SemiSlot>("DO_CHUA");
+  const [semiDefaultKind, setSemiDefaultKind] = useState<SemiKind>("DO_CHUA");
   useEffect(() => {
     setActiveTab(initialTab);
   }, [initialTab]);
@@ -90,8 +91,10 @@ export function DishListScreen({ initialTab = "dishes" }: { initialTab?: "dishes
         router.replace((next === "drafts" ? "/production/dishes?tab=drafts" : next === "semi" ? "/production/dishes?tab=semi" : "/production/dishes") as Route, { scroll: false });
       }}
       onCreate={() => void list.createDish()}
-      onCreateSemi={slot => {
-        setSemiDefaultSlot(slot ?? "DO_CHUA");
+      onCreateSemi={(slot, kind) => {
+        const nextKind = kind ?? slot ?? "DO_CHUA";
+        setSemiDefaultSlot(slot ?? slotOfSemiKind(nextKind));
+        setSemiDefaultKind(nextKind);
         setSemiSheetOpen(true);
       }}
       onRetrySemi={() => void semi.reload()}
@@ -102,6 +105,7 @@ export function DishListScreen({ initialTab = "dishes" }: { initialTab?: "dishes
     <SemiFinishedSheet
       open={semiSheetOpen}
       defaultSlot={semiDefaultSlot}
+      defaultKind={semiDefaultKind}
       onOpenChange={setSemiSheetOpen}
       onCreated={async item => {
         await semi.prepend(item);
@@ -240,6 +244,7 @@ export function DishDraftScreen({ draftId, fromDrafts }: { draftId: string; from
   const [sourceDetail, setSourceDetail] = useState<DishDetail | null>(null);
   const [semiSheetOpen, setSemiSheetOpen] = useState(false);
   const [semiDefaultSlot, setSemiDefaultSlot] = useState<SemiSlot>("DO_CHUA");
+  const [semiDefaultKind, setSemiDefaultKind] = useState<SemiKind>("DO_CHUA");
   const pendingRef = useRef(pendingImage);
   pendingRef.current = pendingImage;
 
@@ -449,8 +454,10 @@ export function DishDraftScreen({ draftId, fromDrafts }: { draftId: string; from
           cost={cost}
           imageBox={draftImageBox}
           onRetrySemi={() => void semi.reload()}
-          onOpenCreateSemi={slot => {
+          onOpenCreateSemi={(slot, kind) => {
+            const nextKind = kind ?? slot;
             setSemiDefaultSlot(slot);
+            setSemiDefaultKind(nextKind);
             setSemiSheetOpen(true);
           }}
           onChange={editor.change}
@@ -460,6 +467,7 @@ export function DishDraftScreen({ draftId, fromDrafts }: { draftId: string; from
     <SemiFinishedSheet
       open={semiSheetOpen}
       defaultSlot={semiDefaultSlot}
+      defaultKind={semiDefaultKind}
       onOpenChange={setSemiSheetOpen}
       onCreated={async item => {
         await semi.prepend(item);

@@ -46,7 +46,7 @@ export function fake(fail: Fail = {}, read: { recipes?: Record<string, { compone
     const f = fail[tag];
     if (f) throw Object.assign(new Error(f.message ?? "boom"), { status: f.status ?? 500, code: f.code, ...(f.fields ? { fields: f.fields } : {}) });
   };
-  const slotFromName = (name: string) => (name.endsWith("Đạm") ? "DAM" : name.endsWith("Rau") ? "RAU" : name.endsWith("Cốt nước dùng") ? "COT" : name.endsWith("Gia vị") ? "GIA_VI_THEM" : "TINH_BOT");
+  const slotFromName = (name: string) => (name.endsWith("Đạm") ? "DAM" : name.endsWith("Rau") ? "RAU" : name.endsWith("Cốt & sốt nấu") ? "COT" : name.endsWith("Gia vị") ? "GIA_VI_THEM" : "TINH_BOT");
   const deps: CompleteDeps = {
     tree, skuGroups,
     createProduct: async (...a) => { rec("createProduct", "product", a); return { id: "prod-new" }; },

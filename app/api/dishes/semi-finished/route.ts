@@ -2,15 +2,21 @@ import crypto from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { allPages } from "@/lib/api/all-pages";
 import { safeMessage } from "@/lib/api/dishes";
-import { createSemiFinishedSchema, type SemiFinishedItem, type SemiSlot } from "@/lib/api/semi-finished";
+import { createSemiFinishedSchema, slotOfSemiKind, type SemiFinishedItem, type SemiKind, type SemiSlot } from "@/lib/api/semi-finished";
 import { forwardService, serviceUrl } from "@/lib/api/service-bff";
 import { normalizeText } from "@/lib/dishes/types";
 
 const BTP_PRODUCT_SLUG = "btp-bep-trung-tam";
 const BTP_PRODUCT_NAME = "Bán thành phẩm bếp trung tâm";
-const SLOT_PREFIX: Record<SemiSlot, string> = { COT: "BTP-COT-", NUOC_CHAM: "BTP-CHAM-", DO_CHUA: "BTP-CHUA-" };
+const KIND_PREFIX: Record<SemiKind, string> = {
+  COT: "BTP-COT-",
+  SOT: "BTP-SOT-",
+  NUOC_CHAM: "BTP-CHAM-",
+  DO_CHUA: "BTP-CHUA-",
+};
 
-function slotFromPackageCode(code: string): SemiSlot | null {
+function kindFromPackageCode(code: string): SemiKind | null {
+  if (code.startsWith("BTP-SOT-") || code.startsWith("VN-PACK-SOT-")) return "SOT";
   if (code.startsWith("BTP-COT-") || code.startsWith("VN-PACK-COT-")) return "COT";
   if (code.startsWith("BTP-CHAM-") || code.startsWith("VN-PACK-CHAM-")) return "NUOC_CHAM";
   if (code.startsWith("BTP-CHUA-")) return "DO_CHUA";
@@ -111,7 +117,7 @@ export async function GET(request: NextRequest) {
       return call<{ items: UpstreamPackage[]; next_cursor: string | null }>("sales", `/sales/packages?${q}`);
     });
     const semiPackages = allPackages
-      .filter(pkg => pkg.status === "ACTIVE" && slotFromPackageCode(pkg.code) !== null)
+      .filter(pkg => pkg.status === "ACTIVE" && kindFromPackageCode(pkg.code) !== null)
       .sort((a, b) => a.name.localeCompare(b.name, "vi"));
     const recipes = await Promise.all(semiPackages.map(async pkg => {
       try {
@@ -125,14 +131,15 @@ export async function GET(request: NextRequest) {
     const rawIds = semiPackages.flatMap(pkg => (recipeMap.get(pkg.id)?.components ?? []).map(c => c.sku_ref));
     const allergensBySku = await computeAllergens(call, rawIds);
     const items: SemiFinishedItem[] = semiPackages.flatMap(pkg => {
-      const slot = slotFromPackageCode(pkg.code);
+      const kind = kindFromPackageCode(pkg.code);
       const recipe = recipeMap.get(pkg.id) ?? null;
-      if (!slot || !recipe?.components?.length) return [];
+      if (!kind || !recipe?.components?.length) return [];
       return [{
         id: pkg.id,
         code: pkg.code,
         name: pkg.name,
-        slot,
+        slot: slotOfSemiKind(kind),
+        kind,
         variant_label: pkg.variant_label,
         net_weight_g: pkg.net_weight_g,
         updated_at: pkg.updated_at,
@@ -160,6 +167,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ message: parsed.error.issues[0]?.message ?? "Dữ liệu bán thành phẩm chưa hợp lệ" }, { status: 422 });
   }
   const input = parsed.data;
+  const kind: SemiKind = input.kind ?? input.slot ?? "DO_CHUA";
+  const slot: SemiSlot = slotOfSemiKind(kind);
   const call = caller(request);
   const clientKey = request.headers.get("Idempotency-Key")?.trim() || crypto.randomUUID();
   const codeSuffix = crypto.createHash("sha256").update(clientKey).digest("hex").slice(0, 8).toUpperCase();
@@ -167,7 +176,7 @@ export async function POST(request: NextRequest) {
   try {
     const productRef = await ensureSemiProduct(call);
     const cleanName = normalizeText(input.name);
-    const code = `${SLOT_PREFIX[input.slot]}${codeSuffix}`;
+    const code = `${KIND_PREFIX[kind]}${codeSuffix}`;
     const pkg = await call<UpstreamPackage>("sales", "/sales/packages", "POST", {
       product_ref: productRef,
       code,
@@ -198,7 +207,8 @@ export async function POST(request: NextRequest) {
       id: pkg.id,
       code: pkg.code,
       name: pkg.name,
-      slot: input.slot,
+      slot,
+      kind,
       variant_label: pkg.variant_label,
       net_weight_g: pkg.net_weight_g,
       updated_at: pkg.updated_at,

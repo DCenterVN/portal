@@ -7,10 +7,9 @@ import { InlineAlert } from "@/components/patterns/inline-alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
-import { SEMI_SLOTS, semiSlotLabels, type SemiFinishedItem, type SemiFinishedLine, type SemiSlot } from "@/lib/api/semi-finished";
+import { SEMI_KINDS, semiKindLabels, slotOfSemiKind, type SemiFinishedItem, type SemiFinishedLine, type SemiKind, type SemiSlot } from "@/lib/api/semi-finished";
 import { allergenSummary } from "@/lib/dishes/allergens";
 import { uomLabel } from "@/lib/dishes/ingredients";
-import { slotLabels } from "@/lib/dishes/types";
 import { cn } from "@/lib/utils";
 import { matchesName } from "../materials-catalog";
 
@@ -28,9 +27,9 @@ export function formatSemiIngredients(components: SemiFinishedLine[]): string {
     .join(", ");
 }
 
-const FILTER_OPTIONS: { value: "ALL" | SemiSlot; label: string }[] = [
+const FILTER_OPTIONS: { value: "ALL" | SemiKind; label: string }[] = [
   { value: "ALL", label: "Tất cả" },
-  ...SEMI_SLOTS.map(slot => ({ value: slot, label: semiSlotLabels[slot] })),
+  ...SEMI_KINDS.map(kind => ({ value: kind, label: semiKindLabels[kind] })),
 ];
 
 export function DishSemiPicker({
@@ -53,22 +52,24 @@ export function DishSemiPicker({
   canCreate?: boolean;
   hideToolbarCreate?: boolean;
   onPick?: (item: SemiFinishedItem) => void;
-  onCreateNew?: (defaultSlot: SemiSlot) => void;
+  onCreateNew?: (defaultSlot: SemiSlot, defaultKind?: SemiKind) => void;
   onRetry?: () => void;
 }) {
-  const [slotFilter, setSlotFilter] = useState<"ALL" | SemiSlot>("ALL");
+  const [kindFilter, setKindFilter] = useState<"ALL" | SemiKind>("ALL");
   const [text, setText] = useState("");
 
   const filtered = useMemo(
     () =>
       items.filter(item => {
-        if (slotFilter !== "ALL" && item.slot !== slotFilter) return false;
+        const itemKind = item.kind ?? item.slot;
+        if (kindFilter !== "ALL" && itemKind !== kindFilter) return false;
         return matchesName(item.name, text) || item.components.some(c => matchesName(c.name ?? "", text));
       }),
-    [items, slotFilter, text],
+    [items, kindFilter, text],
   );
 
-  const defaultCreateSlot: SemiSlot = slotFilter === "ALL" ? "DO_CHUA" : slotFilter;
+  const defaultCreateKind: SemiKind = kindFilter === "ALL" ? "DO_CHUA" : kindFilter;
+  const defaultCreateSlot: SemiSlot = slotOfSemiKind(defaultCreateKind);
 
   return (
     <div className="space-y-3">
@@ -79,9 +80,9 @@ export function DishSemiPicker({
               key={option.value}
               type="button"
               size="sm"
-              variant={slotFilter === option.value ? "default" : "outline"}
+              variant={kindFilter === option.value ? "default" : "outline"}
               className="text-xs"
-              onClick={() => setSlotFilter(option.value)}
+              onClick={() => setKindFilter(option.value)}
             >
               {option.label}
             </Button>
@@ -91,13 +92,13 @@ export function DishSemiPicker({
           <InputGroupAddon><Search aria-hidden="true" /></InputGroupAddon>
           <InputGroupInput
             aria-label="Tìm bán thành phẩm"
-            placeholder="Tìm cốt, nước chấm, đồ chua hoặc nguyên liệu muối…"
+            placeholder="Tìm cốt, sốt, nước chấm, đồ chua hoặc nguyên liệu muối…"
             value={text}
             onChange={e => setText(e.target.value)}
           />
         </InputGroup>
         {canCreate && !readOnly && !hideToolbarCreate && onCreateNew && (
-          <Button type="button" size="sm" variant="outline" className="shrink-0" onClick={() => onCreateNew(defaultCreateSlot)}>
+          <Button type="button" size="sm" variant="outline" className="shrink-0" onClick={() => onCreateNew(defaultCreateSlot, defaultCreateKind)}>
             <Plus className="mr-1 size-4" aria-hidden="true" />
             Tạo mới
           </Button>
@@ -115,10 +116,10 @@ export function DishSemiPicker({
       ) : filtered.length === 0 ? (
         <EmptyState
           title="Chưa có bán thành phẩm phù hợp"
-          description="Tạo cốt nước dùng, túi nước chấm hoặc đồ chua muối từ nguyên liệu tươi để gắn vào món."
+          description="Tạo cốt nước dùng, sốt nấu/ướp, túi nước chấm hoặc đồ chua muối từ nguyên liệu tươi để gắn vào món."
           action={
             canCreate && !readOnly && onCreateNew
-              ? <Button type="button" size="sm" onClick={() => onCreateNew(defaultCreateSlot)}>Tạo bán thành phẩm</Button>
+              ? <Button type="button" size="sm" onClick={() => onCreateNew(defaultCreateSlot, defaultCreateKind)}>Tạo bán thành phẩm</Button>
               : undefined
           }
         />
@@ -134,7 +135,7 @@ export function DishSemiPicker({
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium text-foreground">{item.name}</p>
                     <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                      <Badge variant="outline" className="font-normal text-xs">{slotLabels[item.slot]}</Badge>
+                      <Badge variant="outline" className="font-normal text-xs">{semiKindLabels[item.kind ?? item.slot]}</Badge>
                       <span className="text-xs text-muted-foreground tabular-nums">{item.net_weight_g} g / túi</span>
                     </div>
                   </div>

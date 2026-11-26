@@ -23,7 +23,7 @@ export type DishContent = {
 };
 export type DraftRow = { id: string; kind: string; status: string; title?: string | null; revision?: number; updated_by: string; updated_at: string; completed_at?: string | null; reason?: string | null };
 export type DishDraft = { id: string; kind: DraftKind; revision: number; content: DishContent; progress: Record<string, string>; status?: string; source_product_ref?: string | null; source_set_ref?: string | null; product_ref?: string | null; set_ref?: string | null };
-export const slotLabels: Record<Slot3 | SeaSlot, string> = { DAM: "Đạm", RAU: "Rau", TINH_BOT: "Tinh bột", COT: "Cốt nước dùng", NUOC_CHAM: "Nước chấm", GIA_VI_THEM: "Gia vị", DO_CHUA: "Đồ chua ăn kèm" };
+export const slotLabels: Record<Slot3 | SeaSlot, string> = { DAM: "Đạm", RAU: "Rau", TINH_BOT: "Tinh bột", COT: "Cốt & sốt nấu", NUOC_CHAM: "Nước chấm / trộn", GIA_VI_THEM: "Gia vị", DO_CHUA: "Đồ chua ăn kèm" };
 
 export const normalizeText = (value: string) => value.normalize("NFC").replace(/\s+/g, " ").trim();
 export function parseVariantLabel(label: string): { servings: number | null; variant_note: string | null } {

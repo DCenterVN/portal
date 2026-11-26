@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DishIngredientsView } from "./dish-ingredients-view";
 import { DishMaterialPicker } from "./dish-material-picker";
 import { DishSemiPicker } from "./dish-semi-picker";
-import type { SemiFinishedItem, SemiSlot } from "@/lib/api/semi-finished";
+import type { SemiFinishedItem, SemiKind, SemiSlot } from "@/lib/api/semi-finished";
 import type { useDishData } from "./use-dish-data";
 
 type Data = ReturnType<typeof useDishData>;
@@ -28,7 +28,7 @@ export function DishDraftBody({ content, data, packNames, semiItems = [], semiLo
   cost: ReactNode;
   imageBox?: ReactNode;
   onRetrySemi?: () => void;
-  onOpenCreateSemi?: (defaultSlot: SemiSlot) => void;
+  onOpenCreateSemi?: (defaultSlot: SemiSlot, defaultKind?: SemiKind) => void;
   onChange: (content: DishContent) => void;
 }) {
   const selected = new Set(content.ingredients.flatMap(line => line.sku_ref ? [line.sku_ref] : []));
@@ -86,7 +86,7 @@ export function DishDraftBody({ content, data, packNames, semiItems = [], semiLo
       <Tabs defaultValue="materials" className="gap-3">
         <TabsList aria-label="Nguồn thêm thành phần vào món">
           <TabsTrigger value="materials">Nguyên liệu tươi</TabsTrigger>
-          <TabsTrigger value="semi">Cốt · Nước chấm · Đồ chua{selectedSemiIds.size > 0 ? ` (${selectedSemiIds.size})` : ""}</TabsTrigger>
+          <TabsTrigger value="semi">Cốt · Sốt · Nước chấm · Đồ chua{selectedSemiIds.size > 0 ? ` (${selectedSemiIds.size})` : ""}</TabsTrigger>
         </TabsList>
         <TabsContent value="materials" className="mt-0">
           <DishMaterialPicker catalog={data.catalog} selectedIds={selected} readOnly={readOnly} pickDisabled={readOnly || disabled} onPick={pick} />

@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupText } from "@/components/ui/input-group";
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { getMaterialTree, listMaterials, type Material } from "@/lib/api/material-catalog";
-import { createSemiFinished, SEMI_SLOTS, semiSlotLabels, type SemiFinishedItem, type SemiSlot } from "@/lib/api/semi-finished";
+import { createSemiFinished, SEMI_KINDS, semiKindLabels, slotOfSemiKind, type SemiFinishedItem, type SemiKind, type SemiSlot } from "@/lib/api/semi-finished";
 import { uomLabel, uomOf } from "@/lib/dishes/ingredients";
 import { MAX_PREP_NOTE_LENGTH } from "@/lib/dishes/types";
 import { cn } from "@/lib/utils";
@@ -31,11 +31,14 @@ type RowLine = {
 
 const PREP_CHIPS = ["cắt khúc", "bào sợi", "thái lát", "băm nhỏ", "ngâm nở"] as const;
 
-const placeholderBySlot: Record<SemiSlot, string> = {
+const placeholderByKind: Record<SemiKind, string> = {
   COT: "Ví dụ: Cốt bò hầm xương",
+  SOT: "Ví dụ: Sốt kho tàu nước dừa",
   NUOC_CHAM: "Ví dụ: Túi nước chấm nem chua ngọt",
   DO_CHUA: "Ví dụ: Kim chi cải thảo muối bếp",
 };
+
+const defaultWeightByKind = (kind: SemiKind) => (kind === "COT" ? "350" : kind === "SOT" ? "100" : kind === "NUOC_CHAM" ? "80" : "60");
 
 const weightEstimate = (lines: RowLine[]) =>
   Math.round(lines.reduce((sum, l) => {
@@ -49,12 +52,14 @@ const weightEstimate = (lines: RowLine[]) =>
 export function SemiFinishedSheet({
   open,
   defaultSlot = "DO_CHUA",
+  defaultKind,
   materials: providedMaterials,
   onOpenChange,
   onCreated,
 }: {
   open: boolean;
   defaultSlot?: SemiSlot;
+  defaultKind?: SemiKind;
   materials?: Material[];
   onOpenChange: (open: boolean) => void;
   onCreated: (item: SemiFinishedItem) => void | Promise<void>;
@@ -69,9 +74,10 @@ export function SemiFinishedSheet({
   );
   const materials = providedMaterials ?? activeSwr.data ?? [];
 
-  const [slot, setSlot] = useState<SemiSlot>(defaultSlot);
+  const resolvedDefaultKind: SemiKind = defaultKind ?? defaultSlot;
+  const [kind, setKind] = useState<SemiKind>(resolvedDefaultKind);
   const [name, setName] = useState("");
-  const [netWeight, setNetWeight] = useState("60");
+  const [netWeight, setNetWeight] = useState(() => defaultWeightByKind(resolvedDefaultKind));
   const [instruction, setInstruction] = useState("");
   const [query, setQuery] = useState("");
   const [lines, setLines] = useState<RowLine[]>([]);
@@ -81,18 +87,18 @@ export function SemiFinishedSheet({
 
   useEffect(() => {
     submitKeyRef.current = null;
-  }, [slot, name, netWeight, instruction, lines, open]);
+  }, [kind, name, netWeight, instruction, lines, open]);
 
   useEffect(() => {
     if (!open) return;
-    setSlot(defaultSlot);
+    setKind(resolvedDefaultKind);
     setName("");
-    setNetWeight(defaultSlot === "COT" ? "350" : defaultSlot === "NUOC_CHAM" ? "80" : "60");
+    setNetWeight(defaultWeightByKind(resolvedDefaultKind));
     setInstruction("");
     setQuery("");
     setLines([]);
     setError("");
-  }, [open, defaultSlot]);
+  }, [open, resolvedDefaultKind]);
 
   const selectedIds = useMemo(() => new Set(lines.map(l => l.sku_ref)), [lines]);
   const candidates = useMemo(() => {
@@ -138,7 +144,8 @@ export function SemiFinishedSheet({
     submitKeyRef.current ??= crypto.randomUUID();
     try {
       const created = await createSemiFinished({
-        slot,
+        slot: slotOfSemiKind(kind),
+        kind,
         name: name.trim(),
         net_weight_g: parsedWeight,
         components: lines.map(line => ({
@@ -166,31 +173,31 @@ export function SemiFinishedSheet({
     <SheetContent side="right" className="w-full gap-0 sm:max-w-[560px]">
       <SheetHeader className="border-b px-5 py-4">
         <SheetTitle>Tạo bán thành phẩm</SheetTitle>
-        <SheetDescription>Muối chua, pha nước chấm hoặc hầm cốt từ nguyên liệu tươi để dùng lại cho nhiều món.</SheetDescription>
+        <SheetDescription>Muối chua, pha sốt nấu/ướp, nước chấm hoặc hầm cốt từ nguyên liệu tươi để dùng lại cho nhiều món.</SheetDescription>
       </SheetHeader>
       <div className="flex-1 space-y-4 overflow-y-auto px-5 py-4">
         <div className="space-y-1.5">
           <span className="text-sm font-medium">Nhóm gói khi đóng hộp</span>
-          <div className="grid grid-cols-3 gap-2">
-            {SEMI_SLOTS.map(item => (
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {SEMI_KINDS.map(item => (
               <Button
                 key={item}
                 type="button"
                 size="sm"
-                variant={slot === item ? "default" : "outline"}
+                variant={kind === item ? "default" : "outline"}
                 onClick={() => {
-                  setSlot(item);
-                  if (!lines.length) setNetWeight(item === "COT" ? "350" : item === "NUOC_CHAM" ? "80" : "60");
+                  setKind(item);
+                  if (!lines.length) setNetWeight(defaultWeightByKind(item));
                 }}
               >
-                {semiSlotLabels[item]}
+                {semiKindLabels[item]}
               </Button>
             ))}
           </div>
         </div>
         <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_160px]">
           <Field htmlFor="semi-name" label="Tên bán thành phẩm">
-            <Input id="semi-name" placeholder={placeholderBySlot[slot]} maxLength={120} value={name} onChange={e => setName(e.target.value)} />
+            <Input id="semi-name" placeholder={placeholderByKind[kind]} maxLength={120} value={name} onChange={e => setName(e.target.value)} />
           </Field>
           <Field htmlFor="semi-weight" label="Khối lượng / túi" hint="Khối lượng thành phẩm trong túi">
             <InputGroup>

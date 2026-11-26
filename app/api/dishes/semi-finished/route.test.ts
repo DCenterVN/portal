@@ -6,6 +6,7 @@ const SKU_CAI = "11111111-1111-4111-8111-111111111111";
 const SKU_OT = "22222222-2222-4222-8222-222222222222";
 const PKG_KIMCHI = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 const PKG_COT = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
+const PKG_SOT = "dddddddd-dddd-4ddd-8ddd-dddddddddddd";
 const PKG_DISH = "cccccccc-cccc-4ccc-8ccc-cccccccccccc";
 const T = "2026-11-26T00:00:00Z";
 
@@ -23,6 +24,7 @@ describe("/api/dishes/semi-finished", () => {
           items: [
             { id: PKG_KIMCHI, code: "BTP-CHUA-KC01", name: "Kim chi cải thảo", variant_label: "1 túi · 60 g", net_weight_g: 60, status: "ACTIVE", updated_at: T },
             { id: PKG_COT, code: "VN-PACK-COT-BO", name: "Cốt bò", variant_label: "1 túi · 350 g", net_weight_g: 350, status: "ACTIVE", updated_at: T },
+            { id: PKG_SOT, code: "BTP-SOT-KHOTAU", name: "Sốt kho tàu", variant_label: "1 túi · 100 g", net_weight_g: 100, status: "ACTIVE", updated_at: T },
             { id: PKG_DISH, code: "D-DAM-1", name: "Gói thịt món", variant_label: "1 suất", net_weight_g: 150, status: "ACTIVE", updated_at: T },
           ],
           next_cursor: null,
@@ -39,7 +41,7 @@ describe("/api/dishes/semi-finished", () => {
           },
         });
       }
-      if (path === `/production/packages/${PKG_COT}/recipes`) {
+      if (path === `/production/packages/${PKG_COT}/recipes` || path === `/production/packages/${PKG_SOT}/recipes`) {
         return json(200, { current: { components: [{ sku_ref: SKU_OT, name: "Ớt", quantity: "10", uom: "G", yield_pct: "100" }], prep_steps: [] } });
       }
       if (path === `/sales/skus/${SKU_CAI}/labels`) return json(200, { allergen_summary: { known: true, contains: ["FISH"] } });
@@ -51,11 +53,12 @@ describe("/api/dishes/semi-finished", () => {
     const res = await GET(new NextRequest("http://localhost:3002/api/dishes/semi-finished", { headers: { cookie: "access_token=jwt" } }));
     expect(res.status).toBe(200);
     const body = await res.json();
-    expect(body.items).toHaveLength(2);
-    expect(body.items[0]).toMatchObject({ id: PKG_COT, slot: "COT", allergens: [] });
+    expect(body.items).toHaveLength(3);
+    expect(body.items[0]).toMatchObject({ id: PKG_COT, slot: "COT", kind: "COT", allergens: [] });
     expect(body.items[1]).toMatchObject({
       id: PKG_KIMCHI,
       slot: "DO_CHUA",
+      kind: "DO_CHUA",
       instruction: "Ủ 24 giờ",
       allergens: ["FISH"],
       components: [
@@ -63,6 +66,7 @@ describe("/api/dishes/semi-finished", () => {
         { sku_ref: SKU_OT },
       ],
     });
+    expect(body.items[2]).toMatchObject({ id: PKG_SOT, slot: "COT", kind: "SOT", allergens: [] });
   });
 
   it("POST tự tạo product btp-bep-trung-tam, tạo gói + công thức kèm Idempotency-Key và prep_note", async () => {
@@ -143,5 +147,40 @@ describe("/api/dishes/semi-finished", () => {
     const delCall = calls.find(c => c.path === `/sales/packages/${PKG_KIMCHI}` && c.method === "DELETE");
     expect(delCall).toBeTruthy();
     expect(delCall?.key).toBeTruthy();
+  });
+
+  it("POST tạo BTP kind=SOT sinh mã BTP-SOT-* và gắn slot COT", async () => {
+    let sentCode = "";
+    vi.stubGlobal("fetch", vi.fn(async (url: string, init?: RequestInit) => {
+      const path = new URL(url).pathname;
+      const method = init?.method ?? "GET";
+      const body = typeof init?.body === "string" ? JSON.parse(init.body) : undefined;
+      if (path === "/sales/products" && method === "GET") return json(200, { items: [{ product: { id: "prod-btp", slug: "btp-bep-trung-tam" }, variants: [] }], next_cursor: null });
+      if (path === "/sales/packages" && method === "POST") {
+        sentCode = body.code;
+        return json(201, { id: PKG_SOT, code: body.code, name: body.name, variant_label: body.variant_label, net_weight_g: body.net_weight_g, updated_at: T });
+      }
+      if (path === `/production/packages/${PKG_SOT}/recipes` && method === "POST") {
+        return json(201, { components: [{ sku_ref: SKU_OT, name: "Tiêu", quantity: "5", uom: "G", yield_pct: "100" }] });
+      }
+      if (path === `/sales/skus/${SKU_OT}/labels`) return json(200, { allergen_summary: { known: true, contains: [] } });
+      return json(404, {});
+    }));
+
+    const res = await POST(new NextRequest("http://localhost:3002/api/dishes/semi-finished", {
+      method: "POST",
+      headers: { cookie: "access_token=jwt", "content-type": "application/json", "Idempotency-Key": "sot-key-1" },
+      body: JSON.stringify({
+        slot: "COT",
+        kind: "SOT",
+        name: "Sốt kho tàu nước dừa",
+        net_weight_g: 100,
+        components: [{ sku_ref: SKU_OT, quantity: "5", uom: "G", yield_pct: "100" }],
+      }),
+    }));
+    expect(res.status).toBe(201);
+    expect(sentCode).toMatch(/^BTP-SOT-[A-F0-9]{8}$/);
+    const created = await res.json();
+    expect(created.item).toMatchObject({ id: PKG_SOT, slot: "COT", kind: "SOT", name: "Sốt kho tàu nước dừa" });
   });
 });

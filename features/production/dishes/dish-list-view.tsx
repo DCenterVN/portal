@@ -1,7 +1,7 @@
 "use client";
 
 import { DishSemiPicker } from "./dish-semi-picker";
-import type { SemiFinishedItem, SemiSlot } from "@/lib/api/semi-finished";
+import type { SemiFinishedItem, SemiKind, SemiSlot } from "@/lib/api/semi-finished";
 
 import type { Route } from "next";
 import Link from "next/link";
@@ -71,7 +71,7 @@ export function DishListView(props: {
   onPage: (page: number) => void;
   onTabChange?: (tab: "dishes" | "drafts" | "semi") => void;
   onCreate: () => void;
-  onCreateSemi?: (defaultSlot?: SemiSlot) => void;
+  onCreateSemi?: (defaultSlot?: SemiSlot, defaultKind?: SemiKind) => void;
   onRetrySemi?: () => void;
   onMoreDrafts: () => void;
   onDiscardDraft?: (id: string) => Promise<void> | void;
@@ -114,7 +114,7 @@ export function DishListView(props: {
         </SelectContent>
       </Select>}
       {props.canCreate && (tab === "semi"
-        ? <Button className="ml-auto shrink-0" disabled={props.busy} onClick={() => props.onCreateSemi?.("DO_CHUA")}><Plus data-icon="inline-start" aria-hidden="true" />Tạo bán thành phẩm</Button>
+        ? <Button className="ml-auto shrink-0" disabled={props.busy} onClick={() => props.onCreateSemi?.("DO_CHUA", "DO_CHUA")}><Plus data-icon="inline-start" aria-hidden="true" />Tạo bán thành phẩm</Button>
         : <Button className="ml-auto shrink-0" disabled={props.busy} onClick={props.onCreate}><Plus data-icon="inline-start" aria-hidden="true" />Tạo món</Button>)}
     </div>
     <TabsContent value="dishes" className="space-y-4">
@@ -142,7 +142,7 @@ export function DishListView(props: {
         error={props.semiError}
         canCreate={props.canCreate}
         hideToolbarCreate
-        onCreateNew={slot => props.onCreateSemi?.(slot)}
+        onCreateNew={(slot, kind) => props.onCreateSemi?.(slot, kind)}
         onRetry={props.onRetrySemi}
       />
     </TabsContent>
