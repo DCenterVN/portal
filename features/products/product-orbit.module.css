@@ -12,11 +12,11 @@
 }
 
 .stage {
-  --orbit-radius: 184px;
+  --orbit-radius: 188px;
   position: relative;
   width: 100%;
   max-width: 600px;
-  height: 420px;
+  height: 430px;
   margin: 12px auto 0;
   perspective: 1100px;
 }
@@ -32,9 +32,9 @@
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 224px;
-  height: 74px;
-  transform: translate(-50%, 54px);
+  width: 196px;
+  height: 64px;
+  transform: translate(-50%, 48px);
   border-radius: 50%;
   background: radial-gradient(
     ellipse at center,
@@ -48,8 +48,8 @@
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 166px;
-  height: 166px;
+  width: 148px;
+  height: 148px;
   transform: translate(-50%, -50%);
   transform-style: preserve-3d;
 }
@@ -58,8 +58,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 166px;
-  height: 166px;
+  width: 148px;
+  height: 148px;
   padding: 0;
   border: 0;
   border-radius: 50%;
@@ -69,8 +69,8 @@
 
 .dishArt {
   display: block;
-  width: 162px;
-  height: 162px;
+  width: 144px;
+  height: 144px;
   border: 3px solid var(--card);
   outline: 1px solid color-mix(in srgb, var(--primary) 18%, transparent);
   box-shadow:
@@ -123,7 +123,7 @@
   top: 50%;
   width: calc(var(--orbit-radius) * 2);
   height: calc(var(--orbit-radius) * 2);
-  transform: translate(-50%, -50%) rotateX(52deg) rotateZ(-8deg);
+  transform: translate(-50%, -50%) rotateX(44deg) rotateZ(-8deg);
   transform-style: preserve-3d;
   pointer-events: none;
 }
@@ -177,7 +177,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transform: rotateZ(8deg) rotateX(-52deg);
+  transform: rotateZ(8deg) rotateX(-44deg);
   transform-style: preserve-3d;
 }
 
@@ -390,7 +390,7 @@
 @media (max-width: 1180px) {
   .stage {
     --orbit-radius: 158px;
-    height: 380px;
+    height: 390px;
   }
 }
 
