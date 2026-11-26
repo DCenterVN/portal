@@ -129,6 +129,7 @@ describe("điều hướng Kho theo vai và cấp chi nhánh", () => {
   const khoActions = [
     "inventory:goods_receipt:create",
     "inventory:qc:update",
+    "inventory:stock:read",
     "inventory:shelf_placement:read",
     "inventory:lot:read",
     "inventory:supplier:read",
@@ -137,11 +138,12 @@ describe("điều hướng Kho theo vai và cấp chi nhánh", () => {
   const hrefs = (permissions: string[], branch?: string) =>
     consoleNavFor(new Set(permissions), branch).flatMap(group => group.items).map(item => item.href);
 
-  it("cửa hàng ẩn Nhập hàng và Nhà cung cấp, vẫn giữ Kiểm đầu vào, Kệ hàng, Vị trí kho, Chuyển hàng", () => {
+  it("cửa hàng ẩn Nhập hàng và Nhà cung cấp, vẫn giữ Kiểm đầu vào, Tồn kho, Kệ hàng, Vị trí kho, Chuyển hàng", () => {
     expect(hrefs(khoActions, KITCHEN)).toEqual([
       "/console",
       "/inventory/goods-receipts/new",
       "/inventory/inbound-qc",
+      "/inventory/stock",
       "/inventory/shelves",
       "/inventory/storage-locations",
       "/inventory/stock-transfers",
@@ -150,10 +152,21 @@ describe("điều hướng Kho theo vai và cấp chi nhánh", () => {
     expect(hrefs(khoActions, STORE)).toEqual([
       "/console",
       "/inventory/inbound-qc",
+      "/inventory/stock",
       "/inventory/shelves",
       "/inventory/storage-locations",
       "/inventory/stock-transfers",
     ]);
+  });
+
+  it("màn Tồn kho mở cho quyền inventory:stock:read ở cả bếp và cửa hàng", () => {
+    expect(CONSOLE_ROUTES).toContain("/inventory/stock");
+    expect(isEmployeeRoute("/inventory/stock")).toBe(true);
+    expect(consoleRouteDenial("/inventory/stock", new Set(["inventory:stock:read"]), STORE)).toBeNull();
+    expect(consoleRouteDenial("/inventory/stock", new Set(["inventory:stock:read"]), KITCHEN)).toBeNull();
+    expect(consoleRouteDenial("/inventory/stock", new Set(["inventory:lot:read"]), KITCHEN)).toEqual({ reason: "permission" });
+    expect(isActive("/inventory/stock", "/inventory/stock-transfers")).toBe(false);
+    expect(isActive("/inventory/stock-transfers", "/inventory/stock")).toBe(false);
   });
 
   it.each(["new", "overview", "abc", "abc/receipts", "abc/info", "abc/edit", "abc/prices/new", "abc/prices/xyz"])(
