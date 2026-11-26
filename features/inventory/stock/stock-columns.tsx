@@ -93,7 +93,7 @@ export const stockColumns: DataTableColumn<StockRowModel>[] = [
           <div className="min-w-0">
             <StatusBadge tone={badge.tone}>{badge.label}</StatusBadge>
             {row.shortDetail ? (
-              <p className="mt-1 truncate text-xs text-muted-foreground">{row.shortDetail}</p>
+              <p className="mt-1 whitespace-normal break-words text-xs text-muted-foreground">{row.shortDetail}</p>
             ) : null}
           </div>
           <ChevronRight className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />

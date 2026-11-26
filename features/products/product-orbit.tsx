@@ -60,10 +60,6 @@ export function ProductOrbit({ detail }: { detail: ReturnType<typeof useProductD
                   <CatalogArtwork name={product.name} />
                 )}
               </span>
-              <span className={styles.dishMeta}>
-                <strong>{product.name}</strong>
-                <small>{product.portion_count ? `Cho ${product.portion_count.toLocaleString("vi-VN")} người` : "Thông tin món"}</small>
-              </span>
             </Button>
           </div>
 
@@ -96,7 +92,7 @@ export function ProductOrbit({ detail }: { detail: ReturnType<typeof useProductD
                             onClick={event => selectComponent(index, event.currentTarget)}
                           >
                             <span className={styles.componentArt} aria-hidden="true">
-                              <Icon size={20} strokeWidth={1.85} />
+                              <Icon size={18} strokeWidth={1.85} />
                             </span>
                             <span className={styles.componentMeta}>
                               <span className={styles.componentName}>{component.name}</span>
@@ -114,6 +110,11 @@ export function ProductOrbit({ detail }: { detail: ReturnType<typeof useProductD
         </div>
       </div>
 
+      <div className={styles.dishFooter}>
+        <strong>{product.name}</strong>
+        <small>{product.portion_count ? `Cho ${product.portion_count.toLocaleString("vi-VN")} người` : "Thông tin món"}</small>
+      </div>
+
       {!components.length && <p className="py-4 text-sm text-muted-foreground">Thành phần món đang được cập nhật.</p>}
 
       <div className={styles.caption} aria-live="polite">
@@ -122,7 +123,7 @@ export function ProductOrbit({ detail }: { detail: ReturnType<typeof useProductD
             ? `Đang xem ngăn ${selected.name}`
             : `${components.length.toLocaleString("vi-VN")} ngăn · Lượng cho 1 người · ${orbitPaused ? "Đã tạm dừng xoay" : "Di chuột hoặc chạm để dừng"}`}
         </span>
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-2">
           {components.length > 0 && (
             <Button
               type="button"

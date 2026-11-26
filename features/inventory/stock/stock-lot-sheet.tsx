@@ -42,7 +42,7 @@ export function StockLotSheet({
 }) {
   return (
     <Sheet open={Boolean(row)} onOpenChange={open => { if (!open) onClose(); }}>
-      <SheetContent side="right" className="w-full gap-0 sm:max-w-[580px]">
+      <SheetContent side="right" className="w-full max-w-full gap-0 sm:max-w-[540px]">
         {row && (
           <>
             <SheetHeader className="border-b px-5 py-4">

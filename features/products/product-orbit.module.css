@@ -12,10 +12,11 @@
 }
 
 .stage {
+  --orbit-radius: 170px;
   position: relative;
   width: 100%;
   max-width: 600px;
-  height: 430px;
+  height: 390px;
   margin: 12px auto 0;
   perspective: 1100px;
 }
@@ -30,10 +31,10 @@
 .dishShadow {
   position: absolute;
   left: 50%;
-  top: 45%;
-  width: 220px;
-  height: 76px;
-  transform: translate(-50%, 34px);
+  top: 50%;
+  width: 196px;
+  height: 66px;
+  transform: translate(-50%, 48px);
   border-radius: 50%;
   background: radial-gradient(
     ellipse at center,
@@ -46,26 +47,30 @@
 .dishCenter {
   position: absolute;
   left: 50%;
-  top: 44%;
-  transform: translate(-50%, -82px);
+  top: 50%;
+  width: 148px;
+  height: 148px;
+  transform: translate(-50%, -50%);
   transform-style: preserve-3d;
 }
 
 .dish {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  width: 240px;
+  justify-content: center;
+  width: 148px;
+  height: 148px;
   padding: 0;
   border: 0;
+  border-radius: 50%;
   background: transparent;
   cursor: pointer;
 }
 
 .dishArt {
   display: block;
-  width: 164px;
-  height: 164px;
+  width: 144px;
+  height: 144px;
   border: 2px solid color-mix(in srgb, var(--card) 92%, var(--border));
   outline: 1px solid color-mix(in srgb, var(--primary) 18%, transparent);
   box-shadow: var(--shadow-lg);
@@ -88,22 +93,23 @@
   width: 80%;
 }
 
-.dishMeta {
-  margin-top: 158px;
+.dishFooter {
   display: flex;
   flex-direction: column;
   align-items: center;
+  max-width: 600px;
+  margin: 4px auto 0;
   text-align: center;
 }
 
-.dishMeta strong {
-  font-size: 15px;
+.dishFooter strong {
+  font-size: 16px;
   line-height: 1.4;
   font-weight: 600;
   color: var(--foreground);
 }
 
-.dishMeta small {
+.dishFooter small {
   margin-top: 2px;
   font-size: 12px;
   color: var(--muted-foreground);
@@ -112,10 +118,10 @@
 .orbitPlane {
   position: absolute;
   left: 50%;
-  top: 44%;
-  width: 456px;
-  height: 456px;
-  transform: translate(-50%, -50%) rotateX(56deg) rotateZ(-8deg);
+  top: 50%;
+  width: calc(var(--orbit-radius) * 2);
+  height: calc(var(--orbit-radius) * 2);
+  transform: translate(-50%, -50%) rotateX(52deg) rotateZ(-8deg);
   transform-style: preserve-3d;
   pointer-events: none;
 }
@@ -148,48 +154,53 @@
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 0;
-  height: 0;
-  transform: rotateZ(var(--angle, 0deg)) translateY(-228px) rotateZ(calc(-1 * var(--angle, 0deg)));
+  width: 224px;
+  height: 76px;
+  margin: -38px 0 0 -112px;
+  transform: rotateZ(var(--angle, 0deg)) translateY(calc(-1 * var(--orbit-radius))) rotateZ(calc(-1 * var(--angle, 0deg)));
   transform-style: preserve-3d;
   pointer-events: none;
 }
 
 .unspin {
-  width: 0;
-  height: 0;
+  width: 100%;
+  height: 100%;
   transform-style: preserve-3d;
   animation: orbitUnspin 28s linear infinite;
 }
 
 .upright {
-  width: 0;
-  height: 0;
-  transform: rotateZ(8deg) rotateX(-56deg);
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: rotateZ(8deg) rotateX(-52deg);
   transform-style: preserve-3d;
 }
 
 .arrival {
-  position: relative;
-  width: 0;
-  height: 0;
+  display: flex;
+  justify-content: center;
+  width: 100%;
   animation: arrive .45s cubic-bezier(.2, .7, .3, 1) backwards;
 }
 
+:global(.catalog) .component[aria-haspopup="dialog"],
 .component {
-  position: absolute;
-  left: 0;
-  top: 0;
-  transform: translate(-50%, -50%);
+  position: relative;
   display: inline-flex;
   align-items: center;
+  justify-content: flex-start;
   gap: 10px;
-  min-width: 156px;
+  width: fit-content;
+  min-width: 136px;
   max-width: 212px;
-  padding: 7px 12px 7px 7px;
+  height: auto;
+  padding: 7px 12px 7px 8px;
   border-radius: var(--r-8);
   border: 1px solid color-mix(in srgb, var(--border) 90%, transparent);
-  background: color-mix(in srgb, var(--card) 94%, transparent);
+  background: color-mix(in srgb, var(--card) 96%, transparent);
   box-shadow: var(--shadow-md);
   text-align: left;
   cursor: pointer;
@@ -201,8 +212,8 @@
   display: grid;
   flex-shrink: 0;
   place-items: center;
-  width: 38px;
-  height: 38px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
   background: color-mix(in srgb, var(--primary) 12%, var(--muted));
   color: var(--primary);
@@ -231,17 +242,21 @@
 .componentMeta {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
   min-width: 0;
+  flex: 1 1 auto;
+  text-align: left;
 }
 
 .componentName {
   font-size: 12px;
-  line-height: 1.3;
+  line-height: 1.25;
   font-weight: 600;
   color: var(--foreground);
-  white-space: nowrap;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .grams {
@@ -249,6 +264,7 @@
   font-size: 11px;
   line-height: 1.2;
   color: var(--muted-foreground);
+  white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
 
@@ -262,7 +278,7 @@
 .component:hover,
 .component[aria-pressed="true"] {
   border-color: var(--primary);
-  transform: translate(-50%, -50%) scale(1.04);
+  transform: scale(1.04);
 }
 
 .stage:hover .ring,
@@ -339,6 +355,8 @@
   gap: 12px;
   max-width: 600px;
   margin: 12px auto 0;
+  padding-top: 10px;
+  border-top: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
   font-size: 12px;
   color: var(--muted-foreground);
   line-height: 1.5;
@@ -359,6 +377,13 @@
   to { opacity: 1; translate: 0 0; scale: 1; }
 }
 
+@media (max-width: 1180px) {
+  .stage {
+    --orbit-radius: 152px;
+    height: 360px;
+  }
+}
+
 @media (max-width: 1000px) {
   .visual {
     position: static;
@@ -375,7 +400,7 @@
   .stage {
     height: auto;
     perspective: none;
-    margin: 20px 0 12px;
+    margin: 20px 0 8px;
   }
   .space,
   .dishCenter,
@@ -401,14 +426,15 @@
     justify-content: center;
   }
   .dish {
-    width: min(240px, 100%);
+    width: 164px;
+    height: 164px;
   }
   .dishArt {
     width: 164px;
     height: 164px;
   }
-  .dishMeta {
-    margin-top: 12px;
+  .dishFooter {
+    margin-top: 10px;
   }
   .ring {
     position: static;
@@ -424,10 +450,12 @@
     position: static;
     width: auto;
     height: auto;
+    margin: 0;
     transform: none;
     animation: none;
     transform-style: flat;
   }
+  :global(.catalog) .component[aria-haspopup="dialog"],
   .component {
     position: static;
     transform: none;
@@ -444,7 +472,7 @@
   }
   .componentName {
     font-size: 14px;
-    white-space: normal;
+    -webkit-line-clamp: 3;
   }
   .grams {
     font-size: 12px;
