@@ -1,6 +1,14 @@
 import { describe, expect, it } from "vitest";
 import type { InventoryLotItem, SkuMeta, StockLevelItem } from "@/lib/api/stock-overview";
-import { buildStockRows, classifySkuGroup, evaluateLotHealth, formatExpiryDelta, lotDisplayStatus, summarizeStockRows } from "./stock-model";
+import {
+  buildStockRows,
+  classifySkuGroup,
+  displaySkuCode,
+  evaluateLotHealth,
+  formatExpiryDelta,
+  lotDisplayStatus,
+  summarizeStockRows,
+} from "./stock-model";
 
 const BRANCH = "01a157cd-fef2-72ff-9428-63b4df7d25d0";
 const NOW = Date.parse("2026-11-26T03:00:00Z");
@@ -63,8 +71,17 @@ describe("stock-model", () => {
     });
     expect(rows[0].issueSummary).toContain("HL-171126-01");
     expect(rows[0].issueSummary).toContain("KHO-LANH-1");
+    expect(rows[0].shortDetail).toBe("HL-171126-01 · KHO-LANH-1");
+    expect(rows[0].skuCode).toBe("NL-L42F5J");
     expect(lotDisplayStatus(expiredLot, NOW)).toEqual({ tone: "danger", label: "Đã hết hạn" });
     expect(formatExpiryDelta("2026-11-19T17:00:00Z", NOW)).toBe("Quá hạn 6 ngày");
+  });
+
+  it("ẩn mã nội bộ chứa UUID nhưng giữ mã SKU ngắn", () => {
+    expect(displaySkuCode("NL-L42F5J")).toBe("NL-L42F5J");
+    expect(displaySkuCode("BTP-SOT-B892A162")).toBe("BTP-SOT-B892A162");
+    expect(displaySkuCode("SV-01a1c5af-3512-74b8-a0d4-40c76b6615d7")).toBe("");
+    expect(displaySkuCode("")).toBe("");
   });
 
   it("không báo âm hoặc không dùng được cho thành phẩm có shelf_pending và usable bằng onHand", () => {

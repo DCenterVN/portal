@@ -88,5 +88,17 @@ describe("ngăn dinh dưỡng vệ tinh", () => {
     expect(out).toContain('aria-pressed="false"');
     expect(out).not.toContain('aria-label="Dinh dưỡng ngăn');
     expect(out).toContain('data-slot="select-trigger"');
+    expect(out).toContain("Tạm dừng");
+  });
+
+  it("chia đều góc --angle cho nhiều vệ tinh quay quanh món", () => {
+    const multi = [
+      { name: "Thịt ba chỉ · Đạm", grams: "150", kcal: "300", protein_g: "20", fat_g: "22", carb_g: "0" },
+      { name: "Rau cải · Rau", grams: "100", kcal: "25", protein_g: "2", fat_g: "0", carb_g: "4" },
+      { name: "Sốt kho · Gói gia vị", grams: "45", kcal: "70", protein_g: "1", fat_g: "1", carb_g: "14" },
+    ];
+    const parsed = productComponents({ ...nutrition, components: multi }, "Thịt kho");
+    expect(parsed.map(item => item.orbitStyle["--angle"])).toEqual(["0deg", "120deg", "240deg"]);
+    expect(parsed.map(item => item.slotKind)).toEqual(["protein", "veg", "seasoning"]);
   });
 });

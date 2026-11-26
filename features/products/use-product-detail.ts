@@ -7,19 +7,31 @@ import { addToCart, getOrCreateCartId, recordCartResponse, type Product } from "
 import { nutrientFields, nutritionNumber, type CatalogNutrition } from "@/lib/nutrition";
 import { FOOD_SLOTS } from "@/features/production/pack-shared";
 
+export type OrbitSlotKind = "protein" | "veg" | "carb" | "seasoning";
+
+function classifySlotKind(name: string): OrbitSlotKind {
+  if (/gia vị|gói|nước chấm|cốt|sốt/i.test(name) && !/đạm/i.test(name)) return "seasoning";
+  if (/rau/i.test(name)) return "veg";
+  if (/tinh bột/i.test(name)) return "carb";
+  return "protein";
+}
+
 export function productComponents(nutrition: CatalogNutrition | null | undefined, productName: string) {
   return (nutrition?.components ?? []).map((component, index, components) => {
     const cleaned = component.name.replace(/\s+\d+(?:[.,]\d+)?\s*(?:kg|mg|g|ml|l)\s*$/i, "");
     const [ingredient, group] = cleaned.split(" · ");
     const groupName = FOOD_SLOTS.find(slot => slot.id === group)?.name;
     const name = groupName ? ingredient === productName ? groupName : `${ingredient} · ${groupName}` : cleaned;
-    const angle = (-90 + index * 360 / components.length) * Math.PI / 180;
+    const angleDeg = components.length ? Math.round((index * 360) / components.length) : 0;
+    const angle = (-90 + angleDeg) * Math.PI / 180;
     const totalKcal = nutrition?.per_serving.kcal;
     return {
       name, grams: nutritionNumber(component.grams),
+      slotKind: classifySlotKind(name),
       share: component.kcal !== null && totalKcal != null && Number(totalKcal) > 0
         ? `${Math.round(Number(component.kcal) / Number(totalKcal) * 100).toLocaleString("vi-VN")}% kcal của món` : "Chưa có tỉ lệ kcal",
       position: { left: `${50 + Math.cos(angle) * 29}%`, top: `${50 + Math.sin(angle) * 29}%` },
+      orbitStyle: { "--angle": `${angleDeg}deg` } as CSSProperties & { "--angle": string },
       arrival: { animationDelay: `${index * 40}ms`, "--from": `${-Math.cos(angle) * 100}px ${-Math.sin(angle) * 100}px` } satisfies CSSProperties & { "--from": string },
       nutrients: [nutrientFields[0], nutrientFields[1], nutrientFields[2], nutrientFields[3]].map(([key, label, unit]) => ({
         key, label, value: component[key] == null ? "Chưa có" : `${nutritionNumber(component[key])} ${unit}`,
@@ -38,6 +50,7 @@ export function useProductDetail(initialProduct: Product, branchId?: string) {
     allergen_summary: variant.allergen_summary,
   } : initialProduct;
   const [selectedComponent, setSelectedComponent] = useState<number | null>(null);
+  const [orbitPaused, setOrbitPaused] = useState(false);
   const dishRef = useRef<HTMLButtonElement>(null);
   const [failedImage, setFailedImage] = useState("");
   const image = product.image_urls?.[0];
@@ -83,5 +96,5 @@ export function useProductDetail(initialProduct: Product, branchId?: string) {
     } catch (error) { toast.error("Không thể thêm vào giỏ", { description: error instanceof Error ? error.message : "Vui lòng thử lại." }); }
     finally { setAddingToCart(false); }
   }
-  return { product, variantOptions, variantLabel, summary, pricePerPerson, components, selected, selectedComponent, selectComponent, resetComponent, onDrawerOpenChange, restoreComponentFocus, dishRef, cover, onImageError: () => setFailedImage(image ?? ""), variants, selectVariant, addingToCart, quantity, setQuantity, canBuy, handleAddToCart };
+  return { product, variantOptions, variantLabel, summary, pricePerPerson, components, selected, selectedComponent, selectComponent, resetComponent, onDrawerOpenChange, restoreComponentFocus, orbitPaused, toggleOrbitPaused: () => setOrbitPaused(prev => !prev), dishRef, cover, onImageError: () => setFailedImage(image ?? ""), variants, selectVariant, addingToCart, quantity, setQuantity, canBuy, handleAddToCart };
 }

@@ -19,12 +19,18 @@ export const stockGroupLabels: Record<StockItemGroup, string> = {
 };
 
 export const stockIssueMeta: Record<StockIssueStatus, { label: string; tone: StatusTone; priority: number }> = {
-  UNUSABLE: { label: "Có hàng không dùng được", tone: "danger", priority: 0 },
+  UNUSABLE: { label: "Không dùng được", tone: "danger", priority: 0 },
   EXPIRING_SOON: { label: "Sắp hết hạn", tone: "warning", priority: 1 },
-  PENDING_QC: { label: "Chờ kiểm đầu vào", tone: "warning", priority: 2 },
+  PENDING_QC: { label: "Chờ kiểm QC", tone: "warning", priority: 2 },
   OK: { label: "Đạt chuẩn", tone: "neutral", priority: 3 },
   EMPTY: { label: "Hết tồn", tone: "neutral", priority: 4 },
 };
+
+const UUID_PATTERN = /[0-9a-f]{8}-[0-9a-f]{4}-/i;
+
+export function displaySkuCode(code: string): string {
+  return !code || UUID_PATTERN.test(code) ? "" : code;
+}
 
 export function classifySkuGroup(meta?: SkuMeta, fromPublicCatalog = false): StockItemGroup {
   if (!meta) return fromPublicCatalog ? "FINISHED" : "UNKNOWN";
@@ -103,6 +109,7 @@ export type StockRowModel = {
   nearestExpiresAt: string | null;
   issueStatus: StockIssueStatus;
   issueSummary: string;
+  shortDetail: string;
   hasStock: boolean;
   lots: InventoryLotItem[];
 };
@@ -116,13 +123,17 @@ const lotFefoCompare = (a: InventoryLotItem, b: InventoryLotItem) => {
   return (Number.isNaN(expA) ? Number.MAX_SAFE_INTEGER : expA) - (Number.isNaN(expB) ? Number.MAX_SAFE_INTEGER : expB);
 };
 
+function formatLotRef(lot: InventoryLotItem): string {
+  return lot.storage_location_code ? `${lot.supplier_lot_code} · ${lot.storage_location_code}` : lot.supplier_lot_code;
+}
+
 function buildIssueSummary(
   uom: string,
   unusable: number,
   pendingQcQty: number,
   lots: InventoryLotItem[],
   nowMs: number,
-): { status: StockIssueStatus; summary: string } {
+): { status: StockIssueStatus; summary: string; shortDetail: string } {
   const active = lots.filter(l => l.remaining_quantity > 0 && !isClosedLotStatus(l.status));
   const expiredLot = active.find(l => evaluateLotHealth(l, nowMs) === "EXPIRED");
   const soonLot = active.find(l => evaluateLotHealth(l, nowMs) === "EXPIRING_SOON");
@@ -132,20 +143,42 @@ function buildIssueSummary(
     const qtyText = formatQuantity(unusable, uom);
     if (expiredLot) {
       const loc = expiredLot.storage_location_code ? ` · ${expiredLot.storage_location_code}` : "";
-      return { status: "UNUSABLE", summary: `${qtyText} không dùng được (lô ${expiredLot.supplier_lot_code}${loc} hết hạn ${formatDate(expiredLot.expires_at)})` };
+      return {
+        status: "UNUSABLE",
+        summary: `${qtyText} không dùng được (lô ${expiredLot.supplier_lot_code}${loc} hết hạn ${formatDate(expiredLot.expires_at)})`,
+        shortDetail: formatLotRef(expiredLot),
+      };
     }
-    return { status: "UNUSABLE", summary: `${qtyText} không dùng được (hết hạn hoặc đang cách ly)` };
+    return {
+      status: "UNUSABLE",
+      summary: `${qtyText} không dùng được (hết hạn hoặc đang cách ly)`,
+      shortDetail: `${qtyText} đang cách ly`,
+    };
   }
   if (soonLot) {
-    return { status: "EXPIRING_SOON", summary: `Lô ${soonLot.supplier_lot_code} ${formatExpiryDelta(soonLot.expires_at, nowMs).toLowerCase()} (${formatDate(soonLot.expires_at)})` };
+    return {
+      status: "EXPIRING_SOON",
+      summary: `Lô ${soonLot.supplier_lot_code} ${formatExpiryDelta(soonLot.expires_at, nowMs).toLowerCase()} (${formatDate(soonLot.expires_at)})`,
+      shortDetail: formatLotRef(soonLot),
+    };
   }
   if (pendingQcQty > 0) {
     const lotLabel = qcLot ? ` (lô ${qcLot.supplier_lot_code})` : "";
-    return { status: "PENDING_QC", summary: `${formatQuantity(pendingQcQty, uom)} chờ kiểm đầu vào${lotLabel}` };
+    return {
+      status: "PENDING_QC",
+      summary: `${formatQuantity(pendingQcQty, uom)} chờ kiểm đầu vào${lotLabel}`,
+      shortDetail: qcLot ? `${formatQuantity(pendingQcQty, uom)} · ${qcLot.supplier_lot_code}` : `${formatQuantity(pendingQcQty, uom)} chờ duyệt`,
+    };
   }
   const okLot = active.find(l => evaluateLotHealth(l, nowMs) === "OK" && l.expires_at);
-  if (okLot) return { status: "OK", summary: `HSD gần nhất ${formatDate(okLot.expires_at)} (${formatExpiryDelta(okLot.expires_at, nowMs).toLowerCase()})` };
-  return { status: "OK", summary: "Sẵn sàng cấp phát" };
+  if (okLot) {
+    return {
+      status: "OK",
+      summary: `HSD gần nhất ${formatDate(okLot.expires_at)} (${formatExpiryDelta(okLot.expires_at, nowMs).toLowerCase()})`,
+      shortDetail: formatLotRef(okLot),
+    };
+  }
+  return { status: "OK", summary: "Sẵn sàng cấp phát", shortDetail: "" };
 }
 
 export function buildStockRows({
@@ -206,11 +239,11 @@ export function buildStockRows({
     const hasStock = onHand > 0 || reserved > 0 || pendingQcQty > 0;
     const issue = hasStock
       ? buildIssueSummary(uom, unusable, pendingQcQty, sortedLots, nowMs)
-      : { status: "EMPTY" as const, summary: "Đã xuất hết" };
+      : { status: "EMPTY" as const, summary: "Đã xuất hết", shortDetail: "" };
 
     rows.push({
       skuRef,
-      skuCode: meta?.sku_code ?? "",
+      skuCode: displaySkuCode(meta?.sku_code ?? ""),
       name: meta?.name ?? catalogName ?? "Mặt hàng trong kho",
       skuStatus: meta?.status,
       group: classifySkuGroup(meta, Boolean(catalogName)),
@@ -227,6 +260,7 @@ export function buildStockRows({
       nearestExpiresAt,
       issueStatus: issue.status,
       issueSummary: issue.summary,
+      shortDetail: issue.shortDetail,
       hasStock,
       lots: sortedLots,
     });

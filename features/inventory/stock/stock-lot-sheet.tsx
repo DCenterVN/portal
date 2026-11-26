@@ -67,10 +67,23 @@ export function StockLotSheet({
                 />
                 <MetricBox label="Tổng tồn sổ" value={formatQuantity(row.onHand, row.uom)} />
                 <MetricBox label="Đang giữ lệnh" value={formatQuantity(row.reserved, row.uom)} />
-                <MetricBox
-                  label="Chờ kệ / Trên kệ"
-                  value={`${formatQuantity(row.shelfPending, row.uom)} / ${formatQuantity(row.sellable, row.uom)}`}
-                />
+                {row.group === "FINISHED" ? (
+                  <MetricBox
+                    label="Chờ kệ / Trên kệ"
+                    value={`${formatQuantity(row.shelfPending, row.uom)} / ${formatQuantity(row.sellable, row.uom)}`}
+                  />
+                ) : row.unusable > 0 ? (
+                  <MetricBox
+                    label="Không dùng được"
+                    value={formatQuantity(row.unusable, row.uom)}
+                    muted
+                  />
+                ) : (
+                  <MetricBox
+                    label="Chờ kiểm QC"
+                    value={formatQuantity(row.pendingQcQty, row.uom)}
+                  />
+                )}
               </div>
 
               {(row.unusable > 0 || row.pendingQcQty > 0) && (

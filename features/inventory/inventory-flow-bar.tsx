@@ -1,19 +1,18 @@
 import type { Route } from "next";
 import Link from "next/link";
 
-type StepId = "receipts" | "inbound-qc" | "stock" | "transfers" | "shelves";
+type StepId = "receipts" | "inbound-qc" | "transfers" | "shelves";
 
 const steps: Array<{ id: StepId; label: string; subtitle: string; href: Route }> = [
   { id: "receipts", label: "Bước 1 · Nhập hàng", subtitle: "Lập phiếu & nhận hàng thực tế", href: "/inventory/goods-receipts/new" },
   { id: "inbound-qc", label: "Bước 2 · Kiểm đầu vào", subtitle: "Duyệt lô nguyên liệu & gán vị trí", href: "/inventory/inbound-qc" },
-  { id: "stock", label: "Bước 3 · Tồn kho & hạn dùng", subtitle: "Kiểm tồn dùng được & lô cận hạn", href: "/inventory/stock" },
-  { id: "transfers", label: "Bước 4 · Chuyển hàng", subtitle: "Điều phối hàng giữa bếp & chi nhánh", href: "/inventory/stock-transfers" },
-  { id: "shelves", label: "Bước 5 · Kệ hàng & QR", subtitle: "Xếp kệ bán & sinh tem truy xuất", href: "/inventory/shelves" },
+  { id: "transfers", label: "Bước 3 · Chuyển hàng", subtitle: "Điều phối hàng giữa bếp & chi nhánh", href: "/inventory/stock-transfers" },
+  { id: "shelves", label: "Bước 4 · Kệ hàng & QR", subtitle: "Xếp kệ bán & sinh tem truy xuất", href: "/inventory/shelves" },
 ];
 
 export function InventoryFlowBar({ current }: { current: StepId }) {
   return (
-    <nav aria-label="Luồng vận hành kho" className="mb-6 grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
+    <nav aria-label="Luồng vận hành kho" className="mb-6 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
       {steps.map((item) => {
         const active = item.id === current;
         const content = (
