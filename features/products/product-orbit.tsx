@@ -6,7 +6,7 @@ import styles from "./product-orbit.module.css";
 
 function compartmentIcon(name: string, productName: string) {
   if (/gia vị|gói|nước chấm|cốt|sốt/i.test(name) && !/đạm/i.test(name)) return Package;
-  if (/rau/i.test(name)) return Leaf;
+  if (/rau|đồ chua/i.test(name)) return Leaf;
   if (/tinh bột/i.test(name)) return Wheat;
   return /cá|tôm|mực/i.test(`${name} ${productName}`) ? Fish : Drumstick;
 }
@@ -24,6 +24,8 @@ export function ProductOrbit({ detail }: { detail: ReturnType<typeof useProductD
     dishRef,
     cover,
     onImageError,
+    failedComponentImages,
+    onComponentImageError,
   } = detail;
 
   return (
@@ -31,7 +33,7 @@ export function ProductOrbit({ detail }: { detail: ReturnType<typeof useProductD
       <p className="text-xs font-medium uppercase tracking-widest text-primary">Từ nguyên liệu đến bữa ăn</p>
       <h2 id="orbit-heading" className="mt-2.5 text-2xl font-medium tracking-tight">Biết mình đang ăn gì.</h2>
       <p className="mt-1.5 text-sm leading-6 text-muted-foreground">
-        Các ngăn nguyên liệu xoay quanh đĩa chính · chọn từng vệ tinh để xem dinh dưỡng mỗi người.
+        Các nguyên liệu xoay quanh đĩa chính · chọn từng vệ tinh để xem dinh dưỡng mỗi người.
       </p>
 
       <div
@@ -68,7 +70,8 @@ export function ProductOrbit({ detail }: { detail: ReturnType<typeof useProductD
             <div className={styles.orbitInner} aria-hidden="true" />
             <div className={styles.ring}>
               {components.map((component, index) => {
-                const Icon = compartmentIcon(component.name, product.name);
+                const Icon = compartmentIcon(component.slotLabel ?? component.name, product.name);
+                const showPhoto = Boolean(component.imageUrl) && !failedComponentImages[index];
                 return (
                   <div
                     key={index}
@@ -92,11 +95,23 @@ export function ProductOrbit({ detail }: { detail: ReturnType<typeof useProductD
                             onClick={event => selectComponent(index, event.currentTarget)}
                           >
                             <span className={styles.componentArt} aria-hidden="true">
-                              <Icon size={18} strokeWidth={1.85} />
+                              {showPhoto ? (
+                                <img
+                                  src={component.imageUrl}
+                                  alt=""
+                                  className="size-full object-cover"
+                                  onError={() => onComponentImageError(index)}
+                                />
+                              ) : (
+                                <Icon size={20} strokeWidth={1.85} />
+                              )}
                             </span>
                             <span className={styles.componentMeta}>
                               <span className={styles.componentName}>{component.name}</span>
-                              <span className={styles.grams}>{component.grams} g/người</span>
+                              <span className={styles.grams}>
+                                {component.slotLabel ? `${component.slotLabel} · ` : ""}
+                                {component.grams} g/người
+                              </span>
                             </span>
                           </Button>
                         </div>

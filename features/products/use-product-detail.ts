@@ -9,11 +9,25 @@ import { FOOD_SLOTS } from "@/features/production/pack-shared";
 
 export type OrbitSlotKind = "protein" | "veg" | "carb" | "seasoning";
 
+const PRIMARY_FOOD_SLOTS = new Set(["TINH_BOT", "DAM", "RAU", "DO_CHUA"]);
+
 function classifySlotKind(name: string): OrbitSlotKind {
   if (/gia vị|gói|nước chấm|cốt|sốt/i.test(name) && !/đạm/i.test(name)) return "seasoning";
-  if (/rau/i.test(name)) return "veg";
+  if (/rau|đồ chua/i.test(name)) return "veg";
   if (/tinh bột/i.test(name)) return "carb";
   return "protein";
+}
+
+export function cleanIngredientName(raw: string): string {
+  const stripped = raw
+    .replace(/\([^)]*\)/g, " ")
+    .replace(/\s*-\s*HTK\s+Food\b/gi, " ")
+    .replace(/\b(?:Thái\s+ECO|Bắc\s+Việt|Gọt\s+Sẵn|Nguyên\s+Con)\b/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!stripped) return raw.trim();
+  const lower = stripped.toLocaleLowerCase("vi");
+  return lower.charAt(0).toLocaleUpperCase("vi") + lower.slice(1);
 }
 
 export function productComponents(nutrition: CatalogNutrition | null | undefined, productName: string) {
@@ -21,13 +35,39 @@ export function productComponents(nutrition: CatalogNutrition | null | undefined
     const cleaned = component.name.replace(/\s+\d+(?:[.,]\d+)?\s*(?:kg|mg|g|ml|l)\s*$/i, "");
     const [ingredient, group] = cleaned.split(" · ");
     const groupName = FOOD_SLOTS.find(slot => slot.id === group)?.name;
-    const name = groupName ? ingredient === productName ? groupName : `${ingredient} · ${groupName}` : cleaned;
+
+    const cleanIngredients: string[] = [];
+    const seen = new Set<string>();
+    for (const rawIng of component.ingredients ?? []) {
+      const label = cleanIngredientName(rawIng);
+      const key = label.toLocaleLowerCase("vi");
+      if (label && !seen.has(key)) {
+        seen.add(key);
+        cleanIngredients.push(label);
+      }
+    }
+
+    let slotLabel: string | undefined = groupName;
+    if (!slotLabel && /^(?:gói\s+(?:gia\s+vị|muối)|nước\s+(?:chấm|mắm)|cốt\s+)/i.test(cleaned)) {
+      slotLabel = /^nước\s+chấm/i.test(cleaned) ? "Nước chấm" : /^cốt\s+/i.test(cleaned) ? "Cốt" : "Gia vị";
+    }
+
+    let name = groupName ? ingredient === productName ? groupName : `${ingredient} · ${groupName}` : cleaned;
+    if (group && PRIMARY_FOOD_SLOTS.has(group) && cleanIngredients.length > 0) {
+      const head = cleanIngredients.slice(0, 2).join(", ");
+      name = cleanIngredients.length >= 3 ? `${head} +${cleanIngredients.length - 2}` : head;
+    }
+
     const angleDeg = components.length ? Math.round((index * 360) / components.length) : 0;
     const angle = (-90 + angleDeg) * Math.PI / 180;
     const totalKcal = nutrition?.per_serving.kcal;
     return {
-      name, grams: nutritionNumber(component.grams),
-      slotKind: classifySlotKind(name),
+      name,
+      slotLabel,
+      ingredients: cleanIngredients,
+      imageUrl: component.image_url ?? undefined,
+      grams: nutritionNumber(component.grams),
+      slotKind: classifySlotKind(slotLabel ?? name),
       share: component.kcal !== null && totalKcal != null && Number(totalKcal) > 0
         ? `${Math.round(Number(component.kcal) / Number(totalKcal) * 100).toLocaleString("vi-VN")}% kcal của món` : "Chưa có tỉ lệ kcal",
       position: { left: `${50 + Math.cos(angle) * 29}%`, top: `${50 + Math.sin(angle) * 29}%` },
@@ -53,6 +93,7 @@ export function useProductDetail(initialProduct: Product, branchId?: string) {
   const [orbitPaused, setOrbitPaused] = useState(false);
   const dishRef = useRef<HTMLButtonElement>(null);
   const [failedImage, setFailedImage] = useState("");
+  const [failedComponentImages, setFailedComponentImages] = useState<Record<number, boolean>>({});
   const image = product.image_urls?.[0];
   const cover = image && image !== failedImage ? image : undefined;
   const components = productComponents(product.nutrition, product.name);
@@ -83,6 +124,7 @@ export function useProductDetail(initialProduct: Product, branchId?: string) {
   function selectVariant(sku: string) {
     setSelectedSku(sku);
     resetComponent();
+    setFailedComponentImages({});
     setQuantity(1);
   }
   const canBuy = (initialProduct.variants === undefined || variants.length > 0) && product.status === "ACTIVE" && !!product.sku_ref && !!product.branch_ref && product.base_price_vnd !== undefined && product.available_quantity !== undefined && product.available_quantity >= quantity;
@@ -96,5 +138,5 @@ export function useProductDetail(initialProduct: Product, branchId?: string) {
     } catch (error) { toast.error("Không thể thêm vào giỏ", { description: error instanceof Error ? error.message : "Vui lòng thử lại." }); }
     finally { setAddingToCart(false); }
   }
-  return { product, variantOptions, variantLabel, summary, pricePerPerson, components, selected, selectedComponent, selectComponent, resetComponent, onDrawerOpenChange, restoreComponentFocus, orbitPaused, toggleOrbitPaused: () => setOrbitPaused(prev => !prev), dishRef, cover, onImageError: () => setFailedImage(image ?? ""), variants, selectVariant, addingToCart, quantity, setQuantity, canBuy, handleAddToCart };
+  return { product, variantOptions, variantLabel, summary, pricePerPerson, components, selected, selectedComponent, selectComponent, resetComponent, onDrawerOpenChange, restoreComponentFocus, orbitPaused, toggleOrbitPaused: () => setOrbitPaused(prev => !prev), dishRef, cover, onImageError: () => setFailedImage(image ?? ""), failedComponentImages, onComponentImageError: (index: number) => setFailedComponentImages(prev => ({ ...prev, [index]: true })), variants, selectVariant, addingToCart, quantity, setQuantity, canBuy, handleAddToCart };
 }

@@ -12,11 +12,11 @@
 }
 
 .stage {
-  --orbit-radius: 170px;
+  --orbit-radius: 184px;
   position: relative;
   width: 100%;
   max-width: 600px;
-  height: 390px;
+  height: 420px;
   margin: 12px auto 0;
   perspective: 1100px;
 }
@@ -32,13 +32,13 @@
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 196px;
-  height: 66px;
-  transform: translate(-50%, 48px);
+  width: 224px;
+  height: 74px;
+  transform: translate(-50%, 54px);
   border-radius: 50%;
   background: radial-gradient(
     ellipse at center,
-    color-mix(in srgb, var(--foreground) 16%, transparent) 0%,
+    color-mix(in srgb, var(--foreground) 18%, transparent) 0%,
     transparent 70%
   );
   pointer-events: none;
@@ -48,8 +48,8 @@
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 148px;
-  height: 148px;
+  width: 166px;
+  height: 166px;
   transform: translate(-50%, -50%);
   transform-style: preserve-3d;
 }
@@ -58,8 +58,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 148px;
-  height: 148px;
+  width: 166px;
+  height: 166px;
   padding: 0;
   border: 0;
   border-radius: 50%;
@@ -69,11 +69,13 @@
 
 .dishArt {
   display: block;
-  width: 144px;
-  height: 144px;
-  border: 2px solid color-mix(in srgb, var(--card) 92%, var(--border));
+  width: 162px;
+  height: 162px;
+  border: 3px solid var(--card);
   outline: 1px solid color-mix(in srgb, var(--primary) 18%, transparent);
-  box-shadow: var(--shadow-lg);
+  box-shadow:
+    0 12px 32px color-mix(in srgb, var(--foreground) 14%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--border) 60%, transparent);
   overflow: hidden;
   border-radius: 50%;
   background: var(--card);
@@ -154,9 +156,9 @@
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 224px;
-  height: 76px;
-  margin: -38px 0 0 -112px;
+  width: 252px;
+  height: 82px;
+  margin: -41px 0 0 -126px;
   transform: rotateZ(var(--angle, 0deg)) translateY(calc(-1 * var(--orbit-radius))) rotateZ(calc(-1 * var(--angle, 0deg)));
   transform-style: preserve-3d;
   pointer-events: none;
@@ -194,10 +196,10 @@
   justify-content: flex-start;
   gap: 10px;
   width: fit-content;
-  min-width: 136px;
-  max-width: 212px;
+  min-width: 148px;
+  max-width: 236px;
   height: auto;
-  padding: 7px 12px 7px 8px;
+  padding: 7px 13px 7px 7px;
   border-radius: var(--r-8);
   border: 1px solid color-mix(in srgb, var(--border) 90%, transparent);
   background: color-mix(in srgb, var(--card) 96%, transparent);
@@ -212,30 +214,38 @@
   display: grid;
   flex-shrink: 0;
   place-items: center;
-  width: 34px;
-  height: 34px;
+  width: 46px;
+  height: 46px;
+  overflow: hidden;
   border-radius: 50%;
+  border: 2px solid var(--card);
+  outline: 1.5px solid color-mix(in srgb, var(--primary) 26%, transparent);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--foreground) 12%, transparent);
   background: color-mix(in srgb, var(--primary) 12%, var(--muted));
   color: var(--primary);
 }
 
 .slot[data-slot="protein"] .componentArt {
   background: color-mix(in srgb, var(--destructive) 12%, var(--muted));
+  outline-color: color-mix(in srgb, var(--destructive) 36%, transparent);
   color: var(--destructive);
 }
 
 .slot[data-slot="veg"] .componentArt {
   background: color-mix(in srgb, var(--success) 14%, var(--muted));
+  outline-color: color-mix(in srgb, var(--success) 38%, transparent);
   color: var(--success);
 }
 
 .slot[data-slot="carb"] .componentArt {
   background: color-mix(in srgb, var(--warning) 16%, var(--muted));
+  outline-color: color-mix(in srgb, var(--warning) 42%, transparent);
   color: var(--warning);
 }
 
 .slot[data-slot="seasoning"] .componentArt {
   background: color-mix(in srgb, var(--chart-2) 14%, var(--muted));
+  outline-color: color-mix(in srgb, var(--chart-2) 34%, transparent);
   color: var(--chart-2);
 }
 
@@ -249,7 +259,7 @@
 }
 
 .componentName {
-  font-size: 12px;
+  font-size: 12.5px;
   line-height: 1.25;
   font-weight: 600;
   color: var(--foreground);
@@ -379,8 +389,8 @@
 
 @media (max-width: 1180px) {
   .stage {
-    --orbit-radius: 152px;
-    height: 360px;
+    --orbit-radius: 158px;
+    height: 380px;
   }
 }
 
