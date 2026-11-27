@@ -29,6 +29,12 @@ describe("portal proxy route boundary", () => {
     expect(proxy(request("/icon.svg?icon.2mvlep7kotriv.svg")).status).toBe(200);
   });
 
+  it("serves public storefront images to logged-out visitors without matching lookalikes", () => {
+    expect(proxy(request("/images/landing/hero-meal-kit.webp")).status).toBe(200);
+    expect(proxy(request("/images/mon-mac-dinh.svg")).status).toBe(200);
+    expect(proxy(request("/images-evil")).status).toBe(307);
+  });
+
   it("does not treat a matching string prefix as a public route", () => {
     const loginLookalike = proxy(request("/login-evil"));
     const apiLookalike = proxy(request("/api/authentic"));

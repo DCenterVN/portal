@@ -47,9 +47,18 @@ export function CatalogView({ products, loading, error, nextCursor, onLoadMore, 
   const visible = applyCatalogFilters(products, filters);
   const hasFilters = !!filters.query || filters.minPrice !== undefined || filters.maxPrice !== undefined || filters.kcal_max !== undefined || filters.protein_min !== undefined || !!filters.label?.length;
   return <PageShell className="catalog">
-    <header className="catalog-banner rounded-lg px-6 py-8 sm:px-8 sm:py-10">
-      <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Món ngon, vừa ý bạn</h1>
-      <p className="mt-3 text-base text-muted-foreground">Món dân dã, sạch, hợp túi tiền.</p>
+    <header className="catalog-banner grid items-center gap-6 rounded-lg px-6 py-6 sm:px-8 sm:py-8 md:grid-cols-[1fr_280px]">
+      <div>
+        <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Món ngon, vừa ý bạn</h1>
+        <p className="mt-3 text-base text-muted-foreground">Món dân dã, sạch, hợp túi tiền.</p>
+      </div>
+      <div className="aspect-[16/10] w-full overflow-hidden rounded-lg border border-border bg-card">
+        <img
+          src="/images/landing/hero-meal-kit.webp"
+          alt="Bộ nguyên liệu bữa ăn Việt đã sơ chế sẵn kèm món cá nục kho cà chua"
+          className="size-full object-cover"
+        />
+      </div>
     </header>
     {loading ? <LoadingState title={t("loading")} /> : error ? <ErrorState title={t("loadError")} description={error} onRetry={onRetry} /> :
       <div className="mt-8 min-w-0">
