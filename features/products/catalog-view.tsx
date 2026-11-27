@@ -4,7 +4,7 @@ import { useState } from "react";
 import { NextIntlClientProvider, useTranslations } from "next-intl";
 import viMessages from "@/messages/vi.json";
 import { Button } from "@/components/ui/button";
-import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PageShell } from "@/components/ui/page";
 import { SlidersHorizontal } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
@@ -16,6 +16,7 @@ import { applyCatalogFilters, CatalogFilters, CatalogQuickFilters, type CatalogF
 import { CatalogProductCard } from "./catalog-product-card";
 import { StoreBranchPicker } from "./store-branch-picker";
 import { TablePager } from "@/components/patterns/table-pager";
+import storeStyles from "@/features/store/store-surface.module.css";
 
 interface CatalogViewProps {
   branchId?: string;
@@ -47,9 +48,18 @@ export function CatalogView({ products, loading, error, nextCursor, onLoadMore, 
   const visible = applyCatalogFilters(products, filters);
   const hasFilters = !!filters.query || filters.minPrice !== undefined || filters.maxPrice !== undefined || filters.kcal_max !== undefined || filters.protein_min !== undefined || !!filters.label?.length;
   return <PageShell className="catalog">
-    <header className="catalog-banner rounded-lg px-6 py-8 sm:px-8 sm:py-10">
-      <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Món ngon, vừa ý bạn</h1>
-      <p className="mt-3 text-base text-muted-foreground">Món dân dã, sạch, hợp túi tiền.</p>
+    <header className={`catalog-banner grid items-center gap-6 rounded-xl px-6 py-6 sm:px-8 sm:py-8 md:grid-cols-[1fr_300px] ${storeStyles.catalogBanner} ${storeStyles.heroIn}`}>
+      <div>
+        <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Món ngon, vừa ý bạn</h1>
+        <p className="mt-3 text-base text-muted-foreground">Món dân dã, sạch, hợp túi tiền.</p>
+      </div>
+      <div className={`aspect-[16/10] w-full overflow-hidden rounded-lg border border-border bg-card ${storeStyles.heroMediaFrame}`}>
+        <img
+          src="/images/landing/hero-meal-kit.webp"
+          alt="Bộ nguyên liệu bữa ăn Việt đã sơ chế sẵn kèm món cá nục kho cà chua"
+          className="size-full object-cover"
+        />
+      </div>
     </header>
     {loading ? <LoadingState title={t("loading")} /> : error ? <ErrorState title={t("loadError")} description={error} onRetry={onRetry} /> :
       <div className="mt-8 min-w-0">
@@ -60,17 +70,24 @@ export function CatalogView({ products, loading, error, nextCursor, onLoadMore, 
           </div>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-sm text-muted-foreground">{t("loaded", { count: visible.length })}</p>
-            <label className="ml-auto flex min-w-0 flex-wrap items-center gap-3 text-sm">
-              <span className="text-muted-foreground">{t("sort")}</span>
-              <span className="w-48"><NativeSelect value={filters.sort ?? ""} onChange={e => {
-                const sort = e.target.value;
-                setFilters({ ...filters, sort: sort === "price-asc" || sort === "price-desc" ? sort : undefined });
-              }}>
-                <NativeSelectOption value="">{t("defaultSort")}</NativeSelectOption>
-                <NativeSelectOption value="price-asc">{t("priceAsc")}</NativeSelectOption>
-                <NativeSelectOption value="price-desc">{t("priceDesc")}</NativeSelectOption>
-              </NativeSelect></span>
-            </label>
+            <div className="ml-auto flex min-w-0 flex-wrap items-center gap-3 text-sm">
+              <span id="catalog-sort-label" className="text-muted-foreground">{t("sort")}</span>
+              <span className="w-48">
+                <Select
+                  value={filters.sort ?? "default"}
+                  onValueChange={sort => setFilters({ ...filters, sort: sort === "price-asc" || sort === "price-desc" ? sort : undefined })}
+                >
+                  <SelectTrigger aria-labelledby="catalog-sort-label" className="h-10 w-full border-0 bg-muted">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="default">{t("defaultSort")}</SelectItem>
+                    <SelectItem value="price-asc">{t("priceAsc")}</SelectItem>
+                    <SelectItem value="price-desc">{t("priceDesc")}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </span>
+            </div>
           </div>
           {visible.length === 0 ? <EmptyState title={hasFilters ? t("noMatch") : t("empty")} description={hasFilters ? t("tryFilters") : t("emptyDescription")} action={<Button variant="outline" size="md" onClick={() => setFilters({})}>Xoá lọc</Button>} /> :
             <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4">
