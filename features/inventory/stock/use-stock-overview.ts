@@ -27,6 +27,7 @@ export function useStockOverview() {
   const { can, scope } = useAccess();
   const canReadStock = can("inventory:stock:read");
   const canReadLots = can("inventory:lot:read");
+  const canUpdateLots = can("inventory:lot:update");
   const canReadSkus = can("sales:product:read");
   const canReadQc = can("inventory:qc:update");
   const branchId = scope?.branchId ?? "";
@@ -111,6 +112,7 @@ export function useStockOverview() {
   return {
     canReadStock,
     canReadLots,
+    canUpdateLots,
     canReadQc,
     branchId,
     loading: stocksSwr.isLoading || (canReadLots && lotsSwr.isLoading && !stocksSwr.data),

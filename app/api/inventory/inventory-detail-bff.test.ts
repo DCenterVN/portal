@@ -8,6 +8,7 @@ const get = (path: string) => new NextRequest(`http://localhost:3000${path}`, { 
 it.each([
   ["inventory-lots", "lot-1", () => import("./inventory-lots/[id]/route")],
   ["inbound-qc-inspections", "ins-1", () => import("./inbound-qc-inspections/[id]/route")],
+  ["goods-receipts", "gr-1", () => import("./goods-receipts/[id]/route")],
 ])("GET %s/{id} chuyển tiếp đúng đường dẫn", async (name, id, load) => {
   global.fetch = vi.fn().mockResolvedValue(Response.json({ data: { id } }));
   const { GET } = await load();

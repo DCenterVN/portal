@@ -1,5 +1,7 @@
-import { redirect } from "next/navigation";
+import { GoodsReceiptsListView } from "@/features/inventory/goods-receipts-list-view";
+
+export const metadata = { title: "Phiếu nhập kho" };
 
 export default function GoodsReceiptsPage() {
-  redirect("/inventory/goods-receipts/new");
+  return <GoodsReceiptsListView />;
 }

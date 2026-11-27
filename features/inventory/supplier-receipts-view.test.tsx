@@ -87,3 +87,9 @@ it("phiếu đã hoàn tất không có liên kết Mở phiếu nhập", () => 
   expect(html).not.toContain("Mở phiếu nhập");
   expect(html).not.toContain("goods-receipts"); expect(html).not.toContain("Nhận hàng");
 });
+it("phiếu RECEIVING hiển thị Đang nhận và giữ nút Nhận hàng", () => {
+  const html = renderToStaticMarkup(<NextIntlClientProvider locale="vi" messages={messages}><AccessProvider value={{ plane: "company", root: "", actions: new Set(["inventory:supplier:read", "inventory:goods_receipt:update"]) }}><SupplierReceiptsView {...props} page={{ items: [{ ...receipt, status: "RECEIVING" }], total: 1, next_cursor: "" }} /></AccessProvider></NextIntlClientProvider>);
+  expect(html).toContain("Đang nhận");
+  expect(html).toContain("Nhận hàng");
+  expect(html).toContain(`/inventory/goods-receipts/${supplierID}/receive`);
+});

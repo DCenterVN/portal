@@ -189,9 +189,12 @@ export function StockOverviewView(props: Props) {
 
       <StockLotSheet
         row={props.selectedRow}
+        branchId={props.branchId}
         canReadLots={props.canReadLots}
+        canUpdateLots={props.canUpdateLots}
         canReadQc={props.canReadQc}
         lotsError={props.lotsError}
+        onMutated={props.reload}
         onClose={() => props.selectSku(null)}
       />
     </PageShell>

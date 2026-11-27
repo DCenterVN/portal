@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { apiFetch, FetchError } from "@/lib/fetcher";
-import { inventoryPages, inventoryRequest } from "./suppliers";
+import { inventoryMutation, inventoryPages, inventoryRequest } from "./suppliers";
 
 const uuid = z.string().uuid();
 
@@ -91,4 +91,58 @@ export async function getSkuMetadata(refs: string[]): Promise<Map<string, SkuMet
   );
   const pages = await Promise.all(chunks.map(fetchSkuNamesChunk));
   return new Map(pages.flat().map(item => [item.id, item] as const));
+}
+
+const stockMovementItemSchema = z.object({
+  id: uuid,
+  branch_ref: uuid,
+  sku_ref: uuid,
+  lot_ref: uuid,
+  movement_type: z.string(),
+  quantity: z.coerce.number(),
+  uom: z.string(),
+  reference_type: z.string(),
+  reference_id: uuid,
+  actor_ref: uuid,
+  notes: z.string().nullish().transform(value => value ?? ""),
+  created_at: z.string(),
+  supplier_lot_code: z.string().nullish().transform(value => value ?? ""),
+});
+
+const stockMovementPageSchema = z.object({
+  items: z.array(stockMovementItemSchema).nullish().transform(items => items ?? []),
+  total: z.number().int().optional(),
+  next_cursor: z.string().nullish().transform(value => value ?? ""),
+});
+
+export type StockMovementItem = z.infer<typeof stockMovementItemSchema>;
+export type StockMovementPage = z.infer<typeof stockMovementPageSchema>;
+
+export async function listStockMovements(options: {
+  branchRef?: string;
+  skuRef?: string;
+  lotRef?: string;
+  movementType?: string;
+  cursor?: string;
+  limit?: number;
+} = {}): Promise<StockMovementPage> {
+  const query = new URLSearchParams({ limit: String(options.limit ?? 50) });
+  if (options.branchRef) query.set("branch_ref", options.branchRef);
+  if (options.skuRef) query.set("sku_ref", options.skuRef);
+  if (options.lotRef) query.set("lot_ref", options.lotRef);
+  if (options.movementType) query.set("movement_type", options.movementType);
+  if (options.cursor) query.set("cursor", options.cursor);
+  return inventoryRequest(`stock-movements?${query}`, stockMovementPageSchema);
+}
+
+export function disposeInventoryLot(lotId: string, body: { reason: string; notes?: string }, key?: string) {
+  return inventoryRequest(`inventory-lots/${encodeURIComponent(lotId)}/dispose`, inventoryLotItemSchema, inventoryMutation("POST", body, key));
+}
+
+export function quarantineInventoryLot(lotId: string, body: { reason: string }, key?: string) {
+  return inventoryRequest(`inventory-lots/${encodeURIComponent(lotId)}/quarantine`, inventoryLotItemSchema, inventoryMutation("POST", body, key));
+}
+
+export function adjustInventoryLot(lotId: string, body: { actual_quantity: number; reason: string }, key?: string) {
+  return inventoryRequest(`inventory-lots/${encodeURIComponent(lotId)}/adjustments`, inventoryLotItemSchema, inventoryMutation("POST", body, key));
 }
