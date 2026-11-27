@@ -4,11 +4,15 @@ import { afterEach, expect, it, vi } from "vitest";
 import { useGoodsReceipt } from "./use-goods-receipt";
 import * as suppliersAPI from "@/lib/api/suppliers";
 import * as agreementsAPI from "@/lib/api/supplier-agreements";
+import * as categoriesAPI from "@/lib/api/material-categories";
 import * as receiptsAPI from "@/lib/api/goods-receipts";
 import { agreement, supplier, material, supplierID, documentID } from "@/mocks/supplier-contract";
 import { FetchError } from "@/lib/fetcher";
 import { AccessProvider } from "@/lib/access-boundary";
 import { GoodsReceiptForm } from "./goods-receipt-form";
+import { toast } from "@/components/ui/toast";
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
+vi.mock("@/components/ui/toast", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 it("chưa tải bảng giá thì chặn tạo; có ô giá thực tế và không lộ UUID", () => {
   const html = renderToStaticMarkup(<AccessProvider value={{ plane: "company", root: "", actions: new Set(["inventory:goods_receipt:create", "inventory:supplier:read"]) }}><GoodsReceiptForm /></AccessProvider>);
   expect(html).toContain("Giá tham chiếu"); expect(html).toContain("disabled");
@@ -63,6 +67,7 @@ function receiptHook() {
 async function readyReceipt(items: agreementsAPI.Agreement[] = []) {
   harness.enabled = true; harness.slots = []; harness.effects = [];
   vi.stubGlobal("sessionStorage", { getItem: () => null, setItem: vi.fn(), removeItem: vi.fn() });
+  vi.spyOn(categoriesAPI, "getMaterialCategories").mockResolvedValue([]);
   vi.spyOn(suppliersAPI, "getActiveSuppliers").mockResolvedValue([supplier]);
   vi.spyOn(agreementsAPI, "getContractMaterials").mockResolvedValue([material]);
   vi.spyOn(agreementsAPI, "getAllAgreements").mockResolvedValue(items);
@@ -73,15 +78,26 @@ async function readyReceipt(items: agreementsAPI.Agreement[] = []) {
   return receiptHook();
 }
 const submitEvent = { preventDefault: () => {} } as React.FormEvent<HTMLFormElement>;
-it("hook gửi giá tay 0 không refs và chặn double submit", async () => {
-  let view = await readyReceipt();
+it("nhà chưa có giá còn hiệu lực thì danh sách nguyên liệu rỗng, không tạo được phiếu", async () => {
+  const view = await readyReceipt();
+  expect(view.materials).toHaveLength(0);
   expect(view.valid).toBe(false);
+});
+it("danh sách nhà gửi ngày dự kiến nhập và tải lại khi đổi ngày", async () => {
+  await readyReceipt();
+  const spy = suppliersAPI.getActiveSuppliers as unknown as ReturnType<typeof vi.fn>;
+  const dates = spy.mock.calls.map(call => call[0]).filter(Boolean);
+  expect(dates[0]).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  expect(dates).toContain("2026-11-01");
+});
+it("hook gửi giá tay 0 kèm refs bảng giá và chặn double submit", async () => {
+  let view = await readyReceipt([{ ...agreement, status: "ACTIVE", effective_status: "ACTIVE", document_ref: null }]);
   view.onPrice(view.rows[0].key, 0); view = receiptHook();
   expect(view.valid).toBe(true);
   const create = vi.spyOn(receiptsAPI, "createGoodsReceipt").mockResolvedValue({ id: documentID, status: "DRAFT" });
   await Promise.all([view.onSubmit(submitEvent), view.onSubmit(submitEvent)]);
   expect(create).toHaveBeenCalledTimes(1);
-  expect(create.mock.calls[0][0].expected_lines[0]).toEqual({ sku_ref: material.id, uom: "KG", expected_quantity: 1, unit_cost_vnd: 0 });
+  expect(create.mock.calls[0][0].expected_lines[0]).toMatchObject({ sku_ref: material.id, uom: "KG", expected_quantity: 1, unit_cost_vnd: 0 });
 });
 it("hook giữ giá tay khi 409, reload refs và gửi lại đúng key/body", async () => {
   let view = await readyReceipt([{ ...agreement, status: "ACTIVE", effective_status: "ACTIVE", document_ref: null }]);
@@ -117,4 +133,130 @@ it("hook mơ hồ giá chặn lưu kể cả đã nhập giá tay", async () => 
   let view = await readyReceipt([active, active]);
   view.onPrice(view.rows[0].key, 100); view = receiptHook();
   expect(view.error).toContain("Có nhiều bảng giá"); expect(view.valid).toBe(false);
+});
+
+it("?supplier= trên địa chỉ chọn sẵn nhà cung cấp", async () => {
+  harness.enabled = true; harness.slots = []; harness.effects = [];
+  vi.stubGlobal("sessionStorage", { getItem: () => null, setItem: vi.fn(), removeItem: vi.fn() });
+  vi.stubGlobal("window", { location: { search: `?supplier=${supplierID}` } });
+  vi.spyOn(categoriesAPI, "getMaterialCategories").mockResolvedValue([]);
+  vi.spyOn(suppliersAPI, "getActiveSuppliers").mockResolvedValue([supplier]);
+  vi.spyOn(agreementsAPI, "getContractMaterials").mockResolvedValue([material]);
+  vi.spyOn(agreementsAPI, "getAllAgreements").mockResolvedValue([]);
+  receiptHook(); await Promise.resolve(); await Promise.resolve(); await Promise.resolve();
+  receiptHook(); receiptHook();
+  expect(receiptHook().supplier).toBe(supplierID);
+});
+
+it("chú giải cạnh nút nêu đúng điều còn thiếu, không lặp câu chung", async () => {
+  const { GoodsReceiptView } = await import("./goods-receipt-form");
+  const html = renderToStaticMarkup(<GoodsReceiptView allowed setupKind="ready" suppliers={[supplier]} materials={[]} supplier={supplierID} date="2026-10-27"
+    rows={[{key:"a",sku:"x",quantity:1,amount:null,unitPrice:5,uom:"KG",referencePrice:undefined},{key:"b",sku:"y",quantity:1,amount:null,uom:"KG",unitPrice:undefined,referencePrice:undefined}]} busy={false} success="" error="" pricesKind="ready" reconfirm={false} valid={false} canUpdate={false}
+    onPrice={vi.fn()} onSupplier={vi.fn()} onDate={vi.fn()} onSku={vi.fn()} onQuantity={vi.fn()} onAdd={vi.fn()} onRemove={vi.fn()} onRetry={vi.fn()} onPriceRetry={vi.fn()} onReconfirm={vi.fn()} onSubmit={vi.fn()} />);
+  expect(html).toContain("Dòng 2 chưa có đơn giá");
+  expect(html).not.toContain("Chọn nhà cung cấp, nguyên liệu, số lượng");
+});
+
+it("số nguyên liệu trên thẻ bằng số lựa chọn trong ô và bảng giá của ngăn hồ sơ", async () => {
+  const view = await readyReceipt([{ ...agreement, status: "ACTIVE", effective_status: "ACTIVE", document_ref: null }]);
+  expect(view.materials.length).toBeGreaterThan(0);
+  expect(view.pricedCount).toBe(view.materials.length);
+  expect(view.priceTable.map(item => item.material.id)).toEqual(view.materials.map(item => item.id));
+  const draft = await readyReceipt([{ ...agreement, status: "DRAFT", effective_status: "DRAFT", document_ref: null }]);
+  expect(draft.materials).toHaveLength(0);
+  expect(draft.pricedCount).toBe(0);
+});
+it("Thêm vào phiếu điền dòng trống rồi thêm dòng mới và không thêm trùng", async () => {
+  let view = await readyReceipt([{ ...agreement, status: "ACTIVE", effective_status: "ACTIVE", document_ref: null }]);
+  view.onSku(view.rows[0].key, ""); view = receiptHook();
+  view.onAddMaterial(material.id); view = receiptHook();
+  expect(view.rows).toHaveLength(1); expect(view.rows[0].sku).toBe(material.id); expect(view.rows[0].unitPrice).toBe(25000);
+  view.onAddMaterial(material.id); view = receiptHook();
+  expect(view.rows).toHaveLength(1);
+});
+it("ngăn hồ sơ liệt kê giá, nút Thêm vào phiếu và nút Đã có ở dòng n", async () => {
+  const { ReceiptSupplierProfile } = await import("./receipt-supplier-sheet");
+  const { Sheet } = await import("@/components/ui/sheet");
+  const props = { supplier, priceTable: [{ material, unitPrice: 25000, validTo: "2026-12-31" }], pricesReady: true, onAddMaterial: vi.fn() };
+  for (const [used, text] of [[-1, "Thêm vào phiếu"], [1, "Đã có ở dòng 2"]] as const) {
+    const html = renderToStaticMarkup(<Sheet open><ReceiptSupplierProfile {...props} usedAt={() => used} /></Sheet>);
+    expect(html).toContain(text); expect(html).toContain("25.000 đ"); expect(html).toContain("31/12/2026"); expect(html).toContain("Mở trang hồ sơ đầy đủ");
+  }
+});
+
+it("tạo thành công gọi toast.success một lần kèm nút Nhận hàng; lỗi gọi toast.error", async () => {
+  vi.mocked(toast.success).mockClear(); vi.mocked(toast.error).mockClear();
+  let view = await readyReceipt([{ ...agreement, status: "ACTIVE", effective_status: "ACTIVE", document_ref: null }]);
+  view.onPrice(view.rows[0].key, 0); view = receiptHook();
+  const create = vi.spyOn(receiptsAPI, "createGoodsReceipt").mockResolvedValueOnce({ id: documentID, status: "DRAFT", total_amount_vnd: 5000 }).mockRejectedValueOnce(new Error("Kho đang đóng"));
+  await Promise.all([view.onSubmit(submitEvent), view.onSubmit(submitEvent)]);
+  expect(toast.success).toHaveBeenCalledTimes(1);
+  expect(toast.success).toHaveBeenCalledWith("Đã tạo phiếu nhập", expect.objectContaining({ description: "Nháp · tổng 5.000 đ", action: expect.objectContaining({ label: "Nhận hàng" }) }));
+  view = receiptHook(); await view.onSubmit(submitEvent);
+  expect(create).toHaveBeenCalledTimes(2);
+  expect(toast.error).toHaveBeenCalledWith("Kho đang đóng");
+});
+
+it("hiển thị danh sách phiếu nhập đang mở kèm nút nhận hàng tiếp", async () => {
+  const { GoodsReceiptView } = await import("./goods-receipt-form");
+  const html = renderToStaticMarkup(
+    <GoodsReceiptView
+      allowed
+      setupKind="ready"
+      suppliers={[supplier]}
+      materials={[]}
+      supplier={supplierID}
+      date="2026-10-27"
+      rows={[{ key: "a", sku: "", quantity: 1, amount: null, uom: undefined, unitPrice: undefined, referencePrice: undefined }]}
+      busy={false}
+      success=""
+      error=""
+      pricesKind="ready"
+      reconfirm={false}
+      valid={false}
+      canUpdate={false}
+      openReceipts={[
+        {
+          id: documentID,
+          branch_ref: documentID,
+          supplier_ref: supplierID,
+          status: "IN_PROGRESS",
+          created_at: "2026-10-26T08:00:00Z",
+          expected_at: "2026-10-27T12:00:00+07:00",
+          completed_at: null,
+          total_amount_vnd: 125000,
+          lines: [
+            {
+              receipt_line_ref: documentID,
+              sku_ref: material.id,
+              uom: "KG",
+              expected_quantity: "5",
+              actual_quantity: "2",
+              unit_cost_vnd: 25000,
+              expected_amount_vnd: 125000,
+              actual_amount_vnd: 50000,
+            },
+          ],
+        },
+      ]}
+      onPrice={vi.fn()}
+      onSupplier={vi.fn()}
+      onDate={vi.fn()}
+      onSku={vi.fn()}
+      onQuantity={vi.fn()}
+      onAdd={vi.fn()}
+      onRemove={vi.fn()}
+      onRetry={vi.fn()}
+      onPriceRetry={vi.fn()}
+      onReconfirm={vi.fn()}
+      onSubmit={vi.fn()}
+    />
+  );
+  expect(html).toContain('aria-label="Phiếu nhập đang mở"');
+  expect(html).toContain("27/10/2026");
+  expect(html).toContain("Đang nhận");
+  expect(html).toContain("1 dòng hàng");
+  expect(html).toContain("125.000");
+  expect(html).toContain("Nhận hàng tiếp");
+  expect(html).toContain(`/inventory/goods-receipts/${documentID}/receive?supplier=${supplierID}`);
 });

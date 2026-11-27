@@ -2,14 +2,7 @@ import { ProductOrigin } from "./product-origin";
 import type { Product } from "@/lib/api/sales";
 import { nutrientFields, nutritionNumber } from "@/lib/nutrition";
 import { Badge } from "@/components/ui/badge";
-import type { RawAllergens } from "@/lib/api/sales-materials";
-
-const allergenLabels: Record<RawAllergens["contains"][number], string> = {
-  GLUTEN: "Gluten (lúa mì)", CRUSTACEANS: "Giáp xác (tôm, cua)", EGGS: "Trứng",
-  FISH: "Cá", PEANUTS: "Đậu phộng", SOYBEANS: "Đậu nành", MILK: "Sữa",
-  TREE_NUTS: "Hạt cây", CELERY: "Cần tây", MUSTARD: "Mù tạt", SESAME: "Vừng",
-  SULPHITES: "Sulphite", LUPIN: "Đậu lupin", MOLLUSCS: "Nhuyễn thể (mực, nghêu)",
-};
+import { allergenLabels } from "@/lib/allergen-labels";
 
 export function ProductDetailInfo({ product }: { product: Product }) {
   const nutrition = product.nutrition;

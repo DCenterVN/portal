@@ -129,3 +129,11 @@ describe("EntityPicker states fail closed", () => {
     expect(html({ status: "error" })).not.toContain("Thử lại");
   });
 });
+
+describe("EntityList renderOption", () => {
+  it("vẽ lựa chọn tuỳ chỉnh thay cho nhãn và mã mặc định", () => {
+    const out = renderToStaticMarkup(<Command shouldFilter={false}><EntityList options={COMPANIES} picked={null} onPick={() => {}} emptyMessage="" getId={base.getId} getLabel={base.getLabel} renderOption={(c) => <b>tuỳ chỉnh {c.code}</b>} /></Command>);
+    expect(out).toContain("tuỳ chỉnh DLX");
+    expect(out).not.toContain("Công ty Đà Lạt Xanh");
+  });
+});

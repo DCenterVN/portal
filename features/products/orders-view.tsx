@@ -18,7 +18,7 @@ import { TablePager } from "@/components/patterns/table-pager";
 import { useOrders } from "./use-orders";
 
 export const orderStatusLabels: Record<string, string> = {
-  CANCELLED: "Đã hủy", AWAITING_PAYMENT: "Chờ thanh toán",
+  CANCELLED: "Đã huỷ", AWAITING_PAYMENT: "Chờ thanh toán",
   CONFIRMED: "Đã xác nhận", PACKED: "Đã đóng gói", DELIVERING: "Đang giao",
   DELIVERED: "Đã giao", DELIVERY_FAILED: "Giao không thành công", COMPLETED: "Hoàn tất",
 };
@@ -42,6 +42,6 @@ export function OrdersView() {
     {loading ? <LoadingState title="Đang tải đơn hàng…" className="min-h-48 border-0" /> : error ? <ErrorState title="Không thể tải đơn hàng" description={error} onRetry={() => void load()} /> : orders.length === 0 ? <EmptyState title="Chưa có đơn hàng" description="Đơn hàng bạn đặt sẽ hiển thị ở đây." action={<Button asChild variant="outline"><Link href="/products">Chọn sản phẩm</Link></Button>} /> : <div className="grid gap-4">
       {orders.map((order) => <Link key={order.id} className="rounded-[var(--radius-md)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus)]" href={`/orders/${order.id}`}><Card className="border-[var(--color-line)] bg-[var(--color-surface)] transition-colors hover:border-[var(--color-input-border)]"><CardHeader className="flex-row items-center justify-between"><div><CardTitle className="text-sm">{order.order_code && <span>{order.order_code} · </span>}{formatDateTime(order.created_at)}</CardTitle></div><StatusBadge tone={statusTone(order.status)}>{orderStatusLabels[order.status] ?? "Đang cập nhật"}</StatusBadge></CardHeader><CardContent className="flex justify-between text-sm"><strong>{formatVND(order.total_vnd)}</strong></CardContent></Card></Link>)}
     </div>}
-    <TablePager label="Phân trang đơn hàng" busy={loading} hasPrevious={list.hasPrevious} onPrevious={list.previous} hasNext={list.hasNext} onNext={list.next} />
+    <TablePager label="Phân trang đơn hàng" busy={loading} status={`Trang ${list.page}`} hasPrevious={list.hasPrevious} onPrevious={list.previous} hasNext={list.hasNext} onNext={list.next} />
   </PageShell>;
 }

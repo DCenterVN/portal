@@ -6,6 +6,7 @@ import { EntityPicker } from "@/components/patterns/entity-picker";
 import { InlineAlert } from "@/components/patterns/inline-alert";
 import { MaterialPicker } from "./material-picker";
 import { unitsFor } from "./package-rules";
+import { uomLabel } from "@/lib/stock-transfer";
 import { slotName } from "./pack-shared";
 import { ratioTotal, servingCount, slotRatioValues, variantLabel } from "./food-plan-ratios";
 import type { FoodPlansState } from "./use-food-plans";
@@ -27,9 +28,19 @@ function PackRatios({ s }: { s: FoodPlansState }) {
 function RawComponents({ s }: { s: FoodPlansState }) {
   return <>{s.components.map((c, i) => <div key={c.sku_ref} className="grid gap-3 md:grid-cols-4"><p>{c.name}</p>
     <label>Định lượng {i + 1}<Input value={c.quantity} inputMode="decimal" pattern="[0-9]+(\.[0-9]{1,3})?" required onChange={e => s.changeComponent(i, { quantity: e.target.value })} /></label>
-    <label>Đơn vị {i + 1}<NativeSelect value={c.uom} onChange={e => s.changeComponent(i, { uom: e.target.value })}>{unitsFor(c.uom).map(unit => <NativeSelectOption key={unit}>{unit}</NativeSelectOption>)}</NativeSelect></label>
+    <label>Đơn vị {i + 1}<NativeSelect value={c.uom} onChange={e => s.changeComponent(i, { uom: e.target.value })}>{unitsFor(c.uom).map(unit => <NativeSelectOption key={unit} value={unit}>{uomLabel(unit)}</NativeSelectOption>)}</NativeSelect></label>
     <Button type="button" variant="outline" onClick={() => s.removeComponent(i)}>Bỏ nguyên liệu {i + 1}</Button>
   </div>)}</>;
+}
+
+const setLabel = (set: { name: string; variant_label: string }) => set.name.includes(set.variant_label) ? set.name : `${set.name} · ${set.variant_label}`;
+
+function saveBlocker(s: FoodPlansState) {
+  if (!s.productRef) return "Chọn sản phẩm thuộc chỉ tiêu.";
+  if (!s.code.trim() || !s.servingSize.trim()) return "Chọn biến thể set để có mã set và khẩu phần.";
+  if (!s.total) return "Nhập số set hợp lệ để tính tổng suất.";
+  if (s.mode === "pack") return s.chosenSet ? "Mỗi ô trong set phải chia đủ 100%." : "Chọn set món trong họ món.";
+  return "Thêm ít nhất một nguyên liệu với số lượng lớn hơn 0, hoặc đổi nguồn định mức sang “Theo set và gói”.";
 }
 
 export function FoodPlanForm({ s }: { s: FoodPlansState }) {
@@ -40,24 +51,23 @@ export function FoodPlanForm({ s }: { s: FoodPlansState }) {
     <form onSubmit={s.save} className="space-y-4" aria-label={editing ? "Sửa set" : "Tạo set"}>
       {editing ? <p>Sản phẩm: {s.products.find(p => p.id === editing.product_ref)?.name ?? "Sản phẩm trong chỉ tiêu"}. Sản phẩm, mã set và khẩu phần giữ nguyên khi sửa định mức.</p> : <EntityPicker name="product_ref" label="Sản phẩm thuộc chỉ tiêu" value={productRef || null} onChange={s.changeProduct} items={s.availableProducts} status={s.ready ? "ready" : "loading"} getId={p => p.id} getLabel={p => p.name} />}
       <div className="grid gap-3 md:grid-cols-2">
-        {editing ? <label>Mã set<output aria-label="Mã set" className="block">{variantLabel(s.code)}</output></label> : <EntityPicker name="plan-variant" label="Mã set" required items={sets.filter(set => set.product_ref === productRef && inRange(set))} status={s.busy ? "loading" : "ready"} value={chosenSet?.id ?? null} getId={set => set.id} getLabel={set => set.code} getMeta={set => `${set.name} · ${set.variant_label}`} onChange={id => void s.chooseSet(id)} />}
-        {!editing && s.setCursor && <Button type="button" variant="outline" disabled={s.busy} onClick={() => void s.loadSets(true)}>Thêm biến thể từ trang sau</Button>}
+        {editing ? <label>Mã set<output aria-label="Mã set" className="block">{variantLabel(s.code)}</output></label> : <EntityPicker name="plan-variant" label="Biến thể set" required items={sets.filter(set => set.product_ref === productRef && inRange(set))} status={s.busy ? "loading" : "ready"} value={chosenSet?.id ?? null} getId={set => set.id} getLabel={set => set.name} onChange={id => void s.chooseSet(id)} />}
         {!editing && chosenSet && !servingCount(chosenSet.variant_label) ? <label>Khẩu phần<NativeSelect required value={s.servingSize} onChange={e => s.changeServingSize(e.target.value)}><NativeSelectOption value="">Chọn khẩu phần</NativeSelectOption>{[1, 2, 3, 4, 6].map(count => <NativeSelectOption key={count} value={`${count} người`}>{count} người</NativeSelectOption>)}</NativeSelect></label> : <label>Khẩu phần<output aria-label="Khẩu phần" className="block">{s.servingSize || "Chọn mã set"}</output></label>}
-        <label>Số kit<Input inputMode="numeric" value={s.kits} pattern="[1-9][0-9]*" required onChange={e => s.setKits(e.target.value)} /></label>
-        <label>Số suất mỗi kit<output aria-label="Số suất mỗi kit" className="block">{s.servings || "Chọn mã set"}</output></label>
+        <label>Số set<Input inputMode="numeric" value={s.kits} pattern="[1-9][0-9]*" required onChange={e => s.setKits(e.target.value)} /></label>
+        <label>Số suất mỗi set<output aria-label="Số suất mỗi set" className="block">{s.servings || "Chọn mã set"}</output></label>
       </div>
       {s.slotCountError && <InlineAlert>{s.slotCountError}</InlineAlert>}
-      <p>Tổng suất: {s.total || "Chưa hợp lệ"} EA. Tối đa 1.000.000 suất.</p>
+      <p>Tổng suất: {s.total ? `${s.total} suất` : "Chưa hợp lệ"}. Tối đa 1.000.000 suất.</p>
       <label>Nguồn định mức<NativeSelect value={mode} onChange={e => s.changeMode(e.target.value)}><NativeSelectOption value="raw">Nguyên liệu trực tiếp</NativeSelectOption><NativeSelectOption value="pack">Theo set và gói</NativeSelectOption></NativeSelect></label>
       {mode === "pack" && <div className="space-y-4">
-        <EntityPicker name="plan-food-set" label="Set món trong họ món" items={sets.filter(set => set.product_ref === productRef && inRange(set) && (!editing || set.code === s.code))} status={s.busy ? "loading" : "ready"} value={chosenSet?.id ?? null} getId={set => set.id} getLabel={set => `${set.name} · ${set.variant_label}`} onChange={id => void s.chooseSet(id)} />
-        {s.setCursor && <Button type="button" variant="outline" disabled={s.busy} onClick={() => void s.loadSets(true)}>Thêm set từ trang sau</Button>}
+        <EntityPicker name="plan-food-set" label="Set món trong họ món" items={sets.filter(set => set.product_ref === productRef && inRange(set) && (!editing || set.code === s.code))} status={s.busy ? "loading" : "ready"} value={chosenSet?.id ?? null} getId={set => set.id} getLabel={setLabel} onChange={id => void s.chooseSet(id)} />
         <PackRatios s={s} />
       </div>}
       {mode === "raw" && <RawComponents s={s} />}
       <p>Nhập lượng dương, tối đa 3 số lẻ theo đơn vị đã chọn.</p>
       {!s.valid && <p>Chọn sản phẩm, mã set và định mức hợp lệ. Theo set: tổng tỉ lệ mỗi ô phải bằng 100%.</p>}
       <div className="flex gap-3"><Button type="submit" disabled={s.busy || !s.valid}>{s.busy ? "Đang lưu…" : "Lưu set"}</Button><Button type="button" variant="outline" onClick={() => s.setShowForm(false)}>Hủy</Button></div>
+      {!s.busy && !s.valid && <p className="text-sm text-muted-foreground">{saveBlocker(s)}</p>}
     </form>
     {mode === "raw" && <MaterialPicker onSelect={s.addMaterial} />}
   </CardContent></Card>;

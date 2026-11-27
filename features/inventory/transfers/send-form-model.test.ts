@@ -4,7 +4,7 @@ import { FEFO_LOT } from "@/lib/stock-transfer";
 import { lotOptions, sendBody, sendSchema } from "./send-form-model";
 
 const id = (n: number) => `0192f3a4-5b6c-7d8e-9f00-${String(n).padStart(12, "0")}`;
-const stock: StockRow[] = [{ sku_ref: id(1), branch_ref: id(9), available_quantity: 4.5, uom: "KG" }];
+const stock: StockRow[] = [{ sku_ref: id(1), branch_ref: id(9), available_quantity: 4.5, on_hand_quantity: 6, usable_quantity: 4.5, uom: "KG" }];
 const lot = (n: number, expires: string, remaining = 3, status = "APPROVED"): LotRow => ({ id: id(n), sku_ref: id(1), branch_ref: id(9), supplier_lot_code: `LO-${n}`, remaining_quantity: remaining, uom: "KG", expires_at: expires, status });
 const lots = [lot(21, "2099-06-01T00:00:00Z"), lot(22, "2099-01-01T00:00:00Z"), lot(23, "2000-01-01T00:00:00Z"), lot(24, "2099-03-01T00:00:00Z", 0), lot(25, "2099-03-01T00:00:00Z", 3, "RECEIVED")];
 
@@ -21,7 +21,11 @@ describe("kiểm dòng gửi", () => {
   const message = (result: ReturnType<typeof check>) => (result.success ? "" : result.error.issues[0].message);
 
   it("đủ tồn thì qua", () => expect(check("4,5").success).toBe(true));
-  it("vượt tồn khả dụng thì báo còn bao nhiêu", () => expect(message(check("4,501"))).toMatch(/Chỉ còn khả dụng 4,5 kg/));
+  it("send_over_usable: vượt số chuyển được thì báo chuyển được bao nhiêu", () => expect(message(check("4,501"))).toMatch(/Chỉ chuyển được 4,5 kg/));
+  it("send_no_usable_field: inventory bản cũ không có usable_quantity thì form không tự chặn", () => {
+    const legacy = [{ sku_ref: id(1), branch_ref: id(9), available_quantity: 4.5, uom: "KG" }];
+    expect(sendSchema(legacy, lots).safeParse({ to: id(5), lines: [{ sku: id(1), quantity: "99", lot: FEFO_LOT }] }).success).toBe(true);
+  });
   it("vượt số còn của lô đã chọn thì nêu mã lô", () => expect(message(check("3,5", id(21)))).toMatch(/Lô LO-21 chỉ còn 3 kg/));
   it("số lượng sai hoặc 0 thì báo nhập lại", () => {
     expect(message(check("0"))).toMatch(/lớn hơn 0/);

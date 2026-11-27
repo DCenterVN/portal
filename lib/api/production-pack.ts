@@ -2,13 +2,15 @@ import { z } from "zod";
 import { decodePlatform } from "@/lib/api/platform-contract";
 import { apiFetch } from "@/lib/fetcher";
 import { errorMessage } from "@/lib/api/production-http";
+import { FOOD_SLOTS, MAX_PREP_NOTE_LENGTH } from "@/lib/dishes/types";
 
 // PACK schemas follow production/api/openapi.public.yaml.
 const RecipeComponentSchema = z.object({
   sku_ref: z.string().uuid(),
   quantity: z.string().regex(new RegExp("^(?!0(?:\\.0{1,3})?$)(0|[1-9][0-9]*)(\\.[0-9]{1,3})?$")),
   uom: z.enum(["KG", "L", "EA", "G", "ML"]),
-  yield_pct: z.string().regex(new RegExp("^(100(\\.0{1,3})?|[1-9][0-9]?(\\.[0-9]{1,3})?|0\\.(?!0{1,3}$)[0-9]{1,3})$"))
+  yield_pct: z.string().regex(new RegExp("^(100(\\.0{1,3})?|[1-9][0-9]?(\\.[0-9]{1,3})?|0\\.(?!0{1,3}$)[0-9]{1,3})$")),
+  prep_note: z.string().max(MAX_PREP_NOTE_LENGTH).optional(),
 }).strict();
 
 const PrepStepSchema = z.object({
@@ -35,7 +37,7 @@ const RecipeHistorySchema = z.object({
   history: z.array(PackageRecipeSchema)
 }).strict();
 
-const FoodSlotSchema = z.enum(["TINH_BOT", "DAM", "RAU", "COT", "NUOC_CHAM", "GIA_VI_THEM"]);
+const FoodSlotSchema = z.enum(FOOD_SLOTS);
 
 const SlotSelectionSchema = z.object({
   slot: FoodSlotSchema,
@@ -90,7 +92,7 @@ const RetirePackageRecipeRequestSchema = z.object({
 
 const EvaluateFoodSetRequestSchema = z.object({
   expected_updated_at: z.string().datetime({ offset: true }),
-  selections: z.array(SlotSelectionSchema).max(6)
+  selections: z.array(SlotSelectionSchema).max(FOOD_SLOTS.length)
 }).strict();
 
 export type RecipeComponent = z.infer<typeof RecipeComponentSchema>;

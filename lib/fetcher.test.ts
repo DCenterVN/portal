@@ -2,9 +2,9 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { fetcher, mutationFetcher, apiFetch, FetchError } from "./fetcher";
 import { isEmployeeRoute } from "./fetcher";
 
-it.each(["/inventory/suppliers", "/inventory/suppliers/detail", "/inventory/goods-receipts/new"])("supplier employee route %s", path => {
+it.each(["/inventory/suppliers", "/inventory/suppliers/detail", "/inventory/goods-receipts", "/inventory/goods-receipts/new"])("supplier employee route %s", path => {
   expect(isEmployeeRoute(path)).toBe(true);
-  expect(isEmployeeRoute(`${path}-lookalike`)).toBe(path.includes("/suppliers/"));
+  expect(isEmployeeRoute(`${path}-lookalike`)).toBe(path.includes("/suppliers/") || path.includes("/goods-receipts/"));
 });
 
 describe("fetcher and apiFetch", () => {
@@ -37,20 +37,17 @@ describe("fetcher and apiFetch", () => {
   it("Ca 2: 401 -> refresh OK -> retry thanh cong (3 lan goi fetch theo thu tu)", async () => {
     const retryData = { id: "456", name: "Chi nhánh TP.HCM" };
     const mockFetch = vi.fn()
-      // 1st call: original request -> 401
       .mockResolvedValueOnce({
         ok: false,
         status: 401,
         statusText: "Unauthorized",
         json: async () => ({ message: "Token expired" }),
       } as unknown as Response)
-      // 2nd call: /api/auth/refresh -> 200 OK
       .mockResolvedValueOnce({
         ok: true,
         status: 200,
         json: async () => ({ access_token: "new-token" }),
       } as unknown as Response)
-      // 3rd call: retried original request -> 200 OK
       .mockResolvedValueOnce({
         ok: true,
         status: 200,
@@ -69,14 +66,12 @@ describe("fetcher and apiFetch", () => {
 
   it("Ca 3: 401 -> refresh cung hong -> khong retry vo han", async () => {
     const mockFetch = vi.fn()
-      // 1st call: original request -> 401
       .mockResolvedValueOnce({
         ok: false,
         status: 401,
         statusText: "Unauthorized",
         json: async () => ({ message: "Token expired" }),
       } as unknown as Response)
-      // 2nd call: /api/auth/refresh -> 401 Failed
       .mockResolvedValueOnce({
         ok: false,
         status: 401,
@@ -87,7 +82,6 @@ describe("fetcher and apiFetch", () => {
     global.fetch = mockFetch;
 
     await expect(fetcher("/api/branches/secret")).rejects.toThrow(FetchError);
-    // Should call initial request (1) + refresh (2), and stop cleanly (<= 3 calls)
     expect(mockFetch.mock.calls.length).toBeLessThanOrEqual(3);
     expect(mockFetch).toHaveBeenCalledWith(serverUrl("/api/auth/refresh"), expect.objectContaining({ method: "POST" }));
   });
@@ -100,7 +94,6 @@ describe("fetcher and apiFetch", () => {
 
       if (urlStr.endsWith("/api/auth/refresh")) {
         refreshCallCount++;
-        // Simulate network latency for refresh
         await new Promise((resolve) => setTimeout(resolve, 30));
         return {
           ok: true,
@@ -110,7 +103,6 @@ describe("fetcher and apiFetch", () => {
       }
 
       if (urlStr.includes("/api/resource-1") || urlStr.includes("/api/resource-2")) {
-        // If refresh has happened, return 200 OK
         if (refreshCallCount > 0) {
           return {
             ok: true,
@@ -118,7 +110,6 @@ describe("fetcher and apiFetch", () => {
             json: async () => ({ success: true, url: urlStr }),
           } as unknown as Response;
         }
-        // First attempt -> 401
         return {
           ok: false,
           status: 401,
@@ -136,7 +127,6 @@ describe("fetcher and apiFetch", () => {
 
     global.fetch = mockFetch;
 
-    // Trigger two 401 requests in parallel
     const [res1, res2] = await Promise.all([
       fetcher<{ success: boolean; url: string }>("/api/resource-1"),
       fetcher<{ success: boolean; url: string }>("/api/resource-2"),
@@ -144,7 +134,6 @@ describe("fetcher and apiFetch", () => {
 
     expect(res1.success).toBe(true);
     expect(res2.success).toBe(true);
-    // CRITICAL: refresh must only be called ONCE
     expect(refreshCallCount).toBe(1);
   });
 

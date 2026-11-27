@@ -2,9 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useAccess } from "@/lib/access-boundary";
-import { getSupplier } from "@/lib/api/suppliers";
-import { getSupplierHistory, type SupplierReceipt } from "@/lib/api/supplier-history";
-import { getContractMaterials } from "@/lib/api/supplier-agreements";
+import { getGoodsReceiptDetail } from "@/lib/api/goods-receipts";
+import type { SupplierReceipt } from "@/lib/api/supplier-history";
+import { loadContractMaterials } from "./use-contract-materials";
 import { receiveReceiptLine, recordQuantityVariance, type QuantityVarianceInput, type ReceiveReceiptInput } from "@/lib/api/goods-receipt-receive";
 import { FetchError } from "@/lib/fetcher";
 import { receiptToday, parseReceiptDate, formatReceiptDate } from "./receipt-date-input";
@@ -15,7 +15,7 @@ type Line = SupplierReceipt["lines"][number];
 type Row = {
   line: Line; attempt: string; lot: string; quantity: string; expiry: string; temperature: string;
   goods?: ReceiptEvidence; document?: ReceiptEvidence; variance?: ReceiptEvidence;
-  busy: boolean; done: boolean; error: string; reload: boolean; submitted: boolean;
+  lotID?: string; busy: boolean; done: boolean; error: string; reload: boolean; submitted: boolean;
 };
 type Setup = { kind: "loading" } | { kind: "error"; message: string } | { kind: "empty" } | { kind: "ready"; receipt: SupplierReceipt; supplier: string; names: Record<string, string> };
 const number = (value: string) => Number(value.replace(",", "."));
@@ -38,21 +38,25 @@ export function useGoodsReceiptReceive(receiptID: string, supplierID: string) {
     if (!allowed) return;
     let live = true;
     async function load() {
-      if (!supplierID) { if (live) setSetup({ kind: "empty" }); return; }
-      const [supplier, materials] = await Promise.all([getSupplier(supplierID), getContractMaterials()]);
-      let cursor = "";
-      let receipt: SupplierReceipt | undefined;
-      // ponytail: Tìm tối đa 10 trang lịch sử; thay bằng GET detail khi inventory có RD-3b.
-      for (let page = 0; page < 10; page++) {
-        const history = await getSupplierHistory(supplierID, { cursor });
-        receipt = history.items.find(item => item.id === receiptID);
-        if (receipt || !history.next_cursor || cursor === history.next_cursor) break;
-        cursor = history.next_cursor;
-      }
+      const [detail, materials] = await Promise.all([
+        getGoodsReceiptDetail(receiptID).catch(cause => {
+          if (cause instanceof FetchError && cause.status === 404) return null;
+          throw cause;
+        }),
+        loadContractMaterials(),
+      ]);
       if (!live) return;
-      if (!receipt) { setSetup({ kind: "empty" }); return; }
-      setSetup({ kind: "ready", receipt, supplier: supplier.name, names: Object.fromEntries(materials.map(item => [item.id, item.name])) });
-      setRows(previous => receipt.lines.map(line => {
+      if (!detail || (supplierID && detail.supplier_ref !== supplierID)) {
+        setSetup({ kind: "empty" });
+        return;
+      }
+      setSetup({
+        kind: "ready",
+        receipt: detail,
+        supplier: detail.supplier_name,
+        names: Object.fromEntries(materials.map(item => [item.id, item.name])),
+      });
+      setRows(previous => detail.lines.map(line => {
         const existing = previous.find(row => row.line.receipt_line_ref === line.receipt_line_ref);
         if (existing) return { ...existing, line, reload: false, done: existing.done || number(line.actual_quantity) > 0 };
         return { line, attempt: crypto.randomUUID(), lot: "", quantity: line.expected_quantity.replace(".", ","), expiry: "", temperature: "", busy: false, done: number(line.actual_quantity) > 0, error: "", reload: false, submitted: false };
@@ -74,8 +78,9 @@ export function useGoodsReceiptReceive(receiptID: string, supplierID: string) {
     }
     inFlight.current.add(id); patch(id, { busy: true, error: "", reload: false, submitted: true });
     try {
-      await receiveReceiptLine(receiptID, command.body, command.key);
-      patch(id, { done: true, line: { ...row.line, actual_quantity: String(command.body.initial_quantity) } });
+      const lot = await receiveReceiptLine(receiptID, command.body, command.key);
+      patch(id, { done: true, lotID: lot.id, line: { ...row.line, actual_quantity: String(command.body.initial_quantity) } });
+      setRevision(value => value + 1);
     } catch (cause) {
       patch(id, { submitted: !(cause instanceof FetchError && [400, 403, 404, 422].includes(cause.status)), error: receiveError(cause), reload: cause instanceof FetchError && cause.status === 409 && cause.code === "state_conflict" });
     } finally { inFlight.current.delete(id); patch(id, { busy: false }); }
@@ -101,5 +106,5 @@ export function useGoodsReceiptReceive(receiptID: string, supplierID: string) {
       setVarianceState({ busy: false, done: false, submitted: !(cause instanceof FetchError && [400, 403, 404, 422].includes(cause.status)), error: receiveError(cause), reload: cause instanceof FetchError && cause.status === 409 && cause.code === "state_conflict" });
     } finally { varianceInFlight.current = false; }
   }
-  return { allowed, setup, rows, open, ready, patch, receive, expected, actual, unit, compatible, needsVariance, varianceRow, explanation, setExplanation, varianceState, recordVariance, onReload: () => { setVarianceState(state => ({ ...state, reload: false })); setRevision(value => value + 1); } };
+  return { allowed, canQC: can("inventory:qc:update"), setup, rows, open, ready, patch, receive, expected, actual, unit, compatible, needsVariance, varianceRow, explanation, setExplanation, varianceState, recordVariance, onReload: () => { setVarianceState(state => ({ ...state, reload: false })); setRevision(value => value + 1); } };
 }

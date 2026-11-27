@@ -1,12 +1,17 @@
+import { FetchError } from "@/lib/fetcher";
+import { codedErrorMessage } from "@/lib/error-message";
 import { listPackages, type FoodPackage, type FoodSlot } from "@/lib/api/sales-pack";
 
 export const FOOD_SLOTS: { id: FoodSlot; name: string }[] = [
   { id: "TINH_BOT", name: "Tinh bột" }, { id: "DAM", name: "Đạm" }, { id: "RAU", name: "Rau" },
   { id: "COT", name: "Cốt (gia vị)" }, { id: "NUOC_CHAM", name: "Nước chấm (gia vị)" }, { id: "GIA_VI_THEM", name: "Gia vị thêm" },
+  { id: "DO_CHUA", name: "Đồ chua ăn kèm" },
 ];
 export const slotName = (slot: FoodSlot) => FOOD_SLOTS.find(item => item.id === slot)?.name;
-export const packMessage = (error: unknown) => error instanceof Error ? error.message : "Không tải được dữ liệu";
-export const isStale = (error: unknown) => (typeof error === "object" && error !== null && "status" in error && error.status === 409) || /409|stale|changed|conflict|đã.*đổi|xung đột/i.test(packMessage(error));
+export const packMessage = (error: unknown, context?: Parameters<typeof codedErrorMessage>[1]) => codedErrorMessage(error, context) ?? (error instanceof Error ? error.message : "Không tải được dữ liệu");
+export const productCreateError = (error: unknown) => error instanceof FetchError && error.code === "idempotency_conflict"
+  ? "Đã có sản phẩm tên này. Chọn sản phẩm đó hoặc đặt tên khác." : packMessage(error);
+export const isStale = (error: unknown) => (typeof error === "object" && error !== null && "status" in error && error.status === 409 && !codedErrorMessage(error)) || /409|stale|changed|conflict|đã.*đổi|xung đột/i.test(packMessage(error));
 
 export async function loadPackOptions() {
   const items: FoodPackage[] = [];

@@ -1,11 +1,11 @@
-import { slotOf, slotLabels, type DishDraft as StoredDishDraft, type DishContent, type GroupNode, type Line } from "./types";
+import { FOOD_SLOTS, formatVariantLabel, normalizeText, slotOf, slotLabels, type DishDraft as StoredDishDraft, type DishContent, type DishBase, type GroupNode, type Line } from "./types";
 export { slotOf } from "./types";
 import { z } from "zod";
 import { contentSchema } from "@/lib/api/dishes";
 export type DishDraft = Omit<StoredDishDraft, "content"> & { content: Omit<DishContent, "base"> & { base: unknown } };
 type PackageInput = { product_ref: string; code: string; name: string; variant_label: string; net_weight_g: number; uom_code: string; temperature_regime: string };
 const slotSchema = z.object({
-  slot: z.enum(["DAM", "RAU", "TINH_BOT", "COT", "NUOC_CHAM", "GIA_VI_THEM"]),
+  slot: z.enum(FOOD_SLOTS),
   swappable: z.boolean(), removable: z.boolean(),
   options: z.array(z.object({ sku_ref: z.string().min(1), quantity: z.number().positive().finite(), is_default: z.boolean() })),
 });
@@ -16,7 +16,9 @@ type Target = z.infer<typeof targetSchema>;
 type ReadSlot = { slot: string; removable: boolean; options: { sku_ref: string; is_default: boolean }[] };
 export type CompleteDeps = {
   tree: GroupNode[]; skuGroups: Record<string, string | null>;
-  createProduct(input: { name: string; slug: string; category_ref: string }, key: string): Promise<{ id: string }>;
+  sourceProductName?: string;
+  createProduct(input: { name: string; slug: string; category_ref?: string }, key: string): Promise<{ id: string }>;
+  updateProduct?(productRef: string, input: { name: string }, key: string): Promise<void>;
   createPackage(input: PackageInput, key: string): Promise<{ id: string }>;
   createRecipe(packageRef: string, input: { components: Line[]; prep_steps: [] }, key: string): Promise<void>;
   createSet(input: Omit<PackageInput, "uom_code"> & { tags: string[] }, key: string): Promise<{ id: string; updated_at: string }>;
@@ -31,6 +33,13 @@ export type CompleteDeps = {
 export type CompleteResult = { ok: true; product_ref: string; set_ref: string } | { ok: false; failed_step: string; error: { status?: number; message: string } };
 function isConflict(error: unknown) {
   return error !== null && typeof error === "object" && "status" in error && error.status === 409;
+}
+function costMissingNames(error: unknown): string[] {
+  const fields = error && typeof error === "object" && "fields" in error ? error.fields : null;
+  if (!fields || typeof fields !== "object") return [];
+  const names = Object.values(fields).flatMap(value => (Array.isArray(value) ? value : [value]))
+    .filter((value): value is string => typeof value === "string").map(value => value.trim()).filter(Boolean);
+  return [...new Set(names)];
 }
 function sameSet(target: Target, actual: unknown) {
   const parsed = setSchema.safeParse(actual);
@@ -53,7 +62,10 @@ function readTarget(value: string, draft: DishDraft, content: DishContent): Targ
   return target;
 }
 function sameLines(a: Line[], b: Line[]) {
-  return a.length === b.length && a.every(line => b.some(other => other.sku_ref === line.sku_ref && other.uom === line.uom && Number(other.quantity) === Number(line.quantity) && Number(other.yield_pct) === Number(line.yield_pct)));
+  const prepOf = (line: Line) => normalizeText(line.prep_note ?? "");
+  return a.length === b.length && a.every(line => b.some(other =>
+    other.sku_ref === line.sku_ref && other.uom === line.uom && Number(other.quantity) === Number(line.quantity) && Number(other.yield_pct) === Number(line.yield_pct) && prepOf(other) === prepOf(line)
+  ));
 }
 export async function completeDish(draft: DishDraft, deps: CompleteDeps): Promise<CompleteResult> {
   let failed_step = "claim";
@@ -77,15 +89,26 @@ export async function completeDish(draft: DishDraft, deps: CompleteDeps): Promis
     failed_step = "target:slots";
     let target = progress["target:slots"] === undefined ? null : readTarget(progress["target:slots"], draft, content);
     const product_ref = draft.kind === "CREATE" || draft.kind === "COPY"
-      ? await run("product", async () => (await deps.createProduct({ name, slug: `${slug}-${suffix}`, category_ref: content.category_ref ?? "" }, key("product"))).id)
+      ? await run("product", async () => (await deps.createProduct({ name, slug: `${slug}-${suffix}`, ...(content.category_ref ? { category_ref: content.category_ref } : {}) }, key("product"))).id)
       : content.base?.product_ref ?? "";
+    if (draft.kind === "REVISION" && deps.updateProduct && name && deps.sourceProductName !== undefined && name !== deps.sourceProductName.trim()) {
+      await run("product:name", async () => {
+        await deps.updateProduct!(product_ref, { name }, key("product:name"));
+        return product_ref;
+      });
+    }
     if (!target) {
       const slots: Slot[] = [];
       const weight = (lines: Line[]) => lines.filter(line => ["G", "ML"].includes(line.uom)).reduce((sum, line) => sum + Number(line.quantity), 0);
-      for (const slot of ["DAM", "RAU", "TINH_BOT"] as const) {
-        const lines: Line[] = content.ingredients.filter(line => line.sku_ref && slotOf(deps.skuGroups[line.sku_ref] ?? null, deps.tree) === slot).map(line => ({ sku_ref: line.sku_ref ?? "", quantity: line.quantity, uom: line.uom, yield_pct: line.yield_pct }));
+      for (const slot of ["DAM", "RAU", "TINH_BOT", "COT", "GIA_VI_THEM"] as const) {
+        const lines: Line[] = content.ingredients
+          .filter(line => line.sku_ref && slotOf(deps.skuGroups[line.sku_ref] ?? null, deps.tree) === slot)
+          .map(line => {
+            const prep = line.prep_note ? normalizeText(line.prep_note) : "";
+            return { sku_ref: line.sku_ref ?? "", quantity: line.quantity, uom: line.uom, yield_pct: line.yield_pct, ...(prep ? { prep_note: prep } : {}) };
+          });
         if (!lines.length) continue;
-        const base = content.base?.slots[slot];
+        const base = content.base?.slots[slot as keyof DishBase["slots"]];
         let ref = base?.package_ref;
         if (progress[`package:${slot}`] || !base || !sameLines(lines, base.lines)) {
           ref = await run(`package:${slot}`, async () => (await deps.createPackage({ product_ref, code: `D-${draft.id}-${slot}`, name: `${name} · ${slotLabels[slot]}`, variant_label: "1 suất", net_weight_g: Math.max(1, Math.round(weight(lines))), uom_code: "EA", temperature_regime: "CHILLED" }, key(`package:${slot}`))).id);
@@ -103,7 +126,7 @@ export async function completeDish(draft: DishDraft, deps: CompleteDeps): Promis
         slots.push({ slot, swappable: false, removable: false, options: [{ sku_ref: ref ?? "", quantity: 1, is_default: true }] });
       }
       for (const line of content.seasonings) slots.push({ slot: line.slot, swappable: false, removable: line.removable, options: [{ sku_ref: line.package_ref ?? "", quantity: 1, is_default: true }] });
-      const variant_label = `${content.servings} người`;
+      const variant_label = formatVariantLabel(content.servings ?? 1, content.variant_note);
       let set_ref = content.base?.set_ref ?? "";
       let expected_updated_at = content.base?.set_updated_at ?? "";
       if (draft.kind !== "REVISION") {
@@ -142,7 +165,14 @@ export async function completeDish(draft: DishDraft, deps: CompleteDeps): Promis
     const status = error && typeof error === "object" && "status" in error && typeof error.status === "number" ? error.status : 500;
     const code = error && typeof error === "object" && "code" in error ? error.code : "";
     if (failed_step === "sellable") {
-      if (code === "cost_fact_missing") return { ok: false, failed_step, error: { status, message: "Nguyên liệu trong món chưa có giá vốn. Nhập kho nguyên liệu rồi bấm Hoàn tất món lại." } };
+      if (code === "cost_fact_missing") {
+        const names = costMissingNames(error);
+        const message = names.length
+          ? `Chưa có giá vốn cho: ${names.join(", ")}. Thêm báo giá nhà cung cấp hoặc nhập kho nguyên liệu rồi bấm Hoàn tất món lại.`
+          : "Nguyên liệu trong món chưa có giá vốn. Thêm báo giá nhà cung cấp hoặc nhập kho nguyên liệu rồi bấm Hoàn tất món lại.";
+        return { ok: false, failed_step, error: { status, message } };
+      }
+      if (status === 404) return { ok: false, failed_step, error: { status, message: "Một gói trong món chưa có công thức hiệu lực. Kiểm tra lại công thức gói rồi bấm Hoàn tất món lại." } };
       if (status === 409) return { ok: false, failed_step, error: { status, message: "Món chưa chốt hoặc số suất đã thay đổi. Mở lại bản sửa để kiểm tra." } };
       if (status === 503) return { ok: false, failed_step, error: { status, message: "Hệ thống tạm bận, thử hoàn tất món lại sau ít phút." } };
     }

@@ -38,15 +38,12 @@ import type { ProductionTarget, ProductionOrder, ShelfPlacement } from "../lib/a
 import { FetchError } from "../lib/fetcher";
 import type { UserProfile } from "../lib/auth/client";
 
-// SSR cannot mount a portal. Only expose its rendered tree; effects/keyboard are
-// covered by the existing dialog behavior tests and the later browser audit.
 const portalRender = vi.hoisted(() => ({
   recordTab: "info", mounted: false, states: [] as unknown[],
   filter: undefined as string | undefined,
   filterClicks: {} as Record<string, () => void>,
 }));
 vi.mock("@/components/ui/toast", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
-// Radix mounts dialog content in a portal that SSR never renders: show it inline when open.
 vi.mock("../components/ui/sheet", () => {
   const part = (tag: string) => ({ children, className }: { children?: React.ReactNode; className?: string }) => React.createElement(tag, { className }, children);
   return {
@@ -320,7 +317,6 @@ describe("S4 rendered semantic status and modal content", () => {
 
 });
 
-// SSR state injection exposes client branches without changing production hooks.
 function ordersMarkup(element: React.ReactNode, states: unknown[]) {
   vi.stubGlobal("window", { localStorage: { getItem: () => "branch" } });
   try {
@@ -372,9 +368,6 @@ function memberships(items: Membership[], actions = ["org:membership:read", "org
 const rawSurface = /(?:bg|text|border|ring|from|via|to|fill|stroke|shadow)-(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|white|black)(?:-\d+)?\b|#[\da-f]{3,8}\b|gradient|blur|glass/i;
 
 function expectRoleSurface(html: string, rawOnly = false) {
-  // This exact shared PageHeader icon wrapper belongs to a later slice. All
-  // caller actions and content remain in the rendered scan, including inputs.
-  // Frame L3 glass tokens (popover/EntityPicker listbox) are sanctioned; raw glass/blur stays banned.
   const owned = html.replace(/class="flex size-9 items-center justify-center rounded-xl bg-sky-500\/10 text-\[var\(--primary\)\] shrink-0 \[&amp;_svg\]:size-5"/g, "")
     .replace(/\b(?:border-glass-edge|bg-glass-l3|glass-blur-l3)\b/g, "")
     .replace(/\btext-white(?= hover:bg-destructive\/90)/g, "");
@@ -384,7 +377,6 @@ function expectRoleSurface(html: string, rawOnly = false) {
   expect(html).toMatch(/bg-\[var\(--color-surface\)\]|bg-card|bg-background/);
   expect(html).toMatch(/border-\[var\(--color-line\)\]|\bborder\b/);
   for (const heading of html.match(/<h[1-4]\b[^>]*>/g) ?? []) {
-    // h1–h3 inherit the root display role; h4 needs an explicit role.
     if (heading.startsWith("<h4")) expect(heading).not.toMatch(/font-\[family-name/);
     else expect(css).toMatch(/h1, h2, h3, \.font-serif\s*\{\s*font-family: var\(--font-body\)/);
   }
@@ -502,7 +494,6 @@ function withAccess(actions: string[], child: React.ReactElement, { roles = [] a
   return React.createElement(AccessProvider, { value: { plane: "company", root: "", actions: new Set(actions), scope: { userId: "user-1", orgId: "org-1", branchId, branchName: "Chi nhánh 1", roles } }, children: child });
 }
 
-// EntityPicker keeps a visually hidden input for form value and native validity; it is not a styled control.
 const isPickerShim = (tag: string) => tag.includes('aria-hidden="true"') && tag.includes('tabindex="-1"');
 
 function expectS6Roles(html: string, primaryCount: number) {
@@ -526,35 +517,28 @@ function expectS6Roles(html: string, primaryCount: number) {
 describe("S6 rendered inventory, permission and production state roles", () => {
   it.each([false, true])("keeps shelves labelled states, QR links and fail-closed action (empty=%s)", (empty) => {
     const html = surfaceMarkup(React.createElement(ShelvesView, { initialPlacements: empty ? [] : shelfFixtures }));
-    expectS6Roles(html, 1);
-    expect(classesFor(html, "button")).toMatch(PRIMARY_FILL);
-    expect(html).toContain('disabled=""');
+    expectS6Roles(html, 0);
     if (empty) expect(html).toContain("Chưa có mặt hàng nào được đưa lên kệ");
     else {
       expect(html).toContain("PLACED");
       expect(html).toContain("DEPLETED");
       expect(html).toContain("border-border");
-      expect(classesFor(html, "a")).toContain("text-primary");
+      expect(classesFor(html, "a", 'href="/traceability')).toContain("text-primary");
       expect(html).toContain('href="/traceability/QR-PLACED"');
     }
   });
 
-  it("gives shelf submit sole primary emphasis with EntityPicker and permission guard", () => {
-    const html = surfaceMarkup(withAccess(["inventory:shelf_placement:create"], React.createElement(ShelvesView, { initialPlacements: shelfFixtures })), [shelfFixtures, false, "", true, "KE-MAT-01", "lot", 20, false]);
+  it("gives shelf submit sole primary emphasis on the placement form with permission guard", () => {
+    const pendingLot = { lot_id: "lot", sku_ref: "sku", supplier_lot_code: "LOT-1", uom: "EA", remaining_quantity: 3, pending_quantity: 3, inspection_quantity: 0, expires_at: "2026-12-10T10:00:00Z", origin: "TRANSFER", source_code: "CK-1" };
+    const html = surfaceMarkup(withAccess(["inventory:shelf_placement:create"], React.createElement(ShelvesView, { initialPlacements: shelfFixtures })), [shelfFixtures, false, "", [pendingLot], false, "", pendingLot, "KE-MAT-01", 3, "", false]);
     expectS6Roles(html, 1);
     expect(classesFor(html, "button")).not.toMatch(PRIMARY_FILL);
     expect(classesFor(html, "button", 'type="submit"')).toMatch(PRIMARY_FILL);
     expect(html.match(/required=""/g)).toHaveLength(2);
-    const comboboxes = (html.match(/<button\b[^>]*>/g) ?? []).filter((button) => button.includes('role="combobox"'));
-    expect(comboboxes).toHaveLength(1);
-    expect(comboboxes[0]).toContain('aria-required="true"');
-    expect(comboboxes[0]).toContain('id="finished-lot-picker"');
-    expect(html).toContain('for="finished-lot-picker"');
-    expect(html).toContain("Lô thành phẩm đã QC đạt");
-    expect(html).toContain('>Tìm theo mã lệnh sản xuất<');
-    expect(html).not.toContain('placeholder="UUID');
+    expect(html).toContain('for="shelf-code"');
+    expect(html).toContain("Xếp lô");
     expect(html).not.toContain('type="hidden"');
-    expect(html.match(/<button[^>]*type="submit"[^>]*>/)?.[0]).toContain('disabled=""');
+    expect(html.match(/<button[^>]*type="submit"[^>]*>/)?.[0]).not.toContain('disabled=""');
     expect(html).toContain("Xác nhận lên kệ &amp; Sinh mã QR");
   });
 
@@ -580,7 +564,7 @@ describe("S6 rendered inventory, permission and production state roles", () => {
   });
 
   it("renders QC pass/fail as readable status labels alongside semantic indicators", () => {
-    const html = surfaceMarkup(React.createElement(QCView, { completedOrders: productionFixtures }));
+    const html = surfaceMarkup(withAccess(["production:qc:update"], React.createElement(QCView, { completedOrders: productionFixtures })));
     expectS6Roles(html, 1);
     for (const status of ["QC_PASSED", "QC_FAILED"]) {
       const row = (html.match(/<tr\b[\s\S]*?<\/tr>/g) ?? []).find((item) => item.includes(`ORDER-${status}`))!;
@@ -591,11 +575,17 @@ describe("S6 rendered inventory, permission and production state roles", () => {
     expect(html).toContain("Người kiểm định phải khác người đã nấu"); expect(html).not.toMatch(/SoD|403 Forbidden/);
   });
 
+  it("tài khoản không có quyền kiểm: không có nút nghiệm thu, câu báo nói ai được làm", () => {
+    const html = surfaceMarkup(withAccess([], React.createElement(QCView, { completedOrders: productionFixtures })));
+    expect(html).not.toContain("Tiến hành nghiệm thu");
+    expect(html).toContain("Chỉ nhân viên Chế biến hoặc Quản trị được kiểm chất lượng thành phẩm.");
+  });
+
   it.each([false, true])("keeps QC form decisions, package states and busy disabling (busy=%s)", (busy) => {
-    const html = surfaceMarkup(React.createElement(QCView, { completedOrders: productionFixtures }), [productionFixtures, false, "", productionFixtures[4], -18.5, !busy, busy ? "" : "Mẫu đạt", busy]);
+    const html = surfaceMarkup(withAccess(["production:qc:update"], React.createElement(QCView, { completedOrders: productionFixtures })), [productionFixtures, false, "", productionFixtures[4], -18.5, !busy, busy ? "" : "Mẫu đạt", busy]);
     expectS6Roles(html, 1);
-    expect(html).toContain("Phê duyệt QC (PASS) — Cho phép lên kệ");
-    expect(html).toContain("Từ chối QC (FAIL) — Hủy lô");
+    expect(html).toContain("Đạt — cho phép lên kệ");
+    expect(html).toContain("Không đạt — huỷ lô");
     expect(html).toContain("Hủy bỏ");
     expect(html).toContain('role="radiogroup"');
     expect(html.match(/aria-checked="true"/g)).toHaveLength(1);
@@ -613,7 +603,7 @@ describe("S6 rendered inventory, permission and production state roles", () => {
 
 const targetFixtures: ProductionTarget[] = (["DRAFT", "APPROVED", "IN_PLANNING", "HANDED_OFF", "COMPLETED", "REJECTED"] as const).map((status) => ({
   id: status, target_code: `TARGET-${status}`, title: `Chỉ tiêu ${status}`, branch_ref: "branch-1",
-  period_start: "2026-09-29", period_end: "2026-10-29", status, created_by: "user-1", created_at: "2026-09-29",
+  period_start: "2026-09-29", period_end: "2026-10-29", status, created_by: "user-2", created_at: "2026-09-29",
   lines: [{ product_ref: "product-1", target_quantity: 20, uom: "EA" }],
 }));
 const salesOrderFixtures: Order[] = (["AWAITING_PAYMENT", "CANCELLED"] as const).map((status) => ({
@@ -625,11 +615,9 @@ function s7Markup(element: React.ReactNode, states: unknown[]) {
 }
 function expectS7Roles(html: string, primaryCount: number, rawOnly = false) {
   expectRoleSurface(html, rawOnly);
-  // Include asChild anchors as well as ordinary buttons in CTA competition.
   const primary = (html.match(/<(?:button|a)\b[^>]*>/g) ?? []).filter((tag) => PRIMARY_FILL.test(tag));
   expect(primary).toHaveLength(primaryCount);
   for (const tag of (html.match(/<(?:input|select)\b[^>]*>/g) ?? []).filter((tag) => !tag.includes('type="hidden"') && !isPickerShim(tag))) {
-    // The Field control set (components/ui/field.tsx `control`), or the shadcn Input.
     if (tag.includes("border-[var(--input)]")) {
       expect(tag).toContain("min-h-11");
       expect(tag).toContain("ring-[var(--ring)]");
@@ -674,8 +662,8 @@ describe("S7 rendered target, cart, orders and product creation roles", () => {
     expectS7Roles(html, 0);
     for (const order of salesOrderFixtures) {
       const link = (html.match(/<a\b[\s\S]*?<\/a>/g) ?? []).find((tag) => tag.includes(`/orders/${order.id}`))!;
-      expect(link).toContain(`>${order.status === "CANCELLED" ? "Đã hủy" : "Chờ thanh toán"}</span>`);
-      expect(link).toContain(order.status === "CANCELLED" ? "bg-destructive" : "bg-warning-soft");
+      expect(link).toContain(`>${order.status === "CANCELLED" ? "Đã huỷ" : "Chờ thanh toán"}</span>`);
+      expect(link).toContain(order.status === "CANCELLED" ? "before:bg-muted-foreground/50" : "bg-warning-soft");
       expect(link).toContain("660.000");
       expect(link).toContain(formatDateTime(order.created_at));
       expect(link).not.toContain(order.cart_ref);
@@ -717,8 +705,6 @@ const s8Trace: PublicTraceability = {
   timeline: [{ stage: "QC", title: "Kiểm định hoàn tất", timestamp: "2026-09-29", passed: true }],
 };
 
-// Query the rendered SSR tree by label association, independent of generated IDs.
-// Wrapped radio labels and explicit for/id pairs both name their controls.
 function getByLabelText(html: string, text: string) {
   const plainText = (markup: string) => markup.replace(/<[^>]*>/g, "").replaceAll("&amp;", "&").trim();
   const labels = [...html.matchAll(/<label\b([^>]*)>([\s\S]*?)<\/label>/g)]
@@ -752,7 +738,7 @@ describe("review fix rendered accessibility and filter selection", () => {
     ["Bao bì nguyên vẹn, hút chân không đạt", "button", 'role="radio"'],
     ["Bao bì lỗi / hở", "button", 'role="radio"'],
   ])("finds the QC control by its label: %s", (label, tag, attribute) => {
-    const html = surfaceMarkup(React.createElement(QCView, { completedOrders: productionFixtures }),
+    const html = surfaceMarkup(withAccess(["production:qc:update"], React.createElement(QCView, { completedOrders: productionFixtures })),
       [productionFixtures, false, "", productionFixtures[4], -18.5, true, "Mẫu đạt", false]);
     const control = getByLabelText(html, label);
     expect(control).toMatch(new RegExp(`^<${tag}\\b`));
@@ -846,7 +832,6 @@ describe("S8 rendered product and traceability roles", () => {
   it.each([false, true])("keeps trace facts, status text/icons and solid timeline (empty=%s)", (empty) => {
     const trace = empty ? { ...s8Trace, ingredients: [], timeline: [] } : s8Trace;
     const html = surfaceMarkup(React.createElement(TraceView, { trace }));
-    // Trace is read-only: it has no existing CTA to recolour or invent.
     expectS7Roles(html, 0);
     expect(html).toContain("bg-background");
     expect(html).toContain("TRACE-42");

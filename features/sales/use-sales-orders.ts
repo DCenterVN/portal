@@ -12,7 +12,8 @@ import { getStaffOrder, getStaffOrdersPage, mutateStaffOrder, type StaffOrder } 
 import { companyMemberships, type Membership } from "@/lib/api/platform-client";
 import { getProfile } from "@/lib/auth/client";
 import { getLocations } from "@/lib/api/locations";
-import { availableActions, orderActions, type OrderAction } from "./order-actions";
+import { FetchError } from "@/lib/fetcher";
+import { availableActions, cancelNeedsReason, choosesDriver, orderActions, orderErrorMessage, type OrderAction } from "./order-actions";
 
 export async function loadDrivers(branchId: string): Promise<Membership[]> {
   const members: Membership[] = [];
@@ -29,9 +30,9 @@ export async function loadSelfDriver(userId: string) {
 }
 export function actionSchema(action: OrderAction, order: StaffOrder) {
   return z.object({
-    value: action === "ship" ? z.string().uuid("Chọn người giao trong danh sách")
+    value: choosesDriver(action) ? z.string().uuid("Chọn người giao trong danh sách")
       : action === "payments/confirm" ? z.string().trim().min(1, "Nhập mã giao dịch ngân hàng").max(128, "Mã giao dịch tối đa 128 ký tự")
-      : action === "delivery-failure" || action === "cancel" && order.status === "CONFIRMED"
+      : action === "delivery-failure" || action === "cancel" && cancelNeedsReason(order.status)
         ? z.string().trim().min(1, "Nhập lý do").max(500, "Lý do tối đa 500 ký tự")
         : z.string().trim().max(500, "Lý do tối đa 500 ký tự"),
   });
@@ -50,7 +51,7 @@ export function useSalesOrders(initialOrders?: StaffOrder[]) {
   const order = detail.data ?? selected;
   const provinces = useSWR(order?.province_code ? "/api/locations/provinces" : null, getLocations);
   const communes = useSWR(order?.province_code ? `/api/locations/provinces/${encodeURIComponent(order.province_code)}/communes` : null, getLocations);
-  const drivers = useSWR(pending?.action === "ship" && scope?.branchId
+  const drivers = useSWR(choosesDriver(pending?.action) && scope?.branchId
     ? ["order-drivers", scope.orgId, scope.branchId, scope.userId] : null,
     () => can("org:membership:read") ? loadDrivers(scope!.branchId) : loadSelfDriver(scope!.userId));
   const form = useForm<{ value: string }>({
@@ -61,42 +62,49 @@ export function useSalesOrders(initialOrders?: StaffOrder[]) {
     if (drivers.data?.some(member => member.user_id === scope?.userId)) form.setValue("value", scope!.userId);
   }, [drivers.data, pending, scope?.userId, form]);
   const run = async (target: StaffOrder, action: OrderAction, input: Record<string, string>) => {
-    if (lock.current || !availableActions(target, can, scope?.userId).some(item => item.path === action)) return false;
+    if (lock.current || !availableActions(target, can, scope?.userId, scope?.roles).some(item => item.path === action)) return false;
     lock.current = true; setBusy(true); setError("");
     const signature = JSON.stringify([target.id, action, input]);
     const key = attempts.current.get(signature) ?? crypto.randomUUID();
     attempts.current.set(signature, key);
-    try {
-      const result = await mutateStaffOrder(target.id, action, input, key);
+    const apply = async (result: StaffOrder) => {
       const updated = { ...target, ...result, payment_method: result.payment_method ?? target.payment_method, payment_status: result.payment_status ?? target.payment_status };
       list.setItems(current => current.map(item => item.id === target.id ? { ...item, ...updated } : item));
       if (selected?.id === target.id) {
         setSelected(current => current ? { ...current, ...updated } : updated);
         await detail.mutate(current => current ? { ...current, ...updated } : updated, { revalidate: false });
       }
+    };
+    try {
+      await apply(await mutateStaffOrder(target.id, action, input, key));
       toast.success(`Đã xử lý: ${orderActions[action].label.toLocaleLowerCase("vi")}`);
       return true;
     } catch (cause) {
-      const message = cause instanceof Error ? cause.message : "Không thể xử lý đơn hàng";
+      const fresh = cause instanceof FetchError && cause.status === 409 ? await getStaffOrder(target.id).catch(() => undefined) : undefined;
+      if (fresh) {
+        await apply(fresh);
+        if (fresh.status !== target.status) setPending(null);
+      }
+      const message = orderErrorMessage(cause, action, target.status, fresh?.status);
       setError(message); toast.error("Không thể xử lý đơn hàng", { description: message });
       return false;
     } finally { lock.current = false; setBusy(false); }
   };
   const act = (target: StaffOrder, action: OrderAction) => {
-    if (lock.current || !availableActions(target, can, scope?.userId).some(item => item.path === action)) return;
-    if (["confirm", "pack", "deliver"].includes(action)) { void run(target, action, {}); return; }
+    if (lock.current || !availableActions(target, can, scope?.userId, scope?.roles).some(item => item.path === action)) return;
+    if (["confirm", "pack", "deliver", "redeliver"].includes(action)) { void run(target, action, {}); return; }
     form.reset({ value: "" }); setError(""); setPending({ order: target, action });
   };
   const changeDialogOpen = (open: boolean) => { if (!open && !lock.current) setPending(null); };
   const submit = form.handleSubmit(async ({ value }) => {
     if (!pending) return;
     const { order: target, action } = pending;
-    if (action === "ship" && (!drivers.data?.some(driver => driver.user_id === value) || drivers.error)) {
+    if (choosesDriver(action) && (!drivers.data?.some(driver => driver.user_id === value) || drivers.error)) {
       form.setError("value", { message: "Chọn người giao đang hoạt động trong chi nhánh" }); return;
     }
-    const input: Record<string, string> = action === "ship" ? { driver_ref: value } : action === "payments/confirm" ? { bank_transaction_ref: value } : { reason: value };
+    const input: Record<string, string> = choosesDriver(action) ? { driver_ref: value } : action === "payments/confirm" ? { bank_transaction_ref: value } : { reason: value };
     if (await run(target, action, input)) setPending(null);
   });
   return { list, orders: list.items, filter, setFilter,
-    order, setSelected, detail, provinces, communes, pending, busy, error, drivers, form, submit, changeDialogOpen, act, can, userId: scope?.userId };
+    order, setSelected, detail, provinces, communes, pending, busy, error, drivers, form, submit, changeDialogOpen, act, can, userId: scope?.userId, roles: scope?.roles };
 }

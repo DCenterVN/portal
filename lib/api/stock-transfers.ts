@@ -19,12 +19,12 @@ export type StockTransfer = z.infer<typeof transferSchema>;
 export type TransferLine = StockTransfer["lines"][number];
 const pageSchema = z.object({ items: z.array(transferSchema).nullish().transform(items => items ?? []), next_cursor: z.string().nullish().transform(value => value ?? "") });
 const stockSchema = z.object({
-  items: z.array(z.object({ sku_ref: uuid, branch_ref: uuid, available_quantity: z.number(), uom: z.string() })).nullish().transform(items => items ?? []),
-  total: z.number().optional(),
+  items: z.array(z.object({ sku_ref: uuid, branch_ref: uuid, available_quantity: z.number(), on_hand_quantity: z.number().optional(), usable_quantity: z.number().optional(), uom: z.string() })).nullish().transform(items => items ?? []),
+  next_cursor: z.string().nullish().transform(value => value ?? ""),
 });
 const lotSchema = z.object({
   items: z.array(z.object({ id: uuid, sku_ref: uuid, branch_ref: uuid, supplier_lot_code: z.string(), remaining_quantity: z.number(), uom: z.string(), expires_at: z.string(), status: z.string() })).nullish().transform(items => items ?? []),
-  total: z.number().optional(),
+  next_cursor: z.string().nullish().transform(value => value ?? ""),
 });
 export type StockRow = z.infer<typeof stockSchema>["items"][number];
 export type LotRow = z.infer<typeof lotSchema>["items"][number];
@@ -41,8 +41,9 @@ export const getTransfer = (id: string) => inventoryRequest(base(id), transferSc
 export const createTransfer = (input: CreateTransferInput, key?: string) => inventoryRequest("stock-transfers", transferSchema, inventoryMutation("POST", input, key));
 export const receiveTransfer = (id: string, input: ReceiveTransferInput, key?: string) => inventoryRequest(`${base(id)}/receive`, transferSchema, inventoryMutation("POST", input, key));
 export const cancelTransfer = (id: string, key?: string) => inventoryRequest(`${base(id)}/cancel`, transferSchema, inventoryMutation("POST", {}, key));
-export const getStockRows = (branch: string) => inventoryRequest(`stock-levels?${new URLSearchParams({ branch_ref: branch })}`, stockSchema).then(page => page.items.filter(item => item.branch_ref === branch));
-export const getBranchLots = (branch: string) => inventoryRequest(`inventory-lots?${new URLSearchParams({ branch_ref: branch, page_size: "1000" })}`, lotSchema).then(page => page.items.filter(item => item.branch_ref === branch));
+const pagedQuery = (params: Record<string, string>, cursor: string) => new URLSearchParams({ ...params, page_size: "100", ...(cursor ? { cursor } : {}) });
+export const getStockRows = (branch: string) => inventoryPages(cursor => inventoryRequest(`stock-levels?${pagedQuery({ branch_ref: branch }, cursor)}`, stockSchema)).then(items => items.filter(item => item.branch_ref === branch));
+export const getBranchLots = (branch: string) => inventoryPages(cursor => inventoryRequest(`inventory-lots?${pagedQuery({ branch_ref: branch }, cursor)}`, lotSchema)).then(items => items.filter(item => item.branch_ref === branch));
 export const presignTransferEvidence = (id: string, file: File, sha256: string, key?: string) =>
   inventoryRequest(`${base(id)}/evidence-uploads`, presignSchema, inventoryMutation("POST", { content_type: file.type, size_bytes: file.size, sha256 }, key));
 export const finalizeTransferEvidence = (id: string, upload: string, key?: string) =>

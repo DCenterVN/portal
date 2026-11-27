@@ -1,57 +1,533 @@
-.layout { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); align-items: start; gap: 40px; }
-.visual { position: sticky; top: 88px; min-width: 0; }
-.stage { position: relative; isolation: isolate; width: 100%; max-width: 600px; aspect-ratio: 1; margin: 12px auto 0; }
-.orbitLine { position: absolute; inset: 21%; border: 1px solid color-mix(in srgb, var(--primary) 16%, transparent); border-radius: 50%; transition: opacity .18s; }
-.ring { position: absolute; inset: 0; pointer-events: none; }
-.slot { position: absolute; width: 0; height: 0; }
-.upright { width: 0; height: 0; }
-.arrival { position: relative; width: 0; height: 0; animation: arrive .4s cubic-bezier(.2,.7,.3,1) backwards; }
-.component { position: absolute; left: -64px; top: -53px; display: flex; align-items: center; flex-direction: column; width: 128px; min-height: 106px; padding: 0; border: 0; background: transparent; cursor: pointer; pointer-events: auto; transition: opacity .18s; }
-.componentArt { display: grid; place-items: center; color: var(--muted-foreground); width: 64px; height: 64px; overflow: hidden; border-radius: 50%; background: var(--muted); }
-.component[aria-pressed=true] .componentArt { color: var(--color-green-700, #15803d); }
-.componentName { font-size: 12px; line-height: 1.4; font-weight: 600; margin-top: 7px; max-width: 128px; }
-.grams { font-size: 11px; color: var(--muted-foreground); margin-top: 3px; font-variant-numeric: tabular-nums; }
-.component:focus-visible, .dish:focus-visible { outline: 2px solid var(--ring); outline-offset: 5px; border-radius: var(--r-6); }
-.component:hover .componentArt, .component[aria-pressed=true] .componentArt { outline: 2px solid var(--primary); outline-offset: 3px; }
-.dish { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); display: flex; flex-direction: column; align-items: center; width: 180px; padding: 0; border: 0; background: transparent; cursor: pointer; }
-.dishArt { display: block; width: 172px; height: 172px; border: 1px solid var(--border); box-shadow: none; overflow: hidden; border-radius: 50%; }
-.dishArt :global(.catalog-artwork) { padding: 0; background: transparent; }
-.dishArt :global(.catalog-plate) { width: 80%; }
-.dish strong { margin-top: 14px; font-size: 14px; line-height: 1.5; font-weight: 600; }
-.dish small { margin-top: 5px; font-size: 11px; color: var(--muted-foreground); }
-.stage:hover .ring, .stage:hover .upright, .stage:focus-within .ring, .stage:focus-within .upright, .stage[data-selected=true] .ring, .stage[data-selected=true] .upright { animation-play-state: paused; }
-.stage[data-selected=true] .orbitLine { opacity: 0; }
-.stage[data-selected=true] .component { opacity: .25; }
-.stage[data-selected=true] .slot[data-active=true] { z-index: 2; }
-.stage[data-selected=true] .slot[data-active=true] .component { opacity: 1; }
-.nutrientRing { position: absolute; inset: 4%; border: 1px solid color-mix(in srgb, var(--primary) 20%, transparent); border-radius: 50%; pointer-events: none; }
-.nutrient { position: absolute; display: flex; flex-direction: column; gap: 4px; justify-content: center; text-align: center; width: 88px; min-height: 48px; border-radius: var(--r-6); background: var(--background); animation: arrive .4s both; }
-.nutrient span { font-size: 10px; color: var(--muted-foreground); }
-.nutrient strong { font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  align-items: start;
+  gap: 40px;
+}
+
+.visual {
+  position: sticky;
+  top: 88px;
+  min-width: 0;
+}
+
+.stage {
+  --orbit-radius: 188px;
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+  height: 430px;
+  margin: 12px auto 0;
+  perspective: 1400px;
+  pointer-events: none;
+}
+
+.space {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform: translateZ(180px) scale(0.87);
+  transform-style: preserve-3d;
+  pointer-events: none;
+}
+
+.dishShadow {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 196px;
+  height: 64px;
+  transform: translate(-50%, 48px);
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse at center,
+    color-mix(in srgb, var(--foreground) 18%, transparent) 0%,
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+.dishCenter {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 148px;
+  height: 148px;
+  transform: translate(-50%, -50%);
+  transform-style: preserve-3d;
+  pointer-events: none;
+}
+
+.dish {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 148px;
+  height: 148px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.dishArt {
+  display: block;
+  width: 144px;
+  height: 144px;
+  border: 3px solid var(--card);
+  outline: 1px solid color-mix(in srgb, var(--primary) 18%, transparent);
+  box-shadow:
+    0 12px 32px color-mix(in srgb, var(--foreground) 14%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--border) 60%, transparent);
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--card);
+  transition: transform .25s ease;
+}
+
+.dish:hover .dishArt {
+  transform: scale(1.03);
+}
+
+.dishArt :global(.catalog-artwork) {
+  padding: 0;
+  background: transparent;
+}
+
+.dishArt :global(.catalog-plate) {
+  width: 80%;
+}
+
+.dishFooter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 600px;
+  margin: 4px auto 0;
+  text-align: center;
+}
+
+.dishFooter strong {
+  font-size: 16px;
+  line-height: 1.4;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.dishFooter small {
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--muted-foreground);
+}
+
+.orbitPlane {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: calc(var(--orbit-radius) * 2);
+  height: calc(var(--orbit-radius) * 2);
+  transform: translate(-50%, -50%) rotateX(44deg) rotateZ(-8deg);
+  transform-style: preserve-3d;
+  pointer-events: none;
+}
+
+.orbitLine {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1.5px dashed color-mix(in srgb, var(--primary) 30%, transparent);
+  transition: opacity .2s ease;
+}
+
+.orbitInner {
+  position: absolute;
+  inset: 14%;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--primary) 14%, transparent);
+  transition: opacity .2s ease;
+}
+
+.ring {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  pointer-events: none;
+  animation: orbitSpin 28s linear infinite;
+}
+
+.slot {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 252px;
+  height: 82px;
+  margin: -41px 0 0 -126px;
+  transform: rotateZ(var(--angle, 0deg)) translateY(calc(-1 * var(--orbit-radius))) rotateZ(calc(-1 * var(--angle, 0deg)));
+  transform-style: preserve-3d;
+  pointer-events: none;
+}
+
+.unspin {
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  animation: orbitUnspin 28s linear infinite;
+}
+
+.upright {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: rotateZ(8deg) rotateX(-44deg);
+  transform-style: preserve-3d;
+}
+
+.arrival {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  animation: arrive .45s cubic-bezier(.2, .7, .3, 1) backwards;
+}
+
+:global(.catalog) .component[aria-haspopup="dialog"],
+.component {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  width: fit-content;
+  min-width: 148px;
+  max-width: 236px;
+  height: auto;
+  padding: 7px 13px 7px 7px;
+  border-radius: var(--r-8);
+  border: 1px solid color-mix(in srgb, var(--border) 90%, transparent);
+  background: color-mix(in srgb, var(--card) 96%, transparent);
+  box-shadow: var(--shadow-md);
+  text-align: left;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: opacity .2s ease, border-color .2s ease, transform .2s ease;
+}
+
+.componentArt {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  overflow: hidden;
+  border-radius: 50%;
+  border: 2px solid var(--card);
+  outline: 1.5px solid color-mix(in srgb, var(--primary) 26%, transparent);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--foreground) 12%, transparent);
+  background: color-mix(in srgb, var(--primary) 12%, var(--muted));
+  color: var(--primary);
+}
+
+.slot[data-slot="protein"] .componentArt {
+  background: color-mix(in srgb, var(--destructive) 12%, var(--muted));
+  outline-color: color-mix(in srgb, var(--destructive) 36%, transparent);
+  color: var(--destructive);
+}
+
+.slot[data-slot="veg"] .componentArt {
+  background: color-mix(in srgb, var(--success) 14%, var(--muted));
+  outline-color: color-mix(in srgb, var(--success) 38%, transparent);
+  color: var(--success);
+}
+
+.slot[data-slot="carb"] .componentArt {
+  background: color-mix(in srgb, var(--warning) 16%, var(--muted));
+  outline-color: color-mix(in srgb, var(--warning) 42%, transparent);
+  color: var(--warning);
+}
+
+.slot[data-slot="seasoning"] .componentArt {
+  background: color-mix(in srgb, var(--chart-2) 14%, var(--muted));
+  outline-color: color-mix(in srgb, var(--chart-2) 34%, transparent);
+  color: var(--chart-2);
+}
+
+.componentMeta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+  flex: 1 1 auto;
+  text-align: left;
+}
+
+.componentName {
+  font-size: 12.5px;
+  line-height: 1.25;
+  font-weight: 600;
+  color: var(--foreground);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.grams {
+  margin-top: 2px;
+  font-size: 11px;
+  line-height: 1.2;
+  color: var(--muted-foreground);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.component:focus-visible,
+.dish:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 4px;
+  border-radius: var(--r-8);
+}
+
+.component:hover,
+.component[aria-pressed="true"] {
+  border-color: var(--primary);
+  transform: scale(1.04);
+}
+
+.stage:hover .ring,
+.stage:hover .unspin,
+.stage:focus-within .ring,
+.stage:focus-within .unspin,
+.stage[data-selected="true"] .ring,
+.stage[data-selected="true"] .unspin,
+.stage[data-paused="true"] .ring,
+.stage[data-paused="true"] .unspin {
+  animation-play-state: paused;
+}
+
+.stage[data-selected="true"] .orbitLine,
+.stage[data-selected="true"] .orbitInner {
+  opacity: .35;
+}
+
+.stage[data-selected="true"] .component {
+  opacity: .42;
+}
+
+.stage[data-selected="true"] .slot[data-active="true"] {
+  z-index: 3;
+}
+
+.stage[data-selected="true"] .slot[data-active="true"] .component {
+  opacity: 1;
+  border-color: var(--primary);
+}
+
+.nutrientRing {
+  position: absolute;
+  inset: 4%;
+  border: 1px solid color-mix(in srgb, var(--primary) 20%, transparent);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.nutrient {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  justify-content: center;
+  text-align: center;
+  width: 88px;
+  min-height: 48px;
+  border-radius: var(--r-6);
+  background: var(--background);
+  animation: arrive .4s both;
+}
+
+.nutrient span {
+  font-size: 10px;
+  color: var(--muted-foreground);
+}
+
+.nutrient strong {
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
 .nutrient:nth-child(1) { left: 15%; top: 15%; transform: translate(-50%, -50%); }
 .nutrient:nth-child(2) { left: 85%; top: 15%; transform: translate(-50%, -50%); animation-delay: 40ms; }
 .nutrient:nth-child(3) { left: 85%; top: 85%; transform: translate(-50%, -50%); animation-delay: 80ms; }
 .nutrient:nth-child(4) { left: 15%; top: 85%; transform: translate(-50%, -50%); animation-delay: 120ms; }
-.caption { display: flex; justify-content: space-between; gap: 12px; max-width: 600px; margin: 8px auto 0; font-size: 11px; color: var(--muted-foreground); line-height: 1.6; }
-@keyframes arrive { from { opacity: 0; translate: var(--from, 0 0); scale: .5; } to { opacity: 1; translate: 0 0; scale: 1; } }
-@media (min-width: 1001px) { .stage[data-selected=false] { margin-bottom: -100px; } }
-@media (max-width: 1000px) {
-  .visual { position: static; }
-  .layout { display: flex; flex-direction: column; gap: 28px; }
-  .layout > * { width: 100%; min-width: 0; }
-  .stage { display: flex; flex-direction: column; aspect-ratio: auto; gap: 22px; margin: 24px 0 14px; }
-  .orbitLine { display: none; }
-  .dish { position: static; transform: none; align-self: center; width: min(220px, 100%); }
-  .dishArt { width: 172px; height: 172px; }
-  .ring { position: static; display: grid; gap: 10px; animation: none; }
-  .slot { position: static; width: auto; height: auto; }
-  .upright, .arrival { width: auto; height: auto; animation: none; }
-  .component { position: static; width: 100%; min-height: 80px; display: grid; grid-template-columns: 52px minmax(0,1fr); column-gap: 14px; padding: 12px; border-radius: var(--r-6); background: var(--muted); text-align: left; }
-  .componentArt { width: 48px; height: 48px; grid-row: span 2; }
-  .componentName { max-width: none; font-size: 14px; margin: 0; align-self: end; }
-  .grams { margin-top: 4px; align-self: start; }
-  .stage[data-selected=true] .component { opacity: .5; }
-  .nutrientRing { position: static; display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; padding: 16px; border: 0; border-radius: 0; }
-  .nutrient, .nutrient:nth-child(n) { position: static; transform: none; width: auto; min-width: 0; text-align: left; animation: none; }
+
+.caption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  max-width: 600px;
+  margin: 12px auto 0;
+  padding-top: 10px;
+  border-top: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+  font-size: 12px;
+  color: var(--muted-foreground);
+  line-height: 1.5;
 }
-@media (prefers-reduced-motion: reduce) { .ring, .upright, .arrival, .nutrient { animation: none; } .component, .orbitLine { transition: none; } }
+
+@keyframes orbitSpin {
+  from { transform: rotateZ(0deg); }
+  to { transform: rotateZ(360deg); }
+}
+
+@keyframes orbitUnspin {
+  from { transform: rotateZ(0deg); }
+  to { transform: rotateZ(-360deg); }
+}
+
+@keyframes arrive {
+  from { opacity: 0; translate: var(--from, 0 0); scale: .5; }
+  to { opacity: 1; translate: 0 0; scale: 1; }
+}
+
+@media (max-width: 1180px) {
+  .stage {
+    --orbit-radius: 158px;
+    height: 390px;
+  }
+}
+
+@media (max-width: 1000px) {
+  .visual {
+    position: static;
+  }
+  .layout {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+  .layout > * {
+    width: 100%;
+    min-width: 0;
+  }
+  .stage {
+    height: auto;
+    perspective: none;
+    margin: 20px 0 8px;
+    pointer-events: auto;
+  }
+  .space,
+  .dishCenter,
+  .orbitPlane {
+    position: static;
+    width: auto;
+    height: auto;
+    transform: none;
+    transform-style: flat;
+    pointer-events: auto;
+  }
+  .space {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .dishShadow,
+  .orbitLine,
+  .orbitInner {
+    display: none;
+  }
+  .dishCenter {
+    display: flex;
+    justify-content: center;
+  }
+  .dish {
+    width: 164px;
+    height: 164px;
+  }
+  .dishArt {
+    width: 164px;
+    height: 164px;
+  }
+  .dishFooter {
+    margin-top: 10px;
+  }
+  .ring {
+    position: static;
+    display: grid;
+    gap: 10px;
+    animation: none;
+    pointer-events: auto;
+  }
+  .slot,
+  .unspin,
+  .upright,
+  .arrival {
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0;
+    transform: none;
+    animation: none;
+    transform-style: flat;
+  }
+  :global(.catalog) .component[aria-haspopup="dialog"],
+  .component {
+    position: static;
+    transform: none;
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+    min-height: 64px;
+    padding: 12px;
+    border-radius: var(--r-8);
+  }
+  .component:hover,
+  .component[aria-pressed="true"] {
+    transform: none;
+  }
+  .componentName {
+    font-size: 14px;
+    -webkit-line-clamp: 3;
+  }
+  .grams {
+    font-size: 12px;
+  }
+  .stage[data-selected="true"] .component {
+    opacity: .5;
+  }
+  .nutrientRing {
+    position: static;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    padding: 16px;
+    border: 0;
+    border-radius: 0;
+  }
+  .nutrient,
+  .nutrient:nth-child(n) {
+    position: static;
+    transform: none;
+    width: auto;
+    min-width: 0;
+    text-align: left;
+    animation: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ring,
+  .unspin,
+  .arrival,
+  .nutrient {
+    animation: none;
+  }
+  .component,
+  .dishArt,
+  .orbitLine,
+  .orbitInner {
+    transition: none;
+  }
+}

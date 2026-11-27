@@ -14,19 +14,19 @@ import { CatalogArtwork } from "./catalog-artwork";
 
 export function CatalogProductCard({ product, branchId }: { product: Product; branchId?: string }) {
   const t = useTranslations("Catalog");
-  const { adding, add } = useCatalogCart(product);
+  const { adding, add } = useCatalogCart(product, branchId);
   const href = `/products/${product.id}${branchId ? `?branch_id=${encodeURIComponent(branchId)}` : ""}` as Route;
-  return <Card className="flex min-w-0 flex-col gap-0 overflow-hidden border-0 bg-muted/30 p-0 shadow-none">
-                <Link href={href} aria-label={product.name} className="block aspect-[4/3] overflow-hidden bg-media focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring">
-                  {product.image_urls?.[0] ? <img src={product.image_urls[0]} alt={product.name} className="size-full object-cover" /> :
+  return <Card className="group flex min-w-0 flex-col gap-0 overflow-hidden border border-border/70 bg-card p-0 shadow-none transition-colors hover:border-primary/40">
+                <Link href={href} aria-label={product.name} className="block aspect-[4/3] overflow-hidden bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring">
+                  {product.image_urls?.[0] ? <img src={product.image_urls[0]} alt={product.name} className="size-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" /> :
                     <CatalogArtwork name={product.name} />}
                 </Link>
-                <div className="flex flex-1 flex-col gap-2 p-3 sm:p-4">
-                  <Link href={href} className="line-clamp-2 break-words text-base font-semibold leading-6 hover:underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">{product.name}</Link>
+                <div className="flex flex-1 flex-col gap-2 p-4">
+                  <Link href={href} className="line-clamp-2 break-words text-base font-semibold leading-6 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">{product.name}</Link>
 
                   {product.portion_count && <p className="text-xs text-muted-foreground">{product.portion_count.toLocaleString("vi-VN")} người</p>}
                   <div className="catalog-nutrition min-h-14 text-muted-foreground"><NutritionChip nutrition={product.nutrition} /></div>
-                  <div className="mt-auto flex flex-wrap items-center justify-between gap-2 pt-2">
+                  <div className="mt-auto flex flex-wrap items-center justify-between gap-2 border-t border-border/60 pt-3">
                   <p className="text-base font-semibold tabular-nums">{product.base_price_vnd === undefined ? t("noPrice") : <>{formatVND(product.base_price_vnd)}<span className="text-xs font-normal text-muted-foreground">/gói</span></>}</p>
                   {product.sku_ref && product.branch_ref && product.base_price_vnd !== undefined && <Button
                     variant="secondary" size="compact" className="whitespace-normal text-xs"

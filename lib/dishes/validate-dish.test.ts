@@ -9,7 +9,7 @@ const tree = [
 ];
 const ctx = (over: Partial<ValidateCtx> = {}): ValidateCtx => ({
   kind: "CREATE", tree,
-  skuGroups: { "sku-trau": "THIT_TRAU", "sku-rau": "RAU_AN_LA", "sku-toi": "HANH_TOI", "sku-gao": "GAO_NGU_COC", "sku-thit2": "THIT" },
+  skuGroups: { "sku-trau": "THIT_TRAU", "sku-rau": "RAU_AN_LA", "sku-toi": "RAU_AN_LA", "sku-gao": "GAO_NGU_COC", "sku-thit2": "THIT" },
   packagesWithRecipe: ["pkg-gvxao", "pkg-cot", "pkg-cham"],
   existingVariants: [], ...over,
 });
@@ -54,13 +54,17 @@ describe("validateDish", () => {
     expect(find(errs, "slots")).toHaveLength(1);
   });
 
-  it("tên 1..150", () => {
+  it("tên 1..150 và chặn tên bản sao chưa đổi", () => {
     expect(find(validateDish(m1({ name: "" }), ctx()), "name")).toHaveLength(1);
     expect(find(validateDish(m1({ name: "a".repeat(151) }), ctx()), "name")).toHaveLength(1);
+    expect(find(validateDish(m1({ name: "Thịt trâu (bản sao)" }), ctx()), "name")).toEqual([
+      { field: "name", message: "Đổi tên món trước khi hoàn tất" },
+    ]);
+    expect(validateDish(m1({ name: "Thịt bò xào rau muống" }), ctx())).toEqual([]);
     expect(validateDish(m1({ name: "a".repeat(150) }), ctx())).toEqual([]);
   });
 
-  it("thiếu danh mục", () => expect(find(validateDish(m1({ category_ref: null }), ctx()), "category_ref")).toHaveLength(1));
+  it("danh mục không bắt buộc", () => expect(find(validateDish(m1({ category_ref: null }), ctx()), "category_ref")).toHaveLength(0));
 
   it.each([[2, true], [3, false], [8, false], [9, true]])("hashtag %i nhãn -> lỗi=%s", (n, bad) => {
     const tags = Array.from({ length: n }, (_, i) => `t${i}`);
@@ -101,7 +105,7 @@ describe("validateDish", () => {
   });
 
   it("không có gia vị không-bỏ -> đúng câu BR-18", () => {
-    const msg = "Món cần ít nhất một gói gia vị không được bỏ";
+    const msg = "Món cần ít nhất một gia vị hoặc một cốt nước dùng";
     for (const seasonings of [[], [{ row: "g1", slot: "GIA_VI_THEM" as const, package_ref: "pkg-gvxao", removable: true }]]) {
       const errs = validateDish(m1({ seasonings }), ctx());
       expect(errs.some((e) => e.message === msg)).toBe(true);
@@ -162,5 +166,85 @@ describe("validateDish", () => {
     expect(e.existing).toEqual({ set_ref: "set-m1", variant_label: "2 người" });
     expect(validateDish(m1({ servings: 4 }), ctx({ kind: "VARIANT", existingVariants }))).toEqual([]);
     expect(find(validateDish(m1({ servings: 2 }), ctx({ kind: "COPY", existingVariants })), "servings")).toHaveLength(0);
+  });
+
+  it("chặn nguyên liệu DRAFT và SUSPENDED ở inactiveSkus và không cộng ô", () => {
+    const draftErrs = validateDish(
+      m1({ ingredients: [{ row: "r1", sku_ref: "sku-trau", quantity: "150", uom: "G", yield_pct: "100" }] }),
+      ctx({ inactiveSkus: { "sku-trau": "DRAFT" } }),
+    );
+    expect(find(draftErrs, "sku_ref", "r1")).toEqual([{
+      field: "sku_ref",
+      row: "r1",
+      message: "Nguyên liệu đang là nháp — duyệt nguyên liệu trước khi hoàn tất món",
+    }]);
+    expect(find(draftErrs, "slots")).toHaveLength(1);
+
+    const suspendedErrs = validateDish(
+      m1({ ingredients: [{ row: "r1", sku_ref: "sku-trau", quantity: "150", uom: "G", yield_pct: "100" }] }),
+      ctx({ inactiveSkus: { "sku-trau": "SUSPENDED" } }),
+    );
+    expect(find(suspendedErrs, "sku_ref", "r1")).toEqual([{
+      field: "sku_ref",
+      row: "r1",
+      message: "Nguyên liệu đã ngừng dùng — đổi sang nguyên liệu đang dùng",
+    }]);
+    expect(find(suspendedErrs, "slots")).toHaveLength(1);
+  });
+
+  it("chặn nguyên liệu MISSING ở inactiveSkus và không cộng ô", () => {
+    const missingErrs = validateDish(
+      m1({ ingredients: [{ row: "r1", sku_ref: "sku-trau", quantity: "150", uom: "G", yield_pct: "100" }] }),
+      ctx({ inactiveSkus: { "sku-trau": "MISSING" } }),
+    );
+    expect(find(missingErrs, "sku_ref", "r1")).toEqual([{
+      field: "sku_ref",
+      row: "r1",
+      message: "Nguyên liệu không còn trong danh mục — xoá dòng này hoặc chọn nguyên liệu khác",
+    }]);
+    expect(find(missingErrs, "slots")).toHaveLength(1);
+  });
+
+  it("cho phép cùng số suất khi khác variant_note và chặn khi trùng variantKey", () => {
+    const baseVariant = { servings: 2, variant_note: "Cốt bò truyền thống", set_ref: "s1", variant_label: "2 suất · Cốt bò truyền thống" };
+    const diffErrs = validateDish(
+      m1({ variant_note: "Cốt chua cay" }),
+      ctx({ kind: "VARIANT", existingVariants: [baseVariant] }),
+    );
+    expect(find(diffErrs, "servings")).toEqual([]);
+
+    const dupErrs = validateDish(
+      m1({ variant_note: "  cốt bò  truyền   thống " }),
+      ctx({ kind: "VARIANT", existingVariants: [baseVariant] }),
+    );
+    expect(find(dupErrs, "servings")).toEqual([{
+      field: "servings",
+      message: "Món đã có biến thể cùng nhãn",
+      existing: { set_ref: "s1", variant_label: "2 suất · Cốt bò truyền thống" },
+    }]);
+  });
+
+  it("DO_CHUA không tính là gia vị giữ món, nhưng kiểm tra prep_note độ dài và ký tự điều khiển", () => {
+    const noSpiceErrs = validateDish(
+      m1({
+        ingredients: [{ row: "r1", sku_ref: "sku-trau", quantity: "150", uom: "G", yield_pct: "100" }],
+        seasonings: [{ row: "s1", slot: "DO_CHUA", package_ref: "pkg-kimchi", removable: false }],
+      }),
+      ctx({ packagesWithRecipe: ["pkg-kimchi"] }),
+    );
+    expect(find(noSpiceErrs, "removable")).toHaveLength(1);
+
+    const longNote = "x".repeat(121);
+    const noteErrs = validateDish(
+      m1({
+        ingredients: [
+          { row: "r1", sku_ref: "sku-trau", quantity: "150", uom: "G", yield_pct: "100", prep_note: longNote },
+          { row: "r2", sku_ref: "sku-muong", quantity: "200", uom: "G", yield_pct: "100", prep_note: "băm\nnhỏ" },
+        ],
+      }),
+      ctx(),
+    );
+    expect(find(noteErrs, "prep_note", "r1")).toHaveLength(1);
+    expect(find(noteErrs, "prep_note", "r2")).toHaveLength(1);
   });
 });

@@ -6,6 +6,8 @@ import { useTranslations } from "next-intl";
 import { useAccess } from "@/lib/access-boundary";
 import { getMaterialCategories } from "@/lib/api/material-categories";
 import type { MaterialCategory } from "@/lib/api/inventory/types";
+import { toast } from "@/components/ui/toast";
+import { FetchError } from "@/lib/fetcher";
 import { createSupplier, updateSupplier, type Supplier, type SupplierInput } from "@/lib/api/suppliers";
 import { fileSHA256, uploadDocument } from "@/lib/api/agreement-documents";
 import { presignSupplierPhoto, finalizeSupplierPhoto, validSupplierPhoto } from "@/lib/api/supplier-photo";
@@ -35,7 +37,7 @@ export type SupplierFormValues = {
 };
 export type SupplierFormField = keyof SupplierFormValues;
 export type SupplierFormErrors = Partial<Record<SupplierFormField, "missingCode" | "missingName" | "phoneError" | "emailError" | "lengthError">>;
-export type SupplierFormOptions = { supplier?: Supplier; onClose: () => void; onSaved: (supplier: Supplier) => void };
+export type SupplierFormOptions = { supplier?: Supplier; photoUrl?: string; onClose: () => void; onSaved: (supplier: Supplier) => void };
 const supplierFormFields: SupplierFormField[] = ["code", "name", "tax", "line", "ward", "province", "contactName", "phone", "email", "note"];
 export const supplierFieldLimits: Record<SupplierFormField, number> = {
   code: 64, name: 200, tax: 32, line: 300, ward: 120, province: 120,
@@ -106,6 +108,7 @@ export function useSupplierForm({ supplier, onClose, onSaved }: SupplierFormOpti
   const [dirty, setDirty] = useState(false);
   const [discard, setDiscard] = useState(false);
   const [error, setError] = useState("");
+  const [duplicateCode, setDuplicateCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [photo, setPhoto] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState("");
@@ -124,7 +127,8 @@ export function useSupplierForm({ supplier, onClose, onSaved }: SupplierFormOpti
   const errors = supplierFormErrors(values);
   const leaves = lookup.categories?.flatMap(parent => parent.children.map(child => child.code)) ?? [];
   const groupsValid = !groupsChanged || selected.every(code => leaves.includes(code));
-  const valid = allowed && !photoError && Object.keys(errors).length === 0 && lookup.categories !== null && !lookup.lookupError && groupsValid;
+  const ready = allowed && lookup.categories !== null && !lookup.lookupError;
+  const valid = ready && !photoError && Object.keys(errors).length === 0 && groupsValid;
 
   function choosePhoto(file: File | null) {
     if (busy || !photoAllowed) return;
@@ -137,6 +141,7 @@ export function useSupplierForm({ supplier, onClose, onSaved }: SupplierFormOpti
   }
 
   function change(field: SupplierFormField, value: string) {
+    if (field === "code") setDuplicateCode("");
     setValues(current => ({ ...current, [field]: value }));
     setDirty(true);
   }
@@ -144,12 +149,14 @@ export function useSupplierForm({ supplier, onClose, onSaved }: SupplierFormOpti
     setSelected(codes); setGroupsChanged(true); setDirty(true);
   }
   function fieldError(field: SupplierFormField) {
+    if (field === "code" && duplicateCode) return t("duplicateCode");
     const issue = touched[field] ? errors[field] : undefined;
     return issue ? t(issue, { count: supplierFieldLimits[field] }) : undefined;
   }
   async function submit(event: FormEvent) {
     event.preventDefault();
-    if (!valid || submitting.current) return;
+    if (submitting.current || !ready) return;
+    if (!valid) { setTouched(Object.fromEntries(supplierFormFields.map(field => [field, true]))); return; }
     const input = supplierFormInput(values, selected, groupsChanged);
     const encoded = JSON.stringify(input);
     if (!saveState.current.saved && command.current.body !== encoded) {
@@ -159,18 +166,19 @@ export function useSupplierForm({ supplier, onClose, onSaved }: SupplierFormOpti
     submitting.current = true; setBusy(true); setError("");
     try {
       const saved = await saveSupplierWithPhoto({ state: saveState.current, input, supplier, file: photo });
+      toast.success(t(supplier ? "updated" : "created"));
       onSaved(saved);
     } catch (cause) {
       if (saveState.current.saved && photo) { setPhotoPending(true); setError(t("photoPending")); }
-      else setError(cause instanceof Error ? cause.message : t("saveError"));
+      else if (!supplier && cause instanceof FetchError && cause.status === 409 && /mã nhà cung cấp/i.test(cause.message)) setDuplicateCode(input.code);
+      else setError(t("saveError"));
     }
     finally { submitting.current = false; setBusy(false); }
   }
-  const missing = errors.code || errors.name ? t("required") : Object.keys(errors).length ? t("fixErrors") : t("waitGroups");
   return {
     ...lookup, t, allowed, values, change, selected, select, fieldError,
     touch: (field: SupplierFormField) => setTouched(current => ({ ...current, [field]: true })),
-    dirty, discard, setDiscard, error, busy, valid, missing, submit,
+    dirty, discard, setDiscard, error, busy, ready, submit,
     photo, photoPreview, photoError, photoPending, photoAllowed, choosePhoto,
     close: () => { if (!busy) { if (dirty) setDiscard(true); else onClose(); } },
     legacy: Boolean(supplier && (supplier.category_migration_required ?? supplier.material_categories.length > 0) && !groupsChanged),

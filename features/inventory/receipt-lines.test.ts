@@ -34,3 +34,14 @@ it("tính lệch giá tham chiếu, không chia cho giá 0 hoặc thiếu giá",
   expect(priceDeviation(undefined, 100)).toBeNull();
   expect(lineAmount(2.5, 101)).toBe(253);
 });
+
+import { missingHint } from "./receipt-lines";
+describe("chú giải thiếu thông tin", () => {
+  it("nêu đúng điều còn thiếu theo thứ tự", () => {
+    expect(missingHint(false, [])).toBe("Chưa chọn nhà cung cấp");
+    expect(missingHint(true, [{ sku: "", quantity: 1 }])).toBe("Dòng 1 chưa chọn nguyên liệu");
+    expect(missingHint(true, [{ sku: "a", quantity: 0 }])).toBe("Dòng 1 chưa có số lượng");
+    expect(missingHint(true, [{ sku: "a", quantity: 1, unitPrice: 5 }, { sku: "b", quantity: 2 }])).toBe("Dòng 2 chưa có đơn giá");
+    expect(missingHint(true, [{ sku: "a", quantity: 1, unitPrice: 0 }])).toBeNull();
+  });
+});

@@ -1,7 +1,7 @@
 import { afterEach, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 import { envelope } from "@/mocks/supplier-contract";
-import { getMaterialCategories } from "./material-categories";
+import { getMaterialCategories, treeSchema } from "./material-categories";
 import { GET } from "@/app/api/inventory/material-categories/route";
 
 afterEach(() => vi.unstubAllGlobals());
@@ -35,4 +35,11 @@ it("BFF giữ quyền/no-store và không forward query thay nguồn", async () 
   expect(new URL(String(fetch.mock.calls[0][0])).search).toBe("");
   expect(fetch.mock.calls[0][1].headers.Authorization).toBe("Bearer test-only");
   expect(result.headers.get("cache-control")).toBe("no-store");
+});
+it("cho phép is_active tuỳ chọn trên cả cha và con trong treeSchema và getMaterialCategories", async () => {
+  const withActive = [{ code: "THIT", name: "Thịt", is_active: true, children: [{ code: "GA", name: "Gà", is_active: false, children: [] }] }];
+  expect(treeSchema.parse({ items: tree })).toEqual({ items: tree });
+  expect(treeSchema.parse({ items: withActive })).toEqual({ items: withActive });
+  vi.stubGlobal("fetch", vi.fn().mockResolvedValue(Response.json(envelope({ items: withActive }))));
+  expect(await getMaterialCategories()).toEqual(withActive);
 });

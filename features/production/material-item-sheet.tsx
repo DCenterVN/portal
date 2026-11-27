@@ -7,13 +7,14 @@ import { ActionButton } from "@/components/patterns/action-button";
 import { Button } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
 import { useAccess } from "@/lib/access-boundary";
+import { FetchError } from "@/lib/fetcher";
 import type { MaterialCategory, Material, Unit } from "@/lib/api/material-catalog";
 import type { NewMaterial } from "@/lib/api/material-catalog-write";
-import { activateMaterial, createMaterial, deleteMaterialImage, suspendMaterial, updateMaterial, uploadMaterialImage, viMessage, NAME_HAS_QUANTITY, UNIT_LOCKED } from "@/lib/api/material-catalog-write";
+import { activateMaterial, createMaterial, deleteMaterial, deleteMaterialImage, suspendMaterial, updateMaterial, uploadMaterialImage, viMessage, NAME_HAS_QUANTITY, UNIT_LOCKED } from "@/lib/api/material-catalog-write";
 
 type Can = (action: string) => boolean;
 type Label = "Lưu" | "Duyệt" | "Ngừng dùng…" | "Dùng lại";
@@ -26,6 +27,9 @@ export function actionsFor(material: Material, can: Can): Label[] {
   if (can("sales:material:lifecycle")) labels.push(...(material.status === "DRAFT" ? ["Duyệt" as const] : []), "Ngừng dùng…");
   return labels;
 }
+
+export const canDeleteMaterial = (material: Material, can: Can) => material.status === "DRAFT" && can("sales:material:lifecycle");
+export const isDeletedMissing = (kind: "material" | "delete-material", cause: unknown) => kind === "delete-material" && cause instanceof FetchError && cause.status === 404;
 
 export function NameField({ value, onChange, disabled, error }: { value: string; onChange: (value: string) => void; disabled: boolean; error: string }) {
   return <Field data-invalid={error ? true : undefined}>
@@ -56,7 +60,10 @@ export const materialPatch = (material: Material, body: NewMaterial): Partial<Ne
 export function UnitField({ locked, value, onChange, error }: { locked: boolean; value: Unit | ""; onChange: (value: Unit) => void; error: string }) {
   return <Field data-invalid={error ? true : undefined}>
     <FieldLabel htmlFor="material-don-vi">Đơn vị</FieldLabel>
-    <NativeSelect id="material-don-vi" value={value} disabled={locked} aria-invalid={error ? true : undefined} onChange={event => onChange(event.target.value as Unit)}>{value === "" && <NativeSelectOption value="" disabled>Chọn đơn vị</NativeSelectOption>}{UNITS.map(item => <NativeSelectOption key={item.code} value={item.code}>{item.label}</NativeSelectOption>)}</NativeSelect>
+    <Select value={value} disabled={locked} onValueChange={next => onChange(next as Unit)}>
+      <SelectTrigger id="material-don-vi" aria-invalid={error ? true : undefined} className="w-full"><SelectValue placeholder="Chọn đơn vị">{UNITS.find(item => item.code === value)?.label}</SelectValue></SelectTrigger>
+      <SelectContent position="popper" align="start">{UNITS.map(item => <SelectItem key={item.code} value={item.code}>{item.label}</SelectItem>)}</SelectContent>
+    </Select>
     {(locked || error) && <p className={error ? "text-sm text-destructive" : "text-sm text-muted-foreground"} role={error ? "alert" : undefined}>{UNIT_LOCKED}</p>}
   </Field>;
 }
@@ -81,8 +88,11 @@ function ImageBox({ current, file, canEdit, busy, onPick, onRemove }: { current:
   </div>;
 }
 
-function Select({ id, label, value, onChange, children, disabled }: { id: string; label: string; value: string; onChange: (value: string) => void; children: React.ReactNode; disabled?: boolean }) {
-  return <Field><FieldLabel htmlFor={id}>{label}</FieldLabel><NativeSelect id={id} value={value} disabled={disabled} onChange={event => onChange(event.target.value)}>{children}</NativeSelect></Field>;
+function SelectField({ id, label, value, placeholder, options, onChange, disabled }: { id: string; label: string; value: string; placeholder: string; options: { code: string; label: string }[]; onChange: (value: string) => void; disabled?: boolean }) {
+  return <Field><FieldLabel htmlFor={id}>{label}</FieldLabel><Select value={value} disabled={disabled} onValueChange={onChange}>
+    <SelectTrigger id={id} className="w-full"><SelectValue placeholder={placeholder}>{options.find(item => item.code === value)?.label}</SelectValue></SelectTrigger>
+    <SelectContent position="popper" align="start">{options.map(item => <SelectItem key={item.code} value={item.code}>{item.label}</SelectItem>)}</SelectContent>
+  </Select></Field>;
 }
 
 type Props = { target: Material | "new" | null; tree: MaterialCategory[]; defaultCategory: string; onClose: () => void; onSaved: () => void };
@@ -98,16 +108,20 @@ export function MaterialItemSheet({ target, tree, defaultCategory, onClose, onSa
   const [imageUrl, setImageUrl] = useState(material?.imageUrl ?? null);
   const [reason, setReason] = useState("");
   const [asking, setAsking] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const { options, value: selectedGroup } = groupChoice(tree, category, group);
   const { fields: canEdit, image: canImage } = locksFor(target === "new" ? "new" : material ?? "new", can);
   const ready = name.trim() !== "" && selectedGroup !== "" && unit !== "" && !busy;
 
-  async function run(job: () => Promise<unknown>, close = true) {
+  async function run(job: () => Promise<unknown>, close = true, kind: "material" | "delete-material" = "material") {
     setBusy(true); setError("");
     try { await job(); onSaved(); if (close) onClose(); }
-    catch (cause) { setError(viMessage(cause, "material")); }
+    catch (cause) {
+      if (isDeletedMissing(kind, cause)) { onSaved(); if (close) onClose(); return; }
+      setError(viMessage(cause, kind));
+    }
     finally { setBusy(false); }
   }
   const body = { name: name.trim(), uom_code: unit as Unit, material_group_code: selectedGroup.toUpperCase() };
@@ -133,14 +147,17 @@ export function MaterialItemSheet({ target, tree, defaultCategory, onClose, onSa
       <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-4 pb-4">
         <ImageBox current={imageUrl} file={file} canEdit={canImage} busy={busy} onPick={pickImage} onRemove={() => run(async () => { await deleteMaterialImage(material!.id); setImageUrl(null); }, false)} />
         <NameField value={name} onChange={setName} disabled={!canEdit} error={error === NAME_HAS_QUANTITY ? error : ""} />
-        <Select id="material-category" label="Loại" value={category} disabled={!canEdit} onChange={value => { setCategory(value); setGroup(tree.find(item => item.code === value)?.groups.find(item => item.active)?.code ?? ""); }}>{category === "" && <NativeSelectOption value="" disabled>Chưa xếp loại</NativeSelectOption>}{tree.filter(item => item.active).map(item => <NativeSelectOption key={item.code} value={item.code}>{item.label}</NativeSelectOption>)}</Select>
-        <Select id="material-group" label="Nhóm" value={selectedGroup} disabled={!canEdit} onChange={setGroup}>{selectedGroup === "" && <NativeSelectOption value="" disabled>Chọn nhóm</NativeSelectOption>}{options.map(item => <NativeSelectOption key={item.code} value={item.code}>{item.label}</NativeSelectOption>)}</Select>
+        <SelectField id="material-category" label="Loại" value={category} placeholder="Chưa xếp loại" disabled={!canEdit} options={tree.filter(item => item.active)} onChange={value => { setCategory(value); setGroup(tree.find(item => item.code === value)?.groups.find(item => item.active)?.code ?? ""); }} />
+        <SelectField id="material-group" label="Nhóm" value={selectedGroup} placeholder="Chọn nhóm" disabled={!canEdit} options={options} onChange={setGroup} />
         <UnitField locked={!!material && material.status !== "DRAFT"} value={unit} onChange={setUnit} error={error === UNIT_LOCKED ? error : ""} />
         {error && error !== NAME_HAS_QUANTITY && error !== UNIT_LOCKED && <p role="alert" className="text-sm text-destructive">{error}</p>}
       </div>
       <SheetFooter className="flex-row justify-end">
+        {material && canDeleteMaterial(material, can) && <Button variant="outline" className="mr-auto" disabled={busy} onClick={() => setDeleting(true)}>Xoá nguyên liệu</Button>}
         {material ? <MaterialActions labels={actionsFor(material, can)} busy={busy} blocked={unit === ""} onAction={onAction} /> : <ActionButton pending={busy} disabled={!ready} onClick={create}>{title}</ActionButton>}
       </SheetFooter>
+      <ConfirmDialog open={deleting} onOpenChange={setDeleting} title="Xoá nguyên liệu này?" description="Nguyên liệu sẽ bị xoá hẳn khỏi danh sách và không khôi phục được." confirmLabel="Xoá nguyên liệu" danger busy={busy}
+        onConfirm={() => { setDeleting(false); run(() => deleteMaterial(material!.id), true, "delete-material"); }} />
       <ConfirmDialog open={asking} onOpenChange={setAsking} title="Ngừng dùng nguyên liệu này?" description="Nguyên liệu sẽ không chọn được nữa. Hãy ghi lý do." confirmLabel="Ngừng dùng" danger busy={busy} confirmDisabled={reason.trim() === ""}
         onConfirm={() => run(() => suspendMaterial(material!.id, reason))}>
         <Textarea aria-label="Lý do ngừng dùng" value={reason} onChange={event => setReason(event.target.value)} placeholder="Lý do (bắt buộc)" />

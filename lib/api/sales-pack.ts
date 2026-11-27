@@ -1,18 +1,18 @@
 import { z } from "zod";
 import { apiFetch } from "@/lib/fetcher";
 import { decodePlatform } from "@/lib/api/platform-contract";
+import { FOOD_SLOTS } from "@/lib/dishes/types";
 import { errorMessage, mutationHeaders } from "./sales";
-// PACK schemas follow sales/api/openapi.public.yaml.
 const FoodPackageSchema = z.object({
   id: z.string().uuid(), org_ref: z.string().uuid(), branch_ref: z.string().uuid(), product_ref: z.string().uuid(), code: z.string().min(1),
   name: z.string().min(1), variant_label: z.string().min(1), net_weight_g: z.number().int().min(1).max(2147483647),
-  uom_code: z.enum(["EA"]), temperature_regime: z.string().min(1), kind: z.enum(["PRODUCED_VARIANT"]), sellable: z.literal(false),
+  uom_code: z.enum(["EA"]), temperature_regime: z.string().min(1), kind: z.enum(["PRODUCED_VARIANT"]), sellable: z.boolean(),
   status: z.string(), updated_at: z.string().datetime({ offset: true })
 }).strict();
 
 const ManualHashtagsSchema = z.array(z.string().regex(new RegExp("^[a-z0-9]+(-[a-z0-9]+)*$"))).min(3).max(8).refine(items => new Set(items).size === items.length, "Duplicate values");
 
-const FoodSlotSchema = z.enum(["TINH_BOT", "DAM", "RAU", "COT", "NUOC_CHAM", "GIA_VI_THEM"]);
+const FoodSlotSchema = z.enum(FOOD_SLOTS);
 
 const SetOptionSchema = z.object({
   sku_ref: z.string().uuid(), quantity: z.number().int().min(1), is_default: z.boolean()
@@ -26,8 +26,8 @@ const FoodSetSchema = z.object({
   id: z.string().uuid(), org_ref: z.string().uuid(), branch_ref: z.string().uuid(), product_ref: z.string().uuid(), code: z.string().min(1),
   name: z.string().min(1), variant_label: z.string().min(1), net_weight_g: z.number().int().min(1).max(2147483647),
   uom_code: z.enum(["EA"]), temperature_regime: z.string().min(1), kind: z.enum(["COMMERCIAL_SET"]), sku_type: z.enum(["SET"]),
-  sellable: z.literal(false), status: z.string(), tags: ManualHashtagsSchema, system_hashtags: z.array(z.string()),
-  slots: z.array(SetSlotSchema).max(6), updated_at: z.string().datetime({ offset: true })
+  sellable: z.boolean(), status: z.string(), tags: ManualHashtagsSchema, system_hashtags: z.array(z.string()),
+  slots: z.array(SetSlotSchema).max(FOOD_SLOTS.length), updated_at: z.string().datetime({ offset: true })
 }).strict();
 
 const CreatePackageRequestSchema = z.object({
@@ -47,7 +47,7 @@ const CreateFoodSetRequestSchema = z.object({
   tags: ManualHashtagsSchema
 }).strict();
 const ReplaceFoodSetRequestSchema = z.object({
-  tags: ManualHashtagsSchema, slots: z.array(SetSlotSchema).min(2).max(6), expected_updated_at: z.string().datetime({ offset: true })
+  tags: ManualHashtagsSchema, slots: z.array(SetSlotSchema).min(2).max(FOOD_SLOTS.length), expected_updated_at: z.string().datetime({ offset: true })
 }).strict();
 const FoodPackagePageEnvelopeSchema = z.object({
   code: z.number().int(), status: z.string(), message: z.string(), data: z.object({
@@ -99,7 +99,7 @@ export function retirePackage(id: string) { return retireSalesPack(`/packages/${
 export function createFoodSet(input: CreateFoodSetRequest) {
   return salesPackRequest("/sets", FoodSetSchema, "POST", CreateFoodSetRequestSchema.parse(input));
 }
-export function listFoodSets(filters: { q?: string; tags?: string[]; category_slug?: string; month?: number; cursor?: string; limit?: number } = {}) {
+export function listFoodSets(filters: { q?: string; tags?: string[]; category_slug?: string; month?: number; product_ref?: string; cursor?: string; limit?: number } = {}) {
   const query = new URLSearchParams();
   for (const [key, value] of Object.entries(filters)) {
     if (Array.isArray(value)) value.forEach(tag => query.append(key, tag));

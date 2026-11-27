@@ -16,7 +16,7 @@ import { createCategory, renameCategory, setCategoryActive, viMessage } from "@/
 import { DeleteCategory } from "./material-category-delete";
 import { IconAction, IconSlot } from "./icon-action";
 import { useCategoryCounts } from "./use-category-counts";
-import { suggestCode } from "./materials-catalog";
+import { sortCategories, suggestCode } from "./materials-catalog";
 
 type Mode = { kind: "add"; parent?: MaterialCategory } | { kind: "rename"; item: MaterialCategory | MaterialGroup } | null;
 
@@ -66,7 +66,7 @@ type ListProps = { tree: MaterialCategory[]; counts: Record<string, number> | nu
 
 export function CategoryList({ tree, counts, showInactive, ...actions }: ListProps) {
   const shown = (item: { active: boolean }) => showInactive || item.active;
-  return <ul className="divide-y">{tree.filter(shown).map(category => <li key={category.code}>
+  return <ul className="divide-y">{sortCategories(tree).filter(shown).map(category => <li key={category.code}>
     <Row item={category} counts={counts} hasChildren={category.groups.length > 0} {...actions} />
     {category.groups.filter(shown).map(group => <Row key={group.code} item={group} parent={category} counts={counts} hasChildren={false} {...actions} />)}
   </li>)}</ul>;

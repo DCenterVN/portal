@@ -39,6 +39,14 @@ describe("AC-3 getProducts đọc envelope staff {product, variants}", () => {
     expect(calls()[0].url).toContain("/api/sales/products");
   });
 
+  it("dị ứng chưa rõ do sales trả {name, sku_ref} vẫn tải được và hiện tên nguyên liệu", async () => {
+    const allergen_summary = { known: false, contains: ["FISH"], unknown: [{ name: "Rau cải", sku_ref: SKU_ID }] };
+    stub(() => ok({ items: [{ product: items[0].product, variants: [{ ...staffVariant, allergen_summary }] }], next_cursor: "" }));
+    const result = await getProducts();
+    expect(result.source).toBe("api");
+    expect(result.data[0].variants?.[0].allergen_summary).toEqual({ known: false, contains: ["FISH"], unknown: ["Rau cải"] });
+  });
+
   it("lỗi 403 trả unavailable kèm message, không có dữ liệu giả", async () => {
     stub(() => fail(403, "forbidden", "action sales:product:read is not authorized"));
     const result = await getProducts();

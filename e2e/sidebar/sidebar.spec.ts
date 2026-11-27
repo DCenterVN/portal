@@ -26,17 +26,18 @@ test("Sidebar quản trị có menu con", async ({ page }) => {
 
   await test.step("Mở nhóm Sản xuất", async () => {
     await group("Sản xuất").click();
-    await expect(nav.getByRole("link", { name: "Món & thực đơn", exact: true })).toBeVisible();
+    await expect(nav.getByRole("link", { name: "Món ăn", exact: true })).toBeVisible();
+    await expect(nav.getByRole("link", { name: "Thực đơn", exact: true })).toBeVisible();
     await page.screenshot({ path: `${shots}/san-xuat-mo.png` });
   });
 
-  await test.step("Vào Món & thực đơn, breadcrumb Sản xuất > Món & thực đơn", async () => {
-    await nav.getByRole("link", { name: "Món & thực đơn", exact: true }).click();
+  await test.step("Vào Thực đơn, breadcrumb Sản xuất > Thực đơn", async () => {
+    await nav.getByRole("link", { name: "Thực đơn", exact: true }).click();
     await page.waitForURL(/\/production\/food-plans/);
     const crumbs = page.getByRole("navigation", { name: "breadcrumb" });
     await expect(crumbs).toContainText("Sản xuất");
-    await expect(crumbs).toContainText("Món & thực đơn");
-    await expect(nav.getByRole("link", { name: "Món & thực đơn", exact: true })).toHaveAttribute("aria-current", "page");
+    await expect(crumbs).toContainText("Thực đơn");
+    await expect(nav.getByRole("link", { name: "Thực đơn", exact: true })).toHaveAttribute("aria-current", "page");
     await page.screenshot({ path: `${shots}/breadcrumb.png` });
   });
 
@@ -44,7 +45,7 @@ test("Sidebar quản trị có menu con", async ({ page }) => {
     await page.reload();
     await expect(group("Sản xuất")).toHaveAttribute("aria-expanded", "true");
     await expect(group("Kho")).toHaveAttribute("aria-expanded", "true");
-    await expect(nav.getByRole("link", { name: "Món & thực đơn", exact: true })).toBeVisible();
+    await expect(nav.getByRole("link", { name: "Thực đơn", exact: true })).toBeVisible();
     await page.screenshot({ path: `${shots}/tai-lai.png` });
   });
 
@@ -53,7 +54,7 @@ test("Sidebar quản trị có menu con", async ({ page }) => {
     await expect(page.locator('[data-slot="sidebar"][data-state="collapsed"]')).toBeVisible();
     await nav.getByRole("button", { name: "Sản xuất", exact: true }).click();
     const menu = page.getByRole("menu");
-    await expect(menu.getByRole("menuitem", { name: "Món & thực đơn" })).toBeVisible();
+    await expect(menu.getByRole("menuitem", { name: "Thực đơn" })).toBeVisible();
     await expect(page.locator('[data-slot="sidebar"][data-state="collapsed"]')).toBeVisible();
     await page.screenshot({ path: `${shots}/thu-gon-menu-bat-ra.png` });
   });

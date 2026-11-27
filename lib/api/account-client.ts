@@ -29,7 +29,8 @@ async function request(path: string, method: string, body?: unknown) {
   if (method !== "GET" && response.status === 401 && response.headers.get("x-session-missing")) {
     const refreshed = await doRefresh(startedAt);
     if (refreshed === true) response = await apiFetch(path, init, true);
-    else if (refreshed === false) redirectToLogin();
+    else if (refreshed === "unavailable") throw new FetchError(fallback, 503);
+    else redirectToLogin();
   }
   if (response.ok) return response;
   const info = await response.json().catch(invalidJson);

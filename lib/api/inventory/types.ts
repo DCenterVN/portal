@@ -1,5 +1,5 @@
-export type MaterialCategoryLeaf = { code: string; name: string; children: never[] };
-export type MaterialCategory = { code: string; name: string; children: MaterialCategoryLeaf[] };
+export type MaterialCategoryLeaf = { code: string; name: string; is_active?: boolean; children: never[] };
+export type MaterialCategory = { code: string; name: string; is_active?: boolean; children: MaterialCategoryLeaf[] };
 export type MaterialCategoryTreeResponse = { items: MaterialCategory[] };
 export type PresignSupplierPhotoRequest = { filename: string; content_type: string; size_bytes: number; sha256: string };
 export type FinalizeSupplierPhotoRequest = { upload_id: string };

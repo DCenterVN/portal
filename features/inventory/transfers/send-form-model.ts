@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { FEFO_LOT, formatQuantity, fromMilli, toMilli } from "@/lib/stock-transfer";
+import { usableError } from "./usable-quantity";
 import type { LotRow, StockRow } from "@/lib/api/stock-transfers";
 
 export type SendValues = { to: string; lines: Array<{ sku: string; quantity: string; lot: string }> };
@@ -21,7 +22,8 @@ export function sendSchema(stock: StockRow[], lots: LotRow[]) {
     const milli = toMilli(value.quantity);
     if (!milli) return issue("Nhập số lượng lớn hơn 0, tối đa 3 số lẻ.");
     const row = available.get(value.sku);
-    if (row && milli > Math.round(row.available_quantity * 1000)) return issue(`Chỉ còn khả dụng ${formatQuantity(row.available_quantity, row.uom)}. Giảm số lượng.`);
+    const blocked = usableError(row, milli);
+    if (blocked) return issue(blocked);
     const lot = lots.find(item => item.id === value.lot);
     if (lot && milli > Math.round(lot.remaining_quantity * 1000)) issue(`Lô ${lot.supplier_lot_code} chỉ còn ${formatQuantity(lot.remaining_quantity, lot.uom)}. Chọn lô khác hoặc giảm số lượng.`);
   });

@@ -21,8 +21,7 @@ function markup(value: Agreement = agreement, update = true) {
 it("nháp server có nhãn rõ, editor theo hàng và lưu/áp dụng tách biệt", () => {
   const html = markup();
   expect(html).toContain("Sửa bản nháp bảng giá");
-  expect(html).toContain("Đã lưu nháp phiên bản 1");
-  expect(html).toContain('<table');
+  expect(html).toContain("Các dòng bảng giá");
   expect(html).toContain("Lưu nháp");
   expect(html).toContain("Áp dụng bảng giá");
   expect(html).not.toContain("2. Chứng từ");
@@ -38,6 +37,16 @@ it("ACTIVE hoặc thiếu quyền không có input giá và action lưu", () => 
 it("nháp không có chứng từ vẫn có Áp dụng, hướng dẫn file là tùy chọn", () => {
   const html = markup({ ...agreement, document_ref: null });
   expect(html).toContain("Áp dụng bảng giá");
-  expect(html).toContain("Chứng từ tùy chọn");
+  expect(html).toContain("Chứng từ (không bắt buộc)");
   expect(html).not.toContain("Cần một chứng từ đã hoàn tất trước khi áp dụng");
+});
+
+const create = () => renderToStaticMarkup(<AccessProvider value={{ plane: "company", root: "", actions: new Set(["inventory:supplier:update"]) }}><SupplierAgreementForm supplierId={supplierID} supplierCode="NCC1" onClose={noop} onSaved={noop} onConflict={noop} /></AccessProvider>);
+it("nhãn giá đi qua uomLabel", () => {
+  expect(markup()).toContain("Giá (₫ mỗi kg)");
+});
+it("lập mới để trống ngày đến, nhắc dưới ô và khoá nút lưu; sửa nháp giữ ngày đã lưu", () => {
+  const html = create();
+  expect(html).toContain("Chọn ngày kết thúc áp dụng"); expect(html).toMatch(/<button[^>]*disabled=""[^>]*>Lưu nháp/);
+  expect(markup()).not.toContain("Chọn ngày kết thúc áp dụng");
 });

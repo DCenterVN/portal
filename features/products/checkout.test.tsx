@@ -2,7 +2,7 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { useCart } from "./use-cart";
-import { cancelOrder, getOrderDisplay, getOrdersPage } from "@/lib/api/sales";
+import { cancelOrder, createOrder, getOrderDisplay, getOrdersPage } from "@/lib/api/sales";
 
 vi.mock("@/components/ui/toast", () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
 const fetchMock = vi.fn<typeof fetch>();
@@ -69,4 +69,8 @@ it("thiếu chi nhánh chặn trước API và giữ giỏ", async () => {
   await cartHook().handleCheckout(values);
   expect(fetchMock).not.toHaveBeenCalled();
   expect(storage.get("vietsach.cart_id")).toBe("cart");
+});
+it("lỗi hết hàng theo phong bì chuẩn mang mã out_of_stock", async () => {
+  fetchMock.mockResolvedValueOnce(Response.json({ code: 409, status: "error", message: "inventory stock insufficient", errors: { error_code: "out_of_stock" } }, { status: 409 }));
+  await expect(createOrder("cart", values, "key")).rejects.toMatchObject({ status: 409, code: "out_of_stock" });
 });

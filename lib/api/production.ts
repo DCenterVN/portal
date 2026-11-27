@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { apiFetch } from "@/lib/fetcher";
-import { errorMessage, mutationHeaders, responseData } from "@/lib/api/production-http";
+import { apiFetch, FetchError } from "@/lib/fetcher";
+import { apiFailure, codedFailure, errorMessage, mutationHeaders, responseData, salesAwareError } from "@/lib/api/production-http";
 import { allPages, type CursorPage } from "@/lib/api/all-pages";
 import type { FoodSlot } from "@/lib/api/production-pack";
 
@@ -13,7 +13,7 @@ export interface ProductionTarget {
   period_start: string;
   period_end: string;
   title: string;
-  status: "DRAFT" | "APPROVED" | "IN_PLANNING" | "HANDED_OFF" | "COMPLETED" | "REJECTED";
+  status: "DRAFT" | "APPROVED" | "IN_PLANNING" | "HANDED_OFF" | "IN_PRODUCTION" | "COMPLETED" | "REJECTED";
   lines: Array<{ product_ref: string; target_quantity: string | number; uom: string }>;
   created_by: string;
   approved_by?: string;
@@ -53,7 +53,7 @@ export interface ProductionOrder {
   planned_quantity: number;
   actual_output_quantity: number;
   uom: string;
-  status: "HANDED_OFF" | "ACCEPTED" | "ALLOCATED" | "IN_PROGRESS" | "COMPLETED" | "QC_PASSED" | "QC_FAILED" | "FAILED";
+  status: "HANDED_OFF" | "ACCEPTED" | "SCHEDULED" | "ALLOCATED" | "IN_PROGRESS" | "COMPLETED" | "QC_PASSED" | "QC_FAILED" | "FAILED";
   reservation_ref?: string;
   finished_lot_ref?: string;
   finished_lot_expires_at?: string;
@@ -114,8 +114,6 @@ export interface QCInspectionResult {
   };
 }
 
-// ---------------- Targets (VT-14 / VT-15) ----------------
-
 type PageQuery = { cursor?: string; status?: string; pageSize?: number };
 async function getPage<T>(resource: "targets" | "orders", { cursor, status, pageSize }: PageQuery, fallback: string): Promise<CursorPage<T>> {
   const query = new URLSearchParams();
@@ -166,8 +164,6 @@ export async function approveTarget(targetId: string, decision: "APPROVE" | "REJ
   return responseData<ProductionTarget>(res);
 }
 
-// ---------------- Food Product Plans (VT-21) ----------------
-
 export async function createFoodPlan(targetId: string, input: PreparationPlanInput): Promise<FoodProductPlan> {
   const res = await apiFetch(`/api/production/targets/${encodeURIComponent(targetId)}/food-plans`, {
     method: "POST",
@@ -201,7 +197,7 @@ export async function publishFoodPlan(planId: string): Promise<{ food_plan: Food
     headers: mutationHeaders(),
     body: "{}",
   });
-  if (!res.ok) throw new Error(await errorMessage(res, "Không thể xuất bản kế hoạch dinh dưỡng"));
+  if (!res.ok) throw await salesAwareError(res, "Không thể xuất bản kế hoạch dinh dưỡng");
   return responseData<{ food_plan: FoodProductPlan; variant_sku_ref: string; bom_ref: string; cost_snapshot_ref: string; pricing_status: string }>(res);
 }
 
@@ -211,11 +207,28 @@ export async function resumeFoodPlanHandoff(planId: string): Promise<{ food_plan
     headers: mutationHeaders(),
 		body: "{}",
   });
-  if (!res.ok) throw new Error(await errorMessage(res, "Không thể kích hoạt chuyển giao sản xuất"));
+  if (!res.ok) throw await salesAwareError(res, "Không thể kích hoạt chuyển giao sản xuất");
   return responseData<{ food_plan: FoodProductPlan; production_order: ProductionOrder }>(res);
 }
 
-// ---------------- Production Orders (VT-09..VT-12) ----------------
+export interface SellableVariant { product_ref: string; sku_ref: string; bom_ref: string; bom_version: number; cost_snapshot_ref: string }
+
+export async function handoffSetSellableVariant(setId: string, input: { expected_updated_at: string; portion_count: number }): Promise<SellableVariant> {
+  const res = await apiFetch(`/api/production/sets/${encodeURIComponent(setId)}/sellable-variant`, { method: "POST", headers: mutationHeaders(), body: JSON.stringify(input) });
+  if (!res.ok) throw await salesAwareError(res, "Không thể chuẩn bị set để sản xuất");
+  return responseData<SellableVariant>(res);
+}
+
+export async function createProductionPlan(targetId: string, input: { serving_sku_ref: string; set_ref: string; source_revision: string; planned_quantity: number }): Promise<FoodProductPlan> {
+  const res = await apiFetch(`/api/production/targets/${encodeURIComponent(targetId)}/production-plans`, { method: "POST", headers: mutationHeaders(), body: JSON.stringify(input) });
+  if (!res.ok) throw await salesAwareError(res, "Không thể tạo kế hoạch sản xuất");
+  return responseData<FoodProductPlan>(res);
+}
+
+export async function planProductionFromSet(targetId: string, set: { id: string; updated_at: string }, portionCount: number, plannedQuantity: number): Promise<FoodProductPlan> {
+  const variant = await handoffSetSellableVariant(set.id, { expected_updated_at: set.updated_at, portion_count: portionCount });
+  return createProductionPlan(targetId, { serving_sku_ref: variant.sku_ref, set_ref: set.id, source_revision: set.updated_at, planned_quantity: plannedQuantity });
+}
 
 export const getOrdersPage = (query: PageQuery = {}) => getPage<ProductionOrder>("orders", query, "Không tải được lệnh sản xuất");
 export const getOrders = ({ forPicker = false } = {}) => allPages(cursor => getOrdersPage({ cursor, pageSize: 100, status: forPicker ? "QC_PASSED" : undefined }))
@@ -237,7 +250,7 @@ export async function allocateOrderLots(orderId: string): Promise<ProductionOrde
     headers: mutationHeaders(),
     body: "{}",
   });
-  if (!res.ok) throw new Error(await errorMessage(res, "Không thể phân bổ nguyên liệu FEFO"));
+  if (!res.ok) throw await codedFailure(res, "Không thể phân bổ nguyên liệu FEFO");
   return responseData<ProductionOrder>(res);
 }
 
@@ -261,7 +274,11 @@ export async function completeOrder(orderId: string, actualQuantity: number, inp
   return responseData<ProductionOrder>(res);
 }
 
-// ---------------- QC Decision (VT-13) ----------------
+export async function failOrder(orderId: string, failureReason: string): Promise<ProductionOrder> {
+  const res = await apiFetch(`/api/production/orders/${encodeURIComponent(orderId)}/failure`, { method: "POST", headers: mutationHeaders(), body: JSON.stringify({ failure_reason: failureReason }) });
+  if (!res.ok) throw new Error(await errorMessage(res, "Không thể báo hỏng mẻ"));
+  return responseData<ProductionOrder>(res);
+}
 
 export async function decideQC(orderId: string, input: { decision: "PASS" | "FAIL"; core_temperature_celsius?: number; package_check_passed: boolean; sensory_result: Record<string, string>; failure_reason?: string }): Promise<QCInspectionResult> {
   const res = await apiFetch(`/api/production/finished-goods-qc-inspections/${encodeURIComponent(orderId)}/complete`, {
@@ -269,17 +286,18 @@ export async function decideQC(orderId: string, input: { decision: "PASS" | "FAI
     headers: mutationHeaders(),
     body: JSON.stringify(input),
   });
-  if (!res.ok) throw new Error(await errorMessage(res, "Lỗi kiểm định QC (SoD violation hoặc trạng thái không hợp lệ)"));
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    throw new FetchError(typeof body?.message === "string" ? body.message : "Không ghi được kết quả kiểm chất lượng. Thử lại.", res.status, body);
+  }
   return responseData<QCInspectionResult>(res);
 }
 
-// ---------------- Shelf Placement (VT-08 / VT-16) ----------------
-
-export async function getShelfPlacements(): Promise<ShelfPlacement[]> {
-  const res = await apiFetch("/api/inventory/shelf-placements");
+export async function getShelfPlacementsPage(cursor = ""): Promise<{ items: ShelfPlacement[]; next_cursor: string }> {
+  const res = await apiFetch(`/api/inventory/shelf-placements${cursor ? `?${new URLSearchParams({ cursor })}` : ""}`);
   if (!res.ok) throw new Error(await errorMessage(res, `Không tải được kệ hàng (${res.status})`));
-  const payload = await responseData<{ items?: ShelfPlacement[] }>(res);
-  return payload.items || [];
+  const payload = await responseData<{ items?: ShelfPlacement[]; next_cursor?: string | null }>(res);
+  return { items: payload.items || [], next_cursor: payload.next_cursor ?? "" };
 }
 
 export async function placeOnShelf(input: { finished_lot_ref: string; branch_ref: string; shelf_code: string; placed_quantity: number; uom?: string; trace_code?: string }): Promise<ShelfPlacement> {
@@ -288,11 +306,9 @@ export async function placeOnShelf(input: { finished_lot_ref: string; branch_ref
     headers: mutationHeaders(),
     body: JSON.stringify(input),
   });
-  if (!res.ok) throw new Error(await errorMessage(res, "Không thể đưa hàng lên kệ"));
+  if (!res.ok) throw await apiFailure(res, "Không thể đưa hàng lên kệ");
   return responseData<ShelfPlacement>(res);
 }
-
-// ---------------- Public Traceability (VT-01) ----------------
 
 export async function getPublicTraceability(traceCode: string): Promise<PublicTraceability> {
   const res = await apiFetch(`/api/public/traceability/${encodeURIComponent(traceCode)}`);

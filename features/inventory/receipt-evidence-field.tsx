@@ -8,7 +8,7 @@ import { useReceiptEvidenceUpload, type ReceiptEvidence } from "./use-receipt-ev
 
 export type { ReceiptEvidence };
 type Props = {
-  receipt: string; line: string; attempt: string; purpose: EvidencePurpose; label: string;
+  receipt: string; line: string; attempt: string; purpose: EvidencePurpose; inspection?: string; label: string;
   accept: string; disabled: boolean; hashes: string[]; evidence?: ReceiptEvidence;
   previous?: File; onReload: () => void; onChange: (evidence?: ReceiptEvidence) => void;
 };

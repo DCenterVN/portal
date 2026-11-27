@@ -11,8 +11,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { useCart } from "./use-cart";
 
-type CheckoutProps = Pick<ReturnType<typeof useCart>, "discardOpen" | "setDiscardOpen" | "discardCheckout" | "form" | "provinces" | "communes" | "selectProvince" | "checkoutOpen" | "changeCheckoutOpen" | "checkoutError" | "submittingOrder" | "handleCheckout">;
-export function CheckoutForm({ discardOpen, setDiscardOpen, discardCheckout, form, provinces, communes, selectProvince, checkoutOpen, changeCheckoutOpen, checkoutError, submittingOrder, handleCheckout }: CheckoutProps) {
+type CheckoutProps = Pick<ReturnType<typeof useCart>, "discardOpen" | "setDiscardOpen" | "discardCheckout" | "form" | "provinces" | "communes" | "selectProvince" | "checkoutOpen" | "changeCheckoutOpen" | "checkoutError" | "submittingOrder" | "handleCheckout" | "unsellable" | "removeItem" | "itemBusy">;
+export function CheckoutForm({ discardOpen, setDiscardOpen, discardCheckout, form, provinces, communes, selectProvince, checkoutOpen, changeCheckoutOpen, checkoutError, submittingOrder, handleCheckout, unsellable, removeItem, itemBusy }: CheckoutProps) {
   const { errors } = form.formState;
   return <><Dialog open={checkoutOpen} onOpenChange={changeCheckoutOpen}>
     <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-lg">
@@ -29,6 +29,7 @@ export function CheckoutForm({ discardOpen, setDiscardOpen, discardCheckout, for
         </fieldset>
         <p className="text-sm">Phí giao: Miễn phí</p>
         {checkoutError && <p role="alert" className="text-sm text-destructive">{checkoutError}</p>}
+        {unsellable && <Button type="button" variant="outline" className="w-full" disabled={itemBusy || submittingOrder} onClick={() => void removeItem(unsellable)}>Bỏ món {unsellable.name} khỏi giỏ</Button>}
         <Button type="submit" className="w-full" disabled={submittingOrder || !provinces.data || !communes.data || !!provinces.error || !!communes.error}>{submittingOrder ? "Đang đặt hàng…" : "Xác nhận đặt hàng"}</Button>
       </form>
     </DialogContent>

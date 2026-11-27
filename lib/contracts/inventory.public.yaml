@@ -1520,6 +1520,42 @@ paths:
       responses:
         '200':
           description: List lots
+  /inventory/inventory-lots/{lot_id}:
+    get:
+      x-action-key: inventory:lot:read
+      x-scope: none
+      x-exposure: public
+      operationId: getInventoryLot
+      parameters:
+      - in: path
+        name: lot_id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: Lot with inbound_qc_inspection_id when an inspection exists
+        '404':
+          description: Lot not found
+  /inventory/inbound-qc-inspections/{inspection_id}:
+    get:
+      x-action-key: inventory:lot:read
+      x-scope: none
+      x-exposure: public
+      operationId: getInboundQcInspection
+      parameters:
+      - in: path
+        name: inspection_id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: Inspection status and recorded criteria results
+        '404':
+          description: Inspection not found
   /inventory/stock-levels:
     get:
       x-action-key: inventory:stock:read
@@ -1528,7 +1564,35 @@ paths:
       operationId: listStockLevels
       responses:
         '200':
-          description: List stock levels
+          description: List stock levels with on_hand_quantity, reserved_quantity, available_quantity, sellable_quantity and shelf_pending_quantity
+  /inventory/shelf-pending-lots:
+    get:
+      x-action-key: inventory:shelf_placement:read
+      x-scope: none
+      x-exposure: public
+      operationId: listShelfPendingLots
+      parameters:
+      - in: query
+        name: branch_ref
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: page
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+      - in: query
+        name: limit
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 100
+      responses:
+        '200':
+          description: Finished-goods lots with quantity still waiting for a shelf, with origin PRODUCTION, TRANSFER or DELIVERY_RETURN (goods back from a failed delivery, source_code is the order code)
   /inventory/shelf-placements:
     post:
       x-action-key: inventory:shelf_placement:create

@@ -4,7 +4,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { getCatalogProduct } from "@/lib/api/sales";
 import messages from "@/messages/vi.json";
-import { productComponents } from "./use-product-detail";
+import { cleanIngredientName, productComponents } from "./use-product-detail";
 import { ProductDetailInfo } from "./product-detail-info";
 import { ProductDetailView } from "./product-detail-view";
 import { CatalogProductCard } from "./catalog-product-card";
@@ -88,5 +88,59 @@ describe("ngăn dinh dưỡng vệ tinh", () => {
     expect(out).toContain('aria-pressed="false"');
     expect(out).not.toContain('aria-label="Dinh dưỡng ngăn');
     expect(out).toContain('data-slot="select-trigger"');
+    expect(out).toContain("Tạm dừng");
+  });
+
+  it("chia đều góc --angle cho nhiều vệ tinh quay quanh món", () => {
+    const multi = [
+      { name: "Thịt ba chỉ · Đạm", grams: "150", kcal: "300", protein_g: "20", fat_g: "22", carb_g: "0" },
+      { name: "Rau cải · Rau", grams: "100", kcal: "25", protein_g: "2", fat_g: "0", carb_g: "4" },
+      { name: "Sốt kho · Gói gia vị", grams: "45", kcal: "70", protein_g: "1", fat_g: "1", carb_g: "14" },
+    ];
+    const parsed = productComponents({ ...nutrition, components: multi }, "Thịt kho");
+    expect(parsed.map(item => item.orbitStyle["--angle"])).toEqual(["0deg", "120deg", "240deg"]);
+    expect(parsed.map(item => item.slotKind)).toEqual(["protein", "veg", "seasoning"]);
+  });
+
+  it("hiển thị tên nguyên liệu thật và ảnh khi nutrition_facts có ingredients & image_url", async () => {
+    expect(cleanIngredientName("Cà Chua Baby Đỏ Thái ECO (300gr/Khay)")).toBe("Cà chua baby đỏ");
+    expect(cleanIngredientName("Mực Ống Nguyên Con - HTK Food (Size 10-15 cm) (500gr)")).toBe("Mực ống");
+
+    const real = [
+      {
+        name: "Cá nục kho cà chua · DAM",
+        grams: "175.0",
+        kcal: "194",
+        protein_g: "35.4",
+        fat_g: "5.8",
+        carb_g: "0.0",
+        ingredients: ["Cá nục"],
+        image_url: null,
+      },
+      {
+        name: "Cá nục kho cà chua · RAU",
+        grams: "100.0",
+        kcal: "20",
+        protein_g: "0.6",
+        fat_g: "0.2",
+        carb_g: "4.0",
+        ingredients: ["Cà Chua Baby Đỏ Thái ECO (300gr/Khay)"],
+        image_url: "http://localhost:8000/sales-media/materials/tomato.webp",
+      },
+    ];
+    const parsed = productComponents({ ...nutrition, components: real }, "Cá nục kho cà chua");
+    expect(parsed[0]).toMatchObject({ name: "Cá nục", slotLabel: "Đạm", ingredients: ["Cá nục"], imageUrl: undefined });
+    expect(parsed[1]).toMatchObject({
+      name: "Cà chua baby đỏ",
+      slotLabel: "Rau",
+      imageUrl: "http://localhost:8000/sales-media/materials/tomato.webp",
+    });
+
+    const product = await load([variant]);
+    product.nutrition = { ...nutrition, components: real };
+    const out = renderToStaticMarkup(<ProductDetailView initialProduct={product} />);
+    expect(out).toContain("Cá nục");
+    expect(out).toContain("Đạm · 175 g/người");
+    expect(out).toContain('src="http://localhost:8000/sales-media/materials/tomato.webp"');
   });
 });

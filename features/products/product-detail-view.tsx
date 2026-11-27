@@ -16,7 +16,7 @@ import { ProductDetailInfo } from "./product-detail-info";
 import { RelatedProducts } from "./related-products";
 
 export function ProductDetailView({ initialProduct, branchId }: { initialProduct: Product; branchId?: string }) {
-  const detail = useProductDetail(initialProduct);
+  const detail = useProductDetail(initialProduct, branchId);
   const { product, variantOptions, variantLabel, summary, pricePerPerson, selectVariant, addingToCart, quantity, setQuantity, canBuy, handleAddToCart } = detail;
   return <PageShell className="catalog product-detail bg-background">
     <nav aria-label="Đường dẫn" className="mb-6 flex min-w-0 items-center gap-2 text-sm text-muted-foreground">
@@ -25,12 +25,12 @@ export function ProductDetailView({ initialProduct, branchId }: { initialProduct
     </nav>
     <div className={styles.layout}>
       <ProductOrbit detail={detail} />
-      <div className="min-w-0 py-1">
+      <div className="min-w-0 rounded-lg border border-border/80 bg-card p-5 sm:p-6">
         <h1 className="text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">{product.name}</h1>
-        {summary && <p className="mt-4 text-sm text-muted-foreground">{summary}</p>}
-        {product.description && <p className="mt-5 text-base leading-7 text-muted-foreground">{product.description}</p>}
-        <p className="mt-6 text-3xl font-semibold tabular-nums text-primary">{product.base_price_vnd === undefined ? "Chưa có giá" : <>{formatVND(product.base_price_vnd)}<span className="ml-2 text-sm font-normal text-muted-foreground">/ gói{product.portion_count ? ` ${product.portion_count.toLocaleString("vi-VN")} người` : ""}</span></>}</p>
-        {pricePerPerson !== undefined && <p className="mt-2 text-sm text-muted-foreground">≈ {formatVND(pricePerPerson)}/người</p>}
+        {summary && <p className="mt-3 text-sm text-muted-foreground">{summary}</p>}
+        {product.description && <p className="mt-4 text-base leading-7 text-muted-foreground">{product.description}</p>}
+        <p className="mt-5 text-3xl font-semibold tabular-nums text-primary">{product.base_price_vnd === undefined ? "Chưa có giá" : <>{formatVND(product.base_price_vnd)}<span className="ml-2 text-sm font-normal text-muted-foreground">/ gói{product.portion_count ? ` ${product.portion_count.toLocaleString("vi-VN")} người` : ""}</span></>}</p>
+        {pricePerPerson !== undefined && <p className="mt-1.5 text-sm text-muted-foreground">≈ {formatVND(pricePerPerson)}/người</p>}
         <div className="mt-6 max-w-xs space-y-2">
           <label htmlFor="meal-serving" className="text-sm font-medium">Quy cách</label>
           <Select value={product.sku_ref ?? ""} disabled={addingToCart || !variantOptions.length} onValueChange={selectVariant}>
@@ -51,7 +51,9 @@ export function ProductDetailView({ initialProduct, branchId }: { initialProduct
           </div>
           {!canBuy && <p className="pt-2 text-sm text-muted-foreground">{product.available_quantity === undefined ? "Chưa có thông tin tồn kho để đặt món." : product.available_quantity < quantity ? "Không đủ số lượng để đặt món." : "Món chưa sẵn sàng để đặt."}</p>}
         </div>
-        <ProductDetailInfo product={product} />
+        <div className="mt-6 border-t border-border/60 pt-5">
+          <ProductDetailInfo product={product} />
+        </div>
       </div>
     </div>
     <ProductCompartmentDrawer detail={detail} />

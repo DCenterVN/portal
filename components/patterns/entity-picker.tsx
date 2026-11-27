@@ -12,6 +12,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 
 export interface EntityPickerProps<T> {
   label: string;
+  hideLabel?: boolean;
   /** Form field that carries the picked id; it rides in a hidden input, never on screen. */
   name: string;
   /** Keep controlled selections in state when IDs must stay out of the DOM. */
@@ -23,6 +24,15 @@ export interface EntityPickerProps<T> {
   getLabel: (item: T) => string;
   /** Secondary text the user knows (code, SKU); the default filter searches it too. */
   getMeta?: (item: T) => string;
+  /** Replaces the two-line label/meta rendering of one option. */
+  renderOption?: (item: T) => React.ReactNode;
+  /** Row above the search box, e.g. group filter buttons. */
+  header?: React.ReactNode;
+  /** Row under the list, e.g. "add new"; gets a function that closes the popover. */
+  footer?: (close: () => void) => React.ReactNode;
+  defaultOpen?: boolean;
+  /** Option stays listed but cannot be picked. */
+  isDisabled?: (item: T) => boolean;
   filter?: (item: T, query: string) => boolean;
   value?: string | null;
   onChange?: (id: string | null) => void;
@@ -45,24 +55,24 @@ export function filterEntities<T>(items: T[], query: string, matches: (item: T, 
   return items.filter((item) => matches(item, query)).slice(0, max);
 }
 
-type ListProps<T> = Pick<EntityPickerProps<T>, "getId" | "getLabel" | "getMeta"> & {
+type ListProps<T> = Pick<EntityPickerProps<T>, "getId" | "getLabel" | "getMeta" | "renderOption" | "isDisabled"> & {
   options: T[];
   picked: string | null;
   onPick: (id: string) => void;
   emptyMessage: string;
 };
 
-export function EntityList<T>({ options, picked, onPick, emptyMessage, getId, getLabel, getMeta }: ListProps<T>) {
+export function EntityList<T>({ options, picked, onPick, emptyMessage, getId, getLabel, getMeta, renderOption, isDisabled }: ListProps<T>) {
   return (
-    <CommandList>
+    <CommandList className={renderOption ? "max-h-96" : undefined}>
       <CommandEmpty>{emptyMessage}</CommandEmpty>
       <CommandGroup>
         {options.map((item, index) => (
-          <CommandItem key={getId(item)} value={String(index)} onSelect={() => onPick(getId(item))} className="min-h-11 md:min-h-8">
-            <span className="grid min-w-0 flex-1">
+          <CommandItem key={getId(item)} value={String(index)} disabled={isDisabled?.(item)} onSelect={() => onPick(getId(item))} className="min-h-11 md:min-h-8">
+            {renderOption ? <span className="min-w-0 flex-1">{renderOption(item)}</span> : <span className="grid min-w-0 flex-1">
               <span className="font-medium">{getLabel(item)}</span>
               {getMeta && <span className="text-xs text-muted-foreground">{getMeta(item)}</span>}
-            </span>
+            </span>}
             {getId(item) === picked && <Check aria-hidden="true" className="size-4 shrink-0 text-primary" />}
           </CommandItem>
         ))}
@@ -73,12 +83,12 @@ export function EntityList<T>({ options, picked, onPick, emptyMessage, getId, ge
 
 // Popover + Command combobox. Only status "ready" offers options (fail closed on loading/error).
 export function EntityPicker<T>({
-  label, name, serializeValue = true, maxOptions = Infinity, items, status, getId, getLabel, getMeta, filter, value, onChange, required, error,
+  label, hideLabel, name, serializeValue = true, maxOptions = Infinity, items, status, getId, getLabel, getMeta, renderOption, header, footer, defaultOpen = false, isDisabled, filter, value, onChange, required, error,
   emptyText = "Chưa có mục nào để chọn.", onRetry, placeholder, searchPlaceholder, className,
 }: EntityPickerProps<T>) {
   const [own, setOwn] = React.useState<string | null>(null);
   const [query, setQuery] = React.useState("");
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = React.useState(defaultOpen);
   const [touched, setTouched] = React.useState(false);
 
   const id = `${name}-picker`;
@@ -108,7 +118,7 @@ export function EntityPicker<T>({
   return (
     <div className={cn("relative grid gap-1.5", className)}>
       <Popover open={open} onOpenChange={onOpenChange}>
-        <Field label={label} htmlFor={id} error={error || (touched ? missing : undefined)}>
+        <Field label={label} hideLabel={hideLabel} htmlFor={id} error={error || (touched && list.length ? missing : undefined)}>
           <PopoverTrigger asChild>
             <Button
               id={id}
@@ -128,6 +138,7 @@ export function EntityPicker<T>({
         </Field>
         <PopoverContent align="start" className="w-(--radix-popover-trigger-width) max-w-[calc(100vw-2rem)] p-0">
           <Command shouldFilter={false}>
+            {header && <div className="border-b p-2">{header}</div>}
             <CommandInput value={query} onValueChange={setQuery} placeholder={searchPlaceholder ?? placeholder ?? "Tìm…"} />
             <EntityList
               options={options}
@@ -137,7 +148,10 @@ export function EntityPicker<T>({
               getId={getId}
               getLabel={getLabel}
               getMeta={getMeta}
+              renderOption={renderOption}
+              isDisabled={isDisabled}
             />
+            {footer && <div className="border-t p-1">{footer(() => onOpenChange(false))}</div>}
           </Command>
         </PopoverContent>
       </Popover>
@@ -159,7 +173,7 @@ export function EntityPicker<T>({
       )}
       {status === "error" && (
         <InlineAlert className="text-xs">
-          Không tải được danh sách nên chưa chọn được.
+          Chưa tải được danh sách.{onRetry && " Bấm Thử lại."}
           {onRetry && <Button type="button" variant="outline" size="sm" onClick={onRetry}>Thử lại</Button>}
         </InlineAlert>
       )}

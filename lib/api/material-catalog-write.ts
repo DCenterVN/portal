@@ -15,6 +15,7 @@ function write<T = unknown>(url: string, method: "POST" | "PATCH" | "DELETE", bo
 export type NewMaterial = { name: string; uom_code: Unit; material_group_code: string };
 export const createMaterial = (input: NewMaterial, key?: string) => write("/api/sales/skus", "POST", input, key, z.object({ id: z.string() }));
 export const updateMaterial = (id: string, patch: Partial<NewMaterial>, key?: string) => write(skus(id), "PATCH", patch, key);
+export const deleteMaterial = (id: string) => write(skus(id), "DELETE");
 export const activateMaterial = (id: string) => write(`${skus(id)}/activate`, "POST", {});
 export const deleteMaterialImage = (id: string) => write(`${skus(id)}/image`, "DELETE");
 
@@ -39,12 +40,26 @@ export const NAME_HAS_QUANTITY = 'Tên nguyên liệu không ghi khối lượng
 
 export const UNIT_LOCKED = "Chỉ đổi đơn vị khi nguyên liệu còn là nháp";
 
-export function viMessage(error: unknown, kind: "material" | "category" | "new-category"): string {
+function errorCodeOf(error: unknown): string {
+  if (!(error instanceof FetchError)) return "";
+  if (error.code) return error.code;
+  const info = error.info as { errors?: { error_code?: unknown }; error_code?: unknown } | undefined;
+  if (typeof info?.errors?.error_code === "string") return info.errors.error_code;
+  return typeof info?.error_code === "string" ? info.error_code : "";
+}
+
+export function viMessage(error: unknown, kind: "material" | "category" | "new-category" | "delete-material"): string {
   const status = error instanceof FetchError ? error.status : 0;
+  const code = errorCodeOf(error);
   if (status === 403) return "Bạn không có quyền làm việc này";
   if (status === 409) {
+    if (kind === "delete-material") {
+      if (code === "resource_in_use" || code === "conflict") return "Chưa xoá được: nguyên liệu đang được dùng trong công thức hoặc bảng giá";
+      if (code === "state_conflict" && error instanceof FetchError && /draft|nháp|active|suspend|đang dùng|ngừng/i.test(error.message)) return "Chỉ xoá được nguyên liệu ở trạng thái nháp; nguyên liệu đã kích hoạt chỉ có thể ngừng dùng";
+      return "Chưa xoá được: nguyên liệu đang được dùng hoặc đã đổi trạng thái, hãy tải lại danh sách";
+    }
     if (kind === "new-category") return "Đã có loại hoặc nhóm mã này";
-    if (kind === "material" && error instanceof FetchError && error.code === "duplicate_resource") return "Đã có nguyên liệu tên này";
+    if (kind === "material" && code === "duplicate_resource") return "Đã có nguyên liệu tên này";
     if (kind === "material" && error instanceof FetchError && /đơn vị gốc/i.test(error.message)) return UNIT_LOCKED;
     return kind === "material" ? "Nguyên liệu đã đổi trạng thái, hãy tải lại danh sách" : "Loại còn nhóm đang dùng hoặc đang gắn nhà cung cấp";
   }

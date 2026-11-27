@@ -2,10 +2,10 @@ import { z } from "zod";
 import { inventoryMutation, inventoryRequest } from "./suppliers";
 export { fileSHA256, uploadDocument as uploadReceiptEvidence } from "./agreement-documents";
 
-export type EvidencePurpose = "DELIVERED_GOODS" | "DELIVERY_DOCUMENT" | "QUANTITY_VARIANCE";
+export type EvidencePurpose = "DELIVERED_GOODS" | "DELIVERY_DOCUMENT" | "QUANTITY_VARIANCE" | "QC_DEFECT";
 export type ReceiptEvidenceInput = {
   goods_receipt_line_id: string; receive_attempt_ref: string; purpose: EvidencePurpose;
-  content_type: string; size_bytes: number; sha256: string;
+  content_type: string; size_bytes: number; sha256: string; inspection_ref?: string;
 };
 export type ReceiveReceiptInput = {
   goods_receipt_line_id: string; receive_attempt_ref: string; evidence_refs: string[];

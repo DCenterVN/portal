@@ -1,7 +1,12 @@
-import { SupplierDetailContainer } from "@/features/inventory/supplier-detail-container";
+import { redirect } from "next/navigation";
+import { SupplierPricesPage } from "@/features/inventory/supplier-profile-pages";
+import { legacySupplierPath, type SupplierLegacyQuery } from "@/features/inventory/supplier-routes";
 
-export default async function SupplierPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ tab?: string; edit?: string }> }) {
+export const metadata = { title: "Chi tiết nhà cung cấp" };
+
+export default async function SupplierPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<SupplierLegacyQuery> }) {
   const { id } = await params;
-  const { tab, edit } = await searchParams;
-  return <SupplierDetailContainer supplierId={id} initialTab={tab === "agreements" || tab === "receipts" ? tab : "overview"} initialEdit={edit === "1"} />;
+  const target = legacySupplierPath(id, await searchParams);
+  if (target && target !== `/inventory/suppliers/${encodeURIComponent(id)}`) redirect(target);
+  return <SupplierPricesPage />;
 }

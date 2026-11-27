@@ -102,6 +102,14 @@ it("forwards material creation and preserves duplicate details and idempotency",
   expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining("/sales/skus"), expect.objectContaining({ method: "POST", headers: expect.objectContaining({ "Idempotency-Key": "material-key" }) }));
 });
 
+it("forwards product name lookup to sales skus/names with the refs", async () => {
+  const { GET } = await import("./skus/names/route");
+  global.fetch = vi.fn().mockResolvedValue(Response.json({ data: { items: [] } }));
+  const response = await GET(request("/api/sales/skus/names?sku_refs=a,b"));
+  expect(response.status).toBe(200);
+  expect(String(vi.mocked(global.fetch).mock.calls[0][0])).toContain("/sales/skus/names?sku_refs=a,b");
+});
+
 it("GET giỏ chỉ forward branch_id, bỏ query ngoài phạm vi", async () => {
   const branch = "0198fd55-3f46-7a01-9e52-f4c0de000020";
   global.fetch = vi.fn().mockResolvedValue(Response.json({ data: { items: [] } }));
@@ -111,4 +119,41 @@ it("GET giỏ chỉ forward branch_id, bỏ query ngoài phạm vi", async () =>
   const url = new URL(String(vi.mocked(global.fetch).mock.calls[0][0]));
   expect(url.pathname).toBe("/sales/carts/cart-1");
   expect([...url.searchParams]).toEqual([["branch_id", branch]]);
+});
+
+describe("BFF sửa và xoá món trong giỏ", () => {
+  const branch = "0198fd55-3f46-7a01-9e52-f4c0de000020";
+  const params = { params: Promise.resolve({ cart_id: "cart-1", item_id: "item-1" }) };
+  it.each(["PATCH", "DELETE"] as const)("%s chuyển tiếp đúng đường dẫn, khoá lặp và chỉ branch_id", async method => {
+    global.fetch = vi.fn().mockResolvedValue(Response.json({ data: { items: [] } }));
+    const route = await import("./carts/[cart_id]/items/[item_id]/route");
+    const body = method === "PATCH" ? JSON.stringify({ quantity: 3 }) : undefined;
+    const req = new NextRequest(`http://localhost:3000/api/sales/carts/cart-1/items/item-1?branch_id=${branch}&org_id=evil`, { method, headers: { cookie: "access_token=jwt", "content-type": "application/json", "Idempotency-Key": "khoa" }, ...(body ? { body } : {}) });
+    const response = await route[method](req, params);
+    expect(response.status).toBe(200);
+    const [url, init] = vi.mocked(global.fetch).mock.calls[0];
+    expect(new URL(String(url)).pathname).toBe("/sales/carts/cart-1/items/item-1");
+    expect([...new URL(String(url)).searchParams]).toEqual([["branch_id", branch]]);
+    expect(init).toMatchObject({ method, headers: expect.objectContaining({ "Idempotency-Key": "khoa" }) });
+  });
+});
+
+it("forwards material deletion to sales skus/{id} with the idempotency key", async () => {
+  const { DELETE } = await import("./skus/[id]/route");
+  const skuId = "0198fd55-3f46-7a01-9e52-f4c0de000021";
+  global.fetch = vi.fn().mockResolvedValue(new Response(null, { status: 204 }));
+  const req = new NextRequest(`http://localhost:3000/api/sales/skus/${skuId}`, { method: "DELETE", headers: { cookie: "access_token=jwt", "Idempotency-Key": "delete-key" } });
+  const response = await DELETE(req, { params: Promise.resolve({ id: skuId }) });
+  expect(response.status).toBe(204);
+  expect(String(vi.mocked(global.fetch).mock.calls[0][0])).toContain(`/sales/skus/${skuId}`);
+  expect(global.fetch).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({ method: "DELETE", headers: expect.objectContaining({ "Idempotency-Key": "delete-key" }) }));
+});
+
+it("rejects non-UUID sku id on DELETE without calling upstream", async () => {
+  const { DELETE } = await import("./skus/[id]/route");
+  global.fetch = vi.fn();
+  const req = new NextRequest("http://localhost:3000/api/sales/skus/a%20b", { method: "DELETE", headers: { cookie: "access_token=jwt", "Idempotency-Key": "delete-key" } });
+  const response = await DELETE(req, { params: Promise.resolve({ id: "a b" }) });
+  expect(response.status).toBe(400);
+  expect(global.fetch).not.toHaveBeenCalled();
 });

@@ -13,8 +13,9 @@ import { ErrorState } from "@/components/patterns/empty-state";
 import { InlineAlert } from "@/components/patterns/inline-alert";
 import { PageHeading } from "@/components/patterns/page-heading";
 import { useAccess } from "@/lib/access-boundary";
-import { branchLabel, branchMeta } from "@/lib/branch-label";
-import { FEFO_LABEL, FEFO_LOT } from "@/lib/stock-transfer";
+import { FEFO_LABEL, FEFO_LOT, uomLabel } from "@/lib/stock-transfer";
+import { NamesLoadError } from "./names-load-error";
+import { usableLabel, usableNote } from "./usable-quantity";
 import { blankLine } from "./send-form-model";
 import { useSendTransfer } from "./use-send-transfer";
 import { Tip } from "@/components/patterns/tip";
@@ -36,7 +37,7 @@ export function SendTransferForm() {
           <Field label="Chi nhánh gửi" htmlFor="transfer-from" hint="Chi nhánh bạn đang làm việc."><Input id="transfer-from" readOnly value={scope?.branchName ?? ""} /></Field>
           <Controller control={form.control} name="to" render={({ field }) => (
             <EntityPicker label="Chi nhánh nhận" name="transfer-to" serializeValue={false} required maxOptions={20}
-              items={send.names.targets} status={send.names.status} getId={item => item.id} getLabel={branchLabel} getMeta={item => branchMeta(item)}
+              items={send.names.targets} status={send.names.status} getId={item => item.id} getLabel={item => item.name} getMeta={item => item.kind}
               value={field.value || null} onChange={id => field.onChange(id ?? "")} error={errors.to?.message}
               placeholder="Chọn chi nhánh nhận" searchPlaceholder="Gõ tên chi nhánh" onRetry={send.names.retry}
               emptyText="Chưa có danh sách chi nhánh để chọn." />
@@ -44,6 +45,7 @@ export function SendTransferForm() {
         </div>
         <p className="text-sm text-muted-foreground">Người gửi: Bạn · {scope?.branchName}. Giờ gửi, mã phiếu và trạng thái "Đang chuyển" do hệ thống ghi khi bạn bấm Gửi.</p>
         {noStock && <InlineAlert tone="warning">Chi nhánh này chưa có nguyên liệu khả dụng để gửi.</InlineAlert>}
+        {send.material.failed && <NamesLoadError retry={send.material.retry} />}
         {send.stockStatus === "error" && <ErrorState title="Không tải được tồn kho của chi nhánh." onRetry={send.retryStock} />}
         <fieldset disabled={isSubmitting} className="grid min-w-0 gap-3">
           <legend className="font-semibold">Dòng hàng</legend>
@@ -51,7 +53,9 @@ export function SendTransferForm() {
             <TableHeader><TableRow>{["Nguyên liệu", "Đơn vị", "Số lượng", "Lô", ""].map((label, index) => <TableHead key={index}>{label || <span className="sr-only">Xoá dòng</span>}</TableHead>)}</TableRow></TableHeader>
             <TableBody>{array.fields.map((item, index) => {
               const sku = form.watch(`lines.${index}.sku`);
-              const uom = send.rows.find(row => row.sku_ref === sku)?.uom;
+              const picked = send.rows.find(row => row.sku_ref === sku);
+              const uom = picked?.uom;
+              const hint = picked ? [usableLabel(picked), usableNote(picked)].filter(Boolean).join(" ") : "";
               const lotItems = [FEFO_OPTION, ...send.lotChoices(sku)];
               return (
                 <TableRow key={item.id}>
@@ -64,9 +68,9 @@ export function SendTransferForm() {
                         emptyText="Chi nhánh chưa có nguyên liệu khả dụng." onRetry={send.retryStock} />
                     )} />
                   </TableCell>
-                  <TableCell className="align-top pt-8">{uom?.toLowerCase() ?? "—"}</TableCell>
+                  <TableCell className="align-top pt-8">{uomLabel(uom)}</TableCell>
                   <TableCell className="w-44 align-top">
-                    <Field label={`Số lượng dòng ${index + 1}`} htmlFor={`transfer-qty-${index}`} error={errors.lines?.[index]?.quantity?.message}>
+                    <Field label={`Số lượng dòng ${index + 1}`} htmlFor={`transfer-qty-${index}`} hint={hint || undefined} error={errors.lines?.[index]?.quantity?.message}>
                       <Input id={`transfer-qty-${index}`} inputMode="decimal" autoComplete="off" className="text-right tabular-nums" {...form.register(`lines.${index}.quantity`)} />
                     </Field>
                   </TableCell>

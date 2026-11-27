@@ -1,8 +1,7 @@
-import { BRAND_NAME } from "@/lib/brand";
 import { QCView } from "@/features/production/qc-view";
 
 export const metadata = {
-  title: `Kiểm định QC Thành phẩm — ${BRAND_NAME}`,
+  title: "Kiểm định QC thành phẩm",
   description: "Nghiệm thu chất lượng an toàn thực phẩm",
 };
 

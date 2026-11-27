@@ -1,11 +1,19 @@
 import { NextResponse } from "next/server";
-import { z } from "zod";
+import { serviceUrl } from "@/lib/api/service-bff";
+import { storeBranches, type StoreBranch } from "@/features/products/store-branches";
 
-const branches = z.array(z.object({ id: z.string().uuid(), name: z.string().trim().min(1) })).min(1);
-export function GET() {
+const unavailable = { message: "Chưa tải được danh sách cửa hàng. Vui lòng tải lại trang sau ít phút." };
+const keepMs = 30_000;
+let kept: { at: number; branches: StoreBranch[] } | null = null;
+
+export async function GET() {
+  if (kept && Date.now() - kept.at < keepMs) return NextResponse.json(kept.branches);
   try {
-    return NextResponse.json(branches.parse(JSON.parse(process.env.PORTAL_STORE_BRANCHES ?? "null")));
+    const response = await fetch(`${serviceUrl("org")}/org/public/branches`, { headers: { Accept: "application/json" }, cache: "no-store" });
+    if (!response.ok) throw new Error(String(response.status));
+    kept = { at: Date.now(), branches: storeBranches(await response.json()) };
+    return NextResponse.json(kept.branches);
   } catch {
-    return NextResponse.json({ message: "Chưa cấu hình chi nhánh mua hàng. Vui lòng thử lại sau." }, { status: 503 });
+    return NextResponse.json(unavailable, { status: 503 });
   }
 }

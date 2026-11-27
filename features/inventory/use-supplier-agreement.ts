@@ -1,45 +1,45 @@
 "use client";
 
 import { toISODate } from "@/lib/format-date";
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import { useAccess } from "@/lib/access-boundary";
-import { createAgreement, saveAgreementVersion, getContractMaterials, type Agreement, type AgreementInput, type AgreementLine } from "@/lib/api/supplier-agreements";
+import { createAgreement, saveAgreementVersion, type Agreement, type AgreementInput, type AgreementLine } from "@/lib/api/supplier-agreements";
 import { type ContractDocument, presignDocument, uploadDocument, finalizeDocument, fileSHA256 } from "@/lib/api/agreement-documents";
-import { type Material } from "@/lib/api/sales";
+import { useContractMaterials } from "./use-contract-materials";
 import { useSupplierAgreementDraft, nextAgreementCommand } from "./use-supplier-agreement-draft";
 import messages from "@/messages/vi.json";
+import { toast } from "@/components/ui/toast";
 import { FetchError } from "@/lib/fetcher";
 
 type Attachment = { kind: "empty" } | { kind: "selected"; file: File; key: string } | { kind: "uploaded"; uploadId: string; key: string } | { kind: "finalized"; document: ContractDocument };
 const todayVN = () => toISODate();
-function blankLine(date: string): AgreementLine { return { sku_ref: "", uom: "", unit_price_vnd: Number.NaN, valid_from: date, valid_to: date, tax_treatment: "VAT_INCLUDED", delivery_treatment: "DELIVERED" }; }
+export function agreementCode(supplierCode: string | undefined, date: string) {
+  if (!supplierCode) return "";
+  const [year, month, day] = date.split("-");
+  return `BG-${supplierCode}-${day}${month}${year.slice(2)}`;
+}
+function blankLine(date: string): AgreementLine { return { sku_ref: "", uom: "", unit_price_vnd: Number.NaN, valid_from: date, valid_to: "", tax_treatment: "VAT_INCLUDED", delivery_treatment: "DELIVERED" }; }
 
-export type SupplierAgreementOptions = { supplierId: string; agreement?: Agreement; onClose: () => void; onSaved: () => void; onConflict: () => void };
-export function useSupplierAgreement({ supplierId, agreement, onClose, onSaved, onConflict }: SupplierAgreementOptions) {
+export const overlapMessage = (message: string) => /overlap/i.test(message) ? "Nguyên liệu trong bảng giá này đã có bảng giá khác đang áp dụng trong cùng khoảng ngày. Đổi ngày áp dụng, hoặc ngừng áp dụng bảng giá kia rồi áp dụng lại." : undefined;
+
+export type SupplierAgreementOptions = { supplierId: string; supplierCode?: string; agreement?: Agreement; onClose: () => void; onSaved: () => void; onConflict: () => void };
+export function useSupplierAgreement({ supplierId, supplierCode, agreement, onClose, onSaved, onConflict }: SupplierAgreementOptions) {
   const { can } = useAccess();
   const allowed = can("inventory:supplier:update") && (!agreement || agreement.status === "DRAFT");
-  const [code, setCode] = useState(agreement?.code ?? "");
+  const [code, setCode] = useState(agreement?.code ?? agreementCode(supplierCode, todayVN()));
   const [from, setFrom] = useState(agreement?.valid_from ?? todayVN());
-  const [to, setTo] = useState(agreement?.valid_to ?? todayVN());
+  const [to, setTo] = useState(agreement?.valid_to ?? "");
   const [lines, setLines] = useState<AgreementLine[]>(agreement?.lines ?? [blankLine(todayVN())]);
-  const [materials, setMaterials] = useState<Material[] | null>(null);
-  const [lookupError, setLookupError] = useState(false);
+  const { materials, failed: lookupError, retry } = useContractMaterials(allowed);
   const [attachment, setAttachment] = useState<Attachment>({ kind: "empty" });
   const [busy, setBusy] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [discard, setDiscard] = useState(false);
   const [error, setError] = useState("");
-  const [retry, setRetry] = useState(0);
   const submitting = useRef(false);
   const command = useRef({ body: "", key: "" });
   const form = useRef<HTMLFormElement>(null);
-  useEffect(() => {
-    if (!allowed) return;
-    let live = true;
-    getContractMaterials().then(value => { if (live) { setMaterials(value); setLookupError(false); } }).catch(() => { if (live) setLookupError(true); });
-    return () => { live = false; };
-  }, [allowed, retry]);
-  const valid = allowed && code.trim() && from <= to && materials !== null && !lookupError && lines.length > 0 && new Set(lines.map(line => `${line.sku_ref}:${line.uom}`)).size === lines.length && lines.every(line => materials.some(material => material.id === line.sku_ref && material.uom_code === line.uom && material.selectable) && Number.isSafeInteger(line.unit_price_vnd) && line.unit_price_vnd >= 0 && line.valid_from >= from && line.valid_to <= to && line.valid_from <= line.valid_to);
+  const valid = allowed && code.trim() && to && from <= to && materials !== null && !lookupError && lines.length > 0 && new Set(lines.map(line => `${line.sku_ref}:${line.uom}`)).size === lines.length && lines.every(line => materials.some(material => material.id === line.sku_ref && material.uom_code === line.uom && material.selectable) && Number.isSafeInteger(line.unit_price_vnd) && line.unit_price_vnd >= 0 && line.valid_from >= from && line.valid_to <= to && line.valid_from <= line.valid_to);
   const draft = useSupplierAgreementDraft({
     supplierId, agreementId: agreement?.agreement_id, baseVersion: agreement?.version ?? null, allowed, dirty,
     values: { code, from, to, lines, needsFile: attachment.kind !== "empty" },
@@ -73,11 +73,12 @@ export function useSupplierAgreement({ supplierId, agreement, onClose, onSaved, 
       if (agreement) await saveAgreementVersion(supplierId, agreement.agreement_id, agreement.version, input, command.current.key);
       else await createAgreement(supplierId, input, command.current.key);
       draft.clear();
+      toast.success(status === "ACTIVE" ? `Đã áp dụng bảng giá ${code.trim()}` : `Đã lưu nháp bảng giá ${code.trim()}`);
       onSaved();
     } catch (cause) {
-      if (cause instanceof FetchError && cause.status === 404) { setAttachment({ kind: "empty" }); setError("Phiên tải đã hết hạn hoặc không còn tồn tại. Hãy chọn và tải lại tệp."); }
-      else if (cause instanceof FetchError && cause.status === 409) { setError(messages.supplierAgreement.stale); onConflict(); }
-      else setError(cause instanceof Error ? cause.message : "Không lưu được bảng giá. Thử lại với cùng phiên tải.");
+      if (cause instanceof FetchError && cause.status === 404) { setAttachment({ kind: "empty" }); setError("Phiên tải tệp đã hết hạn. Hãy chọn lại tệp."); }
+      else if (cause instanceof FetchError && cause.status === 409) { setError(overlapMessage(cause.message) ?? messages.supplierAgreement.stale); onConflict(); }
+      else setError(cause instanceof Error ? cause.message : "Không lưu được bảng giá. Bấm lưu lại để thử lần nữa.");
     } finally { submitting.current = false; setBusy(false); }
   }
   function updateLine(index: number, patch: Partial<AgreementLine>) { setDirty(true); setLines(items => items.map((line, i) => i === index ? { ...line, ...patch } : line)); }
@@ -91,5 +92,5 @@ export function useSupplierAgreement({ supplierId, agreement, onClose, onSaved, 
     setTo(value); setDirty(true);
   }
   function close() { draft.clear(); onClose(); }
-  return { draftNotice: draft.notice, supplierId, agreement, onClose: close, allowed, code, setCode, from, to, lines, setLines, materials, lookupError, attachment, setAttachment, busy, dirty, setDirty, discard, setDiscard, error, setRetry, form, valid, priceDirty, save, updateLine, submit, changeFrom, changeTo };
+  return { draftNotice: draft.notice, supplierId, agreement, onClose: close, allowed, code, setCode, from, to, lines, setLines, materials, lookupError, retry, attachment, setAttachment, busy, dirty, setDirty, discard, setDiscard, error, form, valid, priceDirty, save, updateLine, submit, changeFrom, changeTo };
 }

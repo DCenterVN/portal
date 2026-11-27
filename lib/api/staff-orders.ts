@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { orderDetailFields } from "@/lib/order-detail";
 import type { CursorPage } from "@/lib/api/all-pages";
-import { apiFetch } from "@/lib/fetcher";
+import { apiFetch, FetchError } from "@/lib/fetcher";
 import { decodePlatform } from "./platform-contract";
 import { mutationHeaders } from "./production-http";
 
@@ -9,15 +9,17 @@ const staffOrderSchema = z.object({
   id: z.string(), order_code: z.string().nullish(), status: z.string(), total_vnd: z.number(), created_at: z.string(),
   channel: z.string().nullish(), recipient_name: z.string().nullish(), recipient_phone: z.string().nullish(),
   delivery_address: z.string().nullish(), province_code: z.string().nullish(), commune_code: z.string().nullish(), delivery_note: z.string().nullish(),
-  assigned_driver_ref: z.string().nullish(),
+  assigned_driver_ref: z.string().nullish(), reservation_state: z.string().nullish(),
   ...orderDetailFields,
 });
 export type StaffOrder = z.infer<typeof staffOrderSchema>;
 async function read(response: Response) {
-  const body: unknown = await response.json();
+  const body: unknown = await response.json().catch(() => null);
   if (!response.ok) {
-    const error = z.object({ message: z.string().optional() }).safeParse(body);
-    throw new Error(error.success ? error.data.message ?? "Không thể xử lý đơn hàng" : "Không thể xử lý đơn hàng");
+    const parsed = z.object({ message: z.string().optional(), errors: z.object({ error_code: z.string().optional() }).optional() }).safeParse(body);
+    const error = new FetchError(parsed.success ? parsed.data.message ?? "Không thể xử lý đơn hàng" : "Không thể xử lý đơn hàng", response.status, body);
+    if (parsed.success) error.code = parsed.data.errors?.error_code;
+    throw error;
   }
   return body;
 }

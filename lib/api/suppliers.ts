@@ -10,7 +10,9 @@ export const supplierSchema = z.object({
   contact_name: z.string().max(150).nullish(), contact_phone: z.string().max(20).nullish(),
   contact_email: z.string().max(254).nullish(), note: z.string().max(2000).nullish(),
   material_categories: z.array(z.string()).nullish().transform(items => items ?? []),
-  material_category_codes: z.array(z.string()).optional(), category_migration_required: z.boolean().optional(),
+  material_category_codes: z.array(z.string()).optional(),
+  material_category_labels: z.array(z.object({ code: z.string(), name: z.string(), parent_code: z.string().optional(), parent_name: z.string().optional() })).nullish().transform(items => items ?? []).optional(),
+  category_migration_required: z.boolean().optional(),
   food_safety_credential_media_ref: z.string().nullable().optional(), rating_grade: z.string().optional(),
   created_at: z.string().optional(), updated_at: z.string().optional(),
 });
@@ -21,7 +23,7 @@ export type SupplierInput = {
   contact_name?: string; contact_phone?: string; contact_email?: string; note?: string;
   material_category_codes?: string[];
 };
-export const supplierPageSchema = z.object({ items: z.array(supplierSchema).nullable().transform(items => items ?? []), next_cursor: z.string().nullish().transform(value => value ?? "") });
+export const supplierPageSchema = z.object({ total: z.number().int().min(0).optional(), items: z.array(supplierSchema).nullable().transform(items => items ?? []), next_cursor: z.string().nullish().transform(value => value ?? ""), pagination: z.object({ total_items: z.number().int().min(0), total_pages: z.number().int().min(0), current_page: z.number().int().min(1), limit: z.number().int().min(1) }).optional() });
 export type SupplierPage = z.infer<typeof supplierPageSchema>;
 
 export async function inventoryPages<T>(load: (cursor: string) => Promise<{ items: T[]; next_cursor: string }>): Promise<T[]> {
@@ -50,17 +52,32 @@ export async function inventoryRequest<T>(path: string, schema: { parse(value: u
   return decodePlatform(payload, schema);
 }
 
-export function inventoryMutation(method: "POST" | "PATCH", body: unknown, key = crypto.randomUUID(), version?: number): RequestInit {
+export function inventoryMutation(method: "POST" | "PUT" | "PATCH", body: unknown, key = crypto.randomUUID(), version?: number): RequestInit {
   return { method, headers: { "Content-Type": "application/json", "Idempotency-Key": key, ...(version === undefined ? {} : { "If-Match": String(version) }) }, body: JSON.stringify(body) };
 }
 
-export function getSuppliers({ q = "", status = "", cursor = "" } = {}): Promise<SupplierPage> {
-  const query = new URLSearchParams({ limit: "20", q, cursor });
+export type SupplierListQuery = { q?: string; status?: string; cursor?: string; page?: number; categoryCode?: string; includeTotal?: boolean; limit?: number; sort?: string; pricedOn?: string };
+
+export function supplierListParams({ q = "", status = "", cursor = "", page = 0, categoryCode = "", includeTotal = false, limit = 20, sort = "", pricedOn = "" }: SupplierListQuery = {}) {
+  const query = new URLSearchParams({ limit: String(limit), q });
+  if (page > 0) query.set("page", String(page));
+  else query.set("cursor", cursor);
+  if (sort) query.set("sort", sort);
   if (status) query.set("status", status);
-  return inventoryRequest(`suppliers?${query}`, supplierPageSchema);
+  if (categoryCode) query.set("category_code", categoryCode);
+  if (pricedOn) query.set("priced_on", pricedOn);
+  if (includeTotal) query.set("include_total", "true");
+  return query;
 }
+
+export const getSuppliers = (options: SupplierListQuery = {}): Promise<SupplierPage> => inventoryRequest(`suppliers?${supplierListParams(options)}`, supplierPageSchema);
 export const getSupplier = (id: string) => inventoryRequest(`suppliers/${encodeURIComponent(id)}`, supplierSchema);
-export const getActiveSuppliers = () => inventoryPages(cursor => getSuppliers({ status: "ACTIVE", cursor }));
+export const getActiveSuppliers = (pricedOn = "") => inventoryPages(cursor => getSuppliers({ status: "ACTIVE", cursor, pricedOn }));
 export const createSupplier = (input: SupplierInput, key?: string) => inventoryRequest("suppliers", supplierSchema, inventoryMutation("POST", input, key));
 export const updateSupplier = (id: string, input: Partial<Omit<SupplierInput, "code">>, key?: string) => inventoryRequest(`suppliers/${encodeURIComponent(id)}`, supplierSchema, inventoryMutation("PATCH", input, key));
-export const suspendSupplier = (id: string, operation: "SUSPEND" | "ACTIVATE", reason: string, key?: string) => inventoryRequest(`suppliers/${encodeURIComponent(id)}/suspend`, supplierSchema, inventoryMutation("POST", { operation, reason }, key));
+export type SupplierSuspendReason = { code?: string; note?: string };
+export const suspendSupplier = (id: string, operation: "SUSPEND" | "ACTIVATE", reason: SupplierSuspendReason, key?: string) => {
+  const note = reason.note?.trim();
+  const body = { operation, ...(operation === "SUSPEND" && reason.code ? { reason_code: reason.code } : {}), ...(note ? { reason_note: note } : {}) };
+  return inventoryRequest(`suppliers/${encodeURIComponent(id)}/suspend`, supplierSchema, inventoryMutation("POST", body, key));
+};

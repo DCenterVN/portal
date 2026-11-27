@@ -12,6 +12,7 @@ export async function GET(request: NextRequest) {
   }
   return NextResponse.json({
     user: payload.user,
+    active_context: payload.active_context,
     contexts: payload.contexts,
     permissions: payload.permissions,
   });

@@ -1,8 +1,7 @@
-import { BRAND_NAME } from "@/lib/brand";
 import { TargetsView } from "@/features/production/targets-view";
 
 export const metadata = {
-  title: `Chỉ tiêu Sản xuất — ${BRAND_NAME}`,
+  title: "Chỉ tiêu sản xuất",
   description: "Quản lý và phê duyệt chỉ tiêu kế hoạch định kỳ cho toàn chuỗi",
 };
 

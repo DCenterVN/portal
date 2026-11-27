@@ -1,4 +1,5 @@
 import type { MaterialCategory, Material, MaterialGroup, Status } from "@/lib/api/material-catalog";
+import { materialCategoryRank } from "@/lib/material-category-order";
 
 export const PAGE_SIZE = 24;
 export const SEARCH_DELAY_MS = 300;
@@ -17,6 +18,8 @@ export const fold = (text: string) => text.normalize("NFD").replace(/[\u0300-\u0
 export function suggestCode(name: string): string {
   return fold(name).replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "").toUpperCase();
 }
+
+export const sortCategories = (tree: MaterialCategory[]) => [...tree].sort((a, b) => materialCategoryRank(a.code) - materialCategoryRank(b.code));
 
 export const groupsOf = (tree: MaterialCategory[], category: string): MaterialGroup[] => tree.find(item => item.code === category)?.groups.filter(item => item.active) ?? [];
 
@@ -60,9 +63,31 @@ export function countByGroup(items: Material[], category: string, q = ""): Recor
   return counts;
 }
 
+export const matchesName = (name: string, text: string) => {
+  const trimmed = text.trim();
+  if (!trimmed) return true;
+  const rawWords = name.normalize("NFC").toLowerCase().split(/[^\p{L}\p{N}]+/u).filter(Boolean);
+  const foldedWords = fold(name).split(/[^a-z0-9]+/).filter(Boolean);
+  return trimmed.split(/\s+/).filter(Boolean).every(term => {
+    const normalizedTerm = term.normalize("NFC").toLowerCase();
+    const foldedTerm = fold(term);
+    if (!foldedTerm) return true;
+    const accented = normalizedTerm !== foldedTerm;
+    return accented
+      ? rawWords.some(word => word.startsWith(normalizedTerm))
+      : foldedWords.some(word => word.startsWith(foldedTerm));
+  });
+};
+
 export function filterMaterials(items: Material[], category: string, q: string, groups: string[] = []): Material[] {
-  const needle = fold(q.trim());
-  return items.filter(material => (material.category || UNCATEGORIZED) === category && (!groups.length || groups.includes(material.group)) && fold(material.name).includes(needle));
+  const matched = items.filter(material => (material.category || UNCATEGORIZED) === category && (!groups.length || groups.includes(material.group)) && matchesName(material.name, q));
+  const foldedQ = fold(q.trim());
+  if (!foldedQ) return matched;
+  const rank = (name: string) => {
+    const folded = fold(name);
+    return folded === foldedQ ? 0 : folded.startsWith(foldedQ) ? 1 : 2;
+  };
+  return matched.sort((a, b) => rank(a.name) - rank(b.name));
 }
 
 export function pageCount(total: number): number {

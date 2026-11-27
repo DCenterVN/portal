@@ -2,8 +2,9 @@ import { beforeEach, afterEach, expect, it, vi } from "vitest";
 import { createFormControl, type UseFormProps } from "react-hook-form";
 import { useSalesOrders, loadDrivers, loadSelfDriver } from "./use-sales-orders";
 import type { StaffOrder } from "@/lib/api/staff-orders";
+import { availableActions } from "./order-actions";
 
-const hooks = vi.hoisted(() => ({ cursor: 0, slots: [] as unknown[], form: undefined as ReturnType<typeof createFormControl> | undefined, denied: "", userId: "", members: [] as unknown[], setItems: vi.fn() }));
+const hooks = vi.hoisted(() => ({ cursor: 0, slots: [] as unknown[], form: undefined as ReturnType<typeof createFormControl> | undefined, denied: "", userId: "", roles: [] as string[], members: [] as unknown[], setItems: vi.fn() }));
 vi.mock("react", async original => {
   const actual = await original<typeof import("react")>();
   return { ...actual, useEffect: (effect: () => void) => effect(), useState: (initial: unknown) => {
@@ -26,7 +27,7 @@ vi.mock("react-hook-form", async original => {
 });
 vi.mock("swr", () => ({ default: (key: unknown) => ({ data: Array.isArray(key) && key[0] === "order-drivers" ? hooks.members : undefined, mutate: vi.fn() }) }));
 vi.mock("@/hooks/use-paged-list", () => ({ usePagedList: (_load: unknown, _key: string, items: StaffOrder[]) => ({ items, setItems: hooks.setItems, loading: false, error: "", reload: vi.fn(), hasNext: false, hasPrevious: false, next: vi.fn(), previous: vi.fn() }) }));
-vi.mock("@/lib/access-boundary", () => ({ useAccess: () => ({ can: (key: string) => hooks.denied !== key, scope: { userId: hooks.userId, branchId: "branch", orgId: "org" } }) }));
+vi.mock("@/lib/access-boundary", () => ({ useAccess: () => ({ can: (key: string) => hooks.denied !== key, scope: { userId: hooks.userId, branchId: "branch", orgId: "org", roles: hooks.roles } }) }));
 vi.mock("@/components/ui/toast", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 const driver = "0198fd55-3f46-7a01-9e52-f4c0de000020";
 const order: StaffOrder = { id: "order", order_code: "DH-001", status: "PACKED", payment_method: "COD", payment_status: "PENDING_COD", total_vnd: 100, created_at: "2026-11-11" };
@@ -39,7 +40,7 @@ async function submit(value: string) {
   await current.submit();
 }
 beforeEach(() => {
-  hooks.cursor = 0; hooks.slots = []; hooks.form = undefined; hooks.denied = ""; hooks.userId = driver;
+  hooks.cursor = 0; hooks.slots = []; hooks.form = undefined; hooks.denied = ""; hooks.userId = driver; hooks.roles = [];
   hooks.members = [{ user_id: driver, display_name: "Nhân viên An" }]; hooks.setItems.mockReset();
   fetch.mockReset().mockImplementation(async () => envelope({ ...order, status: "DELIVERING" }));
   vi.stubGlobal("fetch", fetch);
@@ -57,13 +58,15 @@ it("ship submits chosen user id, synchronously prevents double click and updates
 it.each([409, 503])("keeps dialog, input and idempotency key after %s and retry", async status => {
   state().act(order, "ship");
   fetch.mockResolvedValueOnce(Response.json({ message: "Thiếu hàng trên kệ" }, { status }));
+  if (status === 409) fetch.mockResolvedValueOnce(envelope(order));
   await submit(driver);
   expect(state().pending?.action).toBe("ship");
-  expect(state().error).toBe("Thiếu hàng trên kệ");
+  expect(state().error).toBe(status === 409 ? "Đơn đang được xử lý ở bước khác, thử lại sau ít phút." : "Hệ thống tạm bận, thử lại sau ít phút.");
   expect(hooks.form!.getValues("value")).toBe(driver);
   await submit(driver);
-  expect(fetch).toHaveBeenCalledTimes(2);
-  expect(fetch.mock.calls[0][1]?.headers).toEqual(fetch.mock.calls[1][1]?.headers);
+  const posts = fetch.mock.calls.filter(([, init]) => init?.method === "POST");
+  expect(posts).toHaveLength(2);
+  expect(posts[0][1]?.headers).toEqual(posts[1][1]?.headers);
   expect(state().pending).toBeNull();
 });
 it("direct pack double click makes one request and retry keeps key", async () => {
@@ -102,6 +105,7 @@ it("payment confirmation sends trimmed bank reference and retains it on error", 
   const target: StaffOrder = { ...order, status: "AWAITING_PAYMENT", payment_method: "BANK_TRANSFER" };
   state().act(target, "payments/confirm");
   fetch.mockResolvedValueOnce(Response.json({ message: "Chưa tìm thấy giao dịch" }, { status: 409 }));
+  fetch.mockResolvedValueOnce(envelope(target));
   await submit("  BANK-2026-001  ");
   expect(JSON.parse(String(fetch.mock.calls[0][1]?.body))).toEqual({ bank_transaction_ref: "BANK-2026-001" });
   expect(hooks.form!.getValues("value")).toBe("  BANK-2026-001  ");
@@ -115,11 +119,11 @@ it("changed driver starts a new idempotent attempt after failure", async () => {
   await submit(driver); await submit(other);
   expect(fetch.mock.calls[0][1]?.headers).not.toEqual(fetch.mock.calls[1][1]?.headers);
 });
-it("retrying direct pack preserves server message and key", async () => {
+it("retrying direct pack shows a Vietnamese message and keeps the key", async () => {
   const target: StaffOrder = { ...order, status: "CONFIRMED" };
   fetch.mockResolvedValueOnce(Response.json({ message: "Thiếu hàng trên kệ" }, { status: 503 }));
   state().act(target, "pack");
-  await vi.waitFor(() => expect(state().error).toBe("Thiếu hàng trên kệ"));
+  await vi.waitFor(() => expect(state().error).toBe("Hệ thống tạm bận, thử lại sau ít phút."));
   state().act(target, "pack");
   await vi.waitFor(() => expect(hooks.setItems).toHaveBeenCalledTimes(1));
   expect(fetch.mock.calls[0][1]?.headers).toEqual(fetch.mock.calls[1][1]?.headers);
@@ -148,10 +152,11 @@ it.each(["deliver", "delivery-failure"] as const)("blocks %s assigned to another
   expect(fetch).not.toHaveBeenCalled();
   expect(state().pending).toBeNull();
 });
-it("shows server 403 message when legacy response omits assignment", async () => {
+it("shows a Vietnamese 403 message, not the backend text, when legacy response omits assignment", async () => {
   fetch.mockResolvedValueOnce(Response.json({ message: "Chỉ người giao được gán mới có thể cập nhật" }, { status: 403 }));
   state().act({ ...order, status: "DELIVERING" }, "deliver");
-  await vi.waitFor(() => expect(state().error).toBe("Chỉ người giao được gán mới có thể cập nhật"));
+  await vi.waitFor(() => expect(state().error).toContain("chưa có quyền"));
+  expect(state().error).not.toContain("Chỉ người giao được gán");
 });
 
 it("SALES without membership read can assign self but cannot assign another user", async () => {
@@ -169,4 +174,37 @@ it("self assignment uses own profile without requesting memberships", async () =
   expect(new URL(String(fetch.mock.calls[0][0])).pathname).toBe("/api/auth/me");
   fetch.mockResolvedValueOnce(Response.json({ id: "another-user" }));
   expect(await loadSelfDriver(driver)).toEqual([]);
+});
+
+const cancelable: StaffOrder = { ...order, payment_method: "COD" };
+const conflict = () => Response.json({ code: 409, status: "error", message: "state_conflict", errors: { error_code: "state_conflict" } }, { status: 409 });
+it("cancel_409_order_moved: huỷ bị 409 khi đơn đã sang Đang giao thì tải lại, báo đổi trạng thái và đóng hộp thoại", async () => {
+  hooks.roles = ["SALES"];
+  state().act(cancelable, "cancel");
+  fetch.mockResolvedValueOnce(conflict()).mockResolvedValueOnce(envelope({ ...order, status: "DELIVERING" }));
+  await submit("Khách đổi ý");
+  const current = state();
+  expect(current.error).toContain("Đơn vừa đổi trạng thái");
+  expect(current.error).toContain("Đang giao");
+  expect(current.pending).toBeNull();
+  const updater = hooks.setItems.mock.calls.at(-1)?.[0] as (items: StaffOrder[]) => StaffOrder[];
+  expect(updater([cancelable])[0].status).toBe("DELIVERING");
+  expect(availableActions({ ...cancelable, status: "DELIVERING" }, () => true, undefined, ["SALES"]).map(a => a.path)).not.toContain("cancel");
+});
+it("cancel_409_still_packed: huỷ bị 409 khi đơn vẫn Đã đóng gói thì giữ hộp thoại và nói kho chưa nhận lại hàng", async () => {
+  hooks.roles = ["SALES"];
+  state().act(cancelable, "cancel");
+  fetch.mockResolvedValueOnce(conflict()).mockResolvedValueOnce(envelope(cancelable));
+  await submit("Khách đổi ý");
+  const current = state();
+  expect(current.error).toContain("Kho chưa nhận lại hàng");
+  expect(current.pending?.action).toBe("cancel");
+});
+it("cancel_409_reload_fails: không tải lại được đơn thì không khẳng định trạng thái", async () => {
+  hooks.roles = ["SALES"];
+  state().act(cancelable, "cancel");
+  fetch.mockResolvedValueOnce(conflict()).mockResolvedValueOnce(Response.json({ message: "x" }, { status: 503 }));
+  await submit("Khách đổi ý");
+  expect(state().error).toContain("chưa tải lại được đơn");
+  expect(state().error).not.toContain("Kho chưa nhận lại hàng");
 });

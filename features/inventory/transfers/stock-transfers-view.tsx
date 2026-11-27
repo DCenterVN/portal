@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { Label } from "@/components/ui/label";
 import { PageShell } from "@/components/ui/page";
+import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { EmptyState, ErrorState, LoadingState } from "@/components/patterns/empty-state";
@@ -13,14 +14,18 @@ import { PageHeading } from "@/components/patterns/page-heading";
 import { useAccess } from "@/lib/access-boundary";
 import { formatDateTime } from "@/lib/format-date";
 import { TRANSFER_STATUS_LABEL, type TransferStatus } from "@/lib/stock-transfer";
+import { TablePager } from "@/components/patterns/table-pager";
+import { useLocalPages } from "@/lib/local-pages";
 import { TransferStatusBadge } from "./transfer-status-badge";
 import { useBranchLabels } from "./use-transfer-lookups";
 import { useTransferList, type TransferTab } from "./use-transfer-list";
+import { InventoryFlowBar } from "../inventory-flow-bar";
 
 export function StockTransfersView() {
   const { can, scope } = useAccess();
   const list = useTransferList();
   const names = useBranchLabels();
+  const pages = useLocalPages(list.rows, `${list.tab}|${list.status}`);
   const empty = list.status ? `Không có phiếu ${TRANSFER_STATUS_LABEL[list.status as TransferStatus].toLowerCase()} trong mục này.` : list.tab === "arrive" ? "Chưa có phiếu nào đang đến chi nhánh này." : "Chi nhánh này chưa gửi phiếu nào.";
   return (
     <PageShell>
@@ -29,6 +34,7 @@ export function StockTransfersView() {
         description="Bếp trung tâm gửi nguyên liệu cho cửa hàng, cửa hàng kiểm và nhận lại."
         actions={can("inventory:transfer:create") && <Button asChild><Link href="/inventory/stock-transfers/new">Gửi hàng</Link></Button>}
       />
+      <InventoryFlowBar current="transfers" />
       <div className="mt-4 flex flex-wrap items-end justify-between gap-3">
         <Tabs value={list.tab} onValueChange={value => list.setTab(value as TransferTab)}>
           <TabsList aria-label="Hướng phiếu">
@@ -51,9 +57,9 @@ export function StockTransfersView() {
         {list.error ? <ErrorState title="Không tải được danh sách phiếu." onRetry={list.retry} />
           : list.loading ? <LoadingState />
           : !list.rows.length ? <EmptyState title={empty} action={list.status ? <Button variant="outline" onClick={() => list.setStatus("")}>Xoá lọc</Button> : undefined} />
-          : <Table aria-label="Phiếu chuyển hàng">
+          : <Card className="gap-0 overflow-hidden py-0"><CardContent className="p-0"><Table aria-label="Phiếu chuyển hàng">
             <TableHeader><TableRow>{["Mã phiếu", "Nơi gửi → nơi nhận", "Số dòng", "Người gửi", "Giờ gửi", "Trạng thái"].map(label => <TableHead key={label}>{label}</TableHead>)}</TableRow></TableHeader>
-            <TableBody>{list.rows.map(item => (
+            <TableBody>{pages.rows.map(item => (
               <TableRow key={item.id}>
                 <TableCell className="font-medium"><Link className="text-primary underline-offset-4 hover:underline" href={`/inventory/stock-transfers/${item.id}`}>{item.code}</Link></TableCell>
                 <TableCell>{names.ends(item).from} → {names.ends(item).to}</TableCell>
@@ -63,7 +69,8 @@ export function StockTransfersView() {
                 <TableCell><TransferStatusBadge status={item.status} /></TableCell>
               </TableRow>
             ))}</TableBody>
-          </Table>}
+          </Table></CardContent></Card>}
+        {(pages.hasPrevious || pages.hasNext) && <TablePager label="Phân trang phiếu chuyển hàng" status={`Trang ${pages.page}`} hasPrevious={pages.hasPrevious} onPrevious={pages.previous} hasNext={pages.hasNext} onNext={pages.next} />}
       </div>
     </PageShell>
   );

@@ -1,0 +1,14 @@
+import { DishListScreen } from "@/features/production/dishes/dishes-container";
+
+export const dynamic = "force-dynamic";
+
+export const metadata = {
+  title: "Món ăn",
+  description: "Danh mục món ăn và công thức định lượng theo suất",
+};
+
+export default async function DishesPage({ searchParams }: { searchParams?: Promise<{ tab?: string }> }) {
+  const params = searchParams ? await searchParams : {};
+  const initialTab = params.tab === "drafts" ? "drafts" : params.tab === "semi" ? "semi" : "dishes";
+  return <DishListScreen initialTab={initialTab} />;
+}

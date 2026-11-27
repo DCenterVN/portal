@@ -4,9 +4,13 @@ import { useEffect, useState } from "react";
 import { z } from "zod";
 import { listPackages } from "@/lib/api/sales-pack";
 import { getTargets, getMaterialRequirements, getFoodPlan, type ProductionTarget, type MaterialRequirements } from "@/lib/api/production";
+import { useAccess } from "@/lib/access-boundary";
+import { purchasePriceKey } from "@/lib/purchase-price";
+import { requirementQuery } from "./requirement-query";
 import { quoteSchema, pinsSchema } from "./requirement-schemas";
 
 export function useMaterialRequirements(targetId?: string, foodPlanId?: string) {
+  const { can } = useAccess();
   const [packNames, setPackNames] = useState<Record<string, string>>({});
   const [pins, setPins] = useState<z.infer<typeof pinsSchema>["pack_plan"][]>([]);
   const [targets, setTargets] = useState<ProductionTarget[]>([]);
@@ -66,20 +70,12 @@ export function useMaterialRequirements(targetId?: string, foodPlanId?: string) 
           cursor = page.next_cursor ?? undefined;
         } while (cursor && remaining.size);
       } catch {
-        // Names are optional; requirements and pinned versions remain usable.
+        return;
       }
     };
     void loadNames();
     return () => { active = false; };
   }, [pins]);
-  const applyFilters = () => {
-    const params = new URLSearchParams();
-    if (month) params.set("month", month);
-    params.set("include_unknown", String(includeUnknown));
-    if (priceMin) params.set("price_min", priceMin);
-    if (priceMax) params.set("price_max", priceMax);
-    if (priceMin || priceMax) params.set("price_uom", "KG");
-    setQuery(params.toString());
-  };
+  const applyFilters = () => setQuery(requirementQuery({ month, includeUnknown, priceMin, priceMax }, can(purchasePriceKey)));
   return { packNames, pins, targets, selected, setSelected, data, month, setMonth, includeUnknown, setIncludeUnknown, priceMin, setPriceMin, priceMax, setPriceMax, busy, error, id, load, applyFilters };
 }

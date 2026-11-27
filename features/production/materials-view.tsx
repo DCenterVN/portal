@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { PageShell } from "@/components/ui/page";
 import { RequireAction, useAccess } from "@/lib/access-boundary";
 import { getMaterialTree, listMaterials, type MaterialCategory, type Material } from "@/lib/api/material-catalog";
-import { UNCATEGORIZED, SEARCH_DELAY_MS, changeState, countByCategory, countByGroup, filterMaterials, groupsOf, pageCount, pageOf, readState, statusOf, stateQuery, type CatalogState, type StatusFilter } from "./materials-catalog";
+import { UNCATEGORIZED, SEARCH_DELAY_MS, changeState, countByCategory, countByGroup, filterMaterials, groupsOf, pageCount, pageOf, readState, sortCategories, statusOf, stateQuery, type CatalogState, type StatusFilter } from "./materials-catalog";
 import { MaterialCategorySheet } from "./material-category-sheet";
 import { MaterialItemSheet } from "./material-item-sheet";
 import { GroupChips } from "./material-group-filter";
@@ -28,8 +28,9 @@ function useCatalog(statusFilter: StatusFilter) {
     let live = true;
     setFailed(false);
     getMaterialTree().then(async loaded => {
-      const list = await listMaterials(statusOf(statusFilter), loaded);
-      if (live) { setTree(loaded); setItems(list); }
+      const sorted = sortCategories(loaded);
+      const list = await listMaterials(statusOf(statusFilter), sorted);
+      if (live) { setTree(sorted); setItems(list); }
     }).catch(() => live && setFailed(true));
     return () => { live = false; };
   }, [statusFilter, version]);

@@ -1,16 +1,23 @@
 "use client";
 
+import type { Route } from "next";
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "@/components/ui/toast";
 import { useAccess } from "@/lib/access-boundary";
-import { getActiveSuppliers, type Supplier } from "@/lib/api/suppliers";
-import { getContractMaterials, getAllAgreements, resolveReceiptReferencePrice, type Agreement } from "@/lib/api/supplier-agreements";
+import { getActiveSuppliers, getSupplier, type Supplier } from "@/lib/api/suppliers";
+import { loadContractMaterials } from "./use-contract-materials";
+import { getAllAgreements, resolveReceiptReferencePrice, type Agreement, type ResolvedAgreementPrice } from "@/lib/api/supplier-agreements";
+import { getSupplierHistory, type SupplierReceipt } from "@/lib/api/supplier-history";
 import { createGoodsReceipt, receiptDraftSchema } from "@/lib/api/goods-receipts";
 import { type Material } from "@/lib/api/sales";
+import { getMaterialCategories } from "@/lib/api/material-categories";
+import type { MaterialCategory } from "@/lib/api/inventory/types";
 import { FetchError } from "@/lib/fetcher";
 import { receiptToday, parseReceiptDate, formatReceiptDate } from "./receipt-date-input";
 import { lineAmount, receiptTotal, validQuantity, type ReceiptLine } from "./receipt-lines";
 
-type Setup = { kind: "loading" } | { kind: "error" } | { kind: "ready"; suppliers: Supplier[]; materials: Material[]; branch: string };
+type Setup = { kind: "loading" } | { kind: "error" } | { kind: "ready"; materials: Material[]; branch: string };
 type Prices = { kind: "loading" } | { kind: "error" } | { kind: "ready"; supplier: string; items: Agreement[] };
 
 
@@ -25,9 +32,16 @@ export function useGoodsReceipt() {
   const [revision, setRevision] = useState(0);
   const [priceRevision, setPriceRevision] = useState(0);
   const [restored, setRestored] = useState(false);
+  const [supplierList, setSupplierList] = useState<Supplier[] | null>(null);
+  const [unpricedIds, setUnpricedIds] = useState<ReadonlySet<string>>(new Set());
+  const [supplierFailed, setSupplierFailed] = useState(false);
+  const [chosen, setChosen] = useState<Supplier | null>(null);
+  const [categories, setCategories] = useState<MaterialCategory[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [receiveHref, setReceiveHref] = useState("");
+  const [openReceipts, setOpenReceipts] = useState<SupplierReceipt[]>([]);
+  const router = useRouter();
   const [success, setSuccess] = useState("");
   const [reconfirm, setReconfirm] = useState(false);
   const command = useRef({ body: "", key: "" });
@@ -37,9 +51,32 @@ export function useGoodsReceipt() {
     let live = true;
     const branch = scope?.branchId;
     if (!branch) { setSetup({ kind: "error" }); return; }
-    Promise.all([getActiveSuppliers(), getContractMaterials()]).then(([suppliers, materials]) => { if (live) setSetup({ kind: "ready", suppliers, materials, branch }); }).catch(() => { if (live) setSetup({ kind: "error" }); });
+    loadContractMaterials().then(materials => { if (live) setSetup({ kind: "ready", materials, branch }); }).catch(() => { if (live) setSetup({ kind: "error" }); });
     return () => { live = false; };
   }, [allowed, revision, scope?.branchId]);
+  useEffect(() => {
+    if (!allowed || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return;
+    let live = true;
+    setSupplierFailed(false);
+    Promise.all([getActiveSuppliers(), getActiveSuppliers(date)]).then(([all, priced]) => {
+      if (!live) return;
+      setSupplierList(all);
+      setUnpricedIds(new Set(all.filter(item => !priced.some(other => other.id === item.id)).map(item => item.id)));
+    }).catch(() => { if (live) setSupplierFailed(true); });
+    return () => { live = false; };
+  }, [allowed, date, revision]);
+  useEffect(() => {
+    if (!supplier || !allowed || chosen?.id === supplier) return;
+    let live = true;
+    getSupplier(supplier).then(item => { if (live) setChosen(item); }).catch(() => undefined);
+    return () => { live = false; };
+  }, [supplier, allowed, chosen?.id]);
+  useEffect(() => {
+    if (!allowed) return;
+    let live = true;
+    getMaterialCategories().then(items => { if (live) setCategories(items); }).catch(() => undefined);
+    return () => { live = false; };
+  }, [allowed]);
   const storageKey = setup.kind === "ready" ? `inventory:receipt-draft:${setup.branch}` : "";
   useEffect(() => {
     if (!storageKey || restored) return;
@@ -47,12 +84,16 @@ export function useGoodsReceipt() {
       const raw = sessionStorage.getItem(storageKey);
       const parsed = raw ? receiptDraftSchema.safeParse(JSON.parse(raw)) : null;
       if (parsed?.success) { setSupplier(parsed.data.supplier); setDate(parsed.data.date); setLines(parsed.data.lines.map(line => ({ ...line, key: crypto.randomUUID() }))); }
-    } catch { /* Storage không quyết định quyền hoặc giá. */ }
+    } catch { setRestored(true); }
+    const fromAddress = new URLSearchParams(typeof window === "undefined" ? "" : window.location.search).get("supplier");
+    if (fromAddress && setup.kind === "ready") {
+      setSupplier(fromAddress); setLines(items => items.map(({ key, sku, quantity }) => ({ key, sku, quantity }))); setPrices({ kind: "loading" });
+    }
     setRestored(true);
   }, [storageKey, restored]);
   useEffect(() => {
     if (!storageKey || !restored || success) return;
-    try { sessionStorage.setItem(storageKey, JSON.stringify({ supplier, date, lines: lines.map(({ sku, quantity }) => ({ sku, quantity })) })); } catch { /* Bản nháp trong RAM vẫn dùng được. */ }
+    try { sessionStorage.setItem(storageKey, JSON.stringify({ supplier, date, lines: lines.map(({ sku, quantity }) => ({ sku, quantity })) })); } catch { return undefined; }
   }, [storageKey, restored, supplier, date, lines, success]);
   useEffect(() => {
     if (!supplier || !allowed) return;
@@ -61,8 +102,31 @@ export function useGoodsReceipt() {
     getAllAgreements(supplier).then(items => { if (live) setPrices({ kind: "ready", supplier, items }); }).catch(() => { if (live) setPrices({ kind: "error" }); });
     return () => { live = false; };
   }, [supplier, allowed, priceRevision]);
-  const materials = setup.kind === "ready" ? setup.materials.filter(material => material.selectable) : [];
-  const suppliers = setup.kind === "ready" ? setup.suppliers : [];
+  useEffect(() => {
+    if (!supplier || !allowed) { setOpenReceipts([]); return; }
+    let live = true;
+    getSupplierHistory(supplier)
+      .then(history => { if (live) setOpenReceipts(history.items.filter(item => item.status === "DRAFT" || item.status === "IN_PROGRESS")); })
+      .catch(() => { if (live) setOpenReceipts([]); });
+    return () => { live = false; };
+  }, [supplier, allowed]);
+  const suppliers = supplierList ?? [];
+  const priceReady = prices.kind === "ready" && prices.supplier === supplier;
+  const priceOf = (material: Material): "none" | "ambiguous" | ResolvedAgreementPrice => {
+    if (!priceReady) return "none";
+    try { const found = resolveReceiptReferencePrice(prices.items, { sku: material.id, uom: material.uom_code, date }); return found.found ? found.price : "none"; } catch { return "ambiguous"; }
+  };
+  const allMaterials = setup.kind === "ready" ? setup.materials.filter(material => material.selectable) : [];
+  const resolved = allMaterials.map(material => ({ material, price: priceOf(material) })).filter(item => item.price !== "none");
+  const priceTable = resolved.flatMap(({ material, price }) => typeof price === "string" ? [] : [{ material, unitPrice: price.unit_price_vnd, validTo: price.valid_to }]);
+  const materials = resolved.map(item => item.material);
+  const setupKind: "loading" | "error" | "ready" = setup.kind === "error" || supplierFailed ? "error" : setup.kind === "ready" && supplierList ? "ready" : "loading";
+  const selectedSupplier = suppliers.find(item => item.id === supplier) ?? (chosen?.id === supplier ? chosen : undefined);
+  const pricedCount = supplier && priceReady ? materials.length : null;
+  const referenceOf = (sku: string, uom: string): number | undefined => {
+    if (!priceReady) return undefined;
+    try { const found = resolveReceiptReferencePrice(prices.items, { sku, uom, date }); return found.found ? found.price.unit_price_vnd : undefined; } catch { return undefined; }
+  };
   const covered = lines.map(line => {
     const material = materials.find(item => item.id === line.sku);
     const scope = `${supplier}:${line.sku}:${material?.uom_code}:${date}`;
@@ -87,16 +151,20 @@ export function useGoodsReceipt() {
     setBusy(true); setError("");
     try {
       const receipt = await createGoodsReceipt(input, command.current.key);
-      setReceiveHref(`/inventory/goods-receipts/${encodeURIComponent(receipt.id)}/receive?supplier=${encodeURIComponent(supplier)}`);
-      setSuccess(`Đã tạo phiếu nhập ở trạng thái ${receipt.status === "DRAFT" ? "Nháp" : receipt.status}${receipt.total_amount_vnd === undefined ? "" : `, tổng ${receipt.total_amount_vnd.toLocaleString("vi-VN")} VND`}.`);
-      try { sessionStorage.removeItem(storageKey); } catch { /* Không ảnh hưởng phiếu đã tạo. */ }
+      const href = `/inventory/goods-receipts/${encodeURIComponent(receipt.id)}/receive?supplier=${encodeURIComponent(supplier)}`;
+      const status = receipt.status === "DRAFT" ? "Nháp" : receipt.status;
+      const total = receipt.total_amount_vnd === undefined ? "" : ` · tổng ${receipt.total_amount_vnd.toLocaleString("vi-VN")} đ`;
+      setReceiveHref(href);
+      setSuccess(`Đã tạo phiếu nhập ở trạng thái ${status}${receipt.total_amount_vnd === undefined ? "" : `, tổng ${receipt.total_amount_vnd.toLocaleString("vi-VN")} VND`}.`);
+      toast.success("Đã tạo phiếu nhập", { description: `${status}${total}`, ...(can("inventory:goods_receipt:update") ? { action: { label: "Nhận hàng", onClick: () => router.push(href as Route) } } : {}) });
+      try { sessionStorage.removeItem(storageKey); } catch { setReceiveHref(href); }
     } catch (cause) {
-      if (cause instanceof FetchError && cause.status === 409) { setReconfirm(true); setPriceRevision(value => value + 1); setError("Điều kiện hoặc giá hợp đồng đã thay đổi. Kiểm tra lại bảng giá trước khi tạo lại."); }
-      else setError(cause instanceof Error ? cause.message : "Không tạo được phiếu nhập");
+      if (cause instanceof FetchError && cause.status === 409) { setReconfirm(true); setPriceRevision(value => value + 1); const message = "Điều kiện hoặc giá hợp đồng đã thay đổi. Kiểm tra lại bảng giá trước khi tạo lại."; setError(message); toast.error(message); }
+      else { const message = cause instanceof Error ? cause.message : "Không tạo được phiếu nhập"; setError(message); toast.error(message); }
     } finally { inFlight.current = false; setBusy(false); }
   }
   return {
-    allowed, setupKind: setup.kind, suppliers, materials, supplier, date, rows, busy, error: error || priceError, success, receiveHref, canReceive: can("inventory:goods_receipt:update"), reconfirm, valid,
+    allowed, setupKind, suppliers, unpricedIds, selectedSupplier, priceTable, categories, pricedCount, referenceOf, materials, supplier, date, rows, busy, error: error || priceError, success, receiveHref, canReceive: can("inventory:goods_receipt:update"), reconfirm, valid, openReceipts,
     pricesKind: prices.kind, canUpdate: can("inventory:supplier:update"),
     onSupplier: (id: string | null) => { setSupplier(id ?? ""); setLines(items => items.map(({ key, sku, quantity }) => ({ key, sku, quantity }))); setReconfirm(false); setPrices({ kind: "loading" }); },
     onDate: (value: string) => { setDate(value); setLines(items => items.map(({ key, sku, quantity }) => ({ key, sku, quantity }))); setReconfirm(false); },
@@ -104,8 +172,14 @@ export function useGoodsReceipt() {
     onPrice: (key: string, unitPrice: number | undefined) => setLines(items => items.map(item => item.key === key ? { ...item, unitPrice, priceScope: covered.find(row => row.line.key === key)?.scope } : item)),
     onQuantity: (key: string, quantity: number) => setLines(items => items.map(item => item.key === key ? { ...item, quantity } : item)),
     onAdd: () => setLines(items => items.length >= 100 ? items : [...items, { key: crypto.randomUUID(), sku: "", quantity: 1 }]),
+    onAddMaterial: (sku: string) => setLines(items => {
+      if (items.some(item => item.sku === sku)) return items;
+      const empty = items.find(item => !item.sku);
+      if (empty) return items.map(item => item === empty ? { key: item.key, quantity: item.quantity, sku } : item);
+      return items.length >= 100 ? items : [...items, { key: crypto.randomUUID(), sku, quantity: 1 }];
+    }),
     onRemove: (key: string) => setLines(items => items.length <= 1 ? items : items.filter(item => item.key !== key)),
-    onRetry: () => { setSetup({ kind: "loading" }); setRevision(value => value + 1); },
+    onRetry: () => { setSetup({ kind: "loading" }); setSupplierList(null); setRevision(value => value + 1); },
     onPriceRetry: () => setPriceRevision(value => value + 1),
     onReconfirm: () => setReconfirm(false), onSubmit: submit,
   };

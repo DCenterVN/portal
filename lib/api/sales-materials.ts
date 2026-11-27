@@ -29,7 +29,7 @@ async function errorMessage(res: Response, fallback: string) {
 
 export interface Material {
   id: string; sku_code: string; name: string; category_ref?: string;
-  material_group_code?: string | null; uom_code: string; selectable: boolean; season_months: number[] | null;
+  material_group_code?: string | null; image_url?: string | null; uom_code: string; selectable: boolean; season_months: number[] | null;
   season_note: string | null; reference_price_vnd: number | null;
   reference_pack_quantity: string | null; reference_pack_uom: string | null;
   reference_observed_at: string | null; normalized_unit_price: string | null;
@@ -40,7 +40,8 @@ export interface MaterialPage {
   next_cursor: string; season_message: string;
 }
 export async function getMaterials(query = ""): Promise<MaterialPage> {
-  const res = await apiFetch(`/api/sales/skus?kind=RAW_MATERIAL&limit=20&${query}`);
+  const limit = /(^|&)limit=/.test(query) ? "" : "limit=20&";
+  const res = await apiFetch(`/api/sales/skus?kind=RAW_MATERIAL&${limit}${query}`);
   if (!res.ok) throw new Error(await errorMessage(res, `Không tải được nguyên liệu (${res.status})`));
   return responseData<MaterialPage>(res);
 }
@@ -63,7 +64,10 @@ const UpdateRawLabelsRequestSchema = z.object({
   allergen_summary: RawAllergensSchema,
   avoidance_flags: z.array(z.enum(["PORK", "BEEF", "ANIMAL", "ALCOHOL", "MSG", "SPICY", "NGU_VI_TAN"])).refine(items => new Set(items).size === items.length, "Duplicate values"),
   diet_flags: z.array(z.enum(["VEGETARIAN", "VEGAN"])).refine(items => new Set(items).size === items.length, "Duplicate values").nullable(),
-  expected_updated_at: z.string().datetime({ offset: true })
+  expected_updated_at: z.string().datetime({ offset: true }),
+  uom_code: z.enum(["KG", "L", "EA"]).optional(),
+  material_group_code: z.string().min(1).optional(),
+  season_months: z.array(z.number().int().min(1).max(12)).optional()
 }).strict();
 
 export type UpdateRawLabelsRequest = z.infer<typeof UpdateRawLabelsRequestSchema>;
@@ -79,4 +83,8 @@ async function rawLabelsRequest<T>(path: string, schema: z.ZodType<T>, method = 
 export function getRawLabels(id: string) { return rawLabelsRequest(`/skus/${encodeURIComponent(id)}/labels`, RawLabelsViewSchema); }
 export function updateRawLabels(id: string, input: UpdateRawLabelsRequest) {
   return rawLabelsRequest(`/skus/${encodeURIComponent(id)}/labels`, RawLabelsViewSchema, "PATCH", UpdateRawLabelsRequestSchema.parse(input));
+}
+export async function setRawUnit(id: string, input: { uom_code?: "KG" | "L" | "EA"; material_group_code?: string }) {
+  const current = await getRawLabels(id);
+  return updateRawLabels(id, { allergen_summary: current.allergen_summary, avoidance_flags: current.avoidance_flags, diet_flags: current.diet_flags, expected_updated_at: current.updated_at, ...input });
 }

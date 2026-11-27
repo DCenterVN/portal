@@ -15,6 +15,12 @@ export function parseReceiptDate(text: string): string {
   return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === iso ? iso : "";
 }
 
+export function maskReceiptDate(text: string): string {
+  if (!/^[\d/]+$/.test(text)) return text;
+  const digits = text.replace(/\//g, "").slice(0, 8);
+  return [digits.slice(0, 2), digits.slice(2, 4), digits.slice(4)].filter(Boolean).join("/");
+}
+
 export function formatReceiptDate(iso: string): string {
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
   return match ? `${match[3]}/${match[2]}/${match[1]}` : "";
@@ -37,12 +43,12 @@ export function ReceiptDateInput({ value, onChange, disabled }: ReceiptDateInput
   const [touched, setTouched] = useState(false);
   const text = value === edit.emitted ? edit.text : formatReceiptDate(value);
   const invalid = !parseReceiptDate(text);
-  const message = "Nhập ngày hợp lệ theo dd/mm/yyyy.";
-  return <Field label="Ngày dự kiến nhập" htmlFor="receipt-date" hint="dd/mm/yyyy. Hợp đồng và giá phải phủ ngày này." error={touched && invalid ? message : undefined}>
-    <Input id="receipt-date" type="text" inputMode="numeric" placeholder="dd/mm/yyyy" required disabled={disabled} value={text}
+  const message = "Nhập ngày hợp lệ theo ngày/tháng/năm, ví dụ 27/10/2026.";
+  return <Field label="Ngày dự kiến nhập" htmlFor="receipt-date" hint="Gõ ngày/tháng/năm. Giá tham chiếu lấy theo ngày này; chưa có bảng giá thì nhập đơn giá thực tế." error={touched && invalid ? message : undefined}>
+    <Input id="receipt-date" type="text" inputMode="numeric" placeholder="ngày/tháng/năm" required disabled={disabled} value={text}
       ref={element => element?.setCustomValidity(invalid ? message : "")}
       onChange={event => {
-        const next = event.target.value;
+        const next = maskReceiptDate(event.target.value);
         const emitted = parseReceiptDate(next);
         setEdit({ text: next, emitted });
         onChange(emitted);

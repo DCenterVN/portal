@@ -58,3 +58,9 @@ export async function suspendProduct(id: string, reason: string) {
 export async function deleteProduct(id: string) {
   await fetcher(productPath(id), mutation("DELETE"));
 }
+export async function resumeProduct(id: string, reason: string) {
+  await fetcher(`${productPath(id)}/resume`, mutation("POST", { reason }));
+}
+export async function resumeVariant(productId: string, variantId: string, reason: string) {
+  await fetcher(`${productPath(productId)}/variants/${encodeURIComponent(variantId)}/resume`, mutation("POST", { reason }));
+}

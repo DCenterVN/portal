@@ -14,7 +14,16 @@ export const catalogNutritionSchema = z.object({
   missing: z.array(z.string()).nullable().transform(value => value ?? []),
   labels: z.array(z.enum(["HIGH_PROTEIN", "LOW_FAT", "LOW_SODIUM", "HIGH_FIBRE"])).nullable().transform(value => value ?? []),
   summary: z.string(),
-  components: z.array(z.object({ name: z.string(), grams: z.string(), kcal: decimal, protein_g: decimal, fat_g: decimal, carb_g: decimal })).optional(),
+  components: z.array(z.object({
+    name: z.string(),
+    grams: z.string(),
+    kcal: decimal,
+    protein_g: decimal,
+    fat_g: decimal,
+    carb_g: decimal,
+    ingredients: z.array(z.string()).optional(),
+    image_url: z.string().nullable().optional(),
+  })).optional(),
 });
 export type CatalogNutrition = z.infer<typeof catalogNutritionSchema>;
 export const nutritionSources = { VN2007: "Bảng thực phẩm Việt Nam 2007", USDA_FDC: "USDA FoodData Central", LABEL: "Nhãn sản phẩm", OTHER: "Nguồn khác" } as const;

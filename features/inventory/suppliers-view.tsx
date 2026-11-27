@@ -1,63 +1,157 @@
 "use client";
 
+import type { Route } from "next";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { FileText, Pencil } from "lucide-react";
-import { RowActions } from "@/components/patterns/row-actions";
-import { Badge } from "@/components/ui/badge";
-import { StatusBadge } from "@/components/patterns/status-badge";
-import { Button } from "@/components/ui/button";
-import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
-import { Input } from "@/components/ui/input";
-import { Table, TableHeader, TableHead, TableBody, TableRow, TableCell } from "@/components/ui/table";
-import { PageShell } from "@/components/ui/page";
+import { usePathname } from "next/navigation";
+import { DataTable } from "@/components/patterns/data-table/data-table";
+import { withFilter } from "@/components/patterns/data-table/table-logic";
+import type { DataTableColumn, DataTablePagination, ToolbarConfig } from "@/components/patterns/data-table/types";
+import { ErrorState } from "@/components/patterns/empty-state";
 import { PageHeading } from "@/components/patterns/page-heading";
-import { EmptyState, ErrorState, LoadingState } from "@/components/patterns/empty-state";
-import { TablePager } from "@/components/patterns/table-pager";
-import { SupplierFormContainer } from "./supplier-form-container";
-
+import { Button } from "@/components/ui/button";
+import { PageShell } from "@/components/ui/page";
+import type { Supplier } from "@/lib/api/suppliers";
+import { SupplierContactLine, SupplierPhoto, SupplierStatusBadge } from "./supplier-detail-view";
+import { SupplierGroupBar } from "./supplier-group-bar";
+import { SupplierMaterialsPanel } from "./supplier-materials-panel";
+import { SupplierOverviewStrip } from "./supplier-overview-view";
+import { supplierHref } from "./supplier-routes";
+import { supplierListUrl } from "./suppliers-table";
 import { type useSuppliers } from "./use-suppliers";
 
 type SuppliersViewProps = ReturnType<typeof useSuppliers>;
 
-export function SuppliersView({ can, read, page, rows, categoryState, setCategoryRevision, loading, error, q, status, cursors, create, setCreate, setQ, setStatus, setCursors, setRevision }: SuppliersViewProps) {
-  const router = useRouter();
+const statusOptions = [{ value: "ACTIVE", label: "Đang hợp tác" }, { value: "SUSPENDED", label: "Ngừng hợp tác" }];
+const pricedOptions = [{ value: "today", label: "Có giá hiệu lực" }];
+const dash = <span aria-label="Chưa có" className="text-muted-foreground">—</span>;
+
+export function groupLabels(supplier: Supplier) {
+  const names = (supplier.material_category_labels ?? []).map(label => label.name);
+  return { shown: names.slice(0, 3), more: Math.max(0, names.length - 3) };
+}
+
+const columns: DataTableColumn<Supplier>[] = [
+  {
+    id: "name",
+    header: "Nhà cung cấp",
+    sortable: true,
+    cell: supplier => (
+      <div className="flex min-w-0 items-center gap-2.5">
+        <SupplierPhoto name={supplier.name} url="" onError={() => {}} decorative />
+        <div className="min-w-0">
+          <span className="block truncate font-medium">{supplier.name}</span>
+          {(supplier.contact_name || supplier.contact_phone) && (
+            <span className="block truncate text-xs text-muted-foreground md:hidden">
+              <SupplierContactLine supplier={supplier} />
+            </span>
+          )}
+        </div>
+        {supplier.status !== "ACTIVE" && <SupplierStatusBadge status={supplier.status} />}
+      </div>
+    ),
+  },
+  {
+    id: "groups",
+    header: "Nhóm nguyên liệu",
+    className: "text-sm text-muted-foreground whitespace-normal",
+    cell: supplier => {
+      const { shown, more } = groupLabels(supplier);
+      return shown.length ? <span>{shown.join(", ")}{more > 0 && <span className="text-muted-foreground"> +{more}</span>}</span> : dash;
+    },
+  },
+  {
+    id: "contact",
+    header: "Liên hệ",
+    hideBelow: "md",
+    className: "text-sm text-muted-foreground",
+    cell: supplier => supplier.contact_name || supplier.contact_phone ? <SupplierContactLine supplier={supplier} /> : dash,
+  },
+];
+
+export function SuppliersView({
+  can,
+  read,
+  url,
+  page,
+  rows,
+  categories,
+  overview,
+  overviewLoading,
+  overviewError,
+  reloadOverview,
+  attention,
+  loading,
+  error,
+  setRevision,
+  expanded,
+  toggle,
+}: SuppliersViewProps) {
+  const pathname = usePathname() ?? supplierHref.list;
   if (!read) return <ErrorState denied title="Bạn không có quyền xem nhà cung cấp" />;
-  return <PageShell>
-    <PageHeading title="Nhà cung cấp" description="Hồ sơ, bảng giá tham chiếu và các lần nhập hàng." />
-    <div className="my-6 flex flex-wrap gap-3 lg:flex-nowrap">
-      <div className="min-w-0 flex-1 basis-full lg:basis-0"><Input aria-label="Tìm nhà cung cấp theo tên hoặc mã" placeholder="Ví dụ Gạo An Bình" value={q} onChange={event => { setQ(event.target.value); setCursors([""]); }} /></div>
-      <div className="w-full sm:w-auto lg:w-48"><NativeSelect aria-label="Lọc trạng thái nhà cung cấp" value={status} onChange={event => { setStatus(event.target.value); setCursors([""]); }}><NativeSelectOption value="">Mọi trạng thái</NativeSelectOption><NativeSelectOption value="ACTIVE">Đang hợp tác</NativeSelectOption><NativeSelectOption value="SUSPENDED">Đã ngừng</NativeSelectOption></NativeSelect></div>
-      {can("inventory:supplier:create") && <Button className="shrink-0" onClick={() => setCreate(true)}>Thêm nhà cung cấp</Button>}
-    </div>
-    <Table className="min-w-xl">
-      <TableHeader><TableRow>{["Mã NCC", "Tên nhà cung cấp", "Nhóm NL cha", "Liên hệ", "Trạng thái"].map(label => <TableHead key={label}>{label}</TableHead>)}<TableHead className="w-12"><span className="sr-only">Thao tác</span></TableHead></TableRow></TableHeader>
-      <TableBody>
-        {loading ? <TableRow><TableCell colSpan={6}><LoadingState title="Đang tải nhà cung cấp" /></TableCell></TableRow>
-        : error ? <TableRow><TableCell colSpan={6}><ErrorState title={error} onRetry={() => setRevision(value => value + 1)} /></TableCell></TableRow>
-        : !rows?.length ? <TableRow><TableCell colSpan={6}><EmptyState title="Chưa có nhà cung cấp phù hợp" description="Thử tên hoặc mã khác, hoặc thêm nhà cung cấp để lập bảng giá."
-          action={q || status ? <Button variant="outline" onClick={() => { setQ(""); setStatus(""); setCursors([""]); }}>Xoá lọc</Button> : can("inventory:supplier:create") ? <Button onClick={() => setCreate(true)}>Thêm nhà cung cấp</Button> : undefined} /></TableCell></TableRow>
-        : rows.map(supplier => <TableRow key={supplier.id} className="h-10">
-          <TableCell>{supplier.code}</TableCell>
-          <TableCell><Link className="font-medium underline-offset-4 hover:underline" href={`/inventory/suppliers/${encodeURIComponent(supplier.id)}`}>{supplier.name}</Link></TableCell>
-          <TableCell>
-            {supplier.material_category_codes?.length ? categoryState === "loading" ? <span role="status">Đang tải nhóm</span>
-              : categoryState === "error" ? <Button variant="ghost" onClick={() => setCategoryRevision(value => value + 1)}>Thử lại nhóm</Button>
-              : supplier.parentNames.length ? <div className="flex flex-wrap gap-1.5">{supplier.parentNames.slice(0, 2).map(name => <Badge key={name} variant="secondary">{name}</Badge>)}
-                {supplier.parentNames.length > 2 && <Badge variant="outline" tabIndex={0} title={supplier.parentNames.join(", ")} aria-label={supplier.parentNames.join(", ")}>+{supplier.parentNames.length - 2}</Badge>}</div>
-              : <span>Cần cập nhật nhóm</span> : supplier.material_categories?.length ? <span>Cần cập nhật nhóm</span> : <span className="text-muted-foreground">—</span>}
-          </TableCell>
-          <TableCell>{supplier.contact_name || supplier.contact_phone ? <>{supplier.contact_name}{supplier.contact_name && supplier.contact_phone && <span className="text-muted-foreground"> · </span>}{supplier.contact_phone && <a className="underline-offset-4 hover:underline" href={`tel:${supplier.contact_phone}`}>{supplier.contact_phone}</a>}</> : <span className="text-muted-foreground">—</span>}</TableCell>
-          <TableCell><StatusBadge tone={supplier.status === "ACTIVE" ? "neutral" : "warning"}>{supplier.status === "ACTIVE" ? "Đang hợp tác" : "Đã ngừng"}</StatusBadge></TableCell>
-          <TableCell className="text-right"><RowActions label={supplier.name} actions={[
-            { label: "Bảng giá", icon: FileText, onSelect: () => router.push(`/inventory/suppliers/${encodeURIComponent(supplier.id)}?tab=agreements`) },
-            { label: "Sửa", icon: Pencil, hidden: !can("inventory:supplier:update"), onSelect: () => router.push(`/inventory/suppliers/${encodeURIComponent(supplier.id)}?edit=1`) },
-          ]} /></TableCell>
-        </TableRow>)}
-      </TableBody>
-    </Table>
-    {!loading && !error && Boolean(page?.items.length) && <p className="mt-2 text-sm text-muted-foreground sm:hidden">Vuốt ngang bảng để mở cột thao tác.</p>}
-    <TablePager label="Phân trang nhà cung cấp" className="mt-4" busy={loading} hasPrevious={cursors.length > 1} onPrevious={() => setCursors(items => items.slice(0, -1))} hasNext={Boolean(page?.next_cursor)} onNext={() => { if (page?.next_cursor) setCursors(items => [...items, page.next_cursor]); }} />
-    {create && <SupplierFormContainer onClose={() => setCreate(false)} onSaved={() => { setCreate(false); setCursors([""]); setRevision(value => value + 1); }} />}
-  </PageShell>;
+  const { state } = url;
+  const total = page?.total;
+  const pricedToday = state.filters.priced?.[0] === "today";
+  const hrefFor = (next: typeof state) => {
+    const query = supplierListUrl(next);
+    return (query ? `${pathname}?${query}` : pathname) as Route;
+  };
+  const pricedHref = hrefFor(withFilter(state, "priced", pricedToday ? [] : ["today"]));
+  const withoutPriceHref = hrefFor(withFilter(state, "attention", attention === "without_price" ? [] : ["without_price"]));
+  const expiringHref = hrefFor(withFilter(state, "attention", attention === "expiring" ? [] : ["expiring"]));
+  const closeAttentionHref = hrefFor(withFilter(state, "attention", []));
+  const filtered = Boolean(state.q || state.filters.status?.length || state.filters.category?.length || state.filters.priced?.length);
+  const status = loading && !rows ? "loading" : error && !rows ? "error" : "ready";
+  const toolbar: ToolbarConfig = {
+    search: { value: url.query, onChange: url.setQuery, placeholder: "Tìm nhà cung cấp…", label: "Tìm nhà cung cấp" },
+    filters: [
+      { id: "status", title: "Trạng thái", options: statusOptions, selected: state.filters.status ?? [], onChange: values => url.setFilter("status", values), single: true },
+      { id: "priced", title: "Bảng giá", options: pricedOptions, selected: state.filters.priced ?? [], onChange: values => url.setFilter("priced", values), single: true },
+    ],
+    active: filtered,
+    onClear: url.clear,
+    below: <SupplierGroupBar categories={categories} selected={state.filters.category?.[0] ?? ""} onSelect={code => url.setFilter("category", code ? [code] : [])} />,
+    primary: can("inventory:supplier:create") ? <Button asChild className="shrink-0"><Link href={supplierHref.create}>Thêm nhà cung cấp</Link></Button> : undefined,
+  };
+  const pagination: DataTablePagination = {
+    kind: "page", page: state.page, pageSize: state.pageSize, pageSizes: [10, 20, 50], count: rows?.length ?? 0, total, busy: loading,
+    onPage: url.setPage, onPageSize: url.setPageSize,
+  };
+  return (
+    <PageShell>
+      <PageHeading title="Nhà cung cấp" description="Hồ sơ, bảng giá tham chiếu và các lần nhập hàng." />
+      <SupplierOverviewStrip
+        overview={overview}
+        loading={overviewLoading}
+        error={overviewError}
+        onRetry={reloadOverview}
+        pricedToday={pricedToday}
+        pricedHref={pricedHref}
+        withoutPriceHref={withoutPriceHref}
+        expiringHref={expiringHref}
+        closeAttentionHref={closeAttentionHref}
+        attention={attention}
+      />
+      <DataTable<Supplier>
+        mode="server"
+        columns={columns}
+        rows={rows}
+        rowId={supplier => supplier.id}
+        rowLabel={supplier => supplier.name}
+        status={status}
+        error={error}
+        onRetry={() => setRevision(value => value + 1)}
+        toolbar={toolbar}
+        storageKey="inventory-suppliers"
+        sort={state.sort}
+        onSortChange={url.setSort}
+        pagination={pagination}
+        paginationLabel="Phân trang nhà cung cấp"
+        empty={{ title: "Chưa có nhà cung cấp phù hợp", description: "Thử tên khác, hoặc thêm nhà cung cấp để lập bảng giá." }}
+        onRowOpen={supplier => toggle(supplier.id)}
+        expandedIds={expanded}
+        onToggleRow={toggle}
+        renderExpanded={supplier => <div className="px-4 py-3"><SupplierMaterialsPanel supplier={supplier} onChanged={() => setRevision(value => value + 1)} /></div>}
+      />
+    </PageShell>
+  );
 }

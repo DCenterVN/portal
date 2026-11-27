@@ -60,4 +60,4 @@ export function resolveReceiptReferencePrice(agreements: Agreement[], scope: Agr
   return matches.length ? { found: true, price: matches[0] } : { found: false };
 }
 
-export const getContractMaterials = (): Promise<Material[]> => inventoryPages(cursor => getMaterials(new URLSearchParams({ cursor }).toString()));
+export const getContractMaterials = (): Promise<Material[]> => inventoryPages(cursor => getMaterials(new URLSearchParams({ cursor, limit: "100" }).toString()));

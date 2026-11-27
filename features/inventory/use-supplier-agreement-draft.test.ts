@@ -84,11 +84,11 @@ vi.mock("react", async original => {
 vi.mock("@/lib/access-boundary", () => ({ useAccess: () => ({ can: () => hooks.allowed }) }));
 vi.mock("@/lib/api/supplier-agreements", async original => ({
   ...await original<typeof import("@/lib/api/supplier-agreements")>(),
-  getContractMaterials: vi.fn(), createAgreement: vi.fn(), saveAgreementVersion: vi.fn(),
+  createAgreement: vi.fn(), saveAgreementVersion: vi.fn(),
 }));
+vi.mock("./use-contract-materials", async () => { const { material: item } = await import("@/mocks/supplier-contract"); return { useContractMaterials: () => ({ materials: [item], failed: false, retry: vi.fn() }) }; });
 import { useSupplierAgreement } from "./use-supplier-agreement";
-import { getContractMaterials, saveAgreementVersion } from "@/lib/api/supplier-agreements";
-import { material } from "@/mocks/supplier-contract";
+import { saveAgreementVersion } from "@/lib/api/supplier-agreements";
 import { FetchError } from "@/lib/fetcher";
 
 const saved = vi.fn();
@@ -101,9 +101,8 @@ function editor() {
 }
 async function readyEditor() {
   hooks.slots = []; hooks.effects = []; hooks.allowed = true;
-  vi.mocked(getContractMaterials).mockResolvedValue([material]);
   saved.mockClear(); conflict.mockClear(); vi.mocked(saveAgreementVersion).mockReset();
-  editor(); hooks.effects[0](); await Promise.resolve();
+  editor();
   return editor();
 }
 it("double submit chỉ gửi một POST DRAFT, không tự áp dụng", async () => {
@@ -123,7 +122,7 @@ it("retry sau lỗi mạng giữ key/body; 409 giữ dữ liệu và không ghi 
   expect(calls).toHaveLength(2); expect(calls[0]).toEqual(calls[1]);
   state = editor();
   expect(state.lines).toEqual(agreement.lines); expect(state.code).toBe(agreement.code);
-  expect(state.error).toContain("Dữ liệu nhập được giữ");
+  expect(state.error).toContain("vẫn được giữ");
   expect(conflict).toHaveBeenCalledTimes(1); expect(saved).not.toHaveBeenCalled();
 });
 it("dirty hoặc mất quyền không thể áp dụng kể cả gọi thẳng handler", async () => {

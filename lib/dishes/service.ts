@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { forwardService, serviceUrl } from "@/lib/api/service-bff";
 import type { CompleteDeps } from "./complete-dish";
 import type { DetailDeps, Product, SetDetail } from "./dish-detail";
-import type { DishContent, DraftRow, GroupNode, Line } from "./types";
+import type { CostPreview, DishContent, DraftRow, GroupNode, Line } from "./types";
 import { draftSchema } from "@/lib/api/dishes";
 import { allPages } from "@/lib/api/all-pages";
 
@@ -13,7 +13,7 @@ export function dishServices(request: NextRequest) {
     production: serviceUrl("production"),
     inventory: serviceUrl("inventory"),
   };
-  async function call<T>(service: Service, path: string, method: "GET" | "POST" | "PUT" = "GET", body?: unknown, key?: string): Promise<T> {
+  async function call<T>(service: Service, path: string, method: "GET" | "POST" | "PUT" | "PATCH" = "GET", body?: unknown, key?: string): Promise<T> {
     const headers = new Headers(request.headers);
     headers.delete("idempotency-key");
     if (key) headers.set("Idempotency-Key", key);
@@ -22,7 +22,7 @@ export function dishServices(request: NextRequest) {
     const res = await forwardService(forwarded, { baseUrl: baseUrls[service], path, method, bodyPolicy: body === undefined ? "none" : "required", unavailableMessage: "Dịch vụ món hiện không khả dụng" });
     if (res.status === 204) return undefined as T;
     const data = await res.json();
-    if (!res.ok) throw Object.assign(new Error(typeof data.message === "string" ? data.message : "Không xử lý được món"), { status: res.status, code: data.errors?.error_code ?? data.error });
+    if (!res.ok) throw Object.assign(new Error(typeof data.message === "string" ? data.message : "Không xử lý được món"), { status: res.status, code: data.errors?.error_code ?? data.error, ...(data.errors?.fields ? { fields: data.errors.fields } : {}) });
     return (data.data ?? data) as T;
   }
   async function listDrafts(query: { product_ref: string; status: "OPEN" | "COMPLETED"; kind?: string }) {
@@ -30,12 +30,17 @@ export function dishServices(request: NextRequest) {
   }
   const getSet = (id: string) => call<SetDetail>("sales", `/sales/sets/${id}`);
   const activeRecipe = async (id: string) => (await call<{ current: { components: Line[] } | null }>("production", `/production/packages/${id}/recipes`)).current;
+  const products = new Map<string, Promise<{ product: Product; variants: { id: string; sku_kind: string }[] }>>();
+  const product = (id: string) => {
+    const hit = products.get(id);
+    if (hit) return hit;
+    const req = call<{ product: Product; variants: { id: string; sku_kind: string }[] }>("sales", `/sales/products/${id}`);
+    products.set(id, req);
+    return req;
+  };
   const detail: DetailDeps = {
-    getProduct: async id => (await call<{ product: Product }>("sales", `/sales/products/${id}`)).product,
-    listVariants: async id => {
-      const product = await call<{ variants: { id: string; sku_kind: string }[] }>("sales", `/sales/products/${id}`);
-      return Promise.all(product.variants.filter(item => item.sku_kind === "COMMERCIAL_SET").map(item => getSet(item.id)));
-    },
+    getProduct: async id => (await product(id)).product,
+    listVariants: async id => Promise.all((await product(id)).variants.filter(item => item.sku_kind === "COMMERCIAL_SET").map(item => getSet(item.id))),
     getPackage: id => call("sales", `/sales/packages/${id}`), getActiveRecipe: activeRecipe, listDrafts,
   };
   async function context(content: DishContent) {
@@ -52,6 +57,7 @@ export function dishServices(request: NextRequest) {
     return {
       tree, skuGroups, getActiveRecipe: activeRecipe, readSet: async id => { const set = await getSet(id); return { slots: set.slots, tags: set.tags, updated_at: set.updated_at }; },
       createProduct: async (input, key) => (await call<{ product: { id: string } }>("sales", "/sales/products", "POST", input, key)).product,
+      updateProduct: async (id, input, key) => { await call("sales", `/sales/products/${id}`, "PATCH", input, key); },
       createPackage: (input, key) => call("sales", "/sales/packages", "POST", input, key),
       createRecipe: async (id, input, key) => { await call("production", `/production/packages/${id}/recipes`, "POST", input, key); },
       createSet: (input, key) => call("sales", "/sales/sets", "POST", { ...input, uom_code: "EA" }, key),
@@ -63,5 +69,10 @@ export function dishServices(request: NextRequest) {
       completeDraft: async (id, input, key) => { await call("sales", `/sales/dish-drafts/${id}/complete`, "POST", input, key); },
     };
   }
-  return { detail, context, complete, getDraft: async (id: string) => draftSchema.parse((await call<{ draft: unknown }>("sales", `/sales/dish-drafts/${id}`)).draft) };
+  const previewCost = (content: DishContent) => call<CostPreview>("production", "/production/recipes/cost-preview", "POST", {
+    servings: content.servings,
+    lines: content.ingredients.filter(line => line.sku_ref).map(({ sku_ref, quantity, uom, yield_pct }) => ({ sku_ref, quantity, uom, yield_pct })),
+    packages: content.seasonings.filter(line => line.package_ref).map(line => ({ sku_ref: line.package_ref, quantity: 1 })),
+  });
+  return { detail, context, complete, previewCost, getDraft: async (id: string) => draftSchema.parse((await call<{ draft: unknown }>("sales", `/sales/dish-drafts/${id}`)).draft) };
 }

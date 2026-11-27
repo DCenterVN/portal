@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "@/components/ui/toast";
-import { checkoutSchema, type CheckoutInput, clearCart, createOrder, getCart, getOrCreateCartId, loadCartItems, recordCartResponse, type Cart, type CartItem } from "@/lib/api/sales";
+import { checkoutSchema, type CheckoutInput, clearCart, createOrder, getCart, getOrCreateCartId, loadCartItems, recordCartResponse, removeCartItem, updateCartItem, type Cart, type CartItem } from "@/lib/api/sales";
+import { hasServerCart, orderErrorMessage, unsellableItem, validQuantity } from "./cart-model";
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -20,6 +21,7 @@ export function useCart(initialCart?: Cart) {
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [checkoutError, setCheckoutError] = useState("");
   const [discardOpen, setDiscardOpen] = useState(false);
+  const [itemBusy, setItemBusy] = useState(false);
   const pending = useRef(false);
   const completed = useRef(false);
   const orderKey = useRef<string | null>(null);
@@ -43,7 +45,9 @@ export function useCart(initialCart?: Cart) {
     try {
       const id = cartId || getOrCreateCartId();
       setCartId(id);
-      setItems(loadCartItems());
+      const local = loadCartItems();
+      setItems(local);
+      if (!hasServerCart(local)) return;
       recordCartResponse(await getCart(id));
       setItems(loadCartItems());
     } catch (cause) {
@@ -73,12 +77,34 @@ export function useCart(initialCart?: Cart) {
       toast.success("Tạo đơn hàng thành công", { description: order.order_code ? `Mã đơn: ${order.order_code}` : undefined });
       setItems([]); clearCart(); setCartId("");
     } catch (cause) {
-      const message = cause instanceof Error ? safeMessage(cause.message) : "Không thể tạo đơn hàng. Vui lòng thử lại.";
-      setCheckoutError(cause instanceof FetchError && cause.code === "out_of_stock"
-        ? /không đủ hàng/i.test(message) ? message : "Món trong giỏ không đủ hàng. Vui lòng kiểm tra lại số lượng."
-        : message);
+      const status = cause instanceof FetchError ? cause.status : 0;
+      setCheckoutError(orderErrorMessage(status, cause instanceof FetchError ? cause.code : undefined, cause instanceof Error ? safeMessage(cause.message) : ""));
     } finally { pending.current = false; setSubmittingOrder(false); }
   }, [items.length, cartId, form]);
+  async function mutateItem(request: () => ReturnType<typeof updateCartItem>, success: string) {
+    if (itemBusy) return false;
+    setItemBusy(true);
+    try {
+      recordCartResponse(await request());
+      setItems(loadCartItems());
+      setCheckoutError("");
+      toast.success(success);
+      return true;
+    } catch (cause) {
+      toast.error("Không cập nhật được giỏ hàng", { description: cause instanceof Error ? safeMessage(cause.message) : undefined });
+      return false;
+    } finally { setItemBusy(false); }
+  }
+  async function changeQuantity(item: CartItem, quantity: number) {
+    if (!item.item_id || !cartId || quantity === item.quantity) return false;
+    if (!validQuantity(quantity)) { toast.error("Số lượng phải là số nguyên từ 1 trở lên"); return false; }
+    return mutateItem(() => updateCartItem(cartId, item.item_id!, quantity), "Đã đổi số lượng");
+  }
+  async function removeItem(item: CartItem) {
+    if (!item.item_id || !cartId) return false;
+    return mutateItem(() => removeCartItem(cartId, item.item_id!), `Đã bỏ ${item.name} khỏi giỏ`);
+  }
+  const unsellable = unsellableItem(items, checkoutError);
   function changeCheckoutOpen(open: boolean) {
     if (pending.current) return;
     if (!open && form.formState.isDirty) { setDiscardOpen(true); return; }
@@ -93,5 +119,5 @@ export function useCart(initialCart?: Cart) {
     form.setValue("province_code", code ?? "", { shouldDirty: true, shouldValidate: true });
     form.setValue("commune_code", "");
   }
-  return { discardOpen, setDiscardOpen, discardCheckout, form, provinces, communes, selectProvince, checkoutOpen, changeCheckoutOpen, checkoutError, items, setItems, cartId, loading, error, reload, submittingOrder, createdOrderCode, setCreatedOrderCode, totalAmount, totalQuantity, handleCheckout };
+  return { discardOpen, setDiscardOpen, discardCheckout, form, provinces, communes, selectProvince, checkoutOpen, changeCheckoutOpen, checkoutError, items, setItems, cartId, loading, error, reload, submittingOrder, createdOrderCode, setCreatedOrderCode, totalAmount, totalQuantity, handleCheckout, itemBusy, changeQuantity, removeItem, unsellable };
 }

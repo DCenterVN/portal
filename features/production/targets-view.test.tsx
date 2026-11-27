@@ -30,7 +30,7 @@ vi.mock("@/lib/api/production", async (importOriginal) => {
   };
 });
 
-const sampleProducts: salesApi.Product[] = [
+const sampleProducts: Array<salesApi.Product & { sku_kind?: string }> = [
   {
     id: "01955700-0000-7000-8000-000000000001",
     sku_code: "SKU-MON-TRUNG",
@@ -48,7 +48,6 @@ const sampleProducts: salesApi.Product[] = [
     base_price_vnd: 5000,
     status: "ACTIVE",
     created_at: "2026-09-01T08:00:00Z",
-    // @ts-expect-error sku_kind from sales backend payload
     sku_kind: "RAW_MATERIAL",
   },
 ];
@@ -73,12 +72,10 @@ describe("B4 & B5 TargetsView Product Picker and Branch Name", () => {
   it("renders EntityPicker for products with name, sku_code and does not show Product UUID label (B4)", () => {
     const html = renderToStaticMarkup(withAccess(["production:target:create", "production:target_approval:create"]));
 
-    // Must have EntityPicker combobox role and name product_ref
     expect(html).toContain('role="combobox"');
     expect(html).toContain('name="product_ref"');
-    expect(html).toContain("Tìm theo tên hoặc SKU");
+    expect(html).toContain("Tìm theo tên hoặc mã hàng");
 
-    // Must not show Product UUID label
     expect(html).not.toContain("Product UUID");
     expect(html).toContain("Sản phẩm");
 
@@ -90,7 +87,6 @@ describe("B4 & B5 TargetsView Product Picker and Branch Name", () => {
   it("does not render branch UUID in locked input; displays read-only branch name (B5)", () => {
     const html = renderToStaticMarkup(withAccess(["production:target:create"]));
 
-    // Branch UUID must not be shown to user on screen in input or text
     expect(html).not.toContain('value="' + branchId + '"');
     expect(html).not.toContain("Chi nhánh từ phiên đăng nhập");
     expect(html).toContain(branchName);

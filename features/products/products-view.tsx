@@ -8,7 +8,7 @@ import {
   Search,
   Check,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { Badge } from "@/components/ui/badge";
 import { StatusBadge, statusTone } from "@/components/patterns/status-badge";
@@ -28,9 +28,12 @@ import { InlineAlert } from "@/components/patterns/inline-alert";
 import { EmptyState } from "@/components/patterns/empty-state";
 import { PageShell } from "@/components/ui/page";
 import { PageHeading } from "@/components/patterns/page-heading";
+import { TablePager } from "@/components/patterns/table-pager";
+import { useLocalPages } from "@/lib/local-pages";
 import { ProductCreateDialog } from "./product-create-dialog";
 import { ProductActivateDialog } from "./product-activate-dialog";
 import { ProductRowActions } from "./product-row-actions";
+import { SalesFlowBar } from "@/features/sales/sales-flow-bar";
 
 const productStatusLabels: Record<string, string> = { ACTIVE: "Đang mở bán", DRAFT: "Bản nháp", SUSPENDED: "Tạm ngưng" };
 import motion from "./filter-motion.module.css";
@@ -73,6 +76,7 @@ export function ProductsView({ initialProducts: products, dataSource = "api", ca
 
     return { filteredProducts: filtered, activeCount: active, draftCount: draft };
   }, [products, search, statusFilter]);
+  const pages = useLocalPages(filteredProducts, `${search}|${statusFilter}`);
 
   return (
     <PageShell>
@@ -89,6 +93,7 @@ export function ProductsView({ initialProducts: products, dataSource = "api", ca
         description="Theo dõi sản phẩm, tạo bản nháp và mở bán cho danh mục"
         actions={
           <div className="flex max-w-full flex-wrap items-center gap-2.5">
+            <Link className={buttonVariants({ size: "sm", variant: "outline" })} href="/products">Xem cửa hàng khách</Link>
             {canCreate && <Button
               type="button"
               onClick={() => setCreateDialogOpen(true)}
@@ -99,8 +104,9 @@ export function ProductsView({ initialProducts: products, dataSource = "api", ca
           </div>
         }
       />
+      <SalesFlowBar current="products" />
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 my-6">
-        <Card className="border-border bg-card p-4">
+        <Card className="border-border border-t-[3px] border-t-primary bg-card p-4 tabular-nums">
           <CardContent className="p-0">
             <div className="text-xs font-semibold text-muted-foreground">Tổng sản phẩm</div>
             <div className="text-2xl font-semibold text-foreground mt-1">{products.length}</div>
@@ -108,7 +114,7 @@ export function ProductsView({ initialProducts: products, dataSource = "api", ca
           </CardContent>
         </Card>
 
-        <Card className="border-border bg-card p-4">
+        <Card className="border-border border-t-[3px] border-t-primary bg-card p-4 tabular-nums">
           <CardContent className="p-0">
             <div className="text-xs font-semibold text-muted-foreground">
               Đang mở bán
@@ -118,7 +124,7 @@ export function ProductsView({ initialProducts: products, dataSource = "api", ca
           </CardContent>
         </Card>
 
-        <Card className="border-border bg-card p-4">
+        <Card className="border-border border-t-[3px] border-t-primary bg-card p-4 tabular-nums">
           <CardContent className="p-0">
             <div className="text-xs font-semibold text-muted-foreground">
               Bản nháp
@@ -196,7 +202,7 @@ export function ProductsView({ initialProducts: products, dataSource = "api", ca
           </TableHeader>
           <TableBody>
             {filteredProducts.length > 0 ? (
-              filteredProducts.map((p) => (
+              pages.rows.map((p) => (
                 <TableRow key={p.id} className="border-b border-border hover:bg-muted transition-colors">
                   <TableCell className="font-mono text-xs font-semibold text-foreground">
                     {safeMessage(p.sku_code)}
@@ -240,6 +246,7 @@ export function ProductsView({ initialProducts: products, dataSource = "api", ca
             )}
           </TableBody>
         </Table>
+        {(pages.hasPrevious || pages.hasNext) && <TablePager label="Phân trang sản phẩm" className="px-4 pb-3" status={`Trang ${pages.page}`} hasPrevious={pages.hasPrevious} onPrevious={pages.previous} hasNext={pages.hasNext} onNext={pages.next} />}
       </Card>}
 
       {canCreate && <ProductCreateDialog

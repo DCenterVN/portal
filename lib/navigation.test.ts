@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { consoleNavFor, consoleRouteAllowed } from "./navigation";
+import { consoleNavFor, consoleRouteAllowed, consoleRouteDenial } from "./navigation";
 
 const route = "/production/material-requirements";
 const visible = (permissions: string[]) => consoleNavFor(new Set(permissions)).flatMap(group => group.items).some(item => item.href === route);
@@ -54,6 +54,13 @@ describe("AC-4 menu Sản phẩm theo sales:product:read", () => {
     expect(CONSOLE_ROUTES).toContain(productRoute);
     expect(isEmployeeRoute(productRoute)).toBe(true);
   });
+  it("Món ăn có mục riêng cạnh Nguyên liệu và là route console", () => {
+    const production = consoleNavFor(new Set(["sales:product:read", "production:food_plan:read"])).find(group => group.title === "Sản xuất");
+    expect(production?.items.map(item => item.label)).toEqual(["Nguyên liệu", "Món ăn", "Thực đơn"]);
+    expect(breadcrumbFor(consoleNavFor(new Set(["sales:product:read"])), "/production/dishes")).toEqual([{ label: "Sản xuất" }, { label: "Món ăn" }]);
+    expect(CONSOLE_ROUTES).toContain("/production/dishes");
+    expect(isEmployeeRoute("/production/dishes")).toBe(true);
+  });
   it("AC-1 /products của khách không là route console", () => {
     expect(isEmployeeRoute("/products")).toBe(false);
   });
@@ -95,7 +102,7 @@ describe("openGroups", () => {
   it("ADMIN: chỉ mở nhóm chứa trang đang xem và nhóm đã nhớ", () => {
     expect(openGroups(admin, "/production/food-plans", [])).toEqual(["Sản xuất"]);
     expect(openGroups(admin, "/production/food-plans", ["Kho"])).toEqual(["Kho", "Sản xuất"]);
-    expect(breadcrumbFor(admin, "/production/food-plans")).toEqual([{ label: "Sản xuất" }, { label: "Món & thực đơn" }]);
+    expect(breadcrumbFor(admin, "/production/food-plans")).toEqual([{ label: "Sản xuất" }, { label: "Thực đơn" }]);
   });
   it("SALES: có thêm nhóm Sản xuất (mục Nguyên liệu) nên chỉ mở nhóm đang đứng", () => {
     const sales = all(["sales:product:read", "sales:price_book:create"]);
@@ -113,5 +120,74 @@ describe("openGroups", () => {
     expect(hrefs(["sales:product:read", "inventory:transfer:create"])).not.toContain("/inventory/stock-transfers");
     expect(consoleRouteAllowed("/inventory/stock-transfers/new", new Set(["inventory:transfer:read"]))).toBe(true);
     expect(consoleRouteAllowed("/inventory/stock-transfers/x/receive", new Set(["sales:product:read"]))).toBe(false);
+  });
+});
+
+describe("điều hướng Kho theo vai và cấp chi nhánh", () => {
+  const KITCHEN = "CENTRAL_KITCHEN";
+  const STORE = "STORE";
+  const khoActions = [
+    "inventory:goods_receipt:create",
+    "inventory:qc:update",
+    "inventory:stock:read",
+    "inventory:shelf_placement:read",
+    "inventory:lot:read",
+    "inventory:supplier:read",
+    "inventory:transfer:read",
+  ];
+  const hrefs = (permissions: string[], branch?: string) =>
+    consoleNavFor(new Set(permissions), branch).flatMap(group => group.items).map(item => item.href);
+
+  it("cửa hàng ẩn Nhập hàng và Nhà cung cấp, vẫn giữ Kiểm đầu vào, Tồn kho, Kệ hàng, Vị trí kho, Chuyển hàng", () => {
+    expect(hrefs(khoActions, KITCHEN)).toEqual([
+      "/console",
+      "/inventory/goods-receipts/new",
+      "/inventory/inbound-qc",
+      "/inventory/stock",
+      "/inventory/shelves",
+      "/inventory/storage-locations",
+      "/inventory/stock-transfers",
+      "/inventory/suppliers",
+    ]);
+    expect(hrefs(khoActions, STORE)).toEqual([
+      "/console",
+      "/inventory/inbound-qc",
+      "/inventory/stock",
+      "/inventory/shelves",
+      "/inventory/storage-locations",
+      "/inventory/stock-transfers",
+    ]);
+  });
+
+  it("màn Tồn kho mở cho quyền inventory:stock:read ở cả bếp và cửa hàng", () => {
+    expect(CONSOLE_ROUTES).toContain("/inventory/stock");
+    expect(isEmployeeRoute("/inventory/stock")).toBe(true);
+    expect(consoleRouteDenial("/inventory/stock", new Set(["inventory:stock:read"]), STORE)).toBeNull();
+    expect(consoleRouteDenial("/inventory/stock", new Set(["inventory:stock:read"]), KITCHEN)).toBeNull();
+    expect(consoleRouteDenial("/inventory/stock", new Set(["inventory:lot:read"]), KITCHEN)).toEqual({ reason: "permission" });
+    expect(isActive("/inventory/stock", "/inventory/stock-transfers")).toBe(false);
+    expect(isActive("/inventory/stock-transfers", "/inventory/stock")).toBe(false);
+  });
+
+  it.each(["new", "overview", "abc", "abc/receipts", "abc/info", "abc/edit", "abc/prices/new", "abc/prices/xyz"])(
+    "đường con /inventory/suppliers/%s theo luật nhà cung cấp",
+    sub => {
+      const path = `/inventory/suppliers/${sub}`;
+      expect(consoleRouteDenial(path, new Set(khoActions), STORE)).toEqual({ reason: "branch", branch: KITCHEN });
+      expect(consoleRouteDenial(path, new Set(khoActions), KITCHEN)).toBeNull();
+      expect(consoleRouteDenial(path, new Set(), KITCHEN)).toEqual({ reason: "permission" });
+    },
+  );
+
+  it("gõ thẳng địa chỉ: cửa hàng bị chặn với lý do cấp chi nhánh, thiếu quyền ra lý do quyền", () => {
+    const actions = new Set(khoActions);
+    expect(consoleRouteDenial("/inventory/goods-receipts/new", actions, STORE)).toEqual({ reason: "branch", branch: KITCHEN });
+    expect(consoleRouteDenial("/inventory/goods-receipts/abc/receive", actions, STORE)).toEqual({ reason: "branch", branch: KITCHEN });
+    expect(consoleRouteDenial("/inventory/goods-receipts/abc/receive", actions, KITCHEN)).toBeNull();
+    expect(consoleRouteDenial("/inventory/goods-receipts/abc/receive", new Set(), KITCHEN)).toBeNull();
+    expect(consoleRouteDenial("/inventory/inbound-qc", actions, STORE)).toBeNull();
+    expect(consoleRouteDenial("/inventory/storage-locations", actions, STORE)).toBeNull();
+    expect(consoleRouteDenial("/inventory/shelves", actions, STORE)).toBeNull();
+    expect(consoleRouteDenial("/sales/orders", actions, KITCHEN)).toEqual({ reason: "permission" });
   });
 });
