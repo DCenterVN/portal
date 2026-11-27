@@ -33,7 +33,7 @@ export function useGoodsReceipt() {
   const [priceRevision, setPriceRevision] = useState(0);
   const [restored, setRestored] = useState(false);
   const [supplierList, setSupplierList] = useState<Supplier[] | null>(null);
-  const [unpricedIds, setUnpricedIds] = useState<ReadonlySet<string>>(new Set());
+  const [unpricedIds] = useState<ReadonlySet<string>>(() => new Set());
   const [supplierFailed, setSupplierFailed] = useState(false);
   const [chosen, setChosen] = useState<Supplier | null>(null);
   const [categories, setCategories] = useState<MaterialCategory[]>([]);
@@ -58,10 +58,9 @@ export function useGoodsReceipt() {
     if (!allowed || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return;
     let live = true;
     setSupplierFailed(false);
-    Promise.all([getActiveSuppliers(), getActiveSuppliers(date)]).then(([all, priced]) => {
+    getActiveSuppliers(date).then(priced => {
       if (!live) return;
-      setSupplierList(all);
-      setUnpricedIds(new Set(all.filter(item => !priced.some(other => other.id === item.id)).map(item => item.id)));
+      setSupplierList(priced);
     }).catch(() => { if (live) setSupplierFailed(true); });
     return () => { live = false; };
   }, [allowed, date, revision]);
@@ -106,7 +105,7 @@ export function useGoodsReceipt() {
     if (!supplier || !allowed) { setOpenReceipts([]); return; }
     let live = true;
     getSupplierHistory(supplier)
-      .then(history => { if (live) setOpenReceipts(history.items.filter(item => item.status === "DRAFT" || item.status === "IN_PROGRESS")); })
+      .then(history => { if (live) setOpenReceipts(history.items.filter(item => item.status === "DRAFT" || item.status === "IN_PROGRESS" || item.status === "RECEIVING")); })
       .catch(() => { if (live) setOpenReceipts([]); });
     return () => { live = false; };
   }, [supplier, allowed]);
