@@ -6,6 +6,7 @@ import * as suppliersAPI from "@/lib/api/suppliers";
 import * as agreementsAPI from "@/lib/api/supplier-agreements";
 import * as categoriesAPI from "@/lib/api/material-categories";
 import * as receiptsAPI from "@/lib/api/goods-receipts";
+import * as supplierHistoryAPI from "@/lib/api/supplier-history";
 import { agreement, supplier, material, supplierID, documentID } from "@/mocks/supplier-contract";
 import { FetchError } from "@/lib/fetcher";
 import { AccessProvider } from "@/lib/access-boundary";
@@ -86,9 +87,36 @@ it("nhà chưa có giá còn hiệu lực thì danh sách nguyên liệu rỗng,
 it("danh sách nhà gửi ngày dự kiến nhập và tải lại khi đổi ngày", async () => {
   await readyReceipt();
   const spy = suppliersAPI.getActiveSuppliers as unknown as ReturnType<typeof vi.fn>;
-  const dates = spy.mock.calls.map(call => call[0]).filter(Boolean);
+  expect(spy.mock.calls.length).toBeGreaterThanOrEqual(2);
+  expect(spy.mock.calls.every(call => Boolean(call[0]))).toBe(true);
+  const dates = spy.mock.calls.map(call => call[0]);
   expect(dates[0]).toMatch(/^\d{4}-\d{2}-\d{2}$/);
   expect(dates).toContain("2026-11-01");
+});
+
+it("chỉ giữ nhà có giá theo ngày dự kiến nhập và giữ phiếu RECEIVING trong danh sách đang mở", async () => {
+  harness.enabled = true; harness.slots = []; harness.effects = [];
+  vi.stubGlobal("sessionStorage", { getItem: () => null, setItem: vi.fn(), removeItem: vi.fn() });
+  vi.spyOn(categoriesAPI, "getMaterialCategories").mockResolvedValue([]);
+  vi.spyOn(suppliersAPI, "getActiveSuppliers").mockResolvedValue([supplier]);
+  vi.spyOn(agreementsAPI, "getContractMaterials").mockResolvedValue([material]);
+  vi.spyOn(agreementsAPI, "getAllAgreements").mockResolvedValue([]);
+  vi.spyOn(suppliersAPI, "getSupplier").mockResolvedValue(supplier);
+  vi.spyOn(supplierHistoryAPI, "getSupplierHistory").mockResolvedValue({
+    items: [
+      { id: documentID, branch_ref: documentID, supplier_ref: supplierID, status: "RECEIVING", created_at: "2026-10-26T08:00:00Z", expected_at: "2026-10-27T12:00:00+07:00", completed_at: null, total_amount_vnd: 125000, lines: [] },
+      { id: supplierID, branch_ref: documentID, supplier_ref: supplierID, status: "COMPLETED", created_at: "2026-10-25T08:00:00Z", expected_at: "2026-10-26T12:00:00+07:00", completed_at: "2026-10-26T14:00:00+07:00", total_amount_vnd: 100000, lines: [] },
+    ],
+    total: 2,
+    next_cursor: "",
+  });
+  receiptHook(); await Promise.resolve(); await Promise.resolve(); await Promise.resolve();
+  receiptHook().onSupplier(supplierID);
+  receiptHook(); await Promise.resolve(); await Promise.resolve();
+  const view = receiptHook();
+  expect(view.suppliers.map(item => item.id)).toEqual([supplier.id]);
+  expect(view.unpricedIds.size).toBe(0);
+  expect(view.openReceipts.map(item => item.status)).toEqual(["RECEIVING"]);
 });
 it("hook gửi giá tay 0 kèm refs bảng giá và chặn double submit", async () => {
   let view = await readyReceipt([{ ...agreement, status: "ACTIVE", effective_status: "ACTIVE", document_ref: null }]);
@@ -220,7 +248,7 @@ it("hiển thị danh sách phiếu nhập đang mở kèm nút nhận hàng ti�
           id: documentID,
           branch_ref: documentID,
           supplier_ref: supplierID,
-          status: "IN_PROGRESS",
+          status: "RECEIVING",
           created_at: "2026-10-26T08:00:00Z",
           expected_at: "2026-10-27T12:00:00+07:00",
           completed_at: null,

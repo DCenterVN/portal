@@ -22,7 +22,7 @@ import { InventoryFlowBar } from "./inventory-flow-bar";
 type ReceiptModel = ReturnType<typeof useGoodsReceipt>;
 export type GoodsReceiptViewProps = Omit<ReceiptModel, "selectedSupplier" | "priceTable" | "onAddMaterial" | "receiveHref" | "canReceive" | "categories" | "pricedCount" | "referenceOf" | "unpricedIds" | "openReceipts"> & Partial<Pick<ReceiptModel, "unpricedIds" | "selectedSupplier" | "priceTable" | "onAddMaterial" | "receiveHref" | "canReceive" | "categories" | "pricedCount" | "referenceOf" | "openReceipts">>;
 
-const receiptStatuses: Record<string, string> = { DRAFT: "Nháp", IN_PROGRESS: "Đang nhận" };
+const receiptStatuses: Record<string, string> = { DRAFT: "Nháp", RECEIVING: "Đang nhận", IN_PROGRESS: "Đang nhận" };
 
 export function GoodsReceiptForm() {
   return <GoodsReceiptView {...useGoodsReceipt()} />;

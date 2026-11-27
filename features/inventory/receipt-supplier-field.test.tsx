@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { supplier } from "@/mocks/supplier-contract";
-import { ReceiptSupplierField, supplierMatches } from "./receipt-supplier-field";
+import { ReceiptSupplierField, activeSupplierCategories, supplierMatches } from "./receipt-supplier-field";
 import { Command } from "@/components/ui/command";
 import { EntityList } from "@/components/patterns/entity-picker";
 
@@ -41,4 +41,10 @@ it("nhà đang chọn không có trong danh sách theo ngày thì thẻ báo kh�
   const html = renderToStaticMarkup(<ReceiptSupplierField suppliers={[]} selected={full} categories={categories} status="ready" value={full.id} onChange={() => {}} pricedCount={0} />);
   expect(html).toContain("Nhà này không có giá cho ngày đã chọn");
   expect(html).not.toContain("Chưa có giá nào áp dụng");
+});
+
+it("chỉ giữ lại các chip nhóm nguyên liệu có nhà cung cấp phù hợp", () => {
+  const withEmptyGroup = [...categories, { code: "FISH", name: "Hải sản", children: [] }];
+  expect(activeSupplierCategories(withEmptyGroup, [full]).map(cat => cat.code)).toEqual(["VEG", "MEAT"]);
+  expect(activeSupplierCategories(withEmptyGroup, [])).toEqual([]);
 });

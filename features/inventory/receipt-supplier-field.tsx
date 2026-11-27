@@ -55,9 +55,15 @@ export interface ReceiptSupplierFieldProps {
   onOpenProfile?: () => void;
 }
 
+export function activeSupplierCategories(categories: MaterialCategory[], suppliers: Supplier[]): MaterialCategory[] {
+  return categories.filter(cat => suppliers.some(item => supplierMatches(item, "", cat.code)));
+}
+
 export function ReceiptSupplierField({ suppliers, categories, status, value, onChange, pricedCount, unpricedIds, selected: picked, onOpenProfile }: ReceiptSupplierFieldProps) {
   const [group, setGroup] = useState("");
   const [changing, setChanging] = useState(false);
+  const visibleCategories = activeSupplierCategories(categories, suppliers);
+  const activeGroup = visibleCategories.some(cat => cat.code === group) ? group : "";
   const selected = suppliers.find(item => item.id === value) ?? picked;
   const listed = suppliers.some(item => item.id === value);
   if (selected && !changing) {
@@ -83,7 +89,7 @@ export function ReceiptSupplierField({ suppliers, categories, status, value, onC
   return <EntityPicker label="Nhà cung cấp" name="receipt-supplier" serializeValue={false} items={suppliers} status={status} defaultOpen={changing}
     placeholder="Chọn nhà cung cấp" searchPlaceholder="Tìm theo tên, mã hoặc số điện thoại" emptyText="Chưa có nhà cung cấp nào có giá cho ngày này."
     getId={item => item.id} getLabel={item => item.name} getMeta={item => item.code} renderOption={item => <SupplierOption supplier={item} unpriced={unpricedIds?.has(item.id) ?? false} />}
-    filter={(item, query) => supplierMatches(item, query, group)}
-    header={<GroupRow categories={categories} group={group} onGroup={setGroup} />}
+    filter={(item, query) => supplierMatches(item, query, activeGroup)}
+    header={<GroupRow categories={visibleCategories} group={activeGroup} onGroup={setGroup} />}
     value={value} onChange={id => { setChanging(false); onChange(id); }} required />;
 }
