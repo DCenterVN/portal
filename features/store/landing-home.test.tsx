@@ -16,7 +16,7 @@ const IMAGES = [
 ];
 
 describe("Landing và Home storefront imagery", () => {
-  it("Landing hiển thị ảnh hero, chuỗi lạnh, thẻ vai trò và fallback preview", () => {
+  it("Landing hiển thị ảnh hero, chuỗi lạnh, thẻ vai trò, nhịp màu nền và số liệu tin cậy", () => {
     const html = renderToStaticMarkup(React.createElement(Landing));
     for (const src of [
       "/images/landing/hero-meal-kit.webp",
@@ -25,21 +25,26 @@ describe("Landing và Home storefront imagery", () => {
       "/images/landing/cat-prepped.webp",
       "/images/landing/cat-veggies.webp",
     ]) expect(html).toContain(src);
+    expect(html).toContain("Bếp trung tâm Sunny · Sơ chế trong ngày");
+    expect(html).toContain("15–20 phút");
+    expect(html).toContain("0–4°C");
     expect(html).toContain("Thực đơn nổi bật tuần này");
     expect(html).toContain("alt=\"Bộ nguyên liệu bữa ăn Việt đã sơ chế sẵn kèm món cá nục kho cà chua\"");
     expect(html).toContain('aria-busy="true"');
     expect(html).not.toMatch(/[0-9a-f]{8}-[0-9a-f]{4}-/);
   });
 
-  it("Home hiển thị đủ ảnh nhóm món, hero, hướng dẫn và lời chào người dùng", () => {
+  it("Home hiển thị đủ ảnh nhóm món, hero, hướng dẫn, chỉ số bước và lời chào người dùng", () => {
     const html = renderToStaticMarkup(React.createElement(Home, { name: "Lan" }));
     expect(html).toContain("Chào Lan, bữa tối 20 phút nhé?");
+    expect(html).toContain("Giao trong ngày · Đặt trước 15h");
     for (const src of IMAGES) expect(html).toContain(src);
     expect(html).toContain("Bán chạy tuần này");
+    expect(html).toContain("Bát sứ trắng đựng canh rau củ nước dùng trong nóng hổi dưới nắng sáng");
     expect(html).not.toMatch(/[0-9a-f]{8}-[0-9a-f]{4}-/);
   });
 
-  it("FeaturedDishesGrid dựng đúng trạng thái tải, dữ liệu thật và fallback rỗng", () => {
+  it("FeaturedDishesGrid dựng đúng trạng thái tải, dữ liệu thật, fallback cards và fallback rỗng", () => {
     const loadingHtml = renderToStaticMarkup(React.createElement(FeaturedDishesGrid, { products: [], loading: true, limit: 4 }));
     expect(loadingHtml).toContain('aria-busy="true"');
 
@@ -70,6 +75,7 @@ describe("Landing và Home storefront imagery", () => {
     expect(populatedHtml).toContain("Cá nục kho cà chua");
     expect(populatedHtml).toContain("2 người");
     expect(populatedHtml).toContain("95.000");
+    expect(populatedHtml).toContain("Xem món");
     expect(populatedHtml).toContain("Canh bầu nấu tôm");
 
     const fallbackHtml = renderToStaticMarkup(
