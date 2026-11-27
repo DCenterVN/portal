@@ -26,7 +26,7 @@ describe("NCC và tạo phiếu theo action riêng", () => {
   it("menu cụ thể không kế thừa broad inventory match", () => {
     const items = consoleNavFor(new Set(["inventory:supplier:read", "inventory:goods_receipt:create"])).flatMap(group => group.items);
     expect(items.map(item => item.href)).toContain("/inventory/suppliers");
-    expect(items.map(item => item.href)).toContain("/inventory/goods-receipts/new");
+    expect(items.map(item => item.href)).toContain("/inventory/goods-receipts");
     expect(consoleRouteAllowed("/inventory/goods-receipts/new", new Set(["inventory:supplier:read"]))).toBe(false);
   });
 });
@@ -141,7 +141,7 @@ describe("điều hướng Kho theo vai và cấp chi nhánh", () => {
   it("cửa hàng ẩn Nhập hàng và Nhà cung cấp, vẫn giữ Kiểm đầu vào, Tồn kho, Kệ hàng, Vị trí kho, Chuyển hàng", () => {
     expect(hrefs(khoActions, KITCHEN)).toEqual([
       "/console",
-      "/inventory/goods-receipts/new",
+      "/inventory/goods-receipts",
       "/inventory/inbound-qc",
       "/inventory/stock",
       "/inventory/shelves",

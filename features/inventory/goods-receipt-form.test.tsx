@@ -32,6 +32,8 @@ it("presentational form shows Vietnamese date and the child table", async () => 
   expect(html).toContain('value="27/10/2026"');
   expect(html).toContain('aria-label="Dòng nhập"');
   expect(html).toContain("Chưa đủ giá");
+  expect(html).toContain('href="/inventory/goods-receipts"');
+  expect(html).toContain("Danh sách phiếu nhập");
   expect(html).not.toContain('type="date"');
 });
 

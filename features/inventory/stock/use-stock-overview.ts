@@ -8,7 +8,7 @@ import { getSkuMetadata, listBranchInventoryLots, listBranchStockLevels, type Sk
 import { productNames } from "../transfers/product-names";
 import { buildStockRows, summarizeStockRows, type StockItemGroup, type StockIssueStatus, type StockRowModel } from "./stock-model";
 
-export type StockGroupFilter = "ALL" | Exclude<StockItemGroup, "UNKNOWN">;
+export type StockGroupFilter = "ALL" | StockItemGroup;
 export type StockHealthFilter = "ALL" | "ATTENTION" | StockIssueStatus;
 
 async function fetchCatalogFallbackNames(branchId: string): Promise<Map<string, string>> {

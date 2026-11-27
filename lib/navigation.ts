@@ -11,7 +11,7 @@ type NavRule = NavItem & { action?: string; also?: string[]; branch?: string; ga
 export const CONSOLE_NAV: { title: string; icon: LucideIcon; items: NavRule[] }[] = [
   { title: "Tổng quan", icon: LayoutDashboard, items: [{ href: "/console", label: "Tổng quan", match: "/console", icon: LayoutDashboard }] },
   { title: "Kho", icon: Warehouse, items: [
-    { href: "/inventory/goods-receipts/new", label: "Nhập hàng", match: "/inventory/goods-receipts", icon: PackagePlus, action: "inventory:goods_receipt:create", branch: KITCHEN, gate: "/inventory/goods-receipts/new" },
+    { href: "/inventory/goods-receipts", label: "Nhập hàng", match: "/inventory/goods-receipts", icon: PackagePlus, action: "inventory:goods_receipt:create", branch: KITCHEN, gate: "/inventory/goods-receipts/new" },
     { href: "/inventory/inbound-qc", label: "Kiểm đầu vào", match: "/inventory/inbound-qc", icon: ClipboardCheck, action: "inventory:qc:update" },
     { href: "/inventory/stock", label: "Tồn kho", match: "/inventory/stock", icon: Boxes, action: "inventory:stock:read" },
     { href: "/inventory/shelves", label: "Kệ hàng", match: "/inventory/shelves", icon: Warehouse, action: "inventory:shelf_placement:read" },

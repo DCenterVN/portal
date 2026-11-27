@@ -4,7 +4,7 @@ import Link from "next/link";
 type StepId = "receipts" | "inbound-qc" | "transfers" | "shelves";
 
 const steps: Array<{ id: StepId; label: string; subtitle: string; href: Route }> = [
-  { id: "receipts", label: "Bước 1 · Nhập hàng", subtitle: "Lập phiếu & nhận hàng thực tế", href: "/inventory/goods-receipts/new" },
+  { id: "receipts", label: "Bước 1 · Nhập hàng", subtitle: "Lập phiếu & nhận hàng thực tế", href: "/inventory/goods-receipts" },
   { id: "inbound-qc", label: "Bước 2 · Kiểm đầu vào", subtitle: "Duyệt lô nguyên liệu & gán vị trí", href: "/inventory/inbound-qc" },
   { id: "transfers", label: "Bước 3 · Chuyển hàng", subtitle: "Điều phối hàng giữa bếp & chi nhánh", href: "/inventory/stock-transfers" },
   { id: "shelves", label: "Bước 4 · Kệ hàng & QR", subtitle: "Xếp kệ bán & sinh tem truy xuất", href: "/inventory/shelves" },
