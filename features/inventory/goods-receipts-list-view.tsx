@@ -14,6 +14,7 @@ import { EmptyState, ErrorState, LoadingState } from "@/components/patterns/empt
 import { PageHeading } from "@/components/patterns/page-heading";
 import { StatusBadge, statusTone } from "@/components/patterns/status-badge";
 import { TablePager } from "@/components/patterns/table-pager";
+import { InventoryFlowBar } from "./inventory-flow-bar";
 
 type StatusTab = "" | "RECEIVING" | "DRAFT" | "COMPLETED";
 
@@ -21,14 +22,15 @@ const STATUS_TABS: { value: StatusTab; label: string }[] = [
   { value: "", label: "Tất cả" },
   { value: "RECEIVING", label: "Đang nhận" },
   { value: "DRAFT", label: "Nháp" },
-  { value: "COMPLETED", label: "Hoàn tất" },
+  { value: "COMPLETED", label: "Đã hoàn tất" },
 ];
 
 const RECEIPT_STATUS_LABELS: Record<string, string> = {
   DRAFT: "Nháp",
   RECEIVING: "Đang nhận",
   IN_PROGRESS: "Đang nhận",
-  COMPLETED: "Hoàn tất",
+  COMPLETED: "Đã hoàn tất",
+  CANCELLED: "Đã hủy",
 };
 
 const formatQty = (value: string) => value.replace(".", ",");
@@ -93,6 +95,7 @@ export function GoodsReceiptsListView() {
           )
         }
       />
+      <InventoryFlowBar current="receipts" />
 
       {!canRead ? (
         <EmptyState

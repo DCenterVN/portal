@@ -88,7 +88,11 @@ export function StockOverviewView(props: Props) {
     RAW: activeRows.filter(row => row.group === "RAW").length,
     SEMI: activeRows.filter(row => row.group === "SEMI").length,
     FINISHED: activeRows.filter(row => row.group === "FINISHED").length,
+    UNKNOWN: activeRows.filter(row => row.group === "UNKNOWN").length,
   };
+  const visibleGroupOptions = groupCounts.UNKNOWN > 0
+    ? [...GROUP_OPTIONS, { value: "UNKNOWN" as const, label: "Chưa phân loại" }]
+    : GROUP_OPTIONS;
 
   const toolbar: ToolbarConfig = {
     search: {
@@ -109,7 +113,7 @@ export function StockOverviewView(props: Props) {
     onClear: props.clearFilters,
     below: (
       <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label="Lọc theo loại mặt hàng">
-        {GROUP_OPTIONS.map(option => (
+        {visibleGroupOptions.map(option => (
           <Button
             key={option.value}
             type="button"

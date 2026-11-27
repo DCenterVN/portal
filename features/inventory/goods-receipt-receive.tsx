@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { toISODate } from "@/lib/format-date";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Field } from "@/components/patterns/form-field";
 import { Input } from "@/components/ui/input";
 import { PageShell } from "@/components/ui/page";
@@ -70,7 +70,7 @@ function QuantityVariance({ model }: { model: Model }) {
 export function GoodsReceiptReceive({ receiptID, supplierID }: { receiptID: string; supplierID: string }) {
   const model = useGoodsReceiptReceive(receiptID, supplierID);
   if (!model.allowed) return <ErrorState denied title="Bạn cần quyền cập nhật phiếu nhập" />;
-  return <PageShell><PageHeading title="Nhận hàng" description="Ghi nhận từng dòng hàng cùng ảnh thực nhận và chứng từ giao hàng để chuyển sang kiểm tra chất lượng." />
+  return <PageShell><PageHeading title="Nhận hàng" description="Ghi nhận từng dòng hàng cùng ảnh thực nhận và chứng từ giao hàng để chuyển sang kiểm tra chất lượng." actions={<Link className={buttonVariants({ variant: "outline", size: "sm" })} href="/inventory/goods-receipts">Danh sách phiếu nhập</Link>} />
     {model.setup.kind === "loading" && <LoadingState title="Đang tải phiếu nhập" />}
     {model.setup.kind === "error" && <ErrorState title={model.setup.message} onRetry={model.onReload} />}
     {model.setup.kind === "empty" && <EmptyState title="Không tìm thấy phiếu trong chi nhánh đang làm việc" />}

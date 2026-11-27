@@ -48,3 +48,9 @@ it("chỉ giữ lại các chip nhóm nguyên liệu có nhà cung cấp phù h�
   expect(activeSupplierCategories(withEmptyGroup, [full]).map(cat => cat.code)).toEqual(["VEG", "MEAT"]);
   expect(activeSupplierCategories(withEmptyGroup, [])).toEqual([]);
 });
+
+it("nếu mọi nguyên liệu trong bảng giá của nhà đang tạm ngừng sử dụng thì báo rõ lý do", () => {
+  const html = renderToStaticMarkup(<ReceiptSupplierField suppliers={[full]} categories={categories} status="ready" value={full.id} onChange={() => {}} pricedCount={0} suspendedPricedCount={1} />);
+  expect(html).toContain("Các nguyên liệu trong bảng giá của nhà này đang tạm ngừng sử dụng.");
+  expect(html).not.toContain("Chưa có giá nào áp dụng cho ngày dự kiến nhập.");
+});

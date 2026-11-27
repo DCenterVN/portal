@@ -20,7 +20,7 @@ import { InlineAlert } from "@/components/patterns/inline-alert";
 import { InventoryFlowBar } from "./inventory-flow-bar";
 
 type ReceiptModel = ReturnType<typeof useGoodsReceipt>;
-export type GoodsReceiptViewProps = Omit<ReceiptModel, "selectedSupplier" | "priceTable" | "onAddMaterial" | "receiveHref" | "canReceive" | "categories" | "pricedCount" | "referenceOf" | "unpricedIds" | "openReceipts"> & Partial<Pick<ReceiptModel, "unpricedIds" | "selectedSupplier" | "priceTable" | "onAddMaterial" | "receiveHref" | "canReceive" | "categories" | "pricedCount" | "referenceOf" | "openReceipts">>;
+export type GoodsReceiptViewProps = Omit<ReceiptModel, "selectedSupplier" | "priceTable" | "onAddMaterial" | "receiveHref" | "canReceive" | "categories" | "pricedCount" | "referenceOf" | "unpricedIds" | "openReceipts" | "suspendedPricedCount"> & Partial<Pick<ReceiptModel, "unpricedIds" | "selectedSupplier" | "priceTable" | "onAddMaterial" | "receiveHref" | "canReceive" | "categories" | "pricedCount" | "referenceOf" | "openReceipts" | "suspendedPricedCount">>;
 
 const receiptStatuses: Record<string, string> = { DRAFT: "Nháp", RECEIVING: "Đang nhận", IN_PROGRESS: "Đang nhận" };
 
@@ -33,7 +33,7 @@ export function GoodsReceiptView(props: GoodsReceiptViewProps) {
   const [profileOpen, setProfileOpen] = useState(false);
   const hint = missingHint(Boolean(supplier), rows);
   if (!allowed) return <ErrorState denied title="Bạn cần quyền tạo phiếu và đọc nhà cung cấp" />;
-  return <PageShell><PageHeading title="Tạo phiếu nhập" description="Lưu nháp hàng dự kiến nhận, chưa ghi tăng tồn. Giá tham chiếu được tự điền, bạn có thể nhập giá thực tế." actions={<Link className={buttonVariants({ variant: "outline", size: "sm" })} href="/inventory/inbound-qc">Sang kiểm đầu vào</Link>} />
+  return <PageShell><PageHeading title="Tạo phiếu nhập" description="Lưu nháp hàng dự kiến nhận, chưa ghi tăng tồn. Giá tham chiếu được tự điền, bạn có thể nhập giá thực tế." actions={<div className="flex flex-wrap items-center gap-2"><Link className={buttonVariants({ variant: "outline", size: "sm" })} href="/inventory/goods-receipts">Danh sách phiếu nhập</Link><Link className={buttonVariants({ variant: "outline", size: "sm" })} href="/inventory/inbound-qc">Sang kiểm đầu vào</Link></div>} />
     <InventoryFlowBar current="receipts" />
     {setupKind === "loading" && <LoadingState title="Đang tải nhà cung cấp, nguyên liệu và chi nhánh" />}
     {setupKind === "error" && <ErrorState title="Không tải được dữ liệu tạo phiếu" onRetry={props.onRetry} />}
@@ -64,7 +64,7 @@ export function GoodsReceiptView(props: GoodsReceiptViewProps) {
       <form onSubmit={props.onSubmit} className="mt-6 grid min-w-0 gap-4">
       <fieldset disabled={busy || setupKind !== "ready"} className="grid min-w-0 gap-4">
         <div className="grid gap-4 md:grid-cols-3 md:items-start">
-          <div className="md:col-span-2"><ReceiptSupplierField onOpenProfile={props.selectedSupplier && props.onAddMaterial ? () => setProfileOpen(true) : undefined} selected={props.selectedSupplier} suppliers={suppliers} unpricedIds={props.unpricedIds} categories={props.categories ?? []} status={setupKind} value={supplier} onChange={props.onSupplier} pricedCount={props.pricedCount ?? null} /></div>
+          <div className="md:col-span-2"><ReceiptSupplierField onOpenProfile={props.selectedSupplier && props.onAddMaterial ? () => setProfileOpen(true) : undefined} selected={props.selectedSupplier} suppliers={suppliers} unpricedIds={props.unpricedIds} suspendedPricedCount={props.suspendedPricedCount ?? 0} categories={props.categories ?? []} status={setupKind} value={supplier} onChange={props.onSupplier} pricedCount={props.pricedCount ?? null} /></div>
           <ReceiptDateInput value={date} onChange={props.onDate} disabled={busy} />
         </div>
         {props.selectedSupplier && props.onAddMaterial && <ReceiptSupplierSheet supplier={props.selectedSupplier} open={profileOpen} onOpenChange={setProfileOpen} priceTable={props.priceTable ?? []} pricesReady={pricesKind === "ready"}

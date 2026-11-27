@@ -51,6 +51,7 @@ export interface ReceiptSupplierFieldProps {
   onChange: (id: string | null) => void;
   pricedCount: number | null;
   unpricedIds?: ReadonlySet<string>;
+  suspendedPricedCount?: number;
   selected?: Supplier;
   onOpenProfile?: () => void;
 }
@@ -59,7 +60,7 @@ export function activeSupplierCategories(categories: MaterialCategory[], supplie
   return categories.filter(cat => suppliers.some(item => supplierMatches(item, "", cat.code)));
 }
 
-export function ReceiptSupplierField({ suppliers, categories, status, value, onChange, pricedCount, unpricedIds, selected: picked, onOpenProfile }: ReceiptSupplierFieldProps) {
+export function ReceiptSupplierField({ suppliers, categories, status, value, onChange, pricedCount, unpricedIds, suspendedPricedCount = 0, selected: picked, onOpenProfile }: ReceiptSupplierFieldProps) {
   const [group, setGroup] = useState("");
   const [changing, setChanging] = useState(false);
   const visibleCategories = activeSupplierCategories(categories, suppliers);
@@ -83,7 +84,7 @@ export function ReceiptSupplierField({ suppliers, categories, status, value, onC
       {shown.length > 0 && <p className="text-sm">Nhóm nguyên liệu: {shown.join(", ")}{more > 0 && ` +${more}`}</p>}
       {(selected.contact_name || selected.contact_phone) && <p className="text-sm text-muted-foreground">Liên hệ: <SupplierContactLine supplier={selected} /></p>}
       {!listed && <p role="status" className="text-sm text-destructive">Nhà này không có giá cho ngày đã chọn.</p>}
-      {listed && pricedCount !== null && <p className={cn("text-sm", pricedCount === 0 && "text-muted-foreground")}>{pricedCount === 0 ? "Chưa có giá nào áp dụng cho ngày dự kiến nhập." : `${pricedCount} nguyên liệu có giá cho ngày dự kiến nhập.`}</p>}
+      {listed && pricedCount !== null && <p className={cn("text-sm", pricedCount === 0 && "text-muted-foreground")}>{pricedCount === 0 ? (suspendedPricedCount > 0 ? "Các nguyên liệu trong bảng giá của nhà này đang tạm ngừng sử dụng." : "Chưa có giá nào áp dụng cho ngày dự kiến nhập.") : `${pricedCount} nguyên liệu có giá cho ngày dự kiến nhập.`}</p>}
     </section>;
   }
   return <EntityPicker label="Nhà cung cấp" name="receipt-supplier" serializeValue={false} items={suppliers} status={status} defaultOpen={changing}

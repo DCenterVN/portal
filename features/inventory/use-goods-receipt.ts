@@ -116,6 +116,9 @@ export function useGoodsReceipt() {
     try { const found = resolveReceiptReferencePrice(prices.items, { sku: material.id, uom: material.uom_code, date }); return found.found ? found.price : "none"; } catch { return "ambiguous"; }
   };
   const allMaterials = setup.kind === "ready" ? setup.materials.filter(material => material.selectable) : [];
+  const suspendedPricedCount = setup.kind === "ready"
+    ? setup.materials.filter(material => !material.selectable && priceOf(material) !== "none").length
+    : 0;
   const resolved = allMaterials.map(material => ({ material, price: priceOf(material) })).filter(item => item.price !== "none");
   const priceTable = resolved.flatMap(({ material, price }) => typeof price === "string" ? [] : [{ material, unitPrice: price.unit_price_vnd, validTo: price.valid_to }]);
   const materials = resolved.map(item => item.material);
@@ -163,7 +166,7 @@ export function useGoodsReceipt() {
     } finally { inFlight.current = false; setBusy(false); }
   }
   return {
-    allowed, setupKind, suppliers, unpricedIds, selectedSupplier, priceTable, categories, pricedCount, referenceOf, materials, supplier, date, rows, busy, error: error || priceError, success, receiveHref, canReceive: can("inventory:goods_receipt:update"), reconfirm, valid, openReceipts,
+    allowed, setupKind, suppliers, unpricedIds, selectedSupplier, priceTable, categories, pricedCount, suspendedPricedCount, referenceOf, materials, supplier, date, rows, busy, error: error || priceError, success, receiveHref, canReceive: can("inventory:goods_receipt:update"), reconfirm, valid, openReceipts,
     pricesKind: prices.kind, canUpdate: can("inventory:supplier:update"),
     onSupplier: (id: string | null) => { setSupplier(id ?? ""); setLines(items => items.map(({ key, sku, quantity }) => ({ key, sku, quantity }))); setReconfirm(false); setPrices({ kind: "loading" }); },
     onDate: (value: string) => { setDate(value); setLines(items => items.map(({ key, sku, quantity }) => ({ key, sku, quantity }))); setReconfirm(false); },

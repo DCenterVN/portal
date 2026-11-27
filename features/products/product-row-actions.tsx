@@ -34,7 +34,7 @@ function EditDialog({ product, onClose, onDone }: { product: Product; onClose: (
   }
   return <Dialog open onOpenChange={open => !open && !isSubmitting && onClose()}>
     <DialogContent className="sm:max-w-md">
-      <DialogHeader><DialogTitle>Sửa sản phẩm</DialogTitle><DialogDescription>{product.sku_code}</DialogDescription></DialogHeader>
+      <DialogHeader><DialogTitle>Sửa sản phẩm</DialogTitle>{product.sku_code && !/[0-9a-f]{8}-[0-9a-f]{4}-/i.test(product.sku_code) && <DialogDescription>{product.sku_code}</DialogDescription>}</DialogHeader>
       <form id="product-edit" onSubmit={form.handleSubmit(submit)} className="space-y-4" noValidate>
         <Field label="Tên sản phẩm" htmlFor="product-name" error={errors.name?.message}><Input id="product-name" {...form.register("name")} disabled={isSubmitting} /></Field>
         <Field label="Mô tả" htmlFor="product-description" error={errors.description?.message}><Textarea id="product-description" rows={4} {...form.register("description")} disabled={isSubmitting} /></Field>
