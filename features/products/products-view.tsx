@@ -34,8 +34,12 @@ import { ProductCreateDialog } from "./product-create-dialog";
 import { ProductActivateDialog } from "./product-activate-dialog";
 import { ProductRowActions } from "./product-row-actions";
 import { SalesFlowBar } from "@/features/sales/sales-flow-bar";
+import { uomLabel } from "@/lib/stock-transfer";
 
 const productStatusLabels: Record<string, string> = { ACTIVE: "Đang mở bán", DRAFT: "Bản nháp", SUSPENDED: "Tạm ngưng" };
+const UUID_RE = /[0-9a-f]{8}-[0-9a-f]{4}-/i;
+const displayProductCode = (code: string) => (!code || UUID_RE.test(code) ? "—" : code);
+const displayProductUom = (uom: string) => (!uom ? "—" : uom.toUpperCase() === "EA" ? "Suất" : uomLabel(uom));
 import motion from "./filter-motion.module.css";
 
 interface ProductsViewProps {
@@ -205,7 +209,7 @@ export function ProductsView({ initialProducts: products, dataSource = "api", ca
               pages.rows.map((p) => (
                 <TableRow key={p.id} className="border-b border-border hover:bg-muted transition-colors">
                   <TableCell className="font-mono text-xs font-semibold text-foreground">
-                    {safeMessage(p.sku_code)}
+                    {displayProductCode(p.sku_code)}
                   </TableCell>
                   <TableCell>
                     {p.status === "ACTIVE" ? <Link
@@ -221,7 +225,7 @@ export function ProductsView({ initialProducts: products, dataSource = "api", ca
                     )}
                   </TableCell>
                   <TableCell className="text-xs font-semibold text-muted-foreground">
-                    {safeMessage(p.uom)}
+                    {displayProductUom(p.uom)}
                   </TableCell>
                   <TableCell className="text-right font-semibold text-xs text-foreground">
                     {formatVND(p.base_price_vnd)}

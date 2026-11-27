@@ -43,7 +43,7 @@ function DishCard({ row }: { row: DishListRow }) {
         <DishStatusBadge counts={row.counts} />
       </div>
       <p className="line-clamp-2 text-left text-sm font-medium group-hover:underline">{row.product.name}</p>
-      {row.variants.length > 0 && <p className="truncate text-left text-xs text-muted-foreground">{row.variants.map(v => v.variant_label).join(" · ")}</p>}
+      {row.variants.length > 0 && <p className="truncate text-left text-xs text-muted-foreground">{[...new Set(row.variants.map(v => v.variant_label).filter(Boolean))].join(" · ")}</p>}
     </Link>
   </li>;
 }

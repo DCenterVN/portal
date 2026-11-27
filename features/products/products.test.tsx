@@ -265,6 +265,18 @@ describe("AC-3/AC-4 ProductsView là màn quản trị console", () => {
     expect(out).toContain('role="alert"');
     expect(out).not.toContain("Cá hồi tươi");
   });
+  it("ẩn mã SKU chứa UUID (không lộ SV-mục đã chọn) và chuẩn hoá EA thành Suất", () => {
+    const rows: Product[] = [
+      { id: PRODUCT_ID, sku_ref: SKU_ID, sku_code: `SV-${SKU_ID}`, name: "Cá nục kho cà chua · 2 người", uom: "EA", base_price_vnd: 95000, status: "ACTIVE", created_at: "2026-10-20T08:00:00Z" },
+      ...staffRows,
+    ];
+    const out = html(React.createElement(ProductsView, { initialProducts: rows, dataSource: "api", canCreate: true }));
+    expect(out).not.toContain("SV-mục đã chọn");
+    expect(userFacingContent(out)).not.toMatch(/[0-9a-f]{8}-[0-9a-f]{4}-/);
+    expect(out).toContain(">Suất<");
+    expect(out).not.toContain(">EA<");
+    expect(out).toContain(">kg<");
+  });
 });
 
 describe("AC-3 form tạo sản phẩm nháp chỉ tên + mã", () => {
